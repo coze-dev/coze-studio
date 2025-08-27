@@ -55,11 +55,19 @@ type AsTool interface {
 		allInterruptEvents map[string]*entity.ToolInterruptEvent) compose.Option
 }
 
-type ConversationService interface {
+type ChatFlowRole interface {
+	CreateChatFlowRole(ctx context.Context, role *vo.ChatFlowRoleCreate) (int64, error)
+	UpdateChatFlowRole(ctx context.Context, workflowID int64, role *vo.ChatFlowRoleUpdate) error
+	GetChatFlowRole(ctx context.Context, workflowID int64, version string) (*entity.ChatFlowRole, error)
+	DeleteChatFlowRole(ctx context.Context, id int64, workflowID int64) error
+	PublishChatFlowRole(ctx context.Context, policy *vo.PublishRolePolicy) error
+	CopyChatFlowRole(ctx context.Context, policy *vo.CopyRolePolicy) error
+}
+
+type Conversation interface {
 	CreateDraftConversationTemplate(ctx context.Context, template *vo.CreateConversationTemplateMeta) (int64, error)
 	UpdateDraftConversationTemplateName(ctx context.Context, appID int64, userID int64, templateID int64, name string) error
 	DeleteDraftConversationTemplate(ctx context.Context, templateID int64, wfID2ConversationName map[int64]string) (int64, error)
-
 	CheckWorkflowsToReplace(ctx context.Context, appID int64, templateID int64) ([]*entity.Workflow, error)
 	DeleteDynamicConversation(ctx context.Context, env vo.Env, templateID int64) (int64, error)
 	ListConversationTemplate(ctx context.Context, env vo.Env, policy *vo.ListConversationTemplatePolicy) ([]*entity.ConversationTemplate, error)

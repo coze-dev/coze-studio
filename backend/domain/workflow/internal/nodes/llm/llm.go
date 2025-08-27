@@ -49,7 +49,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	nodesconversation "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/conversation"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
@@ -1275,7 +1274,7 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 
 	var historyMessages []any
 	for _, msg := range messages[startIdx:] {
-		content, err := nodesconversation.ConvertMessageToString(ctx, msg)
+		content, err := nodes.ConvertMessageToString(ctx, msg)
 		if err != nil {
 			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
 			continue

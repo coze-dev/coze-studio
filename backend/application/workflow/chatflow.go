@@ -500,6 +500,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	var (
+		workflowID     = mustParseInt64(req.GetWorkflowID())
 		isDebug        = req.GetExecuteMode() == "DEBUG"
 		appID, agentID *int64
 		resolveAppID   int64
@@ -534,7 +535,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		locator = workflowModel.FromDraft
 	} else {
 		meta, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
-			ID:       mustParseInt64(req.GetWorkflowID()),
+			ID:       workflowID,
 			MetaOnly: true,
 		})
 		if err != nil {
@@ -612,7 +613,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		return nil, err
 	}
 
-	userSchemaMessage, err := w.toSchemaMessage(ctx, lastUserMessage)
+	userSchemaMessage, err := toSchemaMessage(ctx, lastUserMessage)
 	if err != nil {
 		return nil, err
 	}
@@ -627,22 +628,17 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			ExecuteID:  info.ExecID,
 			ResumeData: data,
 		}, workflowModel.ExecuteConfig{
-			Operator:       userID,
-			Mode:           ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
-			ConnectorID:    connectorID,
-			ConnectorUID:   strconv.FormatInt(userID, 10),
-			BizType:        workflowModel.BizTypeWorkflow,
-			AppID:          appID,
-			AgentID:        agentID,
-			ConversationID: ptr.Of(conversationID),
-			RoundID:        ptr.Of(roundID),
-			InitRoundID:    ptr.Of(roundID),
-			SectionID:      ptr.Of(sectionID),
+			Operator:     userID,
+			Mode:         ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
+			ConnectorID:  connectorID,
+			ConnectorUID: strconv.FormatInt(userID, 10),
+			BizType:      workflowModel.BizTypeWorkflow,
 		})
+
 		if err != nil {
-			uErr := unbinding()
-			if uErr != nil {
-				return nil, uErr
+			unErr := unbinding()
+			if unErr != nil {
+				logs.CtxErrorf(ctx, "unbinding failed, error: %v", unErr)
 			}
 			return nil, err
 		}
@@ -650,7 +646,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			appID:            resolveAppID,
 			conversationID:   conversationID,
 			roundID:          roundID,
-			workflowID:       mustParseInt64(req.GetWorkflowID()),
+			workflowID:       workflowID,
 			sectionID:        sectionID,
 			unbinding:        unbinding,
 			userMessage:      userSchemaMessage,
@@ -660,28 +656,30 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	exeCfg := workflowModel.ExecuteConfig{
-		ID:             mustParseInt64(req.GetWorkflowID()),
-		From:           locator,
-		Version:        version,
-		Operator:       userID,
-		Mode:           ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
-		AppID:          appID,
-		AgentID:        agentID,
-		ConnectorID:    connectorID,
-		ConnectorUID:   strconv.FormatInt(userID, 10),
-		TaskType:       workflowModel.TaskTypeForeground,
-		SyncPattern:    workflowModel.SyncPatternStream,
-		InputFailFast:  true,
-		BizType:        workflowModel.BizTypeWorkflow,
+		ID:            mustParseInt64(req.GetWorkflowID()),
+		From:          locator,
+		Version:       version,
+		Operator:      userID,
+		Mode:          ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
+		AppID:         appID,
+		AgentID:       agentID,
+		ConnectorID:   connectorID,
+		ConnectorUID:  strconv.FormatInt(userID, 10),
+		TaskType:      workflowModel.TaskTypeForeground,
+		SyncPattern:   workflowModel.SyncPatternStream,
+		InputFailFast: true,
+		BizType:       workflowModel.BizTypeWorkflow,
+
 		ConversationID: ptr.Of(conversationID),
 		RoundID:        ptr.Of(roundID),
 		InitRoundID:    ptr.Of(roundID),
 		SectionID:      ptr.Of(sectionID),
-		UserMessage:    userSchemaMessage,
-		Cancellable:    isDebug,
+
+		UserMessage: userSchemaMessage,
+		Cancellable: isDebug,
 	}
 
-	historyMessages, err := w.makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, connectorID, messages[:len(req.GetAdditionalMessages())-1])
+	historyMessages, err := makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, connectorID, messages[:len(req.GetAdditionalMessages())-1])
 	if err != nil {
 		return nil, err
 	}
@@ -717,7 +715,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		appID:            resolveAppID,
 		conversationID:   conversationID,
 		roundID:          roundID,
-		workflowID:       mustParseInt64(req.GetWorkflowID()),
+		workflowID:       workflowID,
 		sectionID:        sectionID,
 		unbinding:        unbinding,
 		userMessage:      userSchemaMessage,
@@ -726,9 +724,397 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 }
 
+func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlowInfo) func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
+	var (
+		appID          = info.appID
+		conversationID = info.conversationID
+		roundID        = info.roundID
+		workflowID     = info.workflowID
+		sectionID      = info.sectionID
+		unbinding      = info.unbinding
+		userMessage    = info.userMessage
+		spaceID        int64
+		executeID      int64
+
+		outputCount int32
+		inputCount  int32
+
+		intermediateMessage *message.Message
+
+		needRegeneratedMessage = true
+
+		messageDetailID int64
+	)
+
+	return func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
+		defer func() {
+			if err != nil {
+				if unbinding != nil {
+					unErr := unbinding()
+					if unErr != nil {
+						logs.CtxErrorf(ctx, "unbinding failed, error: %v", unErr)
+					}
+				}
+				if intermediateMessage != nil {
+					_, mErr := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+					if mErr != nil {
+						logs.CtxWarnf(ctx, "create message faield, err: %v", err)
+					}
+				}
+			}
+
+		}()
+
+		if msg.StateMessage != nil {
+			if executeID > 0 && executeID != msg.StateMessage.ExecuteID {
+				return nil, schema.ErrNoValue
+			}
+			switch msg.StateMessage.Status {
+			case entity.WorkflowSuccess:
+				suggestWorkflowResponse := make([]*workflow.ChatFlowRunResponse, 0, 3)
+				if info.suggestReplyInfo != nil && info.suggestReplyInfo.IsSetSuggestReplyMode() && info.suggestReplyInfo.GetSuggestReplyMode() != workflow.SuggestReplyInfoMode_Disable {
+					sInfo := &vo.SuggestInfo{
+						UserInput:    userMessage,
+						AnswerInput:  schema.AssistantMessage(intermediateMessage.Content, nil),
+						PersonaInput: info.suggestReplyInfo.CustomizedSuggestPrompt,
+					}
+
+					suggests, err := GetWorkflowDomainSVC().Suggest(ctx, sInfo)
+					if err != nil {
+						return nil, err
+					}
+
+					for index, s := range suggests {
+						suggestWorkflowResponse = append(suggestWorkflowResponse, &workflow.ChatFlowRunResponse{
+							Event: string(vo.ChatFlowMessageCompleted),
+							Data: func() string {
+								s, _ := sonic.MarshalString(&vo.MessageDetail{
+									ID:             strconv.FormatInt(time.Now().UnixNano()+int64(index), 10),
+									ChatID:         strconv.FormatInt(roundID, 10),
+									ConversationID: strconv.FormatInt(conversationID, 10),
+									SectionID:      strconv.FormatInt(sectionID, 10),
+									BotID:          strconv.FormatInt(appID, 10),
+									Role:           string(schema.Assistant),
+									Type:           "follow_up",
+									ContentType:    "text",
+									Content:        s,
+								})
+								return s
+							}(),
+						})
+
+					}
+				}
+
+				chatDoneEvent := &vo.ChatFlowDetail{
+					ID:             strconv.FormatInt(roundID, 10),
+					ConversationID: strconv.FormatInt(conversationID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
+					BotID:          strconv.FormatInt(appID, 10),
+					Status:         vo.Completed,
+					ExecuteID:      strconv.FormatInt(executeID, 10),
+					Usage: &vo.Usage{
+						InputTokens:  ptr.Of(inputCount),
+						OutputTokens: ptr.Of(outputCount),
+						TokenCount:   ptr.Of(outputCount + inputCount),
+					},
+				}
+				data, err := sonic.MarshalString(chatDoneEvent)
+				if err != nil {
+					return nil, err
+				}
+
+				doneData, err := sonic.MarshalString(map[string]interface{}{
+					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				if unbinding != nil {
+					unErr := unbinding()
+					if unErr != nil {
+						logs.CtxErrorf(ctx, "unbinding failed, error: %v", unErr)
+					}
+				}
+
+				return append(suggestWorkflowResponse, []*workflow.ChatFlowRunResponse{
+					{
+						Event: string(vo.ChatFlowCompleted),
+						Data:  data,
+					},
+					{
+						Event: string(vo.ChatFlowDone),
+						Data:  doneData,
+					},
+				}...), nil
+
+			case entity.WorkflowFailed:
+				var wfe vo.WorkflowError
+				if !errors.As(msg.StateMessage.LastError, &wfe) {
+					panic("stream run last error is not a WorkflowError")
+				}
+
+				chatFailedEvent := &vo.ErrorDetail{
+					Code:     strconv.Itoa(int(wfe.Code())),
+					Msg:      wfe.Msg(),
+					DebugUrl: wfe.DebugURL(),
+				}
+				data, err := sonic.MarshalString(chatFailedEvent)
+				if err != nil {
+					return nil, err
+				}
+				if intermediateMessage != nil {
+					_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+					if err != nil {
+						return nil, err
+					}
+				}
+
+				if unbinding != nil {
+					unErr := unbinding()
+					if unErr != nil {
+						logs.CtxErrorf(ctx, "unbinding failed, error: %v", unErr)
+					}
+				}
+
+				return []*workflow.ChatFlowRunResponse{
+					{
+						Event: string(vo.ChatFlowError),
+						Data:  data,
+					},
+				}, err
+
+			case entity.WorkflowCancel:
+				if intermediateMessage != nil {
+					_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+					if err != nil {
+						return nil, err
+					}
+				}
+
+				if unbinding != nil {
+					unErr := unbinding()
+					if unErr != nil {
+						logs.CtxErrorf(ctx, "unbinding failed, error: %v", unErr)
+					}
+				}
+
+			case entity.WorkflowInterrupted:
+
+				var (
+					interruptEvent = msg.StateMessage.InterruptEvent
+					interruptData  = interruptEvent.InterruptData
+					msgContent     string
+					contentType    message.ContentType
+				)
+
+				if interruptEvent.EventType == entity.InterruptEventInput {
+					msgContent, contentType, err = renderInputCardDSL(interruptData)
+					if err != nil {
+						return nil, err
+					}
+				} else if interruptEvent.EventType == entity.InterruptEventQuestion {
+					msgContent, contentType, err = renderQACardDSL(interruptData)
+					if err != nil {
+						return nil, err
+					}
+				} else {
+					return nil, fmt.Errorf("unsupported interrupt event type: %s", interruptEvent.EventType)
+				}
+
+				_, err = crossmessage.DefaultSVC().Create(ctx, &message.Message{
+					AgentID:        appID,
+					RunID:          roundID,
+					SectionID:      sectionID,
+					Content:        msgContent,
+					ConversationID: conversationID,
+					Role:           schema.Assistant,
+					MessageType:    message.MessageTypeAnswer,
+					ContentType:    contentType,
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				completeData, _ := sonic.MarshalString(&vo.MessageDetail{
+					ID:             strconv.FormatInt(interruptEvent.ID, 10),
+					ChatID:         strconv.FormatInt(roundID, 10),
+					ConversationID: strconv.FormatInt(conversationID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
+					BotID:          strconv.FormatInt(appID, 10),
+					Role:           string(schema.Assistant),
+					Type:           string(entity.Answer),
+					ContentType:    string(contentType),
+					Content:        msgContent,
+				})
+
+				if contentType == message.ContentTypeText {
+					responses = append(responses, &workflow.ChatFlowRunResponse{
+						Event: string(vo.ChatFlowMessageDelta),
+						Data:  completeData,
+					})
+				}
+
+				responses = append(responses, &workflow.ChatFlowRunResponse{
+					Event: string(vo.ChatFlowMessageCompleted),
+					Data:  completeData,
+				})
+
+				data, _ := sonic.MarshalString(&vo.ChatFlowDetail{
+					ID:             strconv.FormatInt(roundID, 10),
+					ConversationID: strconv.FormatInt(conversationID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
+					Status:         vo.RequiresAction,
+					ExecuteID:      strconv.FormatInt(executeID, 10),
+				})
+
+				doneData, _ := sonic.MarshalString(map[string]interface{}{
+					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
+				})
+
+				responses = append(responses, &workflow.ChatFlowRunResponse{
+					Event: string(vo.ChatFlowRequiresAction),
+					Data:  data,
+				}, &workflow.ChatFlowRunResponse{
+					Event: string(vo.ChatFlowDone),
+					Data:  doneData,
+				})
+
+				err = GetWorkflowDomainSVC().BindConvRelatedInfo(ctx, conversationID, entity.ConvRelatedInfo{
+					EventID: msg.StateMessage.InterruptEvent.ID, ExecID: executeID, NodeType: msg.StateMessage.InterruptEvent.NodeType,
+				})
+				if err != nil {
+					return nil, err
+				}
+
+				return responses, nil
+
+			case entity.WorkflowRunning:
+				executeID = msg.StateMessage.ExecuteID
+				spaceID = msg.StateMessage.SpaceID
+
+				responses = make([]*workflow.ChatFlowRunResponse, 0)
+
+				chatEvent := &vo.ChatFlowDetail{
+					ID:             strconv.FormatInt(roundID, 10),
+					ConversationID: strconv.FormatInt(conversationID, 10),
+					Status:         vo.Created,
+					ExecuteID:      strconv.FormatInt(executeID, 10),
+					SectionID:      strconv.FormatInt(sectionID, 10),
+				}
+
+				data, _ := sonic.MarshalString(chatEvent)
+				responses = append(responses, &workflow.ChatFlowRunResponse{
+					Event: string(vo.ChatFlowCreated),
+					Data:  data,
+				})
+
+				chatEvent.Status = vo.InProgress
+				data, _ = sonic.MarshalString(chatEvent)
+				responses = append(responses, &workflow.ChatFlowRunResponse{
+					Event: string(vo.ChatFlowInProgress),
+					Data:  data,
+				})
+				return responses, nil
+
+			default:
+				return nil, schema.ErrNoValue
+			}
+		}
+		if msg.DataMessage != nil {
+			if msg.Type != entity.Answer {
+				return nil, schema.ErrNoValue
+			}
+			if executeID > 0 && executeID != msg.DataMessage.ExecuteID {
+				return nil, schema.ErrNoValue
+			}
+			if msg.DataMessage.NodeType == entity.NodeTypeQuestionAnswer || msg.DataMessage.NodeType == entity.NodeTypeInputReceiver {
+				return nil, schema.ErrNoValue
+			}
+			dataMessage := msg.DataMessage
+
+			if needRegeneratedMessage {
+				id, err := w.IDGenerator.GenID(ctx)
+				if err != nil {
+					return nil, err
+				}
+				intermediateMessage = &message.Message{
+					ID:             id,
+					AgentID:        appID,
+					RunID:          roundID,
+					SectionID:      sectionID,
+					ConversationID: conversationID,
+					Role:           schema.Assistant,
+					MessageType:    message.MessageTypeAnswer,
+					ContentType:    message.ContentTypeText,
+				}
+				messageDetailID = id
+				needRegeneratedMessage = false
+
+			}
+
+			intermediateMessage.Content += msg.Content
+
+			deltaData, _ := sonic.MarshalString(&vo.MessageDetail{
+				ID:             strconv.FormatInt(messageDetailID, 10),
+				ChatID:         strconv.FormatInt(roundID, 10),
+				ConversationID: strconv.FormatInt(conversationID, 10),
+				SectionID:      strconv.FormatInt(sectionID, 10),
+				BotID:          strconv.FormatInt(appID, 10),
+				Role:           string(dataMessage.Role),
+				Type:           string(dataMessage.Type),
+				ContentType:    string(message.ContentTypeText),
+				Content:        msg.Content,
+			})
+
+			if !msg.Last {
+				return []*workflow.ChatFlowRunResponse{
+					{
+						Event: string(vo.ChatFlowMessageDelta),
+						Data:  deltaData,
+					},
+				}, nil
+			}
+
+			_, err = crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
+			if err != nil {
+				return nil, err
+			}
+
+			completeData, _ := sonic.MarshalString(&vo.MessageDetail{
+				ID:             strconv.FormatInt(messageDetailID, 10),
+				ChatID:         strconv.FormatInt(roundID, 10),
+				ConversationID: strconv.FormatInt(conversationID, 10),
+				SectionID:      strconv.FormatInt(sectionID, 10),
+				BotID:          strconv.FormatInt(appID, 10),
+				Role:           string(dataMessage.Role),
+				Type:           string(dataMessage.Type),
+				ContentType:    string(message.ContentTypeText),
+				Content:        intermediateMessage.Content,
+			})
+			needRegeneratedMessage = true
+
+			return []*workflow.ChatFlowRunResponse{
+				{
+					Event: string(vo.ChatFlowMessageDelta),
+					Data:  deltaData,
+				},
+				{
+					Event: string(vo.ChatFlowMessageCompleted),
+					Data:  completeData,
+				},
+			}, nil
+
+		}
+
+		return nil, err
+	}
+}
+
 func (w *ApplicationService) makeChatFlowUserInput(ctx context.Context, message *workflow.EnterMessage) (string, error) {
 	type content struct {
-		Type   string  `json:"type,omitempty"`
+		Type   string  `json:"type"`
 		FileID *string `json:"file_id"`
 		Text   *string `json:"text"`
 	}
@@ -766,7 +1152,7 @@ func (w *ApplicationService) makeChatFlowUserInput(ctx context.Context, message 
 	}
 
 }
-func (w *ApplicationService) makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, userID, sectionID, connectorID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
+func makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, userID, sectionID, connectorID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
 
 	var (
 		rID       int64
@@ -957,7 +1343,7 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 	}
 }
 
-func (w *ApplicationService) toSchemaMessage(ctx context.Context, msg *workflow.EnterMessage) (*schema.Message, error) {
+func toSchemaMessage(ctx context.Context, msg *workflow.EnterMessage) (*schema.Message, error) {
 	type content struct {
 		Type   string  `json:"type"`
 		FileID *string `json:"file_id"`
@@ -1066,402 +1452,6 @@ func parserInput(inputString string) string {
 
 }
 
-func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlowInfo) func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
-	var (
-		appID          = info.appID
-		conversationID = info.conversationID
-		roundID        = info.roundID
-		workflowID     = info.workflowID
-		sectionID      = info.sectionID
-		unbinding      = info.unbinding
-
-		spaceID   int64
-		executeID int64
-
-		outputCount int32
-		inputCount  int32
-
-		intermediateMessage *message.Message
-
-		shouldNewMessage = true
-		messageDetailID  int64
-	)
-
-	return func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
-		defer func() {
-			if err != nil && intermediateMessage != nil {
-				_, mErr := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
-				if mErr != nil {
-					logs.CtxWarnf(ctx, "create message faield, err: %v", err)
-				}
-			}
-		}()
-
-		if msg.StateMessage != nil {
-			if executeID > 0 && executeID != msg.StateMessage.ExecuteID {
-				return nil, schema.ErrNoValue
-			}
-			switch msg.StateMessage.Status {
-			case entity.WorkflowSuccess:
-				suggestWorkflowResponse := make([]*workflow.ChatFlowRunResponse, 0, 3)
-				if info.suggestReplyInfo != nil && info.suggestReplyInfo.IsSetSuggestReplyMode() && info.suggestReplyInfo.GetSuggestReplyMode() != workflow.SuggestReplyInfoMode_Disable {
-					sInfo := &vo.SuggestInfo{
-						UserInput:    info.userMessage,
-						AnswerInput:  schema.AssistantMessage(intermediateMessage.Content, nil),
-						PersonaInput: info.suggestReplyInfo.CustomizedSuggestPrompt,
-					}
-
-					suggests, err := GetWorkflowDomainSVC().Suggest(ctx, sInfo)
-					if err != nil {
-						return nil, err
-					}
-
-					for index, s := range suggests {
-						suggestWorkflowResponse = append(suggestWorkflowResponse, &workflow.ChatFlowRunResponse{
-							Event: string(vo.ChatFlowMessageCompleted),
-							Data: func() string {
-								s, _ := sonic.MarshalString(&vo.MessageDetail{
-									ID:             strconv.FormatInt(time.Now().UnixNano()+int64(index), 10),
-									ChatID:         strconv.FormatInt(roundID, 10),
-									ConversationID: strconv.FormatInt(conversationID, 10),
-									SectionID:      strconv.FormatInt(sectionID, 10),
-									BotID:          strconv.FormatInt(appID, 10),
-									Role:           string(schema.Assistant),
-									Type:           "follow_up",
-									ContentType:    "text",
-									Content:        s,
-								})
-								return s
-							}(),
-						})
-
-					}
-				}
-
-				chatDoneEvent := &vo.ChatFlowDetail{
-					ID:             strconv.FormatInt(roundID, 10),
-					ConversationID: strconv.FormatInt(conversationID, 10),
-					SectionID:      strconv.FormatInt(sectionID, 10),
-					BotID:          strconv.FormatInt(appID, 10),
-					Status:         vo.Completed,
-					ExecuteID:      strconv.FormatInt(executeID, 10),
-					Usage: &vo.Usage{
-						InputTokens:  ptr.Of(inputCount),
-						OutputTokens: ptr.Of(outputCount),
-						TokenCount:   ptr.Of(outputCount + inputCount),
-					},
-				}
-				data, err := sonic.MarshalString(chatDoneEvent)
-				if err != nil {
-					return nil, err
-				}
-
-				doneData, err := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
-				})
-				if err != nil {
-					return nil, err
-				}
-				if unbinding != nil {
-					err = unbinding()
-					if err != nil {
-						return nil, err
-					}
-				}
-
-				return append(suggestWorkflowResponse, []*workflow.ChatFlowRunResponse{
-					{
-						Event: string(vo.ChatFlowCompleted),
-						Data:  data,
-					},
-					{
-						Event: string(vo.ChatFlowDone),
-						Data:  doneData,
-					},
-				}...), nil
-
-			case entity.WorkflowFailed:
-				var wfe vo.WorkflowError
-				if !errors.As(msg.StateMessage.LastError, &wfe) {
-					panic("stream run last error is not a WorkflowError")
-				}
-
-				chatFailedEvent := &vo.ErrorDetail{
-					Code:     strconv.Itoa(int(wfe.Code())),
-					Msg:      wfe.Msg(),
-					DebugUrl: wfe.DebugURL(),
-				}
-				data, err := sonic.MarshalString(chatFailedEvent)
-				if err != nil {
-					return nil, err
-				}
-				if intermediateMessage != nil {
-					_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
-					if err != nil {
-						return nil, err
-					}
-				}
-
-				if unbinding() != nil {
-					uErr := unbinding()
-					if uErr != nil {
-						return nil, uErr
-					}
-				}
-
-				return []*workflow.ChatFlowRunResponse{
-					{
-						Event: string(vo.ChatFlowError),
-						Data:  data,
-					},
-				}, err
-
-			case entity.WorkflowCancel:
-				if intermediateMessage != nil {
-					_, err := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
-					if err != nil {
-						return nil, err
-					}
-				}
-				if unbinding() != nil {
-					err = unbinding()
-					if err != nil {
-						return nil, err
-					}
-				}
-
-			case entity.WorkflowInterrupted:
-
-				var (
-					interruptEvent = msg.StateMessage.InterruptEvent
-					interruptData  = interruptEvent.InterruptData
-					msgContent     string
-					contentType    message.ContentType
-				)
-
-				if interruptEvent.EventType == entity.InterruptEventInput {
-					msgContent, contentType, err = renderInputCardDSL(interruptData)
-					if err != nil {
-						return nil, err
-					}
-				} else if interruptEvent.EventType == entity.InterruptEventQuestion {
-					msgContent, contentType, err = renderQACardDSL(interruptData)
-					if err != nil {
-						return nil, err
-					}
-				} else {
-					return nil, fmt.Errorf("unsupported interrupt event type: %s", interruptEvent.EventType)
-				}
-
-				messageEvent := &vo.MessageDetail{
-					ID:             strconv.FormatInt(interruptEvent.ID, 10),
-					ChatID:         strconv.FormatInt(roundID, 10),
-					ConversationID: strconv.FormatInt(conversationID, 10),
-					SectionID:      strconv.FormatInt(sectionID, 10),
-					BotID:          strconv.FormatInt(appID, 10),
-					Role:           string(schema.Assistant),
-					Type:           string(entity.Answer),
-					ContentType:    string(contentType),
-					Content:        msgContent,
-				}
-
-				_, err = crossmessage.DefaultSVC().Create(ctx, &message.Message{
-					AgentID:        appID,
-					RunID:          roundID,
-					SectionID:      sectionID,
-					Content:        msgContent,
-					ConversationID: conversationID,
-					Role:           schema.Assistant,
-					MessageType:    message.MessageTypeAnswer,
-					ContentType:    contentType,
-				})
-				if err != nil {
-					return nil, err
-				}
-
-				completeData, err := sonic.MarshalString(messageEvent)
-
-				if contentType == message.ContentTypeText {
-					responses = append(responses, &workflow.ChatFlowRunResponse{
-						Event: string(vo.ChatFlowMessageDelta),
-						Data:  completeData,
-					})
-				}
-
-				responses = append(responses, &workflow.ChatFlowRunResponse{
-					Event: string(vo.ChatFlowMessageCompleted),
-					Data:  completeData,
-				})
-				chatEvent := &vo.ChatFlowDetail{
-					ID:             strconv.FormatInt(roundID, 10),
-					ConversationID: strconv.FormatInt(conversationID, 10),
-					SectionID:      strconv.FormatInt(sectionID, 10),
-					Status:         vo.RequiresAction,
-					ExecuteID:      strconv.FormatInt(executeID, 10),
-				}
-				data, err := sonic.MarshalString(chatEvent)
-				if err != nil {
-					return nil, err
-				}
-
-				doneData, err := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
-				})
-				if err != nil {
-					return nil, err
-				}
-
-				responses = append(responses, &workflow.ChatFlowRunResponse{
-					Event: string(vo.ChatFlowRequiresAction),
-					Data:  data,
-				})
-
-				responses = append(responses, &workflow.ChatFlowRunResponse{
-					Event: string(vo.ChatFlowDone),
-					Data:  doneData,
-				})
-
-				err = GetWorkflowDomainSVC().BindConvRelatedInfo(ctx, conversationID, entity.ConvRelatedInfo{
-					EventID: msg.StateMessage.InterruptEvent.ID, ExecID: executeID, NodeType: msg.StateMessage.InterruptEvent.NodeType,
-				})
-				if err != nil {
-					return nil, err
-				}
-
-				return responses, nil
-
-			case entity.WorkflowRunning:
-				executeID = msg.StateMessage.ExecuteID
-				spaceID = msg.StateMessage.SpaceID
-
-				responses = make([]*workflow.ChatFlowRunResponse, 0)
-				chatEvent := &vo.ChatFlowDetail{
-					ID:             strconv.FormatInt(roundID, 10),
-					ConversationID: strconv.FormatInt(conversationID, 10),
-					Status:         vo.Created,
-					ExecuteID:      strconv.FormatInt(executeID, 10),
-					SectionID:      strconv.FormatInt(sectionID, 10),
-				}
-				data, err := sonic.MarshalString(chatEvent)
-				if err != nil {
-					return nil, err
-				}
-				responses = append(responses, &workflow.ChatFlowRunResponse{
-					Event: string(vo.ChatFlowCreated),
-					Data:  data,
-				})
-
-				chatEvent.Status = vo.InProgress
-				data, err = sonic.MarshalString(chatEvent)
-				if err != nil {
-					return nil, err
-				}
-
-				responses = append(responses, &workflow.ChatFlowRunResponse{
-					Event: string(vo.ChatFlowInProgress),
-					Data:  data,
-				})
-				return responses, nil
-
-			default:
-				return nil, schema.ErrNoValue
-			}
-		}
-		if msg.DataMessage != nil {
-			if msg.Type != entity.Answer {
-				return nil, schema.ErrNoValue
-			}
-			if executeID > 0 && executeID != msg.DataMessage.ExecuteID {
-				return nil, schema.ErrNoValue
-			}
-			if msg.DataMessage.NodeType == entity.NodeTypeQuestionAnswer || msg.DataMessage.NodeType == entity.NodeTypeInputReceiver {
-				return nil, schema.ErrNoValue
-			}
-			dataMessage := msg.DataMessage
-
-			if shouldNewMessage {
-				id, err := w.IDGenerator.GenID(ctx)
-				if err != nil {
-					return nil, err
-				}
-				intermediateMessage = &message.Message{
-					ID:             id,
-					AgentID:        appID,
-					RunID:          roundID,
-					SectionID:      sectionID,
-					ConversationID: conversationID,
-					Role:           schema.Assistant,
-					MessageType:    message.MessageTypeAnswer,
-					ContentType:    message.ContentTypeText,
-				}
-				messageDetailID = id
-				shouldNewMessage = false
-
-			}
-
-			intermediateMessage.Content += msg.Content
-
-			deltaData, err := sonic.MarshalString(&vo.MessageDetail{
-				ID:             strconv.FormatInt(messageDetailID, 10),
-				ChatID:         strconv.FormatInt(roundID, 10),
-				ConversationID: strconv.FormatInt(conversationID, 10),
-				SectionID:      strconv.FormatInt(sectionID, 10),
-				BotID:          strconv.FormatInt(appID, 10),
-				Role:           string(dataMessage.Role),
-				Type:           string(dataMessage.Type),
-				ContentType:    string(message.ContentTypeText),
-				Content:        msg.Content,
-			})
-			if err != nil {
-				return nil, err
-			}
-			if !msg.Last {
-				return []*workflow.ChatFlowRunResponse{
-					{
-						Event: string(vo.ChatFlowMessageDelta),
-						Data:  deltaData,
-					},
-				}, nil
-			}
-
-			_, err = crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
-			if err != nil {
-				return nil, err
-			}
-
-			completeData, err := sonic.MarshalString(&vo.MessageDetail{
-				ID:             strconv.FormatInt(messageDetailID, 10),
-				ChatID:         strconv.FormatInt(roundID, 10),
-				ConversationID: strconv.FormatInt(conversationID, 10),
-				SectionID:      strconv.FormatInt(sectionID, 10),
-				BotID:          strconv.FormatInt(appID, 10),
-				Role:           string(dataMessage.Role),
-				Type:           string(dataMessage.Type),
-				ContentType:    string(message.ContentTypeText),
-				Content:        intermediateMessage.Content,
-			})
-			shouldNewMessage = true
-			if err != nil {
-				return nil, err
-			}
-
-			return []*workflow.ChatFlowRunResponse{
-				{
-					Event: string(vo.ChatFlowMessageDelta),
-					Data:  deltaData,
-				},
-				{
-					Event: string(vo.ChatFlowMessageCompleted),
-					Data:  completeData,
-				},
-			}, nil
-
-		}
-
-		return nil, err
-	}
-}
-
 func renderInputCardDSL(c string) (string, message.ContentType, error) {
 	type contentInfo struct {
 		Content string `json:"content"`
@@ -1488,7 +1478,11 @@ func renderInputCardDSL(c string) (string, message.ContentType, error) {
 	}
 
 	fields := make([]*field, 0)
-	_ = sonic.UnmarshalString(info.Content, &fields)
+	err = sonic.UnmarshalString(info.Content, &fields)
+	if err != nil {
+		return "", "", err
+	}
+
 	iCard := defaultCard()
 	iCard.Variables["5fJt3qKpSz"].(map[string]any)["defaultValue"] = fields
 	iCardString, _ := sonic.MarshalString(iCard)
