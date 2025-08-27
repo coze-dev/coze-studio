@@ -20,7 +20,7 @@ type WorkflowConfig struct {
 	NodeOfCodeConfig *NodeOfCodeConfig `yaml:"NodeOfCodeConfig"`
 }
 
-func (w WorkflowConfig) GetNodeOfCodeConfig() *NodeOfCodeConfig {
+func (w *WorkflowConfig) GetNodeOfCodeConfig() *NodeOfCodeConfig {
 	return w.NodeOfCodeConfig
 }
 

@@ -21,6 +21,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"net/http"
 	"os"
 	"reflect"
@@ -42,6 +43,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
@@ -251,7 +253,9 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	mockTos := storageMock.NewMockStorage(ctrl)
 	mockTos.EXPECT().GetObjectUrl(gomock.Any(), gomock.Any(), gomock.Any()).Return("", nil).AnyTimes()
 
-	workflowRepo, _ := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore, utChatModel, nil)
+	workflowRepo, _ := service.NewWorkflowRepository(mockIDGen, db, redisClient, mockTos, cpStore, utChatModel, &config.WorkflowConfig{
+		NodeOfCodeConfig: &config.NodeOfCodeConfig{},
+	})
 	mockey.Mock(appworkflow.GetWorkflowDomainSVC).Return(service.NewWorkflowService(workflowRepo)).Build()
 	mockey.Mock(workflow2.GetRepository).Return(workflowRepo).Build()
 	publishPatcher := mockey.Mock(appworkflow.PublishWorkflowResource).Return(nil).Build()
