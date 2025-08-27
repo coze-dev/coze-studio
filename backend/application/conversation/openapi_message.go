@@ -77,10 +77,10 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 	}
 
 	if mr.BeforeID != nil {
-		msgListMeta.Direction = entity.ScrollPageDirectionPrev
+		msgListMeta.Direction = entity.ScrollPageDirectionNext
 		msgListMeta.Cursor = *mr.BeforeID
 	} else {
-		msgListMeta.Direction = entity.ScrollPageDirectionNext
+		msgListMeta.Direction = entity.ScrollPageDirectionPrev
 		msgListMeta.Cursor = ptr.From(mr.AfterID)
 	}
 	if mr.Order == nil {
