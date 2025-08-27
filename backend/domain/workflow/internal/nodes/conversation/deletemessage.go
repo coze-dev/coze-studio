@@ -106,7 +106,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}})
+		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}, ConversationID: execCtx.ExeCfg.ConversationID})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -124,7 +124,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 	}
 
 	if existed {
-		_, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
+		sc, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -133,7 +133,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}})
+		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}, ConversationID: ptr.Of(sc.ConversationID)})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -141,7 +141,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		return successMap, nil
 
 	} else {
-		_, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
+		dc, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -150,7 +150,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}})
+		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}, ConversationID: ptr.Of(dc.ConversationID)})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
