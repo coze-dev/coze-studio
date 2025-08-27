@@ -18,6 +18,7 @@ package adaptor
 
 import (
 	"context"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"io"
 	"net"
 	"net/http"
@@ -752,6 +753,15 @@ func TestCodeAndPluginNodes(t *testing.T) {
 		defer ctrl.Finish()
 		mockCodeRunner := mockcode.NewMockRunner(ctrl)
 		mockey.Mock(code.GetCodeRunner).Return(mockCodeRunner).Build()
+
+		mockRepo := mockWorkflow.NewMockRepository(ctrl)
+
+		mockRepo.EXPECT().GetNodeOfCodeConfig().Return(&config.NodeOfCodeConfig{
+			SupportThirdPartModules: []string{"httpx", "numpy"},
+		}).AnyTimes()
+
+		mockey.Mock(workflow.GetRepository).Return(mockRepo).Build()
+
 		mockCodeRunner.EXPECT().Run(gomock.Any(), gomock.Any()).Return(&coderunner.RunResponse{
 			Result: map[string]any{
 				"key0":  "value0",

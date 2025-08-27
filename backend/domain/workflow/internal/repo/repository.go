@@ -69,10 +69,11 @@ type RepositoryImpl struct {
 	workflow.CancelSignalStore
 	workflow.ExecuteHistoryStore
 	builtinModel cm.BaseChatModel
+	workflow.WorkflowConfig
 }
 
 func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
-	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel) workflow.Repository {
+	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel, workflowConfig workflow.WorkflowConfig) workflow.Repository {
 	return &RepositoryImpl{
 		IDGenerator:     idgen,
 		query:           query.Use(db),
@@ -89,7 +90,8 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, to
 			query: query.Use(db),
 			redis: redis,
 		},
-		builtinModel: chatModel,
+		builtinModel:   chatModel,
+		WorkflowConfig: workflowConfig,
 	}
 }
 

@@ -24,6 +24,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
@@ -90,4 +91,8 @@ type ToolFromWorkflow interface {
 	tool.BaseTool
 	TerminatePlan() vo.TerminatePlan
 	GetWorkflow() *entity.Workflow
+}
+
+type WorkflowConfig interface {
+	GetNodeOfCodeConfig() *config.NodeOfCodeConfig
 }

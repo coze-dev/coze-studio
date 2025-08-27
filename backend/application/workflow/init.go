@@ -19,6 +19,9 @@ package workflow
 import (
 	"context"
 
+	"gopkg.in/yaml.v3"
+	"os"
+
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
@@ -30,7 +33,7 @@ import (
 	plugin "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	workflowservice "github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
@@ -57,11 +60,29 @@ type ServiceComponents struct {
 	WorkflowBuildInChatModel chatmodel.BaseChatModel
 }
 
-func InitService(ctx context.Context, components *ServiceComponents) (*ApplicationService, error) {
+func initWorkflowConfig() (workflow.WorkflowConfig, error) {
+	configBs, err := os.ReadFile("resources/conf/workflow/config.yaml")
+	if err != nil {
+		return nil, err
+	}
+	var cfg *config.WorkflowConfig
+	err = yaml.Unmarshal(configBs, &cfg)
+	if err != nil {
+		return nil, err
+	}
+	return cfg, nil
+}
+
+func InitService(_ context.Context, components *ServiceComponents) (*ApplicationService, error) {
 	service.RegisterAllNodeAdaptors()
 
+	cfg, err := initWorkflowConfig()
+	if err != nil {
+		return nil, err
+	}
 	workflowRepo := service.NewWorkflowRepository(components.IDGen, components.DB, components.Cache,
-		components.Tos, components.CPStore, components.WorkflowBuildInChatModel)
+		components.Tos, components.CPStore, components.WorkflowBuildInChatModel, cfg)
+
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)

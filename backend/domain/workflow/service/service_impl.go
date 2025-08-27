@@ -22,13 +22,12 @@ import (
 	"fmt"
 	"strconv"
 
-	einoCompose "github.com/cloudwego/eino/compose"
-
 	"github.com/spf13/cast"
 	"golang.org/x/exp/maps"
 	"golang.org/x/sync/errgroup"
 	"gorm.io/gorm"
 
+	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	cloudworkflow "github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -72,8 +71,8 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 }
 
 func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
-	cpStore einoCompose.CheckPointStore, chatModel chatmodel.BaseChatModel) workflow.Repository {
-	return repo.NewRepository(idgen, db, redis, tos, cpStore, chatModel)
+	cpStore einoCompose.CheckPointStore, chatModel chatmodel.BaseChatModel, workflowConfig workflow.WorkflowConfig) workflow.Repository {
+	return repo.NewRepository(idgen, db, redis, tos, cpStore, chatModel, workflowConfig)
 }
 
 func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {

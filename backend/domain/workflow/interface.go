@@ -99,6 +99,8 @@ type Repository interface {
 	idgen.IDGenerator
 
 	GetKnowledgeRecallChatModel() model.BaseChatModel
+
+	WorkflowConfig
 }
 
 var repositorySingleton Repository
