@@ -41,7 +41,7 @@ func NewService(tos storage.Storage) Connector {
 
 var i18n2ConnectorDesc = map[i18n.Locale]map[int64]string{
 	i18n.LocaleEN: {
-		consts.WebSDKConnectorID: "Deploy the bot as a Web SDK",
+		consts.WebSDKConnectorID: "Deploy your project to the Chat SDK. This publishing method is supported only for projects that have created a conversation flow, please refer to [Installation Guidelines](coze://web-sdk-guide) for installation methods.",
 		consts.APIConnectorID:    "Supports OAuth 2.0 and personal access tokens",
 		consts.CozeConnectorID:   "Coze",
 	},
