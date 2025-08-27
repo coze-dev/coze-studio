@@ -24,15 +24,20 @@ import (
 
 //go:generate  mockgen -destination ../../../internal/mock/infra/contract/storage/storage_mock.go -package mock -source storage.go Factory
 type Storage interface {
+	// PutObject puts the object with the specified key.
 	PutObject(ctx context.Context, objectKey string, content []byte, opts ...PutOptFn) error
+	// PutObjectWithReader puts the object with the specified key.
 	PutObjectWithReader(ctx context.Context, objectKey string, content io.Reader, opts ...PutOptFn) error
+	// GetObject returns the object with the specified key.
 	GetObject(ctx context.Context, objectKey string) ([]byte, error)
+	// DeleteObject deletes the object with the specified key.
 	DeleteObject(ctx context.Context, objectKey string) error
+	// GetObjectUrl returns a presigned URL for the object.
+	// The URL is valid for the specified duration.
 	GetObjectUrl(ctx context.Context, objectKey string, opts ...GetOptFn) (string, error)
-	// ListObjects returns all objects with the specified prefix.
+	// ListAllObjects returns all objects with the specified prefix.
 	// It may return a large number of objects, consider using ListObjectsPaginated for better performance.
-	ListObjects(ctx context.Context, prefix string) ([]*FileInfo, error)
-
+	ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*FileInfo, error)
 	// ListObjectsPaginated returns objects with pagination support.
 	// Use this method when dealing with large number of objects.
 	ListObjectsPaginated(ctx context.Context, input *ListObjectsPaginatedInput) (*ListObjectsPaginatedOutput, error)
@@ -50,6 +55,8 @@ type ListObjectsPaginatedInput struct {
 	Prefix   string
 	PageSize int
 	Cursor   string
+	// Include objects tagging in the listing
+	WithTagging bool
 }
 
 type ListObjectsPaginatedOutput struct {
@@ -64,4 +71,5 @@ type FileInfo struct {
 	LastModified time.Time
 	ETag         string
 	Size         int64
+	Tagging      map[string]string
 }

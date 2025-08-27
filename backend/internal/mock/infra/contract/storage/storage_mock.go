@@ -91,19 +91,19 @@ func (mr *MockStorageMockRecorder) GetObjectUrl(ctx, objectKey any, opts ...any)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetObjectUrl", reflect.TypeOf((*MockStorage)(nil).GetObjectUrl), varargs...)
 }
 
-// ListObjects mocks base method.
-func (m *MockStorage) ListObjects(ctx context.Context, prefix string) ([]*storage.FileInfo, error) {
+// ListAllObjects mocks base method.
+func (m *MockStorage) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListObjects", ctx, prefix)
+	ret := m.ctrl.Call(m, "ListAllObjects", ctx, prefix, withTagging)
 	ret0, _ := ret[0].([]*storage.FileInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// ListObjects indicates an expected call of ListObjects.
-func (mr *MockStorageMockRecorder) ListObjects(ctx, prefix any) *gomock.Call {
+// ListAllObjects indicates an expected call of ListAllObjects.
+func (mr *MockStorageMockRecorder) ListAllObjects(ctx, prefix, withTagging any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListObjects", reflect.TypeOf((*MockStorage)(nil).ListObjects), ctx, prefix)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListAllObjects", reflect.TypeOf((*MockStorage)(nil).ListAllObjects), ctx, prefix, withTagging)
 }
 
 // ListObjectsPaginated mocks base method.

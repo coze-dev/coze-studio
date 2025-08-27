@@ -73,14 +73,19 @@ func getTosClient(ctx context.Context, ak, sk, bucketName, endpoint, region stri
 func (t *tosClient) test() {
 	// test list objects
 	ctx := context.Background()
-	t.ListObjects(ctx, "")
 
 	// test upload
 	objectKey := fmt.Sprintf("test-%s.txt", time.Now().Format("20060102150405"))
-	err := t.PutObject(context.Background(), objectKey, []byte("hello world"))
+	err := t.PutObject(context.Background(), objectKey, []byte("hello world"), storage.WithTagging(map[string]string{
+		"uid":             "7543149965070155780",
+		"conversation_id": "7543149965070155781",
+		"type":            "user",
+	}))
 	if err != nil {
 		logs.CtxErrorf(context.Background(), "PutObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
+
+	t.ListAllObjects(ctx, "", true)
 
 	// test download
 	content, err := t.GetObject(context.Background(), objectKey)
@@ -175,6 +180,10 @@ func (t *tosClient) PutObjectWithReader(ctx context.Context, objectKey string, c
 		input.ContentLength = option.ObjectSize
 	}
 
+	if len(option.Tagging) > 0 {
+		input.Meta = option.Tagging
+	}
+
 	_, err := client.PutObjectV2(ctx, input)
 
 	return err
@@ -251,9 +260,10 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 	output, err := t.client.ListObjectsV2(ctx, &tos.ListObjectsV2Input{
 		Bucket: t.bucketName,
 		ListObjectsInput: tos.ListObjectsInput{
-			MaxKeys: int(input.PageSize),
-			Marker:  input.Cursor,
-			Prefix:  input.Prefix,
+			MaxKeys:   int(input.PageSize),
+			Marker:    input.Cursor,
+			Prefix:    input.Prefix,
+			FetchMeta: input.WithTagging,
 		},
 	})
 	if err != nil {
@@ -267,11 +277,23 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 			continue
 		}
 
+		var tagging map[string]string
+		if obj.Meta != nil {
+			obj.Meta.Range(func(key, value string) bool {
+				if tagging == nil {
+					tagging = make(map[string]string)
+				}
+				tagging[key] = value
+				return true
+			})
+		}
+
 		files = append(files, &storage.FileInfo{
 			Key:          obj.Key,
 			LastModified: obj.LastModified,
 			ETag:         obj.ETag,
 			Size:         obj.Size,
+			Tagging:      tagging,
 		})
 	}
 
@@ -282,7 +304,7 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 	}, nil
 }
 
-func (t *tosClient) ListObjects(ctx context.Context, prefix string) ([]*storage.FileInfo, error) {
+func (t *tosClient) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
 	const (
 		DefaultPageSize = 100
 		MaxListObjects  = 10000
@@ -293,16 +315,18 @@ func (t *tosClient) ListObjects(ctx context.Context, prefix string) ([]*storage.
 
 	for {
 		output, err := t.ListObjectsPaginated(ctx, &storage.ListObjectsPaginatedInput{
-			Prefix:   prefix,
-			PageSize: DefaultPageSize,
-			Cursor:   cursor,
+			Prefix:      prefix,
+			PageSize:    DefaultPageSize,
+			Cursor:      cursor,
+			WithTagging: withTagging,
 		})
 		if err != nil {
 			return nil, fmt.Errorf("list objects failed, prefix = %v, err: %v", prefix, err)
 		}
 
 		for _, object := range output.Files {
-			logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d", object.Key, object.LastModified, object.ETag, object.Size)
+			logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d, tagging = %v",
+				object.Key, object.LastModified, object.ETag, object.Size, object.Tagging)
 			files = append(files, object)
 		}
 

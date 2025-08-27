@@ -21,16 +21,19 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/url"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
+	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
 )
 
 type s3Client struct {
@@ -178,6 +181,11 @@ func (t *s3Client) PutObjectWithReader(ctx context.Context, objectKey string, co
 		input.ContentLength = aws.Int64(option.ObjectSize)
 	}
 
+	if option.Tagging != nil {
+		tagging := mapToQueryParams(option.Tagging)
+		input.Tagging = aws.String(tagging)
+	}
+
 	// upload object
 	_, err := client.PutObject(ctx, input)
 	return err
@@ -239,49 +247,36 @@ func (t *s3Client) GetObjectUrl(ctx context.Context, objectKey string, opts ...s
 	return req.URL, nil
 }
 
-func (t *s3Client) ListObjects(ctx context.Context, prefix string) ([]*storage.FileInfo, error) {
-	client := t.client
-	bucket := t.bucketName
+func (t *s3Client) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
 	const (
 		DefaultPageSize = 100
 		MaxListObjects  = 10000
 	)
 
-	input := &s3.ListObjectsV2Input{
-		Bucket:  aws.String(bucket),
-		Prefix:  aws.String(prefix),
-		MaxKeys: aws.Int32(DefaultPageSize),
-	}
-
-	paginator := s3.NewListObjectsV2Paginator(client, input)
-
 	var files []*storage.FileInfo
-	for paginator.HasMorePages() {
-		page, err := paginator.NextPage(ctx)
+	var cursor string
+	for {
+		output, err := t.ListObjectsPaginated(ctx, &storage.ListObjectsPaginatedInput{
+			Prefix:      prefix,
+			PageSize:    DefaultPageSize,
+			WithTagging: withTagging,
+			Cursor:      cursor,
+		})
+
 		if err != nil {
-			return nil, fmt.Errorf("failed to get page, %v", err)
+			return nil, err
 		}
-		for _, obj := range page.Contents {
-			f := &storage.FileInfo{}
-			if obj.Key != nil {
-				f.Key = *obj.Key
-			}
-			if obj.LastModified != nil {
-				f.LastModified = *obj.LastModified
-			}
-			if obj.ETag != nil {
-				f.ETag = *obj.ETag
-			}
-			if obj.Size != nil {
-				f.Size = *obj.Size
-			}
 
-			files = append(files, f)
+		cursor = output.Cursor
 
-		}
+		files = append(files, output.Files...)
 
 		if len(files) >= MaxListObjects {
-			logs.CtxErrorf(ctx, "[ListObjects] max list objects reached, total: %d", len(files))
+			logs.CtxErrorf(ctx, "list objects failed, max list objects: %d", MaxListObjects)
+			break
+		}
+
+		if !output.IsTruncated {
 			break
 		}
 	}
@@ -340,5 +335,52 @@ func (t *s3Client) ListObjectsPaginated(ctx context.Context, input *storage.List
 		output.Cursor = *p.NextContinuationToken
 	}
 
+	if input.WithTagging {
+		taskGroup := taskgroup.NewTaskGroup(ctx, 5)
+		for idx := range files {
+			f := files[idx]
+			taskGroup.Go(func() error {
+				tagging, err := client.GetObjectTagging(ctx, &s3.GetObjectTaggingInput{
+					Bucket: aws.String(bucket),
+					Key:    aws.String(f.Key),
+				})
+				if err != nil {
+					return err
+				}
+
+				f.Tagging = tagsToMap(tagging.TagSet)
+				return nil
+			})
+		}
+
+		if err := taskGroup.Wait(); err != nil {
+			return nil, err
+		}
+	}
+
 	return output, nil
+}
+
+func mapToQueryParams(tagging map[string]string) string {
+	if len(tagging) == 0 {
+		return ""
+	}
+	params := url.Values{}
+	for k, v := range tagging {
+		params.Set(k, v)
+	}
+	return params.Encode()
+}
+
+func tagsToMap(tags []types.Tag) map[string]string {
+	if len(tags) == 0 {
+		return nil
+	}
+	m := make(map[string]string, len(tags))
+	for _, tag := range tags {
+		if tag.Key != nil && tag.Value != nil {
+			m[*tag.Key] = *tag.Value
+		}
+	}
+	return m
 }

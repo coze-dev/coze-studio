@@ -21,7 +21,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net/url"
 	"time"
@@ -99,34 +98,45 @@ func (m *minioClient) test() {
 	ctx := context.Background()
 	objectName := fmt.Sprintf("test-file-%d.txt", rand.Int())
 
-	m.ListObjects(ctx, "")
-
-	err := m.PutObject(ctx, objectName, []byte("hello content"), storage.WithContentType("text/plain"))
+	err := m.PutObject(ctx, objectName, []byte("hello content"),
+		storage.WithContentType("text/plain"), storage.WithTagging(map[string]string{
+			"uid":             "7543149965070155780",
+			"conversation_id": "7543149965070155781",
+			"type":            "user",
+		}))
 	if err != nil {
-		log.Fatalf("upload file failed: %v", err)
+		logs.CtxErrorf(ctx, "upload file failed: %v", err)
 	}
-	log.Printf("upload file success")
+
+	logs.CtxInfof(ctx, "upload file success")
+
+	files, err := m.ListAllObjects(ctx, "test-file-", true)
+	if err != nil {
+		logs.CtxErrorf(ctx, "list objects failed: %v", err)
+	}
+
+	logs.CtxInfof(ctx, "list objects success, files.len: %v", len(files))
 
 	url, err := m.GetObjectUrl(ctx, objectName)
 	if err != nil {
-		log.Fatalf("get file url failed: %v", err)
+		logs.CtxErrorf(ctx, "get file url failed: %v", err)
 	}
 
-	log.Printf("get file url success, url: %s", url)
+	logs.CtxInfof(ctx, "get file url success, url: %s", url)
 
 	content, err := m.GetObject(ctx, objectName)
 	if err != nil {
-		log.Fatalf("download file failed: %v", err)
+		logs.CtxErrorf(ctx, "download file failed: %v", err)
 	}
 
-	log.Printf("download file success, content: %s", string(content))
+	logs.CtxInfof(ctx, "download file success, content: %s", string(content))
 
 	err = m.DeleteObject(ctx, objectName)
 	if err != nil {
-		log.Fatalf("delete object failed: %v", err)
+		logs.CtxErrorf(ctx, "delete object failed: %v", err)
 	}
 
-	log.Printf("delete object success")
+	logs.CtxInfof(ctx, "delete object success")
 }
 
 func (m *minioClient) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
@@ -159,6 +169,10 @@ func (m *minioClient) PutObjectWithReader(ctx context.Context, objectKey string,
 
 	if option.Expires != nil {
 		minioOpts.Expires = *option.Expires
+	}
+
+	if option.Tagging != nil {
+		minioOpts.UserTags = option.Tagging
 	}
 
 	_, err := m.client.PutObject(ctx, m.bucketName, objectKey,
@@ -223,7 +237,7 @@ func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.L
 		return nil, fmt.Errorf("page size must be positive")
 	}
 
-	files, err := m.ListObjects(ctx, input.Prefix)
+	files, err := m.ListAllObjects(ctx, input.Prefix, input.WithTagging)
 	if err != nil {
 		return nil, err
 	}
@@ -235,10 +249,11 @@ func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.L
 	}, nil
 }
 
-func (m *minioClient) ListObjects(ctx context.Context, prefix string) ([]*storage.FileInfo, error) {
+func (m *minioClient) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
 	opts := minio.ListObjectsOptions{
-		Prefix:    prefix,
-		Recursive: true,
+		Prefix:       prefix,
+		Recursive:    true,
+		WithMetadata: withTagging,
 	}
 
 	objectCh := m.client.ListObjects(ctx, m.bucketName, opts)
@@ -248,14 +263,17 @@ func (m *minioClient) ListObjects(ctx context.Context, prefix string) ([]*storag
 		if object.Err != nil {
 			return nil, object.Err
 		}
+
 		files = append(files, &storage.FileInfo{
 			Key:          object.Key,
 			LastModified: object.LastModified,
 			ETag:         object.ETag,
 			Size:         object.Size,
+			Tagging:      object.UserTags,
 		})
 
-		logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d", object.Key, object.LastModified, object.ETag, object.Size)
+		logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d, tagging = %v",
+			object.Key, object.LastModified, object.ETag, object.Size, object.UserTags)
 	}
 
 	return files, nil
