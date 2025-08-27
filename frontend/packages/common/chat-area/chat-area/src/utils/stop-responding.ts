@@ -84,16 +84,20 @@ export const breakGenerally = async ({
   waiting,
   chatCore,
   reporter,
+  lastAnswerMessageId,
 }: {
   waiting: Waiting | null;
   chatCore: ChatCore;
   reporter: Reporter;
+  lastAnswerMessageId?: string;
 }) => {
   try {
     await chatCore.breakMessage({
       query_message_id: waiting?.replyId || '',
       // If you enter the suggestion generation stage, you should not need to fall back to the local message id.
       local_message_id: waiting?.questionLocalMessageId || '',
+      // Add answer_message_id for WorkflowMode support
+      answer_message_id: lastAnswerMessageId,
     });
     reporter.successEvent({
       eventName: ReportEventNames.BreakMessageAccurately,
@@ -151,7 +155,11 @@ export const stopResponding = async (context: {
       await breakAccurately({ waiting, finalAnswer, chatCore, reporter });
       updateMessage({ ...finalAnswer, is_finish: true });
     } else {
-      await breakGenerally({ waiting, chatCore, reporter });
+      // Try to get the last answer message ID from waiting response
+      const lastAnswerMessageId = waiting?.response?.length > 0 
+        ? waiting.response[waiting.response.length - 1]?.id 
+        : undefined;
+      await breakGenerally({ waiting, chatCore, reporter, lastAnswerMessageId });
     }
   } catch {
     await lifeCycleService.command.onStopRespondingError({

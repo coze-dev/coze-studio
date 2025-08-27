@@ -239,6 +239,10 @@ const updateRespondingInImmer = (state: WaitingState, message: Message) => {
   if (!responding) {
     // type=answer & is_finish
     if (isAllFinish) {
+      // Clear waiting state when workflow finishes even if no responding state exists
+      if (state.waiting?.replyId === message.reply_id) {
+        state.waiting = null;
+      }
       return;
     }
 
@@ -266,6 +270,10 @@ const updateRespondingInImmer = (state: WaitingState, message: Message) => {
   // Answer end, interrupt finish package terminates reply state
   if (isAllFinish) {
     state.responding = null;
+    // Also clear waiting state when workflow finishes
+    if (state.waiting?.replyId === message.reply_id) {
+      state.waiting = null;
+    }
     return;
   }
 
