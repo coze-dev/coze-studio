@@ -1247,9 +1247,8 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 	ret := map[string]any{
 		"chatHistory": []any{},
 	}
-	for k, v := range input {
-		ret[k] = v
-	}
+	maps.Copy(ret, input)
+
 	if len(messages) == 0 {
 		return ret, nil
 	}
