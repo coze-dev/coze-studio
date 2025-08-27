@@ -50,25 +50,17 @@ interface SpacePermission {
 interface MembersResponse {
   code: number;
   msg: string;
-  data: {
-    member_info_list: SpaceMember[];
-    total: number;
-    space_role_type: number;
-  };
+  data: SpaceMember[];  // 直接是数组
+  total: number;
+  page: number;
+  page_size: number;
 }
 
 // 角色类型映射 - 根据实际API返回调整
 const ROLE_TYPES: Record<number, { name: string; color: string }> = {
-  10: { name: '所有者', color: 'red' },    // Owner
-  20: { name: '管理员', color: 'orange' }, // Admin  
-  30: { name: '成员', color: 'default' }   // Member
-};
-
-// 如果API返回的是其他值，使用这个映射
-const ROLE_MAP: Record<string, number> = {
-  'Owner': 10,
-  'Admin': 20,
-  'Member': 30
+  1: { name: '所有者', color: 'red' },    // Owner
+  2: { name: '管理员', color: 'orange' }, // Admin  
+  3: { name: '成员', color: 'default' }   // Member
 };
 
 const MembersPage: React.FC = () => {
@@ -78,12 +70,12 @@ const MembersPage: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
-  const [currentUserRole, setCurrentUserRole] = useState<number>(30);
+  const [currentUserRole, setCurrentUserRole] = useState<number>(3);
   const [searchKeyword, setSearchKeyword] = useState('');
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [addMemberLoading, setAddMemberLoading] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<number>(30);
+  const [selectedRole, setSelectedRole] = useState<number>(3);
 
   // 获取空间权限
   const fetchPermission = useCallback(async () => {
@@ -103,7 +95,7 @@ const MembersPage: React.FC = () => {
         const result = await response.json();
         console.log('Permission API response:', result); // 调试用
         if (result.code === 0 && result.data) {
-          setCurrentUserRole(result.data.space_role_type || 30);
+          setCurrentUserRole(result.data.space_role_type || 3);
         }
       }
     } catch (error) {
@@ -132,16 +124,16 @@ const MembersPage: React.FC = () => {
       if (response.ok) {
         const result: MembersResponse = await response.json();
         console.log('Members API response:', result); // 调试用
-        console.log('Members list:', result.data?.member_info_list); // 查看成员列表
-        console.log('Total:', result.data?.total); // 查看总数
-        console.log('Current user role:', result.data?.space_role_type); // 查看当前用户角色
+        console.log('Members list:', result.data); // 查看成员列表
+        console.log('First member:', result.data?.[0]); // 查看第一个成员的结构
+        console.log('Total:', result.total); // 查看总数
         
         if (result.code === 0 && result.data) {
-          const membersList = result.data.member_info_list || [];
+          const membersList = result.data || [];
           console.log('Setting members:', membersList);
           setMembers(membersList);
-          setTotal(result.data.total || 0);
-          setCurrentUserRole(result.data.space_role_type || 30);
+          setTotal(result.total || 0);
+          // 从权限接口获取当前用户角色，不从这里获取
         } else {
           console.error('API返回错误:', result);
           Toast.error(`获取成员列表失败: ${result.msg || '未知错误'}`);
@@ -195,7 +187,7 @@ const MembersPage: React.FC = () => {
         Toast.success('成员添加成功');
         setIsAddModalOpen(false);
         setSelectedUserId('');
-        setSelectedRole(30);
+        setSelectedRole(3);
         fetchMembers();
       } else {
         Toast.error(`添加失败: ${result.msg || '未知错误'}`);
@@ -298,8 +290,8 @@ const MembersPage: React.FC = () => {
         align: 'center' as const,
         render: (role: number, record: SpaceMember) => {
           const roleInfo = ROLE_TYPES[role] || { name: `角色${role}`, color: 'default' };
-          const isOwner = role === 10;
-          const canEdit = currentUserRole === 10 && !isOwner; // 只有Owner可以编辑，且不能编辑Owner
+          const isOwner = role === 1;
+          const canEdit = currentUserRole === 1 && !isOwner; // 只有Owner可以编辑，且不能编辑Owner
 
           if (!canEdit) {
             return (
@@ -316,8 +308,8 @@ const MembersPage: React.FC = () => {
               size="small"
               style={{ width: 100 }}
             >
-              <Select.Option value={20}>管理员</Select.Option>
-              <Select.Option value={30}>成员</Select.Option>
+              <Select.Option value={2}>管理员</Select.Option>
+              <Select.Option value={3}>成员</Select.Option>
             </Select>
           );
         },
@@ -340,7 +332,7 @@ const MembersPage: React.FC = () => {
         align: 'center' as const,
         render: (_text: any, record: SpaceMember) => {
           // 只有Owner可以移除成员，且不能移除Owner
-          if (currentUserRole !== 10 || record.space_role_type === 10) {
+          if (currentUserRole !== 1 || record.space_role_type === 1) {
             return null;
           }
 
@@ -385,7 +377,7 @@ const MembersPage: React.FC = () => {
             <IconCozPeople className="text-2xl" />
             <Typography.Title heading={3}>成员管理</Typography.Title>
           </div>
-          {currentUserRole === 10 && ( // 只有Owner可以添加成员
+          {currentUserRole === 1 && ( // 只有Owner可以添加成员
             <Button
               type="primary"
               icon={<IconCozPlus />}
@@ -435,7 +427,7 @@ const MembersPage: React.FC = () => {
         onCancel={() => {
           setIsAddModalOpen(false);
           setSelectedUserId('');
-          setSelectedRole(30);
+          setSelectedRole(3);
         }}
         onOk={handleAddMember}
         okText="添加"
@@ -460,8 +452,8 @@ const MembersPage: React.FC = () => {
               onChange={(value) => setSelectedRole(value)}
               style={{ width: '100%' }}
             >
-              <Select.Option value={20}>管理员</Select.Option>
-              <Select.Option value={30}>成员</Select.Option>
+              <Select.Option value={2}>管理员</Select.Option>
+              <Select.Option value={3}>成员</Select.Option>
             </Select>
           </div>
         </div>
