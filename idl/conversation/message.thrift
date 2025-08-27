@@ -214,4 +214,6 @@ struct ListMessageApiResponse {
     2:   optional bool                 has_more (api.body = "has_more") // Is there still data, true yes, false no
     3:   optional i64                  first_id (api.body = "first_id",api.js_conv='true') // The ID of the first piece of data
     4:   optional i64                  last_id (api.body = "last_id",api.js_conv='true')    // The id of the last piece of data.
+    253: i64                           code
+    254: string                        msg
 }
