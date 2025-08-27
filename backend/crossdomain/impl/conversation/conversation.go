@@ -19,7 +19,6 @@ package conversation
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
@@ -39,29 +38,14 @@ func InitDomainService(c conversation.Conversation) crossconversation.Conversati
 	return defaultSVC
 }
 
-func (s *impl) CreateConversation(ctx context.Context, req *crossconversation.CreateConversationRequest) (int64, int64, error) {
-	ret, err := s.DomainSVC.Create(ctx, &entity.CreateMeta{
-		AgentID:     req.AppID,
-		UserID:      req.UserID,
-		ConnectorID: req.ConnectorID,
-		Scene:       common.Scene_SceneWorkflow,
-	})
-	if err != nil {
-		return 0, 0, err
-	}
-
-	return ret.ID, ret.SectionID, nil
+func (s *impl) CreateConversation(ctx context.Context, req *entity.CreateMeta) (*entity.Conversation, error) {
+	return s.DomainSVC.Create(ctx, req)
 }
 
-func (s *impl) ClearConversationHistory(ctx context.Context, req *crossconversation.ClearConversationHistoryReq) (int64, error) {
-	resp, err := s.DomainSVC.NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
+func (s *impl) ClearConversationHistory(ctx context.Context, req *crossconversation.ClearConversationHistoryReq) (*entity.NewConversationCtxResponse, error) {
+	return s.DomainSVC.NewConversationCtx(ctx, &entity.NewConversationCtxRequest{
 		ID: req.ConversationID,
 	})
-	if err != nil {
-		return 0, err
-	}
-	return resp.SectionID, nil
-
 }
 
 func (s *impl) GetCurrentConversation(ctx context.Context, req *model.GetCurrent) (*model.Conversation, error) {

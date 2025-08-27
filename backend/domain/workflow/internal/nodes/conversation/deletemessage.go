@@ -24,6 +24,7 @@ import (
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -105,7 +106,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().DeleteMessage(ctx, &crossmessage.DeleteMessageRequest{ConversationID: *execCtx.ExeCfg.ConversationID, MessageID: messageID})
+		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -123,7 +124,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 	}
 
 	if existed {
-		sts, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
+		_, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -132,7 +133,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().DeleteMessage(ctx, &crossmessage.DeleteMessageRequest{ConversationID: sts.ConversationID, MessageID: messageID})
+		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -140,7 +141,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		return successMap, nil
 
 	} else {
-		dyConversation, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
+		_, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}
@@ -149,7 +150,7 @@ func (d *DeleteMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			return failedMap, nil
 		}
 
-		err = crossmessage.DefaultSVC().DeleteMessage(ctx, &crossmessage.DeleteMessageRequest{ConversationID: dyConversation.ConversationID, MessageID: messageID})
+		err = crossmessage.DefaultSVC().Delete(ctx, &msgentity.DeleteMeta{MessageIDs: []int64{messageID}})
 		if err != nil {
 			return nil, vo.WrapError(errno.ErrMessageNodeOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
 		}

@@ -48,30 +48,6 @@ func InitDomainService(c message.Message) crossmessage.Message {
 	return defaultSVC
 }
 
-func (c *impl) CreateMessage(ctx context.Context, req *crossmessage.CreateMessageRequest) (int64, error) {
-	msg := &model.Message{
-		ConversationID: req.ConversationID,
-		Role:           schema.RoleType(req.Role),
-		Content:        req.Content,
-		ContentType:    model.ContentType(req.ContentType),
-		UserID:         strconv.FormatInt(req.UserID, 10),
-		AgentID:        req.AppID,
-		RunID:          req.RunID,
-		SectionID:      req.SectionID,
-	}
-	if msg.Role == schema.User {
-		msg.MessageType = model.MessageTypeQuestion
-	} else {
-		msg.MessageType = model.MessageTypeAnswer
-	}
-	ret, err := c.DomainSVC.Create(ctx, msg)
-	if err != nil {
-		return 0, err
-	}
-
-	return ret.ID, nil
-}
-
 func (c *impl) MessageList(ctx context.Context, req *crossmessage.MessageListRequest) (*crossmessage.MessageListResponse, error) {
 	lm := &entity.ListMeta{
 		ConversationID: req.ConversationID,
@@ -114,24 +90,6 @@ func (c *impl) MessageList(ctx context.Context, req *crossmessage.MessageListReq
 	}
 	response.Messages = messages
 	return response, nil
-}
-
-func (c *impl) DeleteMessage(ctx context.Context, req *crossmessage.DeleteMessageRequest) error {
-	return c.DomainSVC.Delete(ctx, &entity.DeleteMeta{
-		MessageIDs: []int64{req.MessageID},
-	})
-}
-
-func (c *impl) EditMessage(ctx context.Context, req *crossmessage.EditMessageRequest) error {
-	_, err := c.DomainSVC.Edit(ctx, &entity.Message{
-		ID:             req.MessageID,
-		ConversationID: req.ConversationID,
-		Content:        req.Content,
-	})
-	if err != nil {
-		return err
-	}
-	return nil
 }
 
 func (c *impl) GetLatestRunIDs(ctx context.Context, req *crossmessage.GetLatestRunIDsRequest) ([]int64, error) {

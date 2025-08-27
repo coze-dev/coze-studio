@@ -452,7 +452,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 		}
 
-		cID, sID, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+		conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
 		if err != nil {
 			return 0, 0, false, err
 		}
@@ -468,13 +468,13 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			Name:           meta.Name,
 			UserID:         meta.UserID,
 			ConnectorID:    meta.ConnectorID,
-			ConversationID: cID,
+			ConversationID: conv.ID,
 		})
 		if err != nil {
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 		}
 
-		return cID, sID, false, nil
+		return conv.ID, conv.SectionID, false, nil
 
 	} else if env == vo.Online {
 		appDynamicConversationOnline := r.query.AppDynamicConversationOnline
@@ -498,7 +498,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 		}
 
-		cID, sID, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+		conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
 		if err != nil {
 			return 0, 0, false, err
 		}
@@ -513,13 +513,13 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			Name:           meta.Name,
 			UserID:         meta.UserID,
 			ConnectorID:    meta.ConnectorID,
-			ConversationID: cID,
+			ConversationID: conv.ID,
 		})
 		if err != nil {
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 		}
 
-		return cID, sID, false, nil
+		return conv.ID, conv.SectionID, false, nil
 
 	} else {
 		return 0, 0, false, fmt.Errorf("unknown env %v", env)
@@ -586,7 +586,7 @@ func (r *RepositoryImpl) getOrCreateDraftStaticConversation(ctx context.Context,
 		return cs[0].ConversationID, cInfo.SectionID, true, nil
 	}
 
-	conversationID, sectionID, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+	conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
 	if err != nil {
 		return 0, 0, false, err
 	}
@@ -600,14 +600,14 @@ func (r *RepositoryImpl) getOrCreateDraftStaticConversation(ctx context.Context,
 		UserID:         meta.UserID,
 		ConnectorID:    meta.ConnectorID,
 		TemplateID:     meta.TemplateID,
-		ConversationID: conversationID,
+		ConversationID: conv.ID,
 	}
 	err = r.query.AppStaticConversationDraft.WithContext(ctx).Create(object)
 	if err != nil {
 		return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 	}
 
-	return conversationID, sectionID, false, nil
+	return conv.ID, conv.SectionID, false, nil
 }
 
 func (r *RepositoryImpl) getOrCreateOnlineStaticConversation(ctx context.Context, idGen workflow.ConversationIDGenerator, meta *vo.CreateStaticConversation) (int64, int64, bool, error) {
@@ -627,7 +627,7 @@ func (r *RepositoryImpl) getOrCreateOnlineStaticConversation(ctx context.Context
 		return cs[0].ConversationID, cInfo.SectionID, true, nil
 	}
 
-	conversationID, sectionID, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+	conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
 	if err != nil {
 		return 0, 0, false, err
 	}
@@ -641,14 +641,14 @@ func (r *RepositoryImpl) getOrCreateOnlineStaticConversation(ctx context.Context
 		UserID:         meta.UserID,
 		ConnectorID:    meta.ConnectorID,
 		TemplateID:     meta.TemplateID,
-		ConversationID: conversationID,
+		ConversationID: conv.ID,
 	}
 	err = r.query.AppStaticConversationOnline.WithContext(ctx).Create(object)
 	if err != nil {
 		return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 	}
 
-	return conversationID, sectionID, false, nil
+	return conv.ID, conv.SectionID, false, nil
 }
 
 func (r *RepositoryImpl) BatchCreateOnlineConversationTemplate(ctx context.Context, templates []*entity.ConversationTemplate, version string) error {

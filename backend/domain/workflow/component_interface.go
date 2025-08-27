@@ -24,6 +24,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -123,7 +124,7 @@ type ToolFromWorkflow interface {
 	GetWorkflow() *entity.Workflow
 }
 
-type ConversationIDGenerator func(ctx context.Context, appID int64, userID, connectorID int64) (int64, int64, error)
+type ConversationIDGenerator func(ctx context.Context, appID int64, userID, connectorID int64) (*conventity.Conversation, error)
 
 type ConversationRepository interface {
 	CreateDraftConversationTemplate(ctx context.Context, template *vo.CreateConversationTemplateMeta) (int64, error)

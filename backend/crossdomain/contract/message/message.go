@@ -34,10 +34,7 @@ type Message interface {
 	Edit(ctx context.Context, msg *message.Message) (*message.Message, error)
 	Delete(ctx context.Context, req *entity.DeleteMeta) error
 	GetMessageByID(ctx context.Context, id int64) (*entity.Message, error)
-	CreateMessage(ctx context.Context, req *CreateMessageRequest) (int64, error)
 	MessageList(ctx context.Context, req *MessageListRequest) (*MessageListResponse, error)
-	DeleteMessage(ctx context.Context, req *DeleteMessageRequest) error
-	EditMessage(ctx context.Context, req *EditMessageRequest) error
 	GetLatestRunIDs(ctx context.Context, req *GetLatestRunIDsRequest) ([]int64, error)
 	GetMessagesByRunIDs(ctx context.Context, req *GetMessagesByRunIDsRequest) (*GetMessagesByRunIDsResponse, error)
 }
@@ -52,17 +49,6 @@ func DefaultSVC() Message {
 
 func SetDefaultSVC(c Message) {
 	defaultSVC = c
-}
-
-type CreateMessageRequest struct {
-	ConversationID int64
-	Role           string
-	Content        string
-	ContentType    string
-	UserID         int64
-	AppID          int64
-	RunID          int64
-	SectionID      int64
 }
 
 type MessageListRequest struct {
@@ -96,17 +82,6 @@ type WfMessage struct {
 	Text         *string         `json:"text,omitempty"`
 	ContentType  string          `json:"content_type"`
 	SectionID    int64           `json:"section_id"`
-}
-
-type DeleteMessageRequest struct {
-	ConversationID int64
-	MessageID      int64
-}
-
-type EditMessageRequest struct {
-	ConversationID int64
-	MessageID      int64
-	Content        string
 }
 
 type GetLatestRunIDsRequest struct {

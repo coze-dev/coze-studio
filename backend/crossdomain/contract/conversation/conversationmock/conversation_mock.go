@@ -60,10 +60,10 @@ func (m *MockConversation) EXPECT() *MockConversationMockRecorder {
 }
 
 // ClearConversationHistory mocks base method.
-func (m *MockConversation) ClearConversationHistory(ctx context.Context, req *conversation0.ClearConversationHistoryReq) (int64, error) {
+func (m *MockConversation) ClearConversationHistory(ctx context.Context, req *conversation0.ClearConversationHistoryReq) (*entity.NewConversationCtxResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ClearConversationHistory", ctx, req)
-	ret0, _ := ret[0].(int64)
+	ret0, _ := ret[0].(*entity.NewConversationCtxResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -75,13 +75,12 @@ func (mr *MockConversationMockRecorder) ClearConversationHistory(ctx, req any) *
 }
 
 // CreateConversation mocks base method.
-func (m *MockConversation) CreateConversation(ctx context.Context, req *conversation0.CreateConversationRequest) (int64, int64, error) {
+func (m *MockConversation) CreateConversation(ctx context.Context, req *entity.CreateMeta) (*entity.Conversation, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateConversation", ctx, req)
-	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(int64)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
+	ret0, _ := ret[0].(*entity.Conversation)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // CreateConversation indicates an expected call of CreateConversation.

@@ -94,13 +94,13 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 	})
 
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 	}
 	var conversationID int64
 	if existed {
 		ret, existed, err := wf.GetRepository().GetStaticConversationByTemplateID(ctx, env, userID, connectorID, t.TemplateID)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 		}
 		if existed {
 			conversationID = ret.ConversationID
@@ -108,7 +108,7 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 	} else {
 		ret, existed, err := wf.GetRepository().GetDynamicConversationByName(ctx, env, *appID, connectorID, userID, conversationName)
 		if err != nil {
-			return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+			return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
 		}
 		if existed {
 			conversationID = ret.ConversationID
@@ -121,14 +121,17 @@ func (c *ClearConversationHistory) Invoke(ctx context.Context, in map[string]any
 		}, nil
 	}
 
-	sectionID, err := crossconversation.DefaultSVC().ClearConversationHistory(ctx, &crossconversation.ClearConversationHistoryReq{
+	resp, err := crossconversation.DefaultSVC().ClearConversationHistory(ctx, &crossconversation.ClearConversationHistoryReq{
 		ConversationID: conversationID,
 	})
 	if err != nil {
-		return nil, vo.WrapError(errno.ErrConversationNodesNotAvailable, err)
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, err)
+	}
+	if resp == nil {
+		return nil, vo.WrapError(errno.ErrConversationNodeOperationFail, fmt.Errorf("clear conversation history failed, response is nil"))
 	}
 	if execCtx.ExeCfg.SectionID != nil {
-		atomic.StoreInt64(execCtx.ExeCfg.SectionID, sectionID)
+		atomic.StoreInt64(execCtx.ExeCfg.SectionID, resp.SectionID)
 	}
 	return map[string]any{
 		"isSuccess": true,
