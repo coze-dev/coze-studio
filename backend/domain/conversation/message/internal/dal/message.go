@@ -31,6 +31,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -230,8 +231,8 @@ func (dao *MessageDAO) GetByID(ctx context.Context, msgID int64) (*entity.Messag
 	return dao.messagePO2DO(po), nil
 }
 
-func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int64) error {
-	if len(msgIDs) == 0 && len(runIDs) == 0 {
+func (dao *MessageDAO) Delete(ctx context.Context, delMeta *entity.DeleteMeta) error {
+	if len(delMeta.MessageIDs) == 0 && len(delMeta.RunIDs) == 0 {
 		return nil
 	}
 
@@ -240,11 +241,14 @@ func (dao *MessageDAO) Delete(ctx context.Context, msgIDs []int64, runIDs []int6
 	m := dao.query.Message
 	do := m.WithContext(ctx)
 
-	if len(runIDs) > 0 {
-		do = do.Where(m.RunID.In(runIDs...))
+	if len(delMeta.RunIDs) > 0 {
+		do = do.Where(m.RunID.In(delMeta.RunIDs...))
 	}
-	if len(msgIDs) > 0 {
-		do = do.Where(m.ID.In(msgIDs...))
+	if len(delMeta.MessageIDs) > 0 {
+		do = do.Where(m.ID.In(delMeta.MessageIDs...))
+	}
+	if delMeta.ConversationID != nil && ptr.From(delMeta.ConversationID) > 0 {
+		do = do.Where(m.ConversationID.Eq(*delMeta.ConversationID))
 	}
 	_, err := do.UpdateColumns(&updateColumns)
 	return err

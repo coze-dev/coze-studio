@@ -117,7 +117,7 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Me
 }
 
 func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
-	return m.MessageRepo.Delete(ctx, req.MessageIDs, req.RunIDs)
+	return m.MessageRepo.Delete(ctx, req)
 }
 
 func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, error) {
