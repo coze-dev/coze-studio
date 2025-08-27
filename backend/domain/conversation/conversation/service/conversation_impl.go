@@ -103,13 +103,7 @@ func (c *conversationImpl) Delete(ctx context.Context, id int64) error {
 
 func (c *conversationImpl) Update(ctx context.Context, req *entity.UpdateMeta) (*entity.Conversation, error) {
 	// get conversation
-	updateResult, err := c.ConversationRepo.Update(ctx, req)
-
-	if err != nil {
-		return updateResult, err
-	}
-
-	return updateResult, nil
+	return c.ConversationRepo.Update(ctx, req)
 }
 
 func (c *conversationImpl) List(ctx context.Context, req *entity.ListMeta) ([]*entity.Conversation, bool, error) {

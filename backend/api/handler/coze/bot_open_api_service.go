@@ -140,8 +140,7 @@ func OpenGetBotInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(bot_open_api.OpenGetBotInfoResponse)
-	resp.Data, err = singleagent.SingleAgentSVC.OpenGetBotInfo(ctx, &req)
+	resp, err := singleagent.SingleAgentSVC.OpenGetBotInfo(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
