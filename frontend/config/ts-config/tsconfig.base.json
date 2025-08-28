@@ -24,12 +24,12 @@
     "sourceMap": true,
     "strict": true,
     "disableReferencedProjectLoad": true,
-    "disableSolutionSearching": true,
-    "disableSourceOfProjectReferenceRedirect": true,
+    // "disableSolutionSearching": true,
+    // "disableSourceOfProjectReferenceRedirect": true,
     "target": "es2018"
   },
   "watchOptions": {
-    "fallbackPolling": "dynamicpriority", 
+    "fallbackPolling": "dynamicpriority",
     "synchronousWatchDirectory": false,
     "watchDirectory": "useFsEvents",
     "watchFile": "useFsEventsOnParentDirectory",
