@@ -262,13 +262,18 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 		return ret, nil
 	}
 
+	maxRounds := int(kr.ChatHistorySetting.ChatHistoryRound)
+	if execCtx != nil && execCtx.ExeCfg.MaxHistoryRounds != nil {
+		maxRounds = min(int(*execCtx.ExeCfg.MaxHistoryRounds), maxRounds)
+	}
+
 	count := 0
 	startIdx := 0
 	for i := len(messages) - 1; i >= 0; i-- {
 		if messages[i].Role == einoSchema.User {
 			count++
 		}
-		if count >= int(kr.ChatHistorySetting.ChatHistoryRound) {
+		if count >= maxRounds {
 			startIdx = i
 			break
 		}

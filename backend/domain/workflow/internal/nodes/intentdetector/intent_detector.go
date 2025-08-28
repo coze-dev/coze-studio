@@ -365,13 +365,18 @@ func (id *IntentDetector) ToCallbackInput(ctx context.Context, in map[string]any
 		return ret, nil
 	}
 
+	maxRounds := int(id.ChatHistorySetting.ChatHistoryRound)
+	if execCtx != nil && execCtx.ExeCfg.MaxHistoryRounds != nil {
+		maxRounds = min(int(*execCtx.ExeCfg.MaxHistoryRounds), maxRounds)
+	}
+
 	count := 0
 	startIdx := 0
 	for i := len(messages) - 1; i >= 0; i-- {
 		if messages[i].Role == schema.User {
 			count++
 		}
-		if count >= int(id.ChatHistorySetting.ChatHistoryRound) {
+		if count >= maxRounds {
 			startIdx = i
 			break
 		}

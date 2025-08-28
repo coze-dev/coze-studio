@@ -555,7 +555,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		}
 	}
 
-	if req.IsSetConversationID() {
+	if req.IsSetConversationID() && !req.IsSetBotID() {
 		conversationID = mustParseInt64(req.GetConversationID())
 		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, conversationID)
 		if err != nil {
@@ -572,6 +572,14 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			return nil, fmt.Errorf("conversation not found")
 		}
 		parameters["CONVERSATION_NAME"] = conversationName
+	} else if req.IsSetConversationID() && req.IsSetBotID() {
+		parameters["CONVERSATION_NAME"] = "Default"
+		conversationID = mustParseInt64(req.GetConversationID())
+		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, conversationID)
+		if err != nil {
+			return nil, err
+		}
+		sectionID = cInfo.SectionID
 	} else {
 		conversationName, ok := parameters["CONVERSATION_NAME"].(string)
 		if !ok {
