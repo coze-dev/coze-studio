@@ -18,9 +18,52 @@ services:
       - '3306:3306'
     volumes:
       - ./data/mysql:/var/lib/mysql
-    command:
-      - --character-set-server=utf8mb4
-      - --collation-server=utf8mb4_unicode_ci
+      - ./volumes/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
+      - ./atlas/migrations:/atlas-migrations:ro  
+    entrypoint:  
+      - bash
+      - -c
+      - |
+        /usr/local/bin/docker-entrypoint.sh mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci &
+        MYSQL_PID=$$!
+
+        echo 'Waiting for MySQL to start...'
+        until mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} --silent 2>/dev/null; do
+          echo 'MySQL is starting...'
+          sleep 2
+        done
+
+        echo 'Waiting for workflow_version table to exist...'
+        while true; do
+          if mysql -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} $${MYSQL_DATABASE} -e "SHOW TABLES LIKE 'workflow_version';" 2>/dev/null | grep -q "workflow_version"; then
+            echo 'Found workflow_version table, continuing...'
+            break
+          else
+            echo 'workflow_version table not found, retrying in 2 seconds...'
+            sleep 2
+          fi
+        done
+  
+        echo 'MySQL is ready, installing Atlas CLI...'
+
+        if ! command -v atlas >/dev/null 2>&1; then
+          echo 'Installing Atlas CLI...'
+          curl -sSf https://atlasgo.sh | sh -s -- -y --community
+          export PATH=$$PATH:/root/.local/bin
+        else
+          echo 'Atlas CLI already installed'
+        fi
+        
+        if [ -d '/atlas-migrations' ] && [ "$$(ls -A /atlas-migrations)" ]; then
+          echo 'Running Atlas migrations...'
+          ATLAS_URL="mysql://$${MYSQL_USER}:$${MYSQL_PASSWORD}@localhost:3306/$${MYSQL_DATABASE}"
+          atlas migrate apply --url "$$ATLAS_URL" --dir "file:///atlas-migrations" --allow-dirty
+          echo 'Atlas migrations completed successfully'
+        else
+          echo 'No migrations found'
+        fi
+        wait $$MYSQL_PID
+
     healthcheck:
       test:
         [
