@@ -4105,13 +4105,13 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 						assert.NoError(t, err)
 						validateSubWorkflowIDs(subworkflowCanvas.Nodes)
 					case entity.NodeTypeLLM:
-						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
+						if node.Data.Inputs.LLM != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
 							for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
 								assert.True(t, copiedIDMap[w.WorkflowID])
 							}
 						}
 
-						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
+						if node.Data.Inputs.LLM != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
 							for _, p := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
 								if p.PluginVersion == "0" {
 									assert.Equal(t, "100100", p.PluginID)
@@ -4119,7 +4119,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 							}
 						}
 
-						if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
+						if node.Data.Inputs.LLM != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
 							for _, k := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
 								assert.Equal(t, "100100", k.ID)
 							}
