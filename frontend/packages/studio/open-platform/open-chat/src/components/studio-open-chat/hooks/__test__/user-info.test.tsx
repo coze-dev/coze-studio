@@ -28,6 +28,11 @@ vi.hoisted(() => {
   global.IS_OVERSEA = false;
 });
 
+vi.mock('@/components/conversation-list-sider', () => ({
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  ConversationListSider: () => <div></div>,
+}));
+
 describe('user-info', () => {
   const testProps: StudioChatProviderProps = {
     chatConfig: {
