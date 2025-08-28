@@ -17,7 +17,7 @@ export const FormRender = () => (
     <OutputsField
       title={I18n.t('workflow_detail_node_output')}
       tooltip={I18n.t('node_http_response_data')}
-      id="{{CAMEL_NAME_PLACE_HOLDER}}-node-outputs"
+      id="<%= it.CAMEL_NAME_PLACE_HOLDER %>-node-outputs"
       name="outputs"
       topLevelReadonly={true}
       customReadonly

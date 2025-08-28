@@ -13,7 +13,7 @@ import { type FormData } from './types';
 import { FormRender } from './form';
 import { transformOnInit, transformOnSubmit } from './data-transformer';
 
-export const {{CONSTANT_NAME_PLACE_HOLDER}}_FORM_META: FormMetaV2<FormData> = {
+export const <%= it.CONSTANT_NAME_PLACE_HOLDER %>_FORM_META: FormMetaV2<FormData> = {
   // 节点表单渲染
   render: () => <FormRender />,
 

@@ -52,7 +52,6 @@ import { DatabaseDeleteContent } from './database-delete-content';
 import { DatabaseCreateContent } from './database-create-content';
 import { DatabaseContent } from './database-content';
 import { CommonContent } from './common-content';
-// CLI script insert ID (import), do not modify/delete this line comment
 
 import styles from './index.module.less';
 
@@ -91,7 +90,6 @@ const ContentMap = {
   [StandardNodeType.Api]: PluginContent,
   [StandardNodeType.Variable]: VariableContent,
   [StandardNodeType.JsonStringify]: JsonStringifyContent,
-  // The cli script inserts the identifier (registry), do not modify/delete this line comment
 };
 
 /**

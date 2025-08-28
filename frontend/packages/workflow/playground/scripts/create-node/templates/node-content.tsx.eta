@@ -1,6 +1,6 @@
 import { InputParameters, Outputs } from '../common/components';
 
-export function {{PASCAL_NAME_PLACE_HOLDER}}Content() {
+export function <%= it.PASCAL_NAME_PLACE_HOLDER %>Content() {
   return (
     <>
       <InputParameters />
