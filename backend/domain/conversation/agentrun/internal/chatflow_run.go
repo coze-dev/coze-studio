@@ -21,6 +21,7 @@ import (
 	"errors"
 	"io"
 	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/cloudwego/eino/schema"
@@ -106,7 +107,7 @@ func concatWfInput(rtDependence *AgentRuntime) string {
 			}
 		}
 	}
-	return input
+	return strings.Trim(input, ",")
 }
 
 func (art *AgentRuntime) pullWfStream(ctx context.Context, events *schema.StreamReader[*crossworkflow.WorkflowMessage], mh *MesssageEventHanlder) {
