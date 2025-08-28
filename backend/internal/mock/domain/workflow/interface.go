@@ -153,20 +153,6 @@ func (mr *MockServiceMockRecorder) CheckWorkflowsToReplace(ctx, appID, templateI
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CheckWorkflowsToReplace", reflect.TypeOf((*MockService)(nil).CheckWorkflowsToReplace), ctx, appID, templateID)
 }
 
-// CopyChatFlowRole mocks base method.
-func (m *MockService) CopyChatFlowRole(ctx context.Context, policy *vo.CopyRolePolicy) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CopyChatFlowRole", ctx, policy)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CopyChatFlowRole indicates an expected call of CopyChatFlowRole.
-func (mr *MockServiceMockRecorder) CopyChatFlowRole(ctx, policy any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CopyChatFlowRole", reflect.TypeOf((*MockService)(nil).CopyChatFlowRole), ctx, policy)
-}
-
 // CopyWorkflow mocks base method.
 func (m *MockService) CopyWorkflow(ctx context.Context, workflowID int64, policy vo.CopyWorkflowPolicy) (*entity.Workflow, error) {
 	m.ctrl.T.Helper()

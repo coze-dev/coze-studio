@@ -606,49 +606,6 @@ func (i *impl) DeleteChatFlowRole(ctx context.Context, id int64, workflowID int6
 	return i.repo.DeleteChatFlowRoleConfig(ctx, id, workflowID)
 }
 
-func (i *impl) CopyChatFlowRole(ctx context.Context, policy *vo.CopyRolePolicy) error {
-	if policy.SourceID == 0 || policy.TargetID == 0 || policy.CreatorID == 0 {
-		logs.CtxErrorf(ctx, "invalid copy role policy, source id %v, target id %v, creator id %v should not be zero", policy.SourceID, policy.TargetID, policy.CreatorID)
-		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid copy role policy, source id %v, target id %v, creator id %v should not be zero", policy.SourceID, policy.TargetID, policy.CreatorID))
-	}
-	wf, err := i.repo.GetEntity(ctx, &vo.GetPolicy{
-		ID:       policy.SourceID,
-		MetaOnly: true,
-	})
-	if err != nil {
-		return err
-	}
-	if wf.Mode != cloudworkflow.WorkflowMode_ChatFlow {
-		return vo.WrapError(errno.ErrChatFlowRoleOperationFail, fmt.Errorf("workflow id %v, mode %v is not a chatflow", policy.SourceID, wf.Mode))
-	}
-	role, err, isExist := i.repo.GetChatFlowRoleConfig(ctx, policy.SourceID, "")
-	if !isExist {
-		logs.CtxErrorf(ctx, "get draft chat flow role nil, workflow id %v", policy.SourceID)
-		return vo.WrapError(errno.ErrChatFlowRoleOperationFail, fmt.Errorf("get draft chat flow role nil, workflow id %v", policy.SourceID))
-	}
-	if err != nil {
-		return vo.WrapIfNeeded(errno.ErrChatFlowRoleOperationFail, err)
-	}
-
-	_, err = i.repo.CreateChatFlowRoleConfig(ctx, &entity.ChatFlowRole{
-		Name:                role.Name,
-		Description:         role.Description,
-		WorkflowID:          policy.TargetID,
-		CreatorID:           policy.CreatorID,
-		AudioConfig:         role.AudioConfig,
-		UserInputConfig:     role.UserInputConfig,
-		AvatarUri:           role.AvatarUri,
-		BackgroundImageInfo: role.BackgroundImageInfo,
-		OnboardingInfo:      role.OnboardingInfo,
-		SuggestReplyInfo:    role.SuggestReplyInfo,
-	})
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (i *impl) PublishChatFlowRole(ctx context.Context, policy *vo.PublishRolePolicy) error {
 	if policy.WorkflowID == 0 || policy.CreatorID == 0 || policy.Version == "" {
 		logs.CtxErrorf(ctx, "invalid publish role policy, workflow id %v, creator id %v should not be zero, version %v should not be empty", policy.WorkflowID, policy.CreatorID, policy.Version)

@@ -62,7 +62,6 @@ type ChatFlowRole interface {
 	GetChatFlowRole(ctx context.Context, workflowID int64, version string) (*entity.ChatFlowRole, error)
 	DeleteChatFlowRole(ctx context.Context, id int64, workflowID int64) error
 	PublishChatFlowRole(ctx context.Context, policy *vo.PublishRolePolicy) error
-	CopyChatFlowRole(ctx context.Context, policy *vo.CopyRolePolicy) error
 }
 
 type Conversation interface {

@@ -46,9 +46,3 @@ type PublishRolePolicy struct {
 	CreatorID  int64
 	Version    string
 }
-
-type CopyRolePolicy struct {
-	SourceID  int64
-	TargetID  int64
-	CreatorID int64
-}
