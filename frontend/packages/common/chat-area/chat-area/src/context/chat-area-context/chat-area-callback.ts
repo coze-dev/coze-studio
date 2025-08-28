@@ -16,6 +16,10 @@
 
 import { type MouseEvent } from 'react';
 
+import {
+  type IEventCallbacks,
+  type IOnLinkClickParams,
+} from '@coze-common/chat-uikit-shared';
 import { type MessageBoxTheme } from '@coze-common/chat-uikit';
 import {
   type ClearMessageContextParams,
@@ -25,7 +29,6 @@ import {
   type ChatCoreError,
   type GetHistoryMessageResponse,
 } from '@coze-common/chat-core';
-import { IEventCallbacks, type IOnLinkClickParams } from '@coze-common/chat-uikit-shared';
 
 import {
   type Message as BuiltInMessage,

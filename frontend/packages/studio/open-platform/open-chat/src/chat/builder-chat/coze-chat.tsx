@@ -38,7 +38,7 @@ import { useClearContext } from '@coze-common/chat-area/hooks/messages/use-clear
 import { useInitStatus } from '@coze-common/chat-area/hooks/context/use-init-status';
 import { I18n } from '@coze-arch/i18n';
 
-import type { AutoBilling, StudioChatProviderProps } from '@/types/props';
+import type { StudioChatProviderProps } from '@/types/props';
 import { Layout } from '@/types/client';
 import { useGetTheme } from '@/components/studio-open-chat/hooks/use-get-theme';
 import {
