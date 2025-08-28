@@ -92,15 +92,15 @@ export const GlobalLayoutComposed: FC<PropsWithChildren> = ({ children }) => {
           },
         ]}
         extras={[
-          {
-            icon: <IconBotDoc />,
-            tooltip: I18n.t('menu_documents'),
-            onClick: () => {
-              // cp-disable-next-line
-              window.open('https://www.coze.cn/open/docs/guides');
-            },
-            dataTestId: 'layout_document-button',
-          },
+          // {
+          //   icon: <IconBotDoc />,
+          //   tooltip: I18n.t('menu_documents'),
+          //   onClick: () => {
+          //     // cp-disable-next-line
+          //     window.open('https://www.coze.cn/open/docs/guides');
+          //   },
+          //   dataTestId: 'layout_document-button',
+          // },
         ]}
         footer={<AccountDropdown />}
       >
