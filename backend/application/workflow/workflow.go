@@ -3631,7 +3631,25 @@ func toWorkflowAPIParameterAssistType(ty vo.FileSubType) workflow.AssistParamete
 	}
 }
 
+func toVariableSlice(params []*workflow.APIParameter) ([]*vo.Variable, error) {
+	if len(params) == 0 {
+		return nil, nil
+	}
+	res := make([]*vo.Variable, 0, len(params))
+	for _, p := range params {
+		v, err := toVariable(p)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, v)
+	}
+	return res, nil
+}
+
 func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
+	if p == nil {
+		return nil, nil
+	}
 	v := &vo.Variable{
 		Name:        p.Name,
 		Description: p.Desc,
@@ -3653,38 +3671,33 @@ func toVariable(p *workflow.APIParameter) (*vo.Variable, error) {
 		v.Type = vo.VariableTypeBoolean
 	case workflow.ParameterType_Array:
 		v.Type = vo.VariableTypeList
-		if len(p.SubParameters) == 1 && p.SubType != nil && *p.SubType != workflow.ParameterType_Object {
-			av, err := toVariable(p.SubParameters[0])
+		if p.SubType == nil {
+			return nil, fmt.Errorf("array parameter '%s' is missing a SubType", p.Name)
+		}
+		// The schema of a list variable is a single variable describing the items.
+		itemSchema := &vo.Variable{
+			Type: vo.VariableType(strings.ToLower(p.SubType.String())),
+		}
+		// If the items in the array are objects, describe their structure.
+		if *p.SubType == workflow.ParameterType_Object {
+			itemFields, err := toVariableSlice(p.SubParameters)
 			if err != nil {
 				return nil, err
 			}
-			v.Schema = &av
+			itemSchema.Schema = itemFields
 		} else {
-			subVs := make([]any, 0)
-			for _, ap := range p.SubParameters {
-				av, err := toVariable(ap)
-				if err != nil {
-					return nil, err
-				}
-				subVs = append(subVs, av)
-			}
-			v.Schema = &vo.Variable{
-				Type:   vo.VariableTypeObject,
-				Schema: subVs,
+			if len(p.SubParameters) > 0 && p.SubParameters[0].AssistType != nil {
+				itemSchema.AssistType = vo.AssistType(*p.SubParameters[0].AssistType)
 			}
 		}
+		v.Schema = itemSchema
 	case workflow.ParameterType_Object:
 		v.Type = vo.VariableTypeObject
-		vs := make([]*vo.Variable, 0)
-		for _, v := range p.SubParameters {
-			objV, err := toVariable(v)
-			if err != nil {
-				return nil, err
-			}
-			vs = append(vs, objV)
-
+		subVars, err := toVariableSlice(p.SubParameters)
+		if err != nil {
+			return nil, err
 		}
-		v.Schema = vs
+		v.Schema = subVars
 	default:
 		return nil, fmt.Errorf("unknown workflow api parameter type: %v", p.Type)
 	}

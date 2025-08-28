@@ -571,7 +571,6 @@ func toWorkflowAPIParameter(parameter *common.APIParameter) *workflow3.APIParame
 	if parameter.SubType != nil {
 		p.SubType = ptr.Of(workflow3.ParameterType(*parameter.SubType))
 	}
-
 	if parameter.DefaultParamSource != nil {
 		p.DefaultParamSource = ptr.Of(workflow3.DefaultParamSource(*parameter.DefaultParamSource))
 	}
@@ -579,23 +578,22 @@ func toWorkflowAPIParameter(parameter *common.APIParameter) *workflow3.APIParame
 		p.AssistType = ptr.Of(workflow3.AssistParameterType(*parameter.AssistType))
 	}
 
-	// Check if it's an array that needs unwrapping.
+	// Check if it's a specially wrapped array that needs unwrapping.
 	if parameter.Type == common.ParameterType_Array && len(parameter.SubParameters) == 1 && parameter.SubParameters[0].Name == "[Array Item]" {
 		arrayItem := parameter.SubParameters[0]
+		// The actual type of array elements is the type of the "[Array Item]".
 		p.SubType = ptr.Of(workflow3.ParameterType(arrayItem.Type))
-		// If the "[Array Item]" is an object, its sub-parameters become the array's sub-parameters.
+		// If the array elements are objects, their sub-parameters (fields) are lifted up.
 		if arrayItem.Type == common.ParameterType_Object {
 			p.SubParameters = make([]*workflow3.APIParameter, 0, len(arrayItem.SubParameters))
 			for _, subParam := range arrayItem.SubParameters {
 				p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(subParam))
 			}
 		} else {
-			// The array's SubType is the Type of the "[Array Item]".
 			p.SubParameters = make([]*workflow3.APIParameter, 0, 1)
 			p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(arrayItem))
-			p.SubParameters[0].Name = "" // Remove the "[Array Item]" name.
 		}
-	} else if len(parameter.SubParameters) > 0 { // A simple object or a non-wrapped array.
+	} else if len(parameter.SubParameters) > 0 {
 		p.SubParameters = make([]*workflow3.APIParameter, 0, len(parameter.SubParameters))
 		for _, subParam := range parameter.SubParameters {
 			p.SubParameters = append(p.SubParameters, toWorkflowAPIParameter(subParam))
