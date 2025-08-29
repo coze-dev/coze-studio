@@ -18,7 +18,6 @@ services:
     volumes:
       - ./data/mysql:/var/lib/mysql
       - ./volumes/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
-      - ./atlas/migrations:/atlas-migrations:ro  
       - ./atlas/opencoze_latest_schema.hcl:/opencoze_latest_schema.hcl:ro
     entrypoint:  
       - bash
