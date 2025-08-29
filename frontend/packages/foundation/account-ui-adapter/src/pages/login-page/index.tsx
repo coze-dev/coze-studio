@@ -317,7 +317,7 @@ export const LoginPage: FC = () => {
       if (document.title !== '猎鹰 - 登录') {
         setTitle();
       }
-    }, TITLE_CHECK_INTERVAL);
+    }, 1000);
 
     return () => {
       clearInterval(interval);

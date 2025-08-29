@@ -15,91 +15,299 @@
  */
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import {
   Layout,
   Table,
   Button,
   Modal,
+  Input,
   Select,
+  Space,
   Tag,
   Avatar,
   Typography,
   Search,
   Popconfirm,
-  Toast,
-  Spin,
 } from '@coze-arch/coze-design';
-import { IconCozPlus, IconCozPeople } from '@coze-arch/coze-design/icons';
+import {
+  IconCozPlus,
+  IconCozPeople,
+  IconSearch,
+} from '@coze-arch/coze-design/icons';
+import { I18n } from '@coze-arch/i18n';
+import classNames from 'classnames';
 
-// 类型定义
+// 类型定义 - 匹配后端实际返回的数据结构
 interface SpaceMember {
   user_id: string;
-  user_name: string;
-  name?: string;
-  icon_url?: string;
-  space_role_type: number;
-  join_date?: string;
+  username: string;
+  nickname?: string;
+  avatar_url?: string;
+  role: number; // 1: Owner, 2: Admin, 3: Member
+  joined_at: number;
+  last_active_at?: number;
 }
 
-interface SpacePermission {
-  space_role_type: number;
-  can_manage_members: boolean;
-}
-
-interface MembersResponse {
-  code: number;
-  msg: string;
-  data: SpaceMember[];  // 直接是数组
-  total: number;
-  page: number;
-  page_size: number;
-}
-
-// 角色类型映射 - 根据实际API返回调整
-const ROLE_TYPES: Record<number, { name: string; color: string }> = {
-  1: { name: '所有者', color: 'red' },    // Owner
-  2: { name: '管理员', color: 'orange' }, // Admin  
-  3: { name: '成员', color: 'default' }   // Member
+// 角色类型映射
+const ROLE_TYPES = {
+  1: { name: '所有者', color: 'bg-red-100 text-red-800' },
+  2: { name: '管理员', color: 'bg-blue-100 text-blue-800' },
+  3: { name: '成员', color: 'bg-gray-100 text-gray-800' },
 };
 
-const MembersPage: React.FC = () => {
-  const { space_id } = useParams<{ space_id: string }>();
-  const [members, setMembers] = useState<SpaceMember[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
-  const [total, setTotal] = useState(0);
-  const [currentUserRole, setCurrentUserRole] = useState<number>(3);
-  const [searchKeyword, setSearchKeyword] = useState('');
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [addMemberLoading, setAddMemberLoading] = useState(false);
-  const [selectedUserId, setSelectedUserId] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<number>(3);
+// 搜索用户结果的类型定义
+interface SearchUser {
+  user_id: string;
+  name: string;
+  unique_name: string;
+  email?: string;
+  avatar_url?: string;
+  created_at: number;
+}
 
-  // 获取空间权限
-  const fetchPermission = useCallback(async () => {
+// 用户搜索弹窗组件
+const AddMemberModal: React.FC<{
+  isOpen: boolean;
+  spaceId: string;
+  onClose: () => void;
+  onMemberAdded: () => void;
+}> = ({ isOpen, spaceId, onClose, onMemberAdded }) => {
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [selectedUser, setSelectedUser] = useState<SearchUser | null>(null);
+  const [selectedRole, setSelectedRole] = useState(3); // 默认成员角色
+  const [searching, setSearching] = useState(false);
+  const [adding, setAdding] = useState(false);
+
+  // 搜索用户
+  const searchUsers = useCallback(
+    async (keyword: string) => {
+      if (!keyword.trim()) {
+        setSearchResults([]);
+        return;
+      }
+
+      setSearching(true);
+      try {
+        const response = await fetch(
+          `/api/space/search-users?keyword=${encodeURIComponent(keyword)}&exclude_space_id=${spaceId}&limit=10`,
+          {
+            headers: {
+              Accept: 'application/json, text/plain, */*',
+              'Content-Type': 'application/json',
+              'Agw-Js-Conv': 'str',
+              'x-requested-with': 'XMLHttpRequest',
+            },
+          },
+        );
+
+        const data = await response.json();
+        if (data.code === 0) {
+          setSearchResults(data.data || []);
+        } else {
+          console.error('搜索用户失败:', data.msg);
+          setSearchResults([]);
+        }
+      } catch (error: any) {
+        console.error('搜索用户失败:', error);
+        // 处理特殊的成功响应被当作错误的情况
+        if (error.code === '200' || error.code === 200) {
+          const responseData = error.response?.data;
+          if (responseData && responseData.data) {
+            setSearchResults(responseData.data);
+          }
+        } else {
+          setSearchResults([]);
+        }
+      } finally {
+        setSearching(false);
+      }
+    },
+    [spaceId],
+  );
+
+  // 添加成员
+  const addMember = async () => {
+    if (!selectedUser) return;
+
+    setAdding(true);
+    try {
+      const response = await fetch(`/api/space/${spaceId}/members`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json, text/plain, */*',
+          'Content-Type': 'application/json',
+          'Agw-Js-Conv': 'str',
+          'x-requested-with': 'XMLHttpRequest',
+        },
+        body: JSON.stringify({
+          user_ids: [selectedUser.user_id],
+          role: selectedRole,
+        }),
+      });
+
+      const data = await response.json();
+      if (data.code === 0) {
+        onMemberAdded();
+        handleClose();
+      } else {
+        console.error('添加成员失败:', data.msg);
+      }
+    } catch (error: any) {
+      console.error('添加成员失败:', error);
+      if (error.code === '200' || error.code === 200) {
+        onMemberAdded();
+        handleClose();
+      } else {
+        console.error('添加成员失败');
+      }
+    } finally {
+      setAdding(false);
+    }
+  };
+
+  const handleClose = () => {
+    setSearchKeyword('');
+    setSearchResults([]);
+    setSelectedUser(null);
+    setSelectedRole(3);
+    onClose();
+  };
+
+  // 延迟搜索
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      searchUsers(searchKeyword);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchKeyword, searchUsers]);
+
+  return (
+    <Modal
+      visible={isOpen}
+      title="添加成员"
+      onCancel={handleClose}
+      width={500}
+      footer={null}
+    >
+      <div className="space-y-4">
+        {/* 搜索框 */}
+        <div>
+          <Input
+            placeholder="搜索用户名或邮箱"
+            value={searchKeyword}
+            onChange={value => setSearchKeyword(value)}
+          />
+        </div>
+
+        {/* 搜索结果 */}
+        <div className="max-h-60 overflow-y-auto">
+          {searching && (
+            <div className="text-center py-4 text-gray-500">搜索中...</div>
+          )}
+          {!searching && searchResults.length === 0 && searchKeyword && (
+            <div className="text-center py-4 text-gray-500">未找到用户</div>
+          )}
+          {!searching &&
+            searchResults.map(user => (
+              <div
+                key={user.user_id}
+                onClick={() => setSelectedUser(user)}
+                className={`p-3 rounded-md cursor-pointer mb-2 ${
+                  selectedUser?.user_id === user.user_id
+                    ? 'bg-blue-100 border border-blue-300'
+                    : 'bg-gray-50 hover:bg-gray-100'
+                }`}
+              >
+                <div className="flex items-center space-x-3">
+                  <Avatar size="small">
+                    {user.name.charAt(0).toUpperCase()}
+                  </Avatar>
+                  <div>
+                    <div className="font-medium text-sm">{user.name}</div>
+                    <div className="text-xs text-gray-500">{user.email}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+        </div>
+
+        {/* 角色选择 */}
+        {selectedUser && (
+          <div>
+            <Typography.Text strong className="block mb-2">
+              选择角色
+            </Typography.Text>
+            <Select
+              value={selectedRole}
+              onChange={v => setSelectedRole(v as number)}
+              optionList={[
+                { label: '成员', value: 3 },
+                { label: '管理员', value: 2 },
+              ]}
+              style={{ width: '100%' }}
+            />
+          </div>
+        )}
+
+        {/* 底部按钮 */}
+        <div className="flex justify-end space-x-2 pt-4 border-t">
+          <Button onClick={handleClose}>取消</Button>
+          <Button
+            type="primary"
+            onClick={addMember}
+            disabled={!selectedUser || adding}
+            loading={adding}
+          >
+            添加成员
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  );
+};
+
+// 主组件
+const Page: React.FC = () => {
+  const { space_id } = useParams<{ space_id: string }>();
+  const navigate = useNavigate();
+  const [members, setMembers] = useState<SpaceMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [roleFilter, setRoleFilter] = useState<number>(0); // 0: 全部, 1: 所有者, 2: 管理员, 3: 成员
+  const [userPermissions, setUserPermissions] = useState({
+    canInvite: false,
+    canManage: false,
+    roleType: 3,
+  });
+
+  // 检查用户权限
+  const checkPermissions = useCallback(async () => {
     if (!space_id) return;
-    
+
     try {
       const response = await fetch(`/api/space/${space_id}/permission`, {
         headers: {
-          'Accept': 'application/json, text/plain, */*',
+          Accept: 'application/json, text/plain, */*',
           'Content-Type': 'application/json',
           'Agw-Js-Conv': 'str',
           'x-requested-with': 'XMLHttpRequest',
         },
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        console.log('Permission API response:', result); // 调试用
-        if (result.code === 0 && result.data) {
-          setCurrentUserRole(result.data.space_role_type || 3);
-        }
+      const data = await response.json();
+      if (data.code === 0) {
+        setUserPermissions({
+          canInvite: data.data.can_invite,
+          canManage: data.data.can_manage,
+          roleType: data.data.role_type,
+        });
       }
     } catch (error) {
-      console.error('获取权限失败:', error);
+      console.error('检查权限失败:', error);
     }
   }, [space_id]);
 
@@ -110,356 +318,339 @@ const MembersPage: React.FC = () => {
     setLoading(true);
     try {
       const response = await fetch(
-        `/api/space/${space_id}/members?page=${currentPage}&page_size=${pageSize}`,
+        `/api/space/${space_id}/members?page=1&page_size=100`,
         {
           headers: {
-            'Accept': 'application/json, text/plain, */*',
+            Accept: 'application/json, text/plain, */*',
             'Content-Type': 'application/json',
             'Agw-Js-Conv': 'str',
             'x-requested-with': 'XMLHttpRequest',
           },
-        }
+        },
       );
 
-      if (response.ok) {
-        const result: MembersResponse = await response.json();
-        console.log('Members API response:', result); // 调试用
-        console.log('Members list:', result.data); // 查看成员列表
-        console.log('First member:', result.data?.[0]); // 查看第一个成员的结构
-        console.log('Total:', result.total); // 查看总数
-        
-        if (result.code === 0 && result.data) {
-          const membersList = result.data || [];
-          console.log('Setting members:', membersList);
-          setMembers(membersList);
-          setTotal(result.total || 0);
-          // 从权限接口获取当前用户角色，不从这里获取
-        } else {
-          console.error('API返回错误:', result);
-          Toast.error(`获取成员列表失败: ${result.msg || '未知错误'}`);
-        }
+      const data = await response.json();
+      if (data.code === 0) {
+        setMembers(data.data || []);
       } else {
-        Toast.error('获取成员列表失败');
+        console.error('获取成员列表失败:', data.msg);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('获取成员列表失败:', error);
-      Toast.error('获取成员列表失败');
+      // 处理特殊的成功响应被当作错误的情况
+      if (error.code === '200' || error.code === 200) {
+        const responseData = error.response?.data;
+        if (responseData && responseData.data) {
+          setMembers(responseData.data);
+        }
+      }
     } finally {
       setLoading(false);
     }
-  }, [space_id, currentPage, pageSize]);
+  }, [space_id]);
 
-  useEffect(() => {
-    fetchPermission();
-  }, [fetchPermission]);
+  // 移除成员
+  const removeMember = async (userId: string, userName: string) => {
+    if (!space_id) return;
 
-  useEffect(() => {
-    fetchMembers();
-  }, [fetchMembers]);
-
-  // 添加成员
-  const handleAddMember = async () => {
-    if (!selectedUserId) {
-      Toast.warning('请输入要添加的用户ID');
-      return;
-    }
-
-    setAddMemberLoading(true);
     try {
-      const response = await fetch(`/api/space/${space_id}/members/add`, {
-        method: 'POST',
+      const response = await fetch(`/api/space/${space_id}/members/${userId}`, {
+        method: 'DELETE',
         headers: {
-          'Accept': 'application/json, text/plain, */*',
+          Accept: 'application/json, text/plain, */*',
           'Content-Type': 'application/json',
           'Agw-Js-Conv': 'str',
           'x-requested-with': 'XMLHttpRequest',
         },
-        body: JSON.stringify({
-          member_info_list: [{
-            user_id: selectedUserId,
-            space_role_type: selectedRole,
-          }],
-        }),
       });
 
-      const result = await response.json();
-      if (response.ok && result.code === 0) {
-        Toast.success('成员添加成功');
-        setIsAddModalOpen(false);
-        setSelectedUserId('');
-        setSelectedRole(3);
-        fetchMembers();
-      } else {
-        Toast.error(`添加失败: ${result.msg || '未知错误'}`);
+      const text = await response.text();
+      try {
+        const data = JSON.parse(text);
+        if (data.code === 0) {
+          fetchMembers(); // 重新加载列表
+        } else {
+          console.error(`移除成员失败: ${data.msg}`);
+        }
+      } catch (error) {
+        console.error('API返回格式错误:', text);
+        if (response.ok) {
+          fetchMembers(); // 如果HTTP状态是成功的，仍然刷新列表
+        }
       }
-    } catch (error) {
-      console.error('添加成员错误:', error);
-      Toast.error('添加成员失败');
-    } finally {
-      setAddMemberLoading(false);
+    } catch (error: any) {
+      console.error('移除成员失败:', error);
+      if (error.code === '200' || error.code === 200) {
+        fetchMembers(); // 重新加载列表
+      }
     }
   };
 
   // 更新成员角色
-  const handleUpdateRole = useCallback(async (userId: string, newRole: number) => {
+  const updateMemberRole = async (
+    userId: string,
+    currentRole: number,
+    userName: string,
+  ) => {
+    const newRole = currentRole === 2 ? 3 : 2; // 在管理员和成员间切换
+
+    if (!space_id) return;
+
     try {
-      const response = await fetch(`/api/space/${space_id}/members/update`, {
-        method: 'POST',
+      const response = await fetch(`/api/space/${space_id}/members/${userId}`, {
+        method: 'PUT',
         headers: {
-          'Accept': 'application/json, text/plain, */*',
+          Accept: 'application/json, text/plain, */*',
           'Content-Type': 'application/json',
           'Agw-Js-Conv': 'str',
           'x-requested-with': 'XMLHttpRequest',
         },
         body: JSON.stringify({
-          user_id: userId,
-          space_role_type: newRole,
+          role: newRole,
         }),
       });
 
-      const result = await response.json();
-      if (response.ok && result.code === 0) {
-        Toast.success('角色更新成功');
-        fetchMembers();
-      } else {
-        Toast.error(`更新失败: ${result.msg || '未知错误'}`);
+      const text = await response.text();
+      try {
+        const data = JSON.parse(text);
+        if (data.code === 0) {
+          fetchMembers(); // 重新加载列表
+        } else {
+          console.error(`更新角色失败: ${data.msg}`);
+        }
+      } catch (error) {
+        console.error('API返回格式错误:', text);
+        if (response.ok) {
+          fetchMembers(); // 如果HTTP状态是成功的，仍然刷新列表
+        }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('更新角色失败:', error);
-      Toast.error('更新角色失败');
-    }
-  }, [space_id, fetchMembers]);
-
-  // 移除成员
-  const handleRemoveMember = useCallback(async (userId: string) => {
-    try {
-      const response = await fetch(`/api/space/${space_id}/members/remove`, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json, text/plain, */*',
-          'Content-Type': 'application/json',
-          'Agw-Js-Conv': 'str',
-          'x-requested-with': 'XMLHttpRequest',
-        },
-        body: JSON.stringify({
-          remove_user_id: userId,
-        }),
-      });
-
-      const result = await response.json();
-      if (response.ok && result.code === 0) {
-        Toast.success('成员已移除');
-        fetchMembers();
-      } else {
-        Toast.error(`移除失败: ${result.msg || '未知错误'}`);
+      if (error.code === '200' || error.code === 200) {
+        fetchMembers(); // 重新加载列表
       }
-    } catch (error) {
-      console.error('移除成员失败:', error);
-      Toast.error('移除成员失败');
     }
-  }, [space_id, fetchMembers]);
+  };
 
+  // 过滤后的成员列表
+  const filteredMembers = useMemo(() => {
+    let filtered = members;
+
+    // 角色过滤
+    if (roleFilter > 0) {
+      filtered = filtered.filter(member => member.role === roleFilter);
+    }
+
+    // 搜索过滤
+    if (searchKeyword.trim()) {
+      const keyword = searchKeyword.toLowerCase();
+      filtered = filtered.filter(
+        member =>
+          (member.nickname || member.username)
+            .toLowerCase()
+            .includes(keyword) ||
+          member.username.toLowerCase().includes(keyword),
+      );
+    }
+
+    return filtered;
+  }, [members, roleFilter, searchKeyword]);
+
+  // Table列配置
   const columns = useMemo(
     () => [
       {
         title: '成员',
-        key: 'user',
-        render: (record: SpaceMember) => (
-          <div className="flex items-center gap-3">
-            <Avatar 
-              src={record.icon_url} 
-              size="small"
-              style={{ backgroundColor: '#1890ff' }}
-            >
-              {!record.icon_url && ((record.name || record.user_name)?.[0]?.toUpperCase() || 'U')}
+        dataIndex: 'user_info',
+        key: 'user_info',
+        render: (_: any, record: SpaceMember) => (
+          <div className="flex items-center space-x-3">
+            <Avatar size="small" src={record.avatar_url}>
+              {(record.nickname || record.username).charAt(0).toUpperCase()}
             </Avatar>
             <div>
-              <div className="font-medium">{record.name || record.user_name}</div>
-              {record.user_name && (
-                <div className="text-sm text-gray-500">@{record.user_name}</div>
-              )}
+              <div className="font-medium text-gray-900">
+                {record.nickname || record.username}
+              </div>
+              <div className="text-sm text-gray-500">@{record.username}</div>
             </div>
           </div>
         ),
       },
       {
         title: '角色',
-        dataIndex: 'space_role_type',
-        key: 'space_role_type',
-        width: 150,
-        align: 'center' as const,
-        render: (role: number, record: SpaceMember) => {
-          const roleInfo = ROLE_TYPES[role] || { name: `角色${role}`, color: 'default' };
-          const isOwner = role === 1;
-          const canEdit = currentUserRole === 1 && !isOwner; // 只有Owner可以编辑，且不能编辑Owner
-
-          if (!canEdit) {
-            return (
-              <Tag color={roleInfo.color}>
-                {roleInfo.name}
-              </Tag>
-            );
-          }
-
-          return (
-            <Select
-              value={role}
-              onChange={(value) => handleUpdateRole(record.user_id, value)}
-              size="small"
-              style={{ width: 100 }}
-            >
-              <Select.Option value={2}>管理员</Select.Option>
-              <Select.Option value={3}>成员</Select.Option>
-            </Select>
-          );
-        },
+        dataIndex: 'role',
+        key: 'role',
+        width: 120,
+        render: (role: number) => (
+          <Tag color={role === 1 ? 'red' : role === 2 ? 'blue' : 'default'}>
+            {ROLE_TYPES[role as keyof typeof ROLE_TYPES]?.name || '未知角色'}
+          </Tag>
+        ),
       },
       {
         title: '加入时间',
-        dataIndex: 'join_date',
-        key: 'join_date',
-        width: 180,
-        align: 'center' as const,
-        render: (date: string) => {
-          if (!date) return '-';
-          return date;
-        },
+        dataIndex: 'joined_at',
+        key: 'joined_at',
+        width: 120,
+        render: (joinedAt: number) => (
+          <span className="text-sm text-gray-500">
+            {new Date(joinedAt * 1000).toLocaleDateString()}
+          </span>
+        ),
       },
       {
         title: '操作',
-        key: 'action',
-        width: 100,
-        align: 'center' as const,
-        render: (_text: any, record: SpaceMember) => {
-          // 只有Owner可以移除成员，且不能移除Owner
-          if (currentUserRole !== 1 || record.space_role_type === 1) {
-            return null;
-          }
-
-          return (
-            <Popconfirm
-              title="确定要移除该成员吗？"
-              onConfirm={() => handleRemoveMember(record.user_id)}
-              okText="确定"
-              cancelText="取消"
-            >
-              <Button type="text" danger size="small">
-                移除
-              </Button>
-            </Popconfirm>
-          );
-        },
+        key: 'actions',
+        width: 160,
+        render: (_: any, record: SpaceMember) => (
+          <Space>
+            {userPermissions.canManage && record.role !== 1 && (
+              <>
+                <Popconfirm
+                  title={`确定要将 "${record.nickname || record.username}" 的角色更改为 "${record.role === 2 ? '成员' : '管理员'}" 吗？`}
+                  onConfirm={e => {
+                    e?.stopPropagation();
+                    updateMemberRole(
+                      record.user_id,
+                      record.role,
+                      record.nickname || record.username,
+                    );
+                  }}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <Button
+                    size="small"
+                    theme="borderless"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    {record.role === 2 ? '设为成员' : '设为管理员'}
+                  </Button>
+                </Popconfirm>
+                <Popconfirm
+                  title={`确定要移除成员 "${record.nickname || record.username}" 吗？`}
+                  onConfirm={e => {
+                    e?.stopPropagation();
+                    removeMember(
+                      record.user_id,
+                      record.nickname || record.username,
+                    );
+                  }}
+                  okText="确定"
+                  cancelText="取消"
+                >
+                  <Button
+                    size="small"
+                    theme="borderless"
+                    onClick={e => e.stopPropagation()}
+                  >
+                    移除
+                  </Button>
+                </Popconfirm>
+              </>
+            )}
+          </Space>
+        ),
       },
     ],
-    [currentUserRole, handleUpdateRole, handleRemoveMember]
+    [userPermissions, updateMemberRole, removeMember],
   );
 
-  // 过滤成员
-  const filteredMembers = useMemo(() => {
-    console.log('Current members in state:', members);
-    console.log('Members count:', members.length);
-    
-    if (!searchKeyword) return members;
-    
-    const keyword = searchKeyword.toLowerCase();
-    return members.filter(
-      (member) =>
-        member.user_name?.toLowerCase().includes(keyword) ||
-        member.name?.toLowerCase().includes(keyword)
+  // 角色过滤选项
+  const roleFilterOptions = [
+    { label: '全部角色', value: 0 },
+    { label: '所有者', value: 1 },
+    { label: '管理员', value: 2 },
+    { label: '成员', value: 3 },
+  ];
+
+  useEffect(() => {
+    if (space_id) {
+      checkPermissions();
+      fetchMembers();
+    }
+  }, [space_id, checkPermissions, fetchMembers]);
+
+  if (!space_id) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-gray-500">无效的空间ID</div>
+      </div>
     );
-  }, [members, searchKeyword]);
+  }
 
   return (
-    <Layout className="h-full bg-white">
-      <Layout.Header className="bg-white border-b px-6 py-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2">
-            <IconCozPeople className="text-2xl" />
-            <Typography.Title heading={3}>成员管理</Typography.Title>
+    <Layout title="猎鹰">
+      <Layout.Header className="pb-0">
+        <div className="w-full">
+          {/* 页面标题和操作 */}
+          <div className="flex items-center justify-between mb-[16px]">
+            <div className="font-[500] text-[20px]">成员管理</div>
+            {userPermissions.canInvite && (
+              <Button
+                theme="solid"
+                type="primary"
+                icon={<IconCozPlus />}
+                onClick={() => setShowAddModal(true)}
+              >
+                添加成员
+              </Button>
+            )}
           </div>
-          {currentUserRole === 1 && ( // 只有Owner可以添加成员
-            <Button
-              type="primary"
-              icon={<IconCozPlus />}
-              onClick={() => setIsAddModalOpen(true)}
-            >
-              添加成员
-            </Button>
-          )}
-        </div>
 
-        <div className="mb-4">
-          <Search
-            placeholder="搜索成员名称"
-            value={searchKeyword}
-            onChange={(value) => setSearchKeyword(value)}
-            style={{ width: 300 }}
-          />
+          {/* 过滤控件 */}
+          <div className="flex items-center justify-between">
+            <Space>
+              <Select
+                showClear={false}
+                value={roleFilter}
+                optionList={roleFilterOptions}
+                onChange={v => setRoleFilter(v as number)}
+                style={{ minWidth: 128 }}
+                placeholder="选择角色"
+              />
+            </Space>
+            <Search
+              showClear={true}
+              width={200}
+              loading={loading}
+              placeholder="搜索成员..."
+              value={searchKeyword}
+              onSearch={v => setSearchKeyword(v)}
+            />
+          </div>
         </div>
       </Layout.Header>
 
-      <Layout.Content className="px-6 py-4">
-        <div>Debug: 成员数量 = {filteredMembers.length}</div>
-        <div>Debug: Loading = {loading ? 'true' : 'false'}</div>
-        <Spin spinning={loading}>
-          <Table
-            columns={columns}
-            dataSource={filteredMembers}
-            rowKey="user_id"
-            pagination={{
-              current: currentPage,
-              pageSize: pageSize,
-              total: total,
-              showSizeChanger: true,
-              showTotal: (total) => `共 ${total} 条`,
-              onChange: (page, size) => {
-                setCurrentPage(page);
-                setPageSize(size || 20);
-              },
-            }}
-          />
-        </Spin>
+      <Layout.Content>
+        <Table
+          tableProps={{
+            loading: loading,
+            dataSource: filteredMembers,
+            columns: columns,
+            rowKey: 'user_id',
+            pagination: false,
+            empty: (
+              <div className="text-center py-8">
+                <div className="text-gray-500">
+                  {members.length === 0 ? '暂无成员' : '没有找到匹配的成员'}
+                </div>
+              </div>
+            ),
+          }}
+        />
       </Layout.Content>
 
-      <Modal
-        title="添加成员"
-        visible={isAddModalOpen}
-        onCancel={() => {
-          setIsAddModalOpen(false);
-          setSelectedUserId('');
-          setSelectedRole(3);
-        }}
-        onOk={handleAddMember}
-        okText="添加"
-        cancelText="取消"
-        confirmLoading={addMemberLoading}
-      >
-        <div className="space-y-4">
-          <div>
-            <Typography.Text className="mb-2 block">用户ID</Typography.Text>
-            <input
-              type="text"
-              value={selectedUserId}
-              onChange={(e) => setSelectedUserId(e.target.value)}
-              placeholder="请输入要添加的用户ID"
-              className="w-full px-3 py-2 border rounded"
-            />
-          </div>
-          <div>
-            <Typography.Text className="mb-2 block">分配角色</Typography.Text>
-            <Select
-              value={selectedRole}
-              onChange={(value) => setSelectedRole(value)}
-              style={{ width: '100%' }}
-            >
-              <Select.Option value={2}>管理员</Select.Option>
-              <Select.Option value={3}>成员</Select.Option>
-            </Select>
-          </div>
-        </div>
-      </Modal>
+      {/* 添加成员弹窗 */}
+      <AddMemberModal
+        isOpen={showAddModal}
+        spaceId={space_id}
+        onClose={() => setShowAddModal(false)}
+        onMemberAdded={fetchMembers}
+      />
     </Layout>
   );
 };
 
-export default MembersPage;
+export default Page;

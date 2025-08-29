@@ -81,8 +81,7 @@ type ExportFunctions =
   | 'SaveBindConnectorConfig'
   | 'CommitDraftBot'
   | 'CheckDraftBotCommit'
-  | 'GetCardRespStruct'
-  | 'GetSpaceModelList';
+  | 'GetCardRespStruct';
 
 type ExportService = {
   [K in ExportFunctions]: (
@@ -144,7 +143,7 @@ const spaceApiService = new Proxy(Object.create(null), {
   },
 }) as ExportService;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention -- ExportFunctions 类型需要枚举所有导出的函数名称
 export const SpaceApi = spaceApiService;
 
 export { SpaceApiV2 } from './space-api-v2';
@@ -152,7 +151,9 @@ export {
   type SpaceModelItem,
   type GetSpaceModelListRequest,
   type GetSpaceModelListResponse,
+  type ModelDetailOutput,
   getSpaceModelList,
   getModelsByProtocol,
   searchModels,
+  listModels,
 } from './space-model-api';

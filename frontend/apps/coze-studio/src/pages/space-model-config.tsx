@@ -303,22 +303,19 @@ function useModelData(spaceId: string) {
     const fetchModels = async () => {
       try {
         setLoading(true);
-        // 直接使用新的模型管理API
-        const modelsData = await listModels({ space_id: spaceId });
+        // 直接使用新的模型管理API - 注意listModels函数期望接收spaceId字符串
+        const modelsData = await listModels(spaceId);
 
         if (modelsData) {
           // 将ModelDetailOutput转换为SpaceModel
           const convertedModels: SpaceModel[] = modelsData.map(
             (model: ModelDetailOutput) => ({
-              id: parseInt(model.id) || 0, // 将string id转换为number
+              id: model.id, // 已经是number类型
               name: model.name || '',
-              description:
-                (model.description || {}).zh ||
-                (model.description || {}).en ||
-                '',
-              context_length: model.meta?.capability?.max_tokens || 0,
-              protocol: model.meta?.protocol || '',
-              status: model.meta?.status || 1, // 从meta中获取status，默认为1（启用）
+              description: model.description || '',
+              context_length: model.context_length || 4096,
+              protocol: model.protocol || 'openai',
+              status: model.status || 1, // 默认为1（启用）
               icon_uri: model.icon_uri,
               icon_url: model.icon_url,
             }),
