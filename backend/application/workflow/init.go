@@ -20,8 +20,9 @@ import (
 	"context"
 	"path/filepath"
 
-	"gopkg.in/yaml.v3"
 	"os"
+
+	"gopkg.in/yaml.v3"
 
 	"github.com/cloudwego/eino/callbacks"
 	"github.com/cloudwego/eino/compose"
@@ -92,7 +93,7 @@ func InitService(_ context.Context, components *ServiceComponents) (*Application
 	if err != nil {
 		return nil, err
 	}
-	
+
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)

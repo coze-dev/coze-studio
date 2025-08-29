@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 
@@ -27,6 +28,7 @@ import (
 	"sync/atomic"
 
 	einoSchema "github.com/cloudwego/eino/schema"
+
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"

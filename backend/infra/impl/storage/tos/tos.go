@@ -30,8 +30,10 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
+	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
 )
 
 type tosClient struct {
@@ -181,7 +183,7 @@ func (t *tosClient) PutObjectWithReader(ctx context.Context, objectKey string, c
 	}
 
 	if len(option.Tagging) > 0 {
-		input.Meta = option.Tagging
+		input.Tagging = goutil.MapToQuery(option.Tagging)
 	}
 
 	_, err := client.PutObjectV2(ctx, input)
@@ -277,24 +279,36 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 			continue
 		}
 
-		var tagging map[string]string
-		if obj.Meta != nil {
-			obj.Meta.Range(func(key, value string) bool {
-				if tagging == nil {
-					tagging = make(map[string]string)
-				}
-				tagging[key] = value
-				return true
-			})
-		}
-
 		files = append(files, &storage.FileInfo{
 			Key:          obj.Key,
 			LastModified: obj.LastModified,
 			ETag:         obj.ETag,
 			Size:         obj.Size,
-			Tagging:      tagging,
 		})
+	}
+
+	if input.WithTagging {
+		client := t.client
+		taskGroup := taskgroup.NewTaskGroup(ctx, 5)
+		for idx := range files {
+			f := files[idx]
+			taskGroup.Go(func() error {
+				tagging, err := client.GetObjectTagging(ctx, &tos.GetObjectTaggingInput{
+					Bucket: t.bucketName,
+					Key:    f.Key,
+				})
+				if err != nil {
+					return err
+				}
+
+				f.Tagging = tagsToMap(tagging.TagSet.Tags)
+				return nil
+			})
+		}
+
+		if err := taskGroup.Wait(); err != nil {
+			return nil, err
+		}
 	}
 
 	return &storage.ListObjectsPaginatedOutput{
@@ -344,4 +358,17 @@ func (t *tosClient) ListAllObjects(ctx context.Context, prefix string, withTaggi
 	}
 
 	return files, nil
+}
+
+func tagsToMap(tags []tos.Tag) map[string]string {
+	if len(tags) == 0 {
+		return nil
+	}
+
+	m := make(map[string]string, len(tags))
+	for _, tag := range tags {
+		m[tag.Key] = tag.Value
+	}
+
+	return m
 }

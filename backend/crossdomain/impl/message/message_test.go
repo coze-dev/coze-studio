@@ -21,6 +21,9 @@ import (
 	"testing"
 
 	"github.com/cloudwego/eino/schema"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
@@ -28,8 +31,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 type mockWorkflowRepo struct {

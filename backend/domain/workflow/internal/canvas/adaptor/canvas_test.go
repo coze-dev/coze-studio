@@ -18,7 +18,6 @@ package adaptor
 
 import (
 	"context"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"io"
 	"net"
 	"net/http"
@@ -27,6 +26,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino/schema"
