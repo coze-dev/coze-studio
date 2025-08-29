@@ -241,21 +241,11 @@ export const router: ReturnType<typeof createBrowserRouter> =
 
                 // models management
                 {
-                  path: 'models',
-                  children: [
-                    {
-                      index: true,
-                      lazy: () => import('../pages/space-model-config'),
-                    },
-                    {
-                      path: 'add',
-                      lazy: () => import('../pages/space-model-config/AddModelPage'),
-                    },
-                    {
-                      path: 'edit/:model_id',
-                      lazy: () => import('../pages/space-model-config/EditModelPage'),
-                    },
-                  ],
+                  path: 'models/*',
+                  lazy: async () => {
+                    const { SpaceModelRouter } = await import('../pages/space-model-router');
+                    return { Component: SpaceModelRouter };
+                  },
                 },
 
                 // members management

@@ -81,7 +81,18 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 		if err != nil {
 			return resp, err
 		}
-		resp.Messages = allMessageList
+		
+		// Filter out verbose messages from the response
+		// These are internal state messages that should not be shown to users
+		var filteredMessages []*entity.Message
+		for _, msg := range allMessageList {
+			// Skip verbose messages (including generate_answer_finish)
+			if msg.MessageType == message.MessageTypeVerbose {
+				continue
+			}
+			filteredMessages = append(filteredMessages, msg)
+		}
+		resp.Messages = filteredMessages
 	}
 	return resp, nil
 }
@@ -92,11 +103,24 @@ func (m *messageImpl) ListWithoutPair(ctx context.Context, req *entity.ListMeta)
 	if err != nil {
 		return resp, err
 	}
+	
+	// Filter out verbose messages from the response
+	var filteredMessages []*entity.Message
+	for _, msg := range messageList {
+		// Skip verbose messages (including generate_answer_finish)
+		if msg.MessageType == message.MessageTypeVerbose {
+			continue
+		}
+		filteredMessages = append(filteredMessages, msg)
+	}
+	
 	resp.Direction = req.Direction
 	resp.HasMore = hasMore
-	resp.Messages = messageList
-	resp.PrevCursor = messageList[0].ID
-	resp.NextCursor = messageList[len(messageList)-1].ID
+	resp.Messages = filteredMessages
+	if len(filteredMessages) > 0 {
+		resp.PrevCursor = filteredMessages[0].ID
+		resp.NextCursor = filteredMessages[len(filteredMessages)-1].ID
+	}
 	return resp, nil
 }
 

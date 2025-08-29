@@ -242,7 +242,26 @@ export const router: ReturnType<typeof createBrowserRouter> = createBrowserRoute
               },
               {
                 path: 'models',
-                Component: SpaceModelConfig,
+                children: [
+                  {
+                    index: true,
+                    Component: SpaceModelConfig,
+                  },
+                  {
+                    path: 'add',
+                    lazy: async () => {
+                      const module = await import('./pages/space-model-config/AddModelPage');
+                      return { Component: module.default };
+                    },
+                  },
+                  {
+                    path: 'edit/:model_id',
+                    lazy: async () => {
+                      const module = await import('./pages/space-model-config/EditModelPage');
+                      return { Component: module.default };
+                    },
+                  },
+                ],
                 loader: () => ({
                   subMenuKey: SpaceSubModuleEnum.MODELS,
                 }),

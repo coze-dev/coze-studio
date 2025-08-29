@@ -189,8 +189,14 @@ import (
 	 mainChan := make(chan *entity.AgentRespEvent, 100)
 
 	 // 将历史消息和输入转换为 schema.Message 格式
+	 // 过滤掉verbose消息，这些是内部状态消息不应发送给LLM
 	 var historySchema []*schema.Message
 	 for _, msg := range historyMsg {
+		 // 跳过verbose消息（包括generate_answer_finish）
+		 if msg.MessageType == message.MessageTypeVerbose {
+			 continue
+		 }
+		 
 		 if msg.ModelContent != "" {
 			 // 优先使用ModelContent中的正确结构
 			 var modelMsg schema.Message

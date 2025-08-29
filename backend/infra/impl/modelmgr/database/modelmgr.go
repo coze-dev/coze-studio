@@ -34,9 +34,8 @@ import (
 )
 
 const (
-	// 空间级别的模型缓存前缀
-	spaceModelCachePrefix = "space:"
-	modelCacheTTL         = 5 * time.Minute
+	modelCachePrefix = "model:cache:"
+	modelCacheTTL    = 5 * time.Minute
 )
 
 // ModelMgr 数据库模型管理器
@@ -62,7 +61,7 @@ func NewModelMgr(db *gorm.DB, redis cache.Cmdable) (modelmgr.Manager, error) {
 
 // ListModel 查询模型列表
 func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
-	// Check if SpaceID is provided for filtering
+	// 如果指定了空间ID，需要通过space_model表来过滤
 	if req.SpaceID != nil {
 		return m.listModelsBySpace(ctx, req)
 	}
@@ -179,7 +178,7 @@ func (m *ModelMgr) ListModel(ctx context.Context, req *modelmgr.ListModelRequest
 // listModelsBySpace 根据空间ID查询模型列表
 func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListModelRequest) (*modelmgr.ListModelResponse, error) {
 	logs.Infof("listModelsBySpace called with spaceID: %d", *req.SpaceID)
-
+	
 	// 首先查询空间中的模型实体
 	spaceModelQuery := m.db.WithContext(ctx).
 		Table("space_model sm").
@@ -325,11 +324,6 @@ func (m *ModelMgr) listModelsBySpace(ctx context.Context, req *modelmgr.ListMode
 		models = append(models, model)
 		processedCount++
 
-		// 缓存到空间级别
-		if m.redis != nil && req.SpaceID != nil {
-			_ = m.cacheSpaceModel(ctx, *req.SpaceID, model)
-		}
-
 		// 使用space_model的ID作为下一个游标
 		cursor := strconv.FormatUint(sm.SpaceModelID, 10)
 		nextCursor = &cursor
@@ -357,27 +351,20 @@ func (m *ModelMgr) MGetModelByID(ctx context.Context, req *modelmgr.MGetModelReq
 		return []*modelmgr.Model{}, nil
 	}
 
+	// 尝试从缓存获取
 	models := make([]*modelmgr.Model, 0, len(req.IDs))
 	missedIDs := make([]int64, 0)
 
-	// 如果提供了SpaceID，尝试从空间级别的缓存获取
-	if req.SpaceID != nil && m.redis != nil {
+	if m.redis != nil {
 		for _, id := range req.IDs {
-			model, err := m.getSpaceModelFromCache(ctx, *req.SpaceID, id)
+			model, err := m.getModelFromCache(ctx, id)
 			if err == nil && model != nil {
-				// 检查模型在空间中的状态
-				available, err := m.CheckModelAvailableInSpace(ctx, *req.SpaceID, id)
-				if err == nil && available {
-					models = append(models, model)
-				} else {
-					missedIDs = append(missedIDs, id)
-				}
+				models = append(models, model)
 			} else {
 				missedIDs = append(missedIDs, id)
 			}
 		}
 	} else {
-		// 没有空间上下文，直接从数据库获取
 		missedIDs = req.IDs
 	}
 
@@ -437,20 +424,11 @@ func (m *ModelMgr) MGetModelByID(ctx context.Context, req *modelmgr.MGetModelReq
 				continue
 			}
 
-			// 如果提供了SpaceID，检查模型在空间中的可用性
-			if req.SpaceID != nil {
-				available, err := m.CheckModelAvailableInSpace(ctx, *req.SpaceID, model.ID)
-				if err != nil || !available {
-					// 模型在该空间不可用，跳过
-					continue
-				}
-			}
-
 			models = append(models, model)
 
-			// 如果有空间上下文和Redis，缓存到空间级别
-			if req.SpaceID != nil && m.redis != nil {
-				_ = m.cacheSpaceModel(ctx, *req.SpaceID, model)
+			// 缓存模型
+			if m.redis != nil {
+				_ = m.cacheModel(ctx, model)
 			}
 		}
 	}
@@ -479,8 +457,7 @@ func (m *ModelMgr) convertToModel(entity *entity.ModelEntity, meta *entity.Model
 		IconURI: meta.IconURI,
 		IconURL: meta.IconURL,
 		Meta: modelmgr.ModelMeta{
-			// Name field doesn't exist in ModelMeta, commented out temporarily
-			// Name:     meta.ModelName,
+			Name:     meta.ModelName,
 			Protocol: chatmodel.Protocol(meta.Protocol),
 			Status:   modelmgr.ModelStatus(meta.Status),
 		},
@@ -532,24 +509,14 @@ func (m *ModelMgr) convertToModel(entity *entity.ModelEntity, meta *entity.Model
 				case string:
 					// 如果是字符串，尝试解析为 duration
 					if d, err := time.ParseDuration(v); err == nil {
-						// 如果超时小于30秒，设置为300秒
-						if d < 30*time.Second {
-							configMap["timeout"] = int64(300 * time.Second)
-						} else {
-							configMap["timeout"] = int64(d)
-						}
+						configMap["timeout"] = int64(d)
 					} else {
 						// 如果解析失败，删除该字段
 						delete(configMap, "timeout")
 					}
 				case float64:
 					// 如果是数字，假设是秒数，转换为纳秒
-					// 如果超时小于30秒，设置为300秒
-					if v < 30 {
-						configMap["timeout"] = int64(300 * time.Second)
-					} else {
-						configMap["timeout"] = int64(v * float64(time.Second))
-					}
+					configMap["timeout"] = int64(v * float64(time.Second))
 				}
 			}
 
@@ -572,9 +539,8 @@ func (m *ModelMgr) convertToModel(entity *entity.ModelEntity, meta *entity.Model
 }
 
 // getModelFromCache 从缓存获取模型
-// getSpaceModelFromCache 从缓存获取空间级别的模型
-func (m *ModelMgr) getSpaceModelFromCache(ctx context.Context, spaceID uint64, modelID int64) (*modelmgr.Model, error) {
-	key := fmt.Sprintf("%s%d:model:%d", spaceModelCachePrefix, spaceID, modelID)
+func (m *ModelMgr) getModelFromCache(ctx context.Context, id int64) (*modelmgr.Model, error) {
+	key := fmt.Sprintf("%s%d", modelCachePrefix, id)
 	data, err := m.redis.Get(ctx, key).Bytes()
 	if err != nil {
 		return nil, err
@@ -589,9 +555,8 @@ func (m *ModelMgr) getSpaceModelFromCache(ctx context.Context, spaceID uint64, m
 }
 
 // cacheModel 缓存模型
-// cacheSpaceModel 缓存空间级别的模型
-func (m *ModelMgr) cacheSpaceModel(ctx context.Context, spaceID uint64, model *modelmgr.Model) error {
-	key := fmt.Sprintf("%s%d:model:%d", spaceModelCachePrefix, spaceID, model.ID)
+func (m *ModelMgr) cacheModel(ctx context.Context, model *modelmgr.Model) error {
+	key := fmt.Sprintf("%s%d", modelCachePrefix, model.ID)
 	data, err := json.Marshal(model)
 	if err != nil {
 		return err
@@ -600,64 +565,14 @@ func (m *ModelMgr) cacheSpaceModel(ctx context.Context, spaceID uint64, model *m
 	return m.redis.Set(ctx, key, data, modelCacheTTL).Err()
 }
 
-// RefreshCache 刷新缓存（需要知道空间ID才能清理）
-// 由于模型可能在多个空间中使用，这里需要清理所有相关的空间缓存
+// RefreshCache 刷新缓存（用于管理端更新模型后）
 func (m *ModelMgr) RefreshCache(ctx context.Context, modelID int64) error {
 	if m.redis == nil {
 		return nil
 	}
 
-	// 查询使用此模型的所有空间
-	var spaceModels []struct {
-		SpaceID uint64 `gorm:"column:space_id"`
-	}
-	err := m.db.WithContext(ctx).
-		Table("space_model").
-		Select("DISTINCT space_id").
-		Where("model_entity_id = ? AND deleted_at IS NULL", modelID).
-		Scan(&spaceModels).Error
-	
-	if err != nil {
-		logs.CtxWarnf(ctx, "Failed to query spaces for model %d: %v", modelID, err)
-		return err
-	}
-
-	// 清理所有相关空间的缓存
-	for _, sm := range spaceModels {
-		key := fmt.Sprintf("%s%d:model:%d", spaceModelCachePrefix, sm.SpaceID, modelID)
-		if err := m.redis.Del(ctx, key).Err(); err != nil {
-			logs.CtxWarnf(ctx, "Failed to delete cache for space %d model %d: %v", sm.SpaceID, modelID, err)
-		}
-	}
-
-	logs.CtxInfof(ctx, "Model cache refreshed for model %d in %d spaces", modelID, len(spaceModels))
-	return nil
-}
-
-// RefreshSpaceModelCache 刷新特定空间的模型缓存
-func (m *ModelMgr) RefreshSpaceModelCache(ctx context.Context, spaceID uint64, modelID int64) error {
-	if m.redis == nil {
-		return nil
-	}
-
-	key := fmt.Sprintf("%s%d:model:%d", spaceModelCachePrefix, spaceID, modelID)
+	key := fmt.Sprintf("%s%d", modelCachePrefix, modelID)
 	return m.redis.Del(ctx, key).Err()
-}
-
-// CheckModelAvailableInSpace 检查模型在特定空间是否可用
-func (m *ModelMgr) CheckModelAvailableInSpace(ctx context.Context, spaceID uint64, modelID int64) (bool, error) {
-	// 查询space_model表
-	var count int64
-	err := m.db.WithContext(ctx).
-		Table("space_model").
-		Where("space_id = ? AND model_entity_id = ? AND deleted_at IS NULL AND status = 1", spaceID, modelID).
-		Count(&count).Error
-	
-	if err != nil {
-		return false, fmt.Errorf("failed to check model availability in space: %w", err)
-	}
-	
-	return count > 0, nil
 }
 
 // RefreshAllCache 刷新所有缓存

@@ -287,7 +287,7 @@ func GetModelTemplates(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// 调用应用服务层获取模板列表
-	modelTemplates, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplates(ctx)
+	templates, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplates(ctx)
 	if err != nil {
 		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplatesResponse{
 			Code: 500,
@@ -299,7 +299,7 @@ func GetModelTemplates(ctx context.Context, c *app.RequestContext) {
 	resp := &modelmgr.GetModelTemplatesResponse{
 		Code:      0,
 		Msg:       "success",
-		Templates: modelTemplates,
+		Templates: templates,
 	}
 
 	c.JSON(consts.StatusOK, resp)
@@ -317,7 +317,6 @@ func GetModelTemplateContent(ctx context.Context, c *app.RequestContext) {
 	}
 
 	// 调用应用服务层获取模板内容
-	// GetModelTemplateContent only takes templateID as parameter
 	content, err := modelmgrApp.ModelmgrApplicationSVC.GetModelTemplateContent(ctx, req.TemplateID)
 	if err != nil {
 		c.JSON(consts.StatusOK, &modelmgr.GetModelTemplateContentResponse{
@@ -519,30 +518,35 @@ func ImportModelFromTemplate(ctx context.Context, c *app.RequestContext) {
 
 		// 处理ConnConfig
 		if connConfig, ok := metaData["conn_config"].(map[string]interface{}); ok {
-			// 尝试提取基本字段，如果无法识别则创建空配置
-			apiConnConfig := &modelmgr.ConnConfig{
-				BaseURL: "",  // Default empty
-				Model:   "",  // Default empty
-			}
-			
-			// Try to extract known fields
+			// 解析新的ConnConfig结构体字段
+			config := &modelmgr.ConnConfig{}
+
+			// 解析base_url字段
 			if baseURL, ok := connConfig["base_url"].(string); ok {
-				apiConnConfig.BaseURL = baseURL
+				config.BaseURL = baseURL
 			}
+
+			// 解析api_key字段
 			if apiKey, ok := connConfig["api_key"].(string); ok {
-				apiConnConfig.APIKey = &apiKey
+				config.APIKey = &apiKey
 			}
+
+			// 解析timeout字段
 			if timeout, ok := connConfig["timeout"].(string); ok {
-				apiConnConfig.Timeout = &timeout
+				config.Timeout = &timeout
 			}
+
+			// 解析model字段
 			if model, ok := connConfig["model"].(string); ok {
-				apiConnConfig.Model = model
+				config.Model = model
 			}
+
+			// 解析enable_thinking字段
 			if enableThinking, ok := connConfig["enable_thinking"].(bool); ok {
-				apiConnConfig.EnableThinking = &enableThinking
+				config.EnableThinking = &enableThinking
 			}
-			
-			meta.ConnConfig = apiConnConfig
+
+			meta.ConnConfig = config
 		}
 
 		// Capability
@@ -609,7 +613,10 @@ func ImportModelFromTemplate(ctx context.Context, c *app.RequestContext) {
 		}
 	} else {
 		// 如果没有meta字段，提供完整的默认值
-		meta.ConnConfig = &modelmgr.ConnConfig{}
+		meta.ConnConfig = &modelmgr.ConnConfig{
+			BaseURL: "", // required字段需要提供默认值
+			Model:   "", // required字段需要提供默认值
+		}
 		meta.Capability = &modelmgr.ModelCapability{}
 	}
 

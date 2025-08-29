@@ -22,8 +22,11 @@ export interface SpaceModelItem {
   description: string;
   context_length: number;
   icon_uri: string;
+  icon_url?: string;
   protocol: string;
   custom_config?: Record<string, unknown>;
+  meta?: Record<string, any>;
+  default_parameters?: Array<Record<string, any>>;
 }
 
 export interface GetSpaceModelListRequest {
@@ -65,25 +68,61 @@ export const getSpaceModelList = async (): Promise<SpaceModelItem[]> => {
         model_id?: string | number;
         name?: string;
         model_name?: string;
-        description?: string;
+        description?: string | { zh?: string; en?: string };
         context_length?: number;
         icon_uri?: string;
         icon_url?: string;
         protocol?: string;
         custom_config?: Record<string, unknown>;
+        meta?: {
+          protocol?: string;
+          status?: number;
+          capability?: {
+            input_tokens?: number;
+            max_tokens?: number;
+            [key: string]: any;
+          };
+          [key: string]: any;
+        };
+        default_parameters?: Array<Record<string, any>>;
       }
       
       const DEFAULT_CONTEXT_LENGTH = 4096;
       
-      return (data.data.models || []).map((model: ModelData) => ({
-        id: String(model.id || model.model_id),
-        name: model.name || model.model_name || '',
-        description: model.description || '',
-        context_length: model.context_length || DEFAULT_CONTEXT_LENGTH,
-        icon_uri: model.icon_uri || model.icon_url || '',
-        protocol: model.protocol || 'openai',
-        custom_config: model.custom_config || {},
-      }));
+      return (data.data || []).map((model: ModelData) => {
+        // 处理description字段，可能是字符串或多语言对象
+        let description = '';
+        if (typeof model.description === 'string') {
+          description = model.description;
+        } else if (model.description && typeof model.description === 'object') {
+          // 优先使用中文，如果没有则使用英文
+          description = (model.description as any).zh || (model.description as any).en || '';
+        }
+        
+        // 获取context_length，优先从meta.capability获取
+        const contextLength = model.meta?.capability?.input_tokens || 
+                              model.meta?.capability?.max_tokens || 
+                              model.context_length || 
+                              DEFAULT_CONTEXT_LENGTH;
+        
+        // 获取protocol，优先从meta获取
+        const protocol = model.meta?.protocol || model.protocol || 'openai';
+        
+        return {
+          id: String(model.id || model.model_id),
+          name: model.name || model.model_name || '',
+          description,
+          context_length: contextLength,
+          icon_uri: model.icon_uri || '',
+          icon_url: model.icon_url || '',
+          protocol,
+          custom_config: model.custom_config || {},
+          // 保留原始的meta数据
+          meta: model.meta,
+          // 保留默认参数
+          default_parameters: model.default_parameters,
+        };
+      });
     }
 
     return [];
@@ -165,9 +204,9 @@ export const listModels = async (
       description: model.description,
       context_length: model.context_length,
       protocol: model.protocol,
-      status: 1, // 默认启用状态
+      status: model.meta?.status || 1, // 从meta获取status，默认为1（启用）
       icon_uri: model.icon_uri,
-      icon_url: model.icon_uri, // 兼容两种字段名
+      icon_url: model.icon_url || model.icon_uri, // 优先使用icon_url
     }));
   } catch (error) {
     console.error('Failed to list models:', error);
