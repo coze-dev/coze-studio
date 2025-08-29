@@ -97,6 +97,8 @@ interface WaitingAction {
   getIsSending: () => boolean;
   getIsWaiting: (phase: WaitingPhase) => boolean;
   getIsResponding: () => boolean;
+  /** Handle ChatFlow mode completion - clears waiting state when done event is received */
+  handleChatFlowCompletion: (replyId: string) => void;
 }
 
 export const findRespondRecord = (
@@ -134,7 +136,11 @@ export const createWaitingStore = (mark: string) => {
           const { waiting } = get();
           return waiting?.phase === WaitingPhase.Suggestion;
         },
-        startWaiting: message =>
+        startWaiting: message => {
+          console.log('[ChatFlow Debug] startWaiting called:', {
+            message_id: message.message_id,
+            local_message_id: message.extra_info?.local_message_id,
+          });
           set(
             {
               waiting: {
@@ -145,7 +151,8 @@ export const createWaitingStore = (mark: string) => {
             },
             false,
             'setWaitingId',
-          ),
+          );
+        },
         updateWaiting: message => {
           const { reply_id } = message;
           if (get().waiting?.replyId !== reply_id) {
@@ -182,12 +189,25 @@ export const createWaitingStore = (mark: string) => {
           );
         },
         clearUnsettledByReplyId: replyId => {
+          const currentState = get();
+          console.log('[ChatFlow Debug] clearUnsettledByReplyId called with:', {
+            replyId,
+            currentWaiting: currentState.waiting,
+            currentResponding: currentState.responding,
+            waitingReplyId: currentState.waiting?.replyId,
+            respondingReplyId: currentState.responding?.replyId,
+          });
           set(
             produce<WaitingState>(state => {
-              if (state.waiting?.replyId === replyId) {
+              // Clear waiting if the replyId matches OR if we have responding with this replyId
+              // This handles the case where waiting has the question ID but responding has the answer ID
+              if (state.waiting?.replyId === replyId || 
+                  (state.responding?.replyId === replyId && state.waiting)) {
+                console.log('[ChatFlow Debug] Clearing waiting state');
                 state.waiting = null;
               }
               if (state.responding?.replyId === replyId) {
+                console.log('[ChatFlow Debug] Clearing responding state');
                 state.responding = null;
               }
             }),
@@ -216,6 +236,20 @@ export const createWaitingStore = (mark: string) => {
         getIsSending: () => !!get().sending,
         getIsWaiting: (phase: WaitingPhase) => get().waiting?.phase === phase,
         getIsResponding: () => !!get().responding,
+        handleChatFlowCompletion: (replyId: string) => {
+          set(
+            produce<WaitingState>(state => {
+              if (state.waiting?.replyId === replyId) {
+                state.waiting = null;
+              }
+              if (state.responding?.replyId === replyId) {
+                state.responding = null;
+              }
+            }),
+            false,
+            'handleChatFlowCompletion',
+          );
+        },
       })),
       {
         name: `botStudio.ChatAreaWaiting.${mark}`,
@@ -233,11 +267,42 @@ const isAnswerMessageFinish = (message: Message) =>
   message.type === 'answer' && message.is_finish;
 
 const updateRespondingInImmer = (state: WaitingState, message: Message) => {
+  console.log('[ChatFlow Debug] updateRespondingInImmer called:', {
+    message_type: message.type,
+    message_id: message.message_id,
+    reply_id: message.reply_id,
+    is_finish: message.is_finish,
+    currentWaiting: state.waiting,
+    currentResponding: state.responding,
+  });
+  
   const { responding } = state;
   const isAllFinish = isAllFinishVerboseMessage(message);
+  
+  // Debug: Check if this is really a generate_answer_finish verbose message
+  if (message.type === 'verbose') {
+    console.log('[ChatFlow Debug] Verbose message content check:', {
+      isAllFinish,
+      message_content_preview: message.content?.substring(0, 100),
+    });
+  }
+
+  // Don't clear waiting state for verbose messages in the middle of ChatFlow
+  // Only the final success event should clear it
+  // Comment out this premature clearing:
+  /*
+  if (isAllFinish && state.waiting?.replyId === message.reply_id) {
+    console.log('[ChatFlow Debug] Ignoring premature generate_answer_finish verbose message');
+    // state.waiting = null;
+    // state.responding = null;
+    return;
+  }
+  */
 
   if (!responding) {
     // type=answer & is_finish
+    // Comment out premature clearing for ChatFlow verbose messages
+    /*
     if (isAllFinish) {
       // Clear waiting state when workflow finishes even if no responding state exists
       if (state.waiting?.replyId === message.reply_id) {
@@ -245,6 +310,7 @@ const updateRespondingInImmer = (state: WaitingState, message: Message) => {
       }
       return;
     }
+    */
 
     // Only tool_response is an exception (interrupt scenario returns the first tool_response, just return directly)
     if (message.type === 'tool_response') {
@@ -268,6 +334,8 @@ const updateRespondingInImmer = (state: WaitingState, message: Message) => {
   }
 
   // Answer end, interrupt finish package terminates reply state
+  // Comment out for ChatFlow - let the final success event handle it
+  /*
   if (isAllFinish) {
     state.responding = null;
     // Also clear waiting state when workflow finishes
@@ -276,6 +344,7 @@ const updateRespondingInImmer = (state: WaitingState, message: Message) => {
     }
     return;
   }
+  */
 
   // Processing answer not completed
   if (message.type === 'answer') {

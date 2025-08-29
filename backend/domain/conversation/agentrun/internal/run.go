@@ -106,6 +106,10 @@ func (rd *AgentRuntime) GetHistory() []*msgEntity.Message {
 }
 
 func (art *AgentRuntime) Run(ctx context.Context) (err error) {
+	// 确保 RunProcess 使用与 MessageEvent 相同的 Event 实例
+	if art.RunProcess != nil && art.MessageEvent != nil {
+		art.RunProcess.SetEvent(art.MessageEvent)
+	}
 
 	agentInfo, err := getAgentInfo(ctx, art.GetRunMeta().AgentID, art.GetRunMeta().IsDraft)
 	if err != nil {

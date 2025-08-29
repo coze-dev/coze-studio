@@ -141,6 +141,13 @@ export const listenMessageUpdate = (param: {
     error,
   }: SdkPullingStatusEvent) => {
     const status = data.pullingStatus;
+    
+    // Debug log for ChatFlow mode
+    console.log('[ChatFlow Debug] MESSAGE_PULLING_STATUS event:', {
+      status,
+      reply_id: data.reply_id,
+      local_message_id: data.local_message_id,
+    });
 
     if (status === 'error') {
       const ctx = {
@@ -193,6 +200,7 @@ export const listenMessageUpdate = (param: {
     }
 
     if (statusToForceUpdateFinish.includes(status)) {
+      console.log('[ChatFlow Debug] Clearing waiting state for reply_id:', data.reply_id);
       forceUpdateMessageFinishByData({ data, reporter, useMessagesStore });
       clearUnsettledByReplyId(data.reply_id);
       securityStrategyContext

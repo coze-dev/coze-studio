@@ -41,6 +41,11 @@ func NewRunProcess(runRecordRepo repository.RunRecordRepo) *RunProcess {
 	}
 }
 
+// SetEvent 设置事件处理器
+func (r *RunProcess) SetEvent(event *Event) {
+	r.event = event
+}
+
 func (r *RunProcess) StepToCreate(ctx context.Context, srRecord *entity.ChunkRunItem, sw *schema.StreamWriter[*entity.AgentRunResponse]) {
 	srRecord.Status = entity.RunStatusCreated
 	r.event.SendRunEvent(entity.RunEventCreated, srRecord, sw)
