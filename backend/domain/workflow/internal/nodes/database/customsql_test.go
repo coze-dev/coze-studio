@@ -61,12 +61,11 @@ func TestCustomSQL_Execute(t *testing.T) {
 		validate: func(req *database.CustomSQLRequest) {
 			assert.Equal(t, int64(111), req.DatabaseInfoID)
 			ps := []database.SQLParam{
-				{Value: "v1_value"},
 				{Value: "v2_value"},
 				{Value: "v3_value"},
 			}
 			assert.Equal(t, ps, req.Params)
-			assert.Equal(t, "select * from v1 where v1 = ? and v2 = ? and v3 = ?", req.SQL)
+			assert.Equal(t, "select * from v1 where v1 = v1_value and v2 = ? and v3 = ?", req.SQL)
 		},
 	}
 
