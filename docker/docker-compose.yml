@@ -19,6 +19,7 @@ services:
       - ./data/mysql:/var/lib/mysql
       - ./volumes/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
       - ./atlas/migrations:/atlas-migrations:ro  
+      - ./atlas/opencoze_latest_schema.hcl:/opencoze_latest_schema.hcl:ro
     entrypoint:  
       - bash
       - -c
@@ -56,7 +57,7 @@ services:
         if [ -d '/atlas-migrations' ] && [ "$$(ls -A /atlas-migrations)" ]; then
           echo 'Running Atlas migrations...'
           ATLAS_URL="mysql://$${MYSQL_USER}:$${MYSQL_PASSWORD}@localhost:3306/$${MYSQL_DATABASE}"
-          atlas migrate apply --url "$$ATLAS_URL" --dir "file:///atlas-migrations" --allow-dirty
+          atlas schema apply -u "$ATLAS_URL" --to "file:///opencoze_latest_schema.hcl" --auto-approve
           echo 'Atlas migrations completed successfully'
         else
           echo 'No migrations found'
