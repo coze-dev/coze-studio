@@ -26,17 +26,21 @@ import {
 } from '@coze-foundation/account-adapter';
 
 export const useLoginService = ({
+  isLogin,
   email,
   password,
+  regPassword,
 }: {
+  isLogin: boolean;
   email: string;
   password: string;
+  regPassword: string;
 }) => {
   const loginService = useRequest(
     async () => {
       const res = (await passport.PassportWebEmailLoginPost({
         email,
-        password,
+        password: isLogin ? password : regPassword,
       })) as unknown as { data: UserInfo };
       return res.data;
     },

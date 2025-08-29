@@ -48,3 +48,38 @@
     min-width: 128px;
   }
 }
+
+.filterSwitch {
+  display: flex;
+  gap: 8px;
+
+  padding: 4px;
+
+  background-color: #fff;
+  border: 1px solid rgba(var(--coze-stroke-6), var(--coze-stroke-6-alpha));
+  border-radius: 6px;
+}
+
+.filterItem {
+  cursor: pointer;
+
+  width: 22px;
+  height: 22px;
+
+  background: url('./assets/icon_view_grid.svg') no-repeat center center / 20px auto;
+  border-radius: 4px;
+
+  &.list {
+    background: url('./assets/icon_view_list.svg') no-repeat center center / 20px auto;
+  }
+
+  &.active {
+    &.grid {
+      background:  #F0F5FF url('./assets/icon_view_grid_active.svg') no-repeat center center / 20px auto;
+    }
+
+    &.list {
+      background:  #F0F5FF url('./assets/icon_view_list_active.svg') no-repeat center center / 20px auto;
+    }
+  }
+}

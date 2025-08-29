@@ -150,16 +150,3 @@ export const ExploreProjectPage = lazy(() =>
   })),
 );
 
-export const ExternalAppPage = lazy(() =>
-  Promise.resolve({
-    default: () => (
-      <div style={{ background: 'red', color: 'white', padding: '20px', fontSize: '20px' }}>
-        🎯 ExternalAppPage 测试组件 - 工具页面成功加载！
-        <br />
-        <br />
-        当前路径: {window.location.pathname}
-      </div>
-    )
-  })
-);
-

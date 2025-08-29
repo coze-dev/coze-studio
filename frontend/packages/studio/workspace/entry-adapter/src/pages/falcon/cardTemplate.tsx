@@ -18,26 +18,37 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable @coze-arch/max-line-per-function */
 /* eslint-disable prettier/prettier */
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable eslint-comments/require-description */
-/* eslint-disable unicorn/filename-case */
 import { type FC, useEffect, useCallback, useState, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { I18n } from '@coze-arch/i18n';
 import cls from 'classnames';
 
 import {
   Content,
   Header,
+  SubHeaderSearch,
   HeaderTitle,
+  SubHeaderFilters,
   Layout,
+  SubHeader,
   HeaderActions,
   type DevelopProps,
   WorkspaceEmpty,
 } from '@coze-studio/workspace-base/develop';
+import { IconCozLoading, IconCozPlus } from '@coze-arch/coze-design/icons';
 import {
+  Button,
+  IconButton,
   Search,
+  Select,
   Spin,
+  Menu,
+  MenuItem,
+  Popconfirm,
+  RadioGroup,
+  Radio,
+  SideSheet,
+  Tooltip,
 } from '@coze-arch/coze-design';
 import { GridList, GridItem } from './components/gridList';
 import { aopApi } from '@coze-arch/bot-api';
@@ -58,6 +69,7 @@ export const FalconCardTemplate: FC<DevelopProps> = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const pageNoRef = useRef(1);
   const allPageCountRef = useRef(1);
+  const navigate = useNavigate();
 
   const getCardListData = useCallback(
     (isAppend = false) => {
@@ -143,8 +155,17 @@ export const FalconCardTemplate: FC<DevelopProps> = () => {
             <GridItem key={item.cardId}>
               <div
                 className={cls(
-                  'px-[16px] h-full flex flex-col justify-between',
+                  'px-[12px] h-full flex flex-col justify-between',
                 )}
+                onClick={e => {
+                  navigate(
+                    `/template/market-card-detail?card_id=${
+                      item.cardId
+                    }&preview_img=${replaceUrl(item.picUrl)}&creator=${
+                      item.createUserName
+                    }&createTime=${item.cardShelfTime}`,
+                  );
+                }}
               >
                 <div className="py-[12px]">
                   <div className="flex flex-col gap-[8px]">

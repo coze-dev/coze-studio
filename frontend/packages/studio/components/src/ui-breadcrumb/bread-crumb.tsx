@@ -72,16 +72,8 @@ export const UIBreadcrumb: React.FC<BreadCrumbProps> = ({
     if (base === BaseEnum.Explore) {
       navigate('/explore');
     } else {
-      // 检查URL参数中的return_to
-      const urlParams = new URLSearchParams(window.location.search);
-      const returnTo = urlParams.get('return_to');
-      
-      if (returnTo) {
-        navigate(`/space/${id}/library/${returnTo}`);
-      } else {
-        // 默认行为：浏览器后退
-        navigate(-1);
-      }
+      // navigate(`/space/${id}/library`);
+      navigate(-1);
     }
   };
   const goBackToDoc = () => {

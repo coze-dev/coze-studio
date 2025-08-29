@@ -15,7 +15,14 @@
  */
 
 import { useParams } from 'react-router-dom';
-import { type FC, type PropsWithChildren } from 'react';
+import {
+  type FC,
+  type PropsWithChildren,
+  type RefObject,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 
 import { GlobalLayout } from '@coze-foundation/layout';
 import { useCreateBotAction } from '@coze-foundation/global';
@@ -42,11 +49,20 @@ import {
 
 import { AccountDropdown } from '../account-dropdown';
 import { useHasSider } from './hooks/use-has-sider';
+import { logout } from '@coze-foundation/account-adapter';
 
 export const GlobalLayoutComposed: FC<PropsWithChildren> = ({ children }) => {
   const config = useRouteConfig();
   const hasSider = useHasSider();
   const { space_id } = useParams();
+
+  useEffect(() => {
+    let handler = () => logout();
+    window.document.addEventListener('exit', handler, false);
+    return () => {
+      window.document.removeEventListener('exit', handler, false);
+    };
+  }, []);
 
   const { createBot, createBotModal } = useCreateBotAction({
     currentSpaceId: space_id,
@@ -87,21 +103,23 @@ export const GlobalLayoutComposed: FC<PropsWithChildren> = ({ children }) => {
             title: I18n.t('menu_title_template'),
             icon: <IconBotTemplate />,
             activeIcon: <IconBotTemplateFill />,
-            path: '/template/list',
+            path: '/template',
             dataTestId: 'layout_explore-template-button',
           },
         ]}
-        extras={[
-          // {
-          //   icon: <IconBotDoc />,
-          //   tooltip: I18n.t('menu_documents'),
-          //   onClick: () => {
-          //     // cp-disable-next-line
-          //     window.open('https://www.coze.cn/open/docs/guides');
-          //   },
-          //   dataTestId: 'layout_document-button',
-          // },
-        ]}
+        extras={
+          [
+            //   // {
+            //   //   icon: <IconBotDoc />,
+            //   //   tooltip: I18n.t('menu_documents'),
+            //   //   onClick: () => {
+            //   //     // cp-disable-next-line
+            //   //     window.open('https://www.coze.cn/open/docs/guides');
+            //   //   },
+            //   //   dataTestId: 'layout_document-button',
+            //   // },
+          ]
+        }
         footer={<AccountDropdown />}
       >
         {children}

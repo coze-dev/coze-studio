@@ -18,19 +18,26 @@ import path from 'path';
 
 import { defineConfig } from '@coze-arch/rsbuild-config';
 import { GLOBAL_ENVS } from '@coze-arch/bot-env';
+const { codeInspectorPlugin } = require('code-inspector-plugin');
 
 // 常量定义
-const DEFAULT_WEB_SERVER_PORT = 8888;
+// const DEFAULT_WEB_SERVER_PORT = 8888;
 
-const API_PROXY_TARGET = `http://localhost:${process.env.WEB_SERVER_PORT || DEFAULT_WEB_SERVER_PORT}/`;
+// const API_PROXY_TARGET = `http://localhost:${process.env.WEB_SERVER_PORT || DEFAULT_WEB_SERVER_PORT}/`;
 
 const mergedConfig = defineConfig({
   server: {
     strictPort: true,
     proxy: [
+      // {
+      //   context: ['/api', '/v1'],
+      //   target: 'https://agent.finmall.com/' || API_PROXY_TARGET,
+      //   secure: false,
+      //   changeOrigin: true,
+      // },
       {
-        context: ['/api', '/v1'],
-        target: API_PROXY_TARGET,
+        context: ['/api', '/v1', '/aop-web', '/filestore', '/agent-h5/'],
+        target: 'https://agents.finmall.com/',
         secure: false,
         changeOrigin: true,
       },
@@ -55,6 +62,7 @@ const mergedConfig = defineConfig({
       addPlugins([require('tailwindcss')('./tailwind.config.ts')]);
     },
     rspack(config, { appendPlugins, addRules, mergeConfig }) {
+      appendPlugins([codeInspectorPlugin({ bundler: 'rspack' })]);
       addRules([
         {
           test: /\.(css|less|jsx|tsx|ts|js)/,

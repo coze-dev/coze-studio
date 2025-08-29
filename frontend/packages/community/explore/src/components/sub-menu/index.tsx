@@ -17,9 +17,22 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-import cls from 'classnames';
-import { SubMenuItem } from '@coze-community/components';
+import { SubMenuItem, SubMenu } from '@coze-community/components';
 import { I18n } from '@coze-arch/i18n';
+// import {
+//   // IconCozTemplate,
+//   // IconCozTemplateFill,
+//   IconCozPlugin,
+//   IconCozPluginFill,
+// } from '@coze-arch/coze-design/icons';
+import {
+  IconBotDevelop,
+  IconBotDevelopActive,
+  IconBotPlugin,
+  IconBotPluginActive,
+  IconBotCard,
+  IconBotCardActive,
+} from '../../../../../components/bot-icons';
 import { Space } from '@coze-arch/coze-design';
 import {
   IconBotDevelop,
@@ -30,6 +43,8 @@ import {
 import { aopApi } from '@coze-arch/bot-api';
 
 import { useExploreRoute } from '../../hooks/use-explore-route';
+import cls from 'classnames';
+import { aopApi } from '@coze-arch/bot-api';
 
 import styles from './index.module.less';
 
@@ -135,16 +150,32 @@ export const ExploreSubMenu = () => (
   <CustomSubMenu menuConfig={getExploreMenuConfig()} />
 );
 
+const SubText = ({ children }) => (
+  <span className={cls('text-[12px] ml-[4px]')}>{children}</span>
+);
+
 export const TemplateSubMenu = () => {
   const [subMenus, setSubMenus] = useState([]);
   useEffect(() => {
     aopApi.GetCardTypeCount().then(res => {
-      const list = res.body.cardClassList?.map(e => ({
-        type: `${e.id}`,
-        title: e.name,
+      let total = 0;
+      const list = res.body.cardClassList?.map(e => {
+        total += Number(e.count || 0);
+        return {
+          type: `${e.id}`,
+          title: e.name,
+          subText: <SubText>{e.count}</SubText>,
+          isActive: true,
+          path: `/template/card/${e.id}`,
+        };
+      });
+      list.unshift({
+        type: 'all',
+        title: I18n.t('All'),
+        subText: <SubText>{total}</SubText>,
         isActive: true,
-        path: `/template/card/${e.id}`,
-      }));
+        path: '/template/card/all',
+      });
       setSubMenus(list);
     });
   }, []);
@@ -162,18 +193,10 @@ export const TemplateSubMenu = () => {
         },
         {
           type: 'card',
-          icon: <IconCard />,
-          activeIcon: <IconCardActive />,
+          icon: <IconBotCard />,
+          activeIcon: <IconBotCard />,
           title: I18n.t('Template_card'),
-          children: [
-            {
-              type: 'all',
-              title: I18n.t('All'),
-              isActive: true,
-              path: '/template/card/all',
-            },
-            ...subMenus,
-          ],
+          children: subMenus,
         },
       ]}
     />

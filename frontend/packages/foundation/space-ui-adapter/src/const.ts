@@ -21,5 +21,4 @@ export enum SpaceSubModuleEnum {
   MODELS = 'models',
   MCP = 'mcp',
   CARD = 'card',
-  MODELS = 'models',
 }

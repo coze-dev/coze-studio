@@ -17,18 +17,21 @@
 import React, { PropsWithChildren } from 'react';
 
 import { isMobile } from '../../utils';
+import cls from 'classnames';
 
 import s from './index.module.less';
 
 interface SignFrameProps {
   brandNode: React.ReactNode;
+  className?: string;
 }
 
 export const SignFrame: React.FC<PropsWithChildren<SignFrameProps>> = ({
   children,
   brandNode,
+  className,
 }) => (
-  <div className={isMobile() ? s['mobile-frame'] : s.frame}>
+  <div className={cls(isMobile() ? s['mobile-frame'] : s.frame, className)}>
     {!isMobile() && <div className={s.brand}>{brandNode}</div>}
     {children}
   </div>

@@ -18,6 +18,7 @@ import { Navigate, type RouteObject } from 'react-router-dom';
 import { lazy } from 'react';
 
 import { BaseEnum } from '@coze-arch/web-context';
+import { MicroAppWrapper } from '../apps/MicroAppWrapper'
 
 const subMenu = lazy(() =>
   import('@coze-community/explore').then(exps => ({
@@ -52,7 +53,7 @@ export const exploreRouter: RouteObject = {
   children: [
     {
       index: true,
-      element: <Navigate to="plugin" replace />,
+      element: <Navigate to="project/latest" replace />,
     },
     {
       path: 'plugin',
@@ -62,24 +63,15 @@ export const exploreRouter: RouteObject = {
       }),
     },
     {
-      path: 'project',
-      children: [
-        {
-          path: 'latest',
-          element: <ProjectStorePage />,
-          loader: () => ({
-            type: 'project-latest',
-            showCopyButton: false, // 显示"立即体验"而不是"复制"
-          }),
-        },
-        {
-          path: ':project_type',
-          element: <ProjectPage />,
-          loader: () => ({
-            type: 'project',
-          }),
-        },
-      ],
+      path: 'project/:sub_route_id',
+      element: <ProjectPage />,
+      loader: () => ({
+        type: 'project',
+      }),
+    },
+    {
+      path: 'agent/*',
+      element: <MicroAppWrapper appName="agent" />,
     },
   ],
 };

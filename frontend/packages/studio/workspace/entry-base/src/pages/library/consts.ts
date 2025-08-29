@@ -21,7 +21,7 @@ import {
   type LibraryResourceListRequest,
 } from '@coze-arch/bot-api/plugin_develop';
 
-export const LIBRARY_PAGE_SIZE = 15;
+export const LIBRARY_PAGE_SIZE = 30;
 
 export type QueryParams = Omit<LibraryResourceListRequest, 'space_id' | 'size'>;
 

@@ -22,19 +22,23 @@ import { Typography } from '@coze-arch/coze-design';
 export interface SubMenuItemProps {
   icon?: ReactNode;
   title?: string;
+  subText?: ReactNode;
   activeIcon?: ReactNode;
   isActive: boolean;
   suffix?: ReactNode;
   onClick: () => void;
+  subNode?: Boolean;
 }
 
 export const SubMenuItem: FC<SubMenuItemProps> = ({
   icon = null,
   title,
+  subText,
   activeIcon = null,
   isActive,
   suffix,
   onClick,
+  subNode = false,
 }) => (
   <div
     onClick={onClick}
@@ -45,7 +49,7 @@ export const SubMenuItem: FC<SubMenuItemProps> = ({
       'h-[32px] w-full',
       'px-[8px]',
       'cursor-pointer',
-      'hover:coz-mg-primary-hovered',
+      'hover:coz-mg-secondary-hovered',
       isActive ? 'coz-bg-primary coz-fg-plus' : 'coz-fg-primary coz-bg-max',
     )}
   >
@@ -54,11 +58,14 @@ export const SubMenuItem: FC<SubMenuItemProps> = ({
     </div>
     <Typography.Text
       ellipsis={{ showTooltip: true, rows: 1 }}
-      fontSize="14px"
-      weight={500}
-      className="flex-1 text-[14px] leading-[20px] font-[500]"
+      weight={subNode ? 400 : 500}
+      className={classNames(
+        'flex-1 text-[14px] leading-[20px] ',
+        isActive ? 'coz-fg-plus' : 'coz-fg-primary',
+      )}
     >
       {title}
+      {subText}
     </Typography.Text>
     {suffix}
   </div>

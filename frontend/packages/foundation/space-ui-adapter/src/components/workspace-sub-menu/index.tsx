@@ -56,16 +56,6 @@ import {
 } from '../../../../../components/bot-icons';
 import { useRouteConfig } from '@coze-arch/bot-hooks';
 import { ResType } from '@coze-arch/idl/plugin_develop';
-import {
-  IconCozBot,
-  IconCozBotFill,
-  IconCozKnowledge,
-  IconCozKnowledgeFill,
-  IconCozSetting,
-  IconCozSettingFill,
-} from '@coze-arch/coze-design/icons';
-import { Space, Avatar, Typography } from '@coze-arch/coze-design';
-import { useRouteConfig } from '@coze-arch/bot-hooks';
 
 import { SpaceSubModuleEnum } from '@/const';
 

@@ -46,7 +46,7 @@ const stopPro = (e: MouseEvent<HTMLDivElement>) => {
   e.stopPropagation(); //Stop bubbling
 };
 
-const getResTypeLabelFromConfigMap = (
+export const getResTypeLabelFromConfigMap = (
   item: ResourceInfo,
   entityConfigs: LibraryEntityConfig[],
 ): string => {

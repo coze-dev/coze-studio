@@ -44,6 +44,7 @@
     "@coze-studio/workspace-base": "workspace:*",
     "@coze-workflow/playground-adapter": "workspace:*",
     "path-browserify": "^1.0.1",
+    "qiankun": "^2.10.16",
     "react": "~18.2.0",
     "react-dom": "~18.2.0",
     "react-error-boundary": "^4.0.9",
@@ -73,6 +74,7 @@
     "@types/react": "18.2.37",
     "@types/react-dom": "18.2.15",
     "@vitest/coverage-v8": "~3.0.5",
+    "code-inspector-plugin": "1.1.1",
     "cross-env": "^10.0.0",
     "sucrase": "^3.32.0",
     "tailwindcss": "~3.3.3",
@@ -81,3 +83,4 @@
     "webpack": "~5.91.0"
   }
 }
+

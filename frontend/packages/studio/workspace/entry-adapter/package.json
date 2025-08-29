@@ -12,7 +12,8 @@
     "./mcp": "./src/pages/falcon/mcp.tsx",
     "./mcpDetail": "./src/pages/falcon/mcpDetail.tsx",
     "./card": "./src/pages/falcon/card.tsx",
-    "./cardTemplate": "./src/pages/falcon/cardTemplate.tsx"
+    "./cardTemplate": "./src/pages/falcon/cardTemplate.tsx",
+    "./marketCardDetail": "./src/pages/falcon/marketCardDetail.tsx"
   },
   "main": "src/index.ts",
   "typesVersions": {
@@ -37,6 +38,9 @@
       ],
       "cardTemplate": [
         "./src/pages/falcon/cardTemplate.tsx"
+      ],
+      "marketCardDetail": [
+        "./src/pages/falcon/marketCardDetail.tsx"
       ]
     }
   },
@@ -82,3 +86,4 @@
     "react-dom": ">=18.2.0"
   }
 }
+

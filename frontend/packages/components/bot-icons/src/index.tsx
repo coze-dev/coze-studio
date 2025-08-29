@@ -347,6 +347,8 @@ import { ReactComponent as SvgIconBotWorkflow } from './assets/icons/icon-workfl
 import { ReactComponent as SvgIconBotWorkflowActive } from './assets/icons/icon-workflow-active.svg';
 import { ReactComponent as SvgIconBotMember } from './assets/icons/icon-member-default.svg';
 import { ReactComponent as SvgIconBotMemberActive } from './assets/icons/icon-member-active.svg';
+import { ReactComponent as SvgIconBotCard } from './assets/icons/icon_card_default.svg';
+import { ReactComponent as SvgIconBotCardActive } from './assets/icons/icon_card_active.svg';
 
 import { ReactComponent as SvgIconBotMenuLogoText } from './assets/icons/icon-menu-logo-text.svg';
 import { ReactComponent as SvgIconBotMenuLogoTextCN } from './assets/icons/icon-menu-logo-text-cn.svg';
@@ -787,6 +789,8 @@ export const IconBotWorkflow = IconFactory(<SvgIconBotWorkflow />);
 export const IconBotWorkflowActive = IconFactory(<SvgIconBotWorkflowActive />);
 export const IconBotMember = IconFactory(<SvgIconBotMember />);
 export const IconBotMemberActive = IconFactory(<SvgIconBotMemberActive />);
+export const IconBotCard = IconFactory(<SvgIconBotCard />);
+export const IconBotCardActive = IconFactory(<SvgIconBotCardActive />);
 
 export const IconChatHashtag = IconFactory(<SvgChatHashtag />);
 export const IconMenuLogoText = IconFactory(<SvgIconBotMenuLogoText />);

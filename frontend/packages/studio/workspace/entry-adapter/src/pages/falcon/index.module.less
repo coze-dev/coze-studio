@@ -4,63 +4,68 @@
 
 .action {
   cursor: pointer;
-  text-align: center;
-  flex: 1;
+
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
+
+  text-align: center;
 
   & + .action {
     border-left: 1px solid #e8e8e8;
   }
 
-  &:before {
+  &::before {
     content: '';
+
     display: inline-block;
+
     width: 24px;
     height: 24px;
+
     background: url('./assets/stop.svg') no-repeat 0 0 / cover;
   }
 }
 
 .start {
-  &:before {
+  &::before {
     background: url('./assets/start.svg') no-repeat 0 0 / cover;
   }
 }
 
 .editor {
-  &:before {
+  &::before {
     background: url('./assets/editor.svg') no-repeat 0 0 / cover;
   }
 }
 
 .view {
-  &:before {
+  &::before {
     background: url('./assets/view.svg') no-repeat 0 0 / cover;
   }
 }
 
 .apply {
-  &:before {
+  &::before {
     background: url('./assets/apply.svg') no-repeat 0 0 / cover;
   }
 }
 
 .unshelve {
-  &:before {
+  &::before {
     background: url('./assets/unshelve.svg') no-repeat 0 0 / cover;
   }
 }
 
 .delete {
-  &:before {
+  &::before {
     background: url('./assets/delete.svg') no-repeat 0 0 / cover;
   }
 }
 
 .more {
-  &:before {
+  &::before {
     background: url('./assets/more.svg') no-repeat 0 0 / cover;
   }
 }
@@ -87,91 +92,19 @@
 
 .help-text {
   font-size: 12px;
-  color: rgba(var(--coze-fg-3), var(--coze-fg-3-alpha));
   font-weight: normal;
+  color: rgba(var(--coze-fg-3), var(--coze-fg-3-alpha));
 }
 
-// CardTemplate 样式
-.cardTemplate {
-  padding: 24px;
-  background: #f5f5f5;
-  min-height: 100vh;
+.cardTag {
+  display: inline-block;
 
-  .banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 12px;
-    margin-bottom: 24px;
-    overflow: hidden;
+  padding: 2px 4px;
 
-    .bannerContent {
-      display: flex;
-      align-items: center;
-      padding: 32px;
-      color: white;
+  font-size: 14px;
+  line-height: 1;
+  color: #9E9FA6;
 
-      .bannerImage {
-        width: 80px;
-        height: 80px;
-        margin-right: 24px;
-        border-radius: 8px;
-      }
-
-      .bannerText {
-        h2 {
-          color: white !important;
-          margin-bottom: 8px;
-        }
-
-        span {
-          color: rgba(255, 255, 255, 0.9);
-          font-size: 16px;
-        }
-      }
-    }
-  }
-
-  .filterSection {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-
-  .templateGrid {
-    background: white;
-    padding: 24px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-
-    .templateCard {
-      height: 100%;
-      transition: all 0.3s ease;
-      border: 1px solid #f0f0f0;
-
-      &:hover {
-        border-color: #1890ff;
-        box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
-        transform: translateY(-2px);
-      }
-
-      .cardCover {
-        height: 160px;
-        overflow: hidden;
-        background: #fafafa;
-
-        .cardImage {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-      }
-
-      .cardFooter {
-        margin-top: 12px;
-        padding-top: 12px;
-        border-top: 1px solid #f0f0f0;
-      }
-    }
-  }
+  background: #F2F3F5;
+  border-radius: 2px;
 }

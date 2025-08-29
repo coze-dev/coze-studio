@@ -233,19 +233,10 @@ export default class AopApiService<T> {
     return this.request({ url, method, data }, options);
   }
 
-  // 获取卡片图片详情
-  GetCardPicDetail(req?: any, options?: T): Promise<any> {
-    const _req = req || {};
-    const url = this.genBaseURL('IDC10022.do');
-    const method = 'POST';
-    const data = _req;
-    return this.request({ url, method, data }, options);
-  }
-
   // 获取卡片市场类型
   GetCardTypeCount(req?: any, options?: T): Promise<any> {
     const _req = req || {};
-    const url = this.genBaseURL('IDC10032.do');
+    const url = this.genBaseURL('IDC10033.do');
     const method = 'POST';
     const data = _req;
     return this.request({ url, method, data }, options);
@@ -255,6 +246,32 @@ export default class AopApiService<T> {
   GetCardMarketList(req?: any, options?: T): Promise<any> {
     const _req = req || {};
     const url = this.genBaseURL('IDC10030.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 获取卡片库卡片详情
+  GetCardMarketDetail(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10025.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  CardMarketAddToMe(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10028.do');
+    const method = 'POST';
+    const data = _req;
+    return this.request({ url, method, data }, options);
+  }
+
+  // 获取卡片市场版本列表
+  GetCardMarketVersionList(req?: any, options?: T): Promise<any> {
+    const _req = req || {};
+    const url = this.genBaseURL('IDC10004.do');
     const method = 'POST';
     const data = _req;
     return this.request({ url, method, data }, options);

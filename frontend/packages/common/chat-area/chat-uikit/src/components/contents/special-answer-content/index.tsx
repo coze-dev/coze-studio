@@ -37,7 +37,7 @@ export interface SpecialAnswerContentProps extends IBaseContentProps {
 export const SpecialAnswerContent: FC<SpecialAnswerContentProps> = props => {
   const { message, contentList, ...restProps } = props;
   const [viewMode, setViewMode] = useState<'iframe' | 'native'>('iframe'); // 默认显示卡片
-  const [iframeHeight, setIframeHeight] = useState<number>(400); // 降低默认高度
+  const [iframeHeight, setIframeHeight] = useState<number>(600); // 默认高度，使用手机比例
   const iframeRef = useRef<HTMLIFrameElement>(null);
 
   // 检查是否有displayResponseType内容
@@ -49,36 +49,29 @@ export const SpecialAnswerContent: FC<SpecialAnswerContentProps> = props => {
     if (!iframe) return;
 
     const handleIframeLoad = () => {
-      // 延迟一小段时间等待iframe内容完全渲染
-      setTimeout(() => {
-        try {
-          // 尝试获取iframe内容的高度
-          const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
-          if (iframeDocument) {
-            const body = iframeDocument.body;
-            const html = iframeDocument.documentElement;
-            
-            // 获取实际内容高度
-            const height = Math.max(
-              body?.scrollHeight || 0,
-              body?.offsetHeight || 0,
-              html?.clientHeight || 0,
-              html?.scrollHeight || 0,
-              html?.offsetHeight || 0
-            );
-            
-            // 确保有合理的高度，但设置更严格的范围
-            if (height > 50 && height < 2000) {
-              const adjustedHeight = Math.max(100, Math.min(height + 40, 800)); // 限制在100-800px之间
-              setIframeHeight(adjustedHeight);
-              console.log('🔗 自动调整iframe高度:', `${height}px -> ${adjustedHeight}px`);
-            }
+      try {
+        // 尝试获取iframe内容的高度
+        const iframeDocument = iframe.contentDocument || iframe.contentWindow?.document;
+        if (iframeDocument) {
+          const body = iframeDocument.body;
+          const html = iframeDocument.documentElement;
+          const height = Math.max(
+            body?.scrollHeight || 0,
+            body?.offsetHeight || 0,
+            html?.clientHeight || 0,
+            html?.scrollHeight || 0,
+            html?.offsetHeight || 0
+          );
+          
+          if (height > 100) { // 确保有合理的高度
+            setIframeHeight(height + 20); // 添加一些padding
+            console.log('🔗 自动调整iframe高度:', height + 20);
           }
-        } catch (error) {
-          // 跨域问题，尝试通过postMessage获取高度
-          console.log('无法直接获取iframe内容高度，等待postMessage通信');
         }
-      }, 500); // 等待500ms让内容渲染完成
+      } catch (error) {
+        // 跨域问题，使用默认高度
+        console.log('无法获取iframe内容高度，使用默认高度');
+      }
     };
 
     // 监听来自iframe的消息（用于跨域高度获取）
@@ -88,10 +81,9 @@ export const SpecialAnswerContent: FC<SpecialAnswerContentProps> = props => {
       
       if (event.data && typeof event.data === 'object' && event.data.type === 'resize') {
         const newHeight = event.data.height;
-        if (typeof newHeight === 'number' && newHeight > 50 && newHeight < 2000) {
-          const adjustedHeight = Math.max(100, Math.min(newHeight + 40, 800)); // 限制在100-800px之间
-          setIframeHeight(adjustedHeight);
-          console.log('🔗 通过postMessage调整iframe高度:', `${newHeight}px -> ${adjustedHeight}px`);
+        if (typeof newHeight === 'number' && newHeight > 100) {
+          setIframeHeight(newHeight + 20);
+          console.log('🔗 通过postMessage调整iframe高度:', newHeight + 20);
         }
       }
     };

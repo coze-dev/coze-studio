@@ -82,7 +82,6 @@ type ExportFunctions =
   | 'CommitDraftBot'
   | 'CheckDraftBotCommit'
   | 'GetCardRespStruct'
-  | 'GetSpaceModelList'
   | 'GetSpaceModelList';
 
 type ExportService = {
@@ -149,40 +148,6 @@ const spaceApiService = new Proxy(Object.create(null), {
 export const SpaceApi = spaceApiService;
 
 export { SpaceApiV2 } from './space-api-v2';
-export {
-  // 类型定义
-  type SpaceModelItem,
-  type ModelDetailOutput,
-  type ListModelsRequest,
-  type ListModelsResponse,
-  type CreateModelRequest,
-  type CreateModelResponse,
-  type UpdateModelRequest,
-  type UpdateModelResponse,
-  type DeleteModelRequest,
-  type DeleteModelResponse,
-  type AddModelToSpaceRequest,
-  type AddModelToSpaceResponse,
-  type RemoveModelFromSpaceRequest,
-  type RemoveModelFromSpaceResponse,
-  type GetSpaceModelConfigRequest,
-  type GetSpaceModelConfigResponse,
-  type UpdateSpaceModelConfigRequest,
-  type UpdateSpaceModelConfigResponse,
-  type CustomConfig,
-  // 新的模型管理API函数
-  listModels,
-  createModel,
-  updateModel,
-  deleteModel,
-  addModelToSpace,
-  removeModelFromSpace,
-  getSpaceModelConfig,
-  updateSpaceModelConfig,
-  // 辅助函数
-  getModelsByProtocol,
-  searchModels,
-} from './space-model-api';
 export {
   type SpaceModelItem,
   type GetSpaceModelListRequest,

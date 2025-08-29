@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import { ProductApi } from '@coze-arch/bot-api';
-
 export const replaceUrl = (url: string) =>
   url
     .replace('@minio/public-cbbiz', '/filestore/dev-public-cbbiz')

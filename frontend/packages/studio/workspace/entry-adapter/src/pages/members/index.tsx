@@ -21,6 +21,3 @@ import { MembersManagement } from '@coze-studio/workspace-base/members';
 export const MembersPage: FC<{ spaceId: string }> = ({ spaceId }) => {
   return <MembersManagement spaceId={spaceId} />;
 };
-export { FilterSelectorField } from './filter-selector-field';
-export { FilterStatusDisplay } from './filter-status-display';
-export { CardSelectorField } from './card-selector-field';

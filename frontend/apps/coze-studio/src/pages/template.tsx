@@ -18,6 +18,7 @@ import { Navigate, type RouteObject } from 'react-router-dom';
 import { lazy } from 'react';
 
 import { BaseEnum } from '@coze-arch/web-context';
+import { MicroAppWrapper } from '../apps/MicroAppWrapper'
 
 const subMenu = lazy(() =>
   import('@coze-community/explore').then(exps => ({
@@ -31,8 +32,14 @@ const TemplateProjectPage = lazy(() =>
   })),
 );
 
+const FalconMarketCardDetail = lazy(() =>
+  import('@coze-studio/workspace-adapter/marketCardDetail').then(exps => ({
+    default: exps.FalconMarketCardDetail,
+  })),
+);
+
 const TemplateCardPage = lazy(
-  () => import('@coze-studio/workspace-adapter/cardTemplate')
+  () => import('@coze-studio/workspace-adapter/cardTemplate'),
 );
 
 export const templateRouter: RouteObject = {
@@ -50,10 +57,6 @@ export const templateRouter: RouteObject = {
       element: <Navigate to="project" replace />,
     },
     {
-      path: 'list',
-      element: <Navigate to="../project" replace />,
-    },
-    {
       path: 'project',
       element: <TemplateProjectPage />,
       loader: () => ({
@@ -66,6 +69,17 @@ export const templateRouter: RouteObject = {
       loader: () => ({
         type: 'card',
       }),
+    },
+    {
+      path: 'market-card-detail',
+      element: <FalconMarketCardDetail />,
+      loader: () => ({
+        type: 'marketCardDetail',
+      }),
+    },
+    {
+      path: 'agent/*',
+      element: <MicroAppWrapper appName="agent" />,
     },
   ],
 };

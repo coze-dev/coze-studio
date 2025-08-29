@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>编组 3</title>
+    <g id="猎鹰智能体平台定稿" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="05猎鹰智能体平台_工作空间_工作流_卡片视角" transform="translate(-1426.000000, -82.000000)">
+            <g id="编组-13" transform="translate(1384.000000, 74.000000)">
+                <g id="编组-3" transform="translate(42.000000, 8.000000)">
+                    <rect id="矩形" x="0" y="0" width="20" height="20"></rect>
+                    <g id="编组-2" transform="translate(3.000000, 4.500000)">
+                        <rect id="矩形" stroke="#333333" x="0" y="0" width="4" height="4" rx="1"></rect>
+                        <rect id="矩形" fill="#333333" x="6" y="0" width="8" height="1"></rect>
+                        <rect id="矩形" fill="#333333" x="6" y="3" width="8" height="1"></rect>
+                        <rect id="矩形" stroke="#333333" x="0" y="7" width="4" height="4" rx="1"></rect>
+                        <rect id="矩形" fill="#333333" x="6" y="7" width="8" height="1"></rect>
+                        <rect id="矩形" fill="#333333" x="6" y="10" width="8" height="1"></rect>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

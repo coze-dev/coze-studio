@@ -24,18 +24,7 @@ import { I18n } from '@coze-arch/i18n';
 
 import { PageList } from '../../components/page-list';
 
-// 项目模板页面
 export const TemplateProjectPage = () => (
-  <PageList
-    title={I18n.t('template_name')}
-    getDataList={() => getTemplateData()}
-    renderCard={data => <TemplateCard {...(data as TemplateCardProps)} />}
-    renderCardSkeleton={() => <TemplateCardSkeleton />}
-  />
-);
-
-// 原有的模板页面（保持兼容性）
-export const TemplatePage = () => (
   <PageList
     title={I18n.t('template_name')}
     getDataList={() => getTemplateData()}
