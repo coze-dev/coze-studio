@@ -43,16 +43,17 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
+	message0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
@@ -66,10 +67,16 @@ import (
 	appplugin "github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun/agentrunmock"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation/conversationmock"
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/message/messagemock"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
@@ -77,6 +84,9 @@ import (
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
+	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
+	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
+	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	entity4 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
 	entity3 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -101,6 +111,7 @@ import (
 	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/internal/testutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
@@ -129,6 +140,9 @@ type wfTestRunner struct {
 	knowledge      *knowledgemock.MockKnowledge
 	database       *databasemock.MockDatabase
 	pluginSrv      *pluginmock.MockPluginService
+	conversation   *conversationmock.MockConversation
+	message        *messagemock.MockMessage
+	agentRun       *agentrunmock.MockAgentRun
 	internalModel  *testutil.UTChatModel
 	publishPatcher *mockey.Mocker
 	ctx            context.Context
@@ -136,29 +150,33 @@ type wfTestRunner struct {
 }
 
 var req2URL = map[reflect.Type]string{
-	reflect.TypeOf(&workflow.NodeTemplateListRequest{}):           "/api/workflow_api/node_template_list",
-	reflect.TypeOf(&workflow.CreateWorkflowRequest{}):             "/api/workflow_api/create",
-	reflect.TypeOf(&workflow.SaveWorkflowRequest{}):               "/api/workflow_api/save",
-	reflect.TypeOf(&workflow.DeleteWorkflowRequest{}):             "/api/workflow_api/delete",
-	reflect.TypeOf(&workflow.GetCanvasInfoRequest{}):              "/api/workflow_api/canvas",
-	reflect.TypeOf(&workflow.WorkFlowTestRunRequest{}):            "/api/workflow_api/test_run",
-	reflect.TypeOf(&workflow.CancelWorkFlowRequest{}):             "/api/workflow_api/cancel",
-	reflect.TypeOf(&workflow.PublishWorkflowRequest{}):            "/api/workflow_api/publish",
-	reflect.TypeOf(&workflow.OpenAPIRunFlowRequest{}):             "/v1/workflow/run",
-	reflect.TypeOf(&workflow.ValidateTreeRequest{}):               "/api/workflow_api/validate_tree",
-	reflect.TypeOf(&workflow.WorkflowTestResumeRequest{}):         "/api/workflow_api/test_resume",
-	reflect.TypeOf(&workflow.WorkflowNodeDebugV2Request{}):        "/api/workflow_api/nodeDebug",
-	reflect.TypeOf(&workflow.QueryWorkflowNodeTypeRequest{}):      "/api/workflow_api/node_type",
-	reflect.TypeOf(&workflow.GetWorkFlowListRequest{}):            "/api/workflow_api/workflow_list",
-	reflect.TypeOf(&workflow.UpdateWorkflowMetaRequest{}):         "/api/workflow_api/update_meta",
-	reflect.TypeOf(&workflow.GetWorkflowDetailRequest{}):          "/api/workflow_api/workflow_detail",
-	reflect.TypeOf(&workflow.GetWorkflowDetailInfoRequest{}):      "/api/workflow_api/workflow_detail_info",
-	reflect.TypeOf(&workflow.GetLLMNodeFCSettingDetailRequest{}):  "/api/workflow_api/llm_fc_setting_detail",
-	reflect.TypeOf(&workflow.GetLLMNodeFCSettingsMergedRequest{}): "/api/workflow_api/llm_fc_setting_merged",
-	reflect.TypeOf(&workflow.CopyWorkflowRequest{}):               "/api/workflow_api/copy",
-	reflect.TypeOf(&workflow.BatchDeleteWorkflowRequest{}):        "/api/workflow_api/batch_delete",
-	reflect.TypeOf(&workflow.GetHistorySchemaRequest{}):           "/api/workflow_api/history_schema",
-	reflect.TypeOf(&workflow.GetWorkflowReferencesRequest{}):      "/api/workflow_api/workflow_references",
+	reflect.TypeOf(&workflow.NodeTemplateListRequest{}):             "/api/workflow_api/node_template_list",
+	reflect.TypeOf(&workflow.CreateWorkflowRequest{}):               "/api/workflow_api/create",
+	reflect.TypeOf(&workflow.SaveWorkflowRequest{}):                 "/api/workflow_api/save",
+	reflect.TypeOf(&workflow.DeleteWorkflowRequest{}):               "/api/workflow_api/delete",
+	reflect.TypeOf(&workflow.GetCanvasInfoRequest{}):                "/api/workflow_api/canvas",
+	reflect.TypeOf(&workflow.WorkFlowTestRunRequest{}):              "/api/workflow_api/test_run",
+	reflect.TypeOf(&workflow.CancelWorkFlowRequest{}):               "/api/workflow_api/cancel",
+	reflect.TypeOf(&workflow.PublishWorkflowRequest{}):              "/api/workflow_api/publish",
+	reflect.TypeOf(&workflow.OpenAPIRunFlowRequest{}):               "/v1/workflow/run",
+	reflect.TypeOf(&workflow.ValidateTreeRequest{}):                 "/api/workflow_api/validate_tree",
+	reflect.TypeOf(&workflow.WorkflowTestResumeRequest{}):           "/api/workflow_api/test_resume",
+	reflect.TypeOf(&workflow.WorkflowNodeDebugV2Request{}):          "/api/workflow_api/nodeDebug",
+	reflect.TypeOf(&workflow.QueryWorkflowNodeTypeRequest{}):        "/api/workflow_api/node_type",
+	reflect.TypeOf(&workflow.GetWorkFlowListRequest{}):              "/api/workflow_api/workflow_list",
+	reflect.TypeOf(&workflow.UpdateWorkflowMetaRequest{}):           "/api/workflow_api/update_meta",
+	reflect.TypeOf(&workflow.GetWorkflowDetailRequest{}):            "/api/workflow_api/workflow_detail",
+	reflect.TypeOf(&workflow.GetWorkflowDetailInfoRequest{}):        "/api/workflow_api/workflow_detail_info",
+	reflect.TypeOf(&workflow.GetLLMNodeFCSettingDetailRequest{}):    "/api/workflow_api/llm_fc_setting_detail",
+	reflect.TypeOf(&workflow.GetLLMNodeFCSettingsMergedRequest{}):   "/api/workflow_api/llm_fc_setting_merged",
+	reflect.TypeOf(&workflow.CopyWorkflowRequest{}):                 "/api/workflow_api/copy",
+	reflect.TypeOf(&workflow.BatchDeleteWorkflowRequest{}):          "/api/workflow_api/batch_delete",
+	reflect.TypeOf(&workflow.GetHistorySchemaRequest{}):             "/api/workflow_api/history_schema",
+	reflect.TypeOf(&workflow.GetWorkflowReferencesRequest{}):        "/api/workflow_api/workflow_references",
+	reflect.TypeOf(&workflow.CreateProjectConversationDefRequest{}): "/api/workflow_api/project_conversation/create",
+	reflect.TypeOf(&workflow.DeleteProjectConversationDefRequest{}): "/api/workflow_api/project_conversation/delete",
+	reflect.TypeOf(&workflow.UpdateProjectConversationDefRequest{}): "/api/workflow_api/project_conversation/update",
+	reflect.TypeOf(&workflow.ListProjectConversationRequest{}):      "/api/workflow_api/project_conversation/list",
 }
 
 func newWfTestRunner(t *testing.T) *wfTestRunner {
@@ -199,6 +217,10 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.GET("/v1/workflow/get_run_history", OpenAPIGetWorkflowRunHistory)
 	h.POST("/api/workflow_api/history_schema", GetHistorySchema)
 	h.POST("/api/workflow_api/workflow_references", GetWorkflowReferences)
+	h.POST("/api/workflow_api/project_conversation/create", CreateProjectConversationDef)
+	h.POST("/api/workflow_api/project_conversation/delete", DeleteProjectConversationDef)
+	h.POST("/api/workflow_api/project_conversation/update", UpdateProjectConversationDef)
+	h.POST("/api/workflow_api/project_conversation/list", ListProjectConversationDef)
 
 	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -303,6 +325,13 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	mockPluginSrv := pluginmock.NewMockPluginService(ctrl)
 	crossplugin.SetDefaultSVC(mockPluginSrv)
 
+	mockConversation := conversationmock.NewMockConversation(ctrl)
+	crossconversation.SetDefaultSVC(mockConversation)
+	mockMessage := messagemock.NewMockMessage(ctrl)
+	crossmessage.SetDefaultSVC(mockMessage)
+	mockAgentRun := agentrunmock.NewMockAgentRun(ctrl)
+	crossagentrun.SetDefaultSVC(mockAgentRun)
+
 	mockey.Mock((*user.UserApplicationService).MGetUserBasicInfo).Return(&playground.MGetUserBasicInfoResponse{
 		UserBasicInfoMap: make(map[string]*playground.UserBasicInfo),
 	}, nil).Build()
@@ -338,6 +367,9 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		closeFn:        f,
 		pluginSrv:      mockPluginSrv,
 		publishPatcher: publishPatcher,
+		conversation:   mockConversation,
+		message:        mockMessage,
+		agentRun:       mockAgentRun,
 	}
 }
 
@@ -614,10 +646,40 @@ func mustMarshalToString(t *testing.T, m any) string {
 	return b
 }
 
-func (r *wfTestRunner) testRun(id string, input map[string]string) string {
+type runOption struct {
+	ProjectID *int64
+	BotID     *int64
+}
+type RunOptionFun func(options *runOption)
+
+func withRunProjectID(pID int64) RunOptionFun {
+	return func(options *runOption) {
+		options.ProjectID = &pID
+	}
+}
+
+func withRunBotID(bID int64) RunOptionFun {
+	return func(options *runOption) {
+		options.BotID = &bID
+	}
+}
+
+func (r *wfTestRunner) testRun(id string, input map[string]string, opts ...RunOptionFun) string {
+	opt := &runOption{}
+	for _, o := range opts {
+		o(opt)
+	}
 	testRunReq := &workflow.WorkFlowTestRunRequest{
 		WorkflowID: id,
 		Input:      input,
+	}
+
+	if opt.ProjectID != nil {
+		testRunReq.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(opt.ProjectID), 10))
+	}
+
+	if opt.BotID != nil {
+		testRunReq.BotID = ptr.Of(strconv.FormatInt(ptr.From(opt.BotID), 10))
 	}
 
 	testRunResponse := post[workflow.WorkFlowTestRunResponse](r, testRunReq)
@@ -767,11 +829,24 @@ func (r *wfTestRunner) openapiAsyncRun(id string, input any) string {
 	return runResp.GetExecuteID()
 }
 
-func (r *wfTestRunner) openapiSyncRun(id string, input any) (map[string]any, string) {
+func (r *wfTestRunner) openapiSyncRun(id string, input any, opts ...RunOptionFun) (map[string]any, string) {
+	opt := &runOption{}
+	for _, o := range opts {
+		o(opt)
+	}
+
 	runReq := &workflow.OpenAPIRunFlowRequest{
 		WorkflowID: id,
 		Parameters: ptr.Of(mustMarshalToString(r.t, input)),
 		IsAsync:    ptr.Of(false),
+	}
+
+	if opt.ProjectID != nil {
+		runReq.ProjectID = ptr.Of(strconv.FormatInt(ptr.From(opt.ProjectID), 10))
+	}
+
+	if opt.BotID != nil {
+		runReq.BotID = ptr.Of(strconv.FormatInt(ptr.From(opt.BotID), 10))
 	}
 
 	runResp := post[workflow.OpenAPIRunFlowResponse](r, runReq)
@@ -4757,5 +4832,382 @@ func TestHttpImplicitDependencies(t *testing.T) {
 
 		})
 
+	})
+}
+
+func TestMessageNodes(t *testing.T) {
+	mockey.PatchConvey("create message in dynamic conversation", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		idStr := r.load("message/create_message.json")
+		r.publish(idStr, "v0.0.1", true)
+
+		ret, _ := r.openapiSyncRun(idStr, map[string]string{
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}, withRunProjectID(123))
+		assert.Equal(t, true, ret["output"])
+		assert.Equal(t, strconv.FormatInt(mID, 10), ret["mID"])
+	})
+
+	mockey.PatchConvey("create message in static conversation", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		createReq := &workflow.CreateProjectConversationDefRequest{
+			ProjectID:        "123",
+			ConversationName: "name" + strconv.FormatInt(cID, 10),
+			SpaceID:          "123",
+		}
+		post[workflow.CreateProjectConversationDefResponse](r, createReq)
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		idStr := r.load("message/create_message.json")
+		testInput := map[string]string{
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}
+		exeID := r.testRun(idStr, testInput, withRunProjectID(123))
+		e := r.getProcess(idStr, exeID)
+		e.assertSuccess()
+		output := e.output
+		var result map[string]any
+		err := sonic.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+		assert.Equal(t, true, result["output"])
+		assert.Equal(t, strconv.FormatInt(mID, 10), result["mID"])
+	})
+
+	mockey.PatchConvey("create message in Bot scene", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		cID := time.Now().Unix()
+		idStr := r.load("message/create_message_in_agent.json")
+		r.publish(idStr, "v0.0.1", true)
+
+		testInput := map[string]string{
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}
+		exeID := r.testRun(idStr, testInput, withRunBotID(123))
+		e := r.getProcess(idStr, exeID)
+		assert.Equal(t, e.status, workflow.WorkflowExeStatus_Fail)
+		assert.Contains(t, e.reason, "Only default conversation allow in agent scenario")
+	})
+
+	mockey.PatchConvey("create message without binding app nor bot", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		idStr := r.load("message/create_message_in_agent.json")
+
+		testInput := map[string]string{
+			"CONVERSATION_NAME": "Default",
+		}
+		exeID := r.testRun(idStr, testInput)
+		e := r.getProcess(idStr, exeID)
+		output := e.output
+		var result map[string]any
+		err := sonic.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err, "Failed to unmarshal output JSON")
+
+		assert.Equal(t, false, result["isSuccess"])
+	})
+
+	mockey.PatchConvey("query message list in dynamic conversation", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		r.message.EXPECT().MessageList(gomock.Any(), gomock.Any()).Return(&message0.MessageListResponse{
+			Messages: []*message0.WfMessage{
+				{
+					ID:          mID,
+					Role:        "user",
+					ContentType: "text",
+					Text:        ptr.Of("hello"),
+				},
+			},
+		}, nil).AnyTimes()
+
+		idStr := r.load("message/message_list.json")
+		r.publish(idStr, "v0.0.1", true)
+		ret, _ := r.openapiSyncRun(idStr, map[string]string{
+			"USER_INPUT":        "hello",
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}, withRunProjectID(123))
+
+		mIDStr := strconv.FormatInt(mID, 10)
+		expected := []any{
+			map[string]any{
+				"messageId":   mIDStr,
+				"role":        "user",
+				"contentType": "text",
+				"content":     "hello",
+			},
+		}
+		assert.Equal(t, expected, ret["output"])
+	})
+
+	mockey.PatchConvey("query message list in static conversation", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		createReq := &workflow.CreateProjectConversationDefRequest{
+			ProjectID:        "123",
+			ConversationName: "name" + strconv.FormatInt(cID, 10),
+			SpaceID:          "123",
+		}
+		post[workflow.CreateProjectConversationDefResponse](r, createReq)
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		r.message.EXPECT().MessageList(gomock.Any(), gomock.Any()).Return(&message0.MessageListResponse{
+			Messages: []*message0.WfMessage{
+				{
+					ID:          mID,
+					Role:        "user",
+					ContentType: "text",
+					Text:        ptr.Of("hello"),
+				},
+			},
+		}, nil).AnyTimes()
+
+		idStr := r.load("message/message_list.json")
+		testInput := map[string]string{
+			"USER_INPUT":        "hello",
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}
+		exeID := r.testRun(idStr, testInput, withRunProjectID(123))
+		e := r.getProcess(idStr, exeID)
+		e.assertSuccess()
+		output := e.output
+		var result map[string]any
+		err := sonic.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+
+		mIDStr := strconv.FormatInt(mID, 10)
+		expected := []any{
+			map[string]any{
+				"messageId":   mIDStr,
+				"role":        "user",
+				"contentType": "text",
+				"content":     "hello",
+			},
+		}
+		assert.Equal(t, expected, result["output"])
+	})
+
+	mockey.PatchConvey("edit message in dynamic conversation", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		r.message.EXPECT().Edit(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID:             mID,
+			ConversationID: cID,
+		}, nil).AnyTimes()
+		r.message.EXPECT().GetMessageByID(gomock.Any(), gomock.Any()).Return(&msgentity.Message{
+			ID:             mID,
+			ConversationID: cID,
+			Content:        "123",
+		}, nil).AnyTimes()
+
+		idStr := r.load("message/edit_message.json")
+		r.publish(idStr, "v0.0.1", true)
+		ret, _ := r.openapiSyncRun(idStr, map[string]string{
+			"USER_INPUT":        "hello",
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}, withRunProjectID(123))
+
+		assert.Equal(t, true, ret["isSuccess"])
+	})
+
+	mockey.PatchConvey("edit message in static conversation", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		createReq := &workflow.CreateProjectConversationDefRequest{
+			ProjectID:        "123",
+			ConversationName: "name" + strconv.FormatInt(cID, 10),
+			SpaceID:          "123",
+		}
+		post[workflow.CreateProjectConversationDefResponse](r, createReq)
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		r.message.EXPECT().Edit(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID:             mID,
+			ConversationID: cID,
+		}, nil).AnyTimes()
+		r.message.EXPECT().GetMessageByID(gomock.Any(), gomock.Any()).Return(&msgentity.Message{
+			ID:             mID,
+			ConversationID: cID,
+			Content:        "123",
+		}, nil).AnyTimes()
+
+		idStr := r.load("message/edit_message.json")
+		testInput := map[string]string{
+			"USER_INPUT":        "hello",
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}
+		exeID := r.testRun(idStr, testInput, withRunProjectID(123))
+		e := r.getProcess(idStr, exeID)
+		e.assertSuccess()
+		output := e.output
+		var result map[string]any
+		err := sonic.Unmarshal([]byte(output), &result)
+		assert.NoError(t, err)
+
+		assert.Equal(t, true, result["isSuccess"])
+	})
+
+	mockey.PatchConvey("edit message no permission", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		err := errorx.New(errno.ErrMessageNodeOperationFail, errorx.KV("cause", "message not found"))
+		r.message.EXPECT().Edit(gomock.Any(), gomock.Any()).Return(&message.Message{}, err).AnyTimes()
+		r.message.EXPECT().GetMessageByID(gomock.Any(), gomock.Any()).Return(&msgentity.Message{
+			ConversationID: cID,
+			Content:        "123456",
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+
+		idStr := r.load("message/edit_message_no_permission.json")
+		r.publish(idStr, "v0.0.1", true)
+
+		testInput := map[string]string{
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}
+		exeID := r.testRun(idStr, testInput, withRunProjectID(123))
+		e := r.getProcess(idStr, exeID)
+		assert.Equal(t, e.status, workflow.WorkflowExeStatus_Fail)
+		assert.Contains(t, e.reason, "Message node operation failure: message not found")
+	})
+
+	mockey.PatchConvey("delete message", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		cID := time.Now().Unix()
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		r.message.EXPECT().Delete(gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+
+		idStr := r.load("message/delete_message.json")
+		r.publish(idStr, "v0.0.1", true)
+		ret, _ := r.openapiSyncRun(idStr, map[string]string{
+			"USER_INPUT":        "hello",
+			"CONVERSATION_NAME": "name" + strconv.FormatInt(cID, 10),
+		}, withRunProjectID(123))
+
+		assert.Equal(t, true, ret["isSuccess"])
 	})
 }
