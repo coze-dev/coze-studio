@@ -177,6 +177,9 @@ var req2URL = map[reflect.Type]string{
 	reflect.TypeOf(&workflow.DeleteProjectConversationDefRequest{}): "/api/workflow_api/project_conversation/delete",
 	reflect.TypeOf(&workflow.UpdateProjectConversationDefRequest{}): "/api/workflow_api/project_conversation/update",
 	reflect.TypeOf(&workflow.ListProjectConversationRequest{}):      "/api/workflow_api/project_conversation/list",
+	reflect.TypeOf(&workflow.GetChatFlowRoleRequest{}):              "/api/workflow_api/chat_flow_role/get",
+	reflect.TypeOf(&workflow.CreateChatFlowRoleRequest{}):           "/api/workflow_api/chat_flow_role/create",
+	reflect.TypeOf(&workflow.DeleteChatFlowRoleRequest{}):           "/api/workflow_api/chat_flow_role/delete",
 }
 
 func newWfTestRunner(t *testing.T) *wfTestRunner {
@@ -221,6 +224,9 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.POST("/api/workflow_api/project_conversation/delete", DeleteProjectConversationDef)
 	h.POST("/api/workflow_api/project_conversation/update", UpdateProjectConversationDef)
 	h.POST("/api/workflow_api/project_conversation/list", ListProjectConversationDef)
+	h.POST("/api/workflow_api/chat_flow_role/delete", DeleteChatFlowRole)
+	h.POST("/api/workflow_api/chat_flow_role/create", CreateChatFlowRole)
+	h.GET("/api/workflow_api/chat_flow_role/get", GetChatFlowRole)
 
 	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -459,6 +465,7 @@ type loadOptions struct {
 	version   string
 	projectID int64
 	data      []byte
+	mode      *workflow.WorkflowMode
 }
 
 func withWorkflowData(data []byte) func(*loadOptions) {
@@ -486,6 +493,12 @@ func withProjectID(id int64) func(*loadOptions) {
 func withPublish(version string) func(*loadOptions) {
 	return func(o *loadOptions) {
 		o.version = version
+	}
+}
+
+func withMode(mode workflow.WorkflowMode) func(*loadOptions) {
+	return func(o *loadOptions) {
+		o.mode = ptr.Of(mode)
 	}
 }
 
@@ -540,6 +553,8 @@ func (r *wfTestRunner) load(schemaFile string, opts ...func(*loadOptions)) strin
 			createReq.ProjectID = ptr.Of(strconv.FormatInt(loadOpts.projectID, 10))
 		}
 	}
+
+	createReq.FlowMode = loadOpts.mode
 
 	resp := post[workflow.CreateWorkflowResponse](r, createReq)
 
@@ -5210,4 +5225,268 @@ func TestMessageNodes(t *testing.T) {
 
 		assert.Equal(t, true, ret["isSuccess"])
 	})
+}
+
+func TestChatFlowRoleAPI(t *testing.T) {
+	mockey.PatchConvey("chat flow role api", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		workflowID := r.load("/chatflow/start_exit.json", withMode(workflow.WorkflowMode_ChatFlow))
+		userConfig := &workflow.UserInputConfig{
+			DefaultInputMode: 1,
+			SendVoiceMode:    0,
+		}
+
+		cr := &workflow.CreateChatFlowRoleRequest{
+			ChatFlowRole: &workflow.ChatFlowRole{
+				WorkflowID:      workflowID,
+				Name:            ptr.Of("role_name"),
+				Description:     ptr.Of("role_desc"),
+				UserInputConfig: userConfig,
+			},
+		}
+
+		CreateResp := post[workflow.CreateChatFlowRoleResponse](r, cr)
+		id := CreateResp.ID
+
+		gr := &workflow.GetChatFlowRoleRequest{
+			WorkflowID: workflowID,
+		}
+
+		w := ut.PerformRequest(r.h.Engine, "GET", fmt.Sprintf("/api/workflow_api/chat_flow_role/get?workflow_id=%s", gr.WorkflowID), nil,
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res := w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body()))
+		GetResp := &workflow.GetChatFlowRoleResponse{}
+		err := sonic.Unmarshal(res.Body(), GetResp)
+		assert.NoError(r.t, err)
+		role := GetResp.Role
+		assert.Equal(t, "role_name", *role.Name)
+		assert.Equal(t, "role_desc", *role.Description)
+		assert.Equal(t, userConfig, role.UserInputConfig)
+
+		cr = &workflow.CreateChatFlowRoleRequest{
+			ChatFlowRole: &workflow.ChatFlowRole{
+				ID:          id,
+				WorkflowID:  workflowID,
+				Name:        ptr.Of("update_name"),
+				Description: ptr.Of("update_desc"),
+			},
+		}
+
+		_ = post[workflow.CreateChatFlowRoleResponse](r, cr)
+		w = ut.PerformRequest(r.h.Engine, "GET", fmt.Sprintf("/api/workflow_api/chat_flow_role/get?workflow_id=%s", gr.WorkflowID), nil,
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res = w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body()))
+		GetResp = &workflow.GetChatFlowRoleResponse{}
+		err = sonic.Unmarshal(res.Body(), GetResp)
+		assert.NoError(t, err)
+		assert.Equal(t, "update_name", *GetResp.Role.Name)
+		assert.Equal(t, "update_desc", *GetResp.Role.Description)
+		assert.Equal(t, userConfig, role.UserInputConfig)
+
+		dr := &workflow.DeleteChatFlowRoleRequest{
+			WorkflowID: workflowID,
+			ID:         id,
+		}
+		_ = post[workflow.DeleteChatFlowRoleResponse](r, dr)
+
+		w = ut.PerformRequest(r.h.Engine, "GET", fmt.Sprintf("/api/workflow_api/chat_flow_role/get?workflow_id=%s", gr.WorkflowID), nil,
+			ut.Header{Key: "Content-Type", Value: "application/json"})
+		res = w.Result()
+		assert.Equal(t, http.StatusOK, res.StatusCode(), string(res.Body()))
+		GetResp = &workflow.GetChatFlowRoleResponse{}
+		err = sonic.Unmarshal(res.Body(), GetResp)
+		assert.NoError(t, err)
+		assert.Nil(t, GetResp.Role)
+
+	})
+}
+
+func TestConversationOfChatFlow(t *testing.T) {
+
+	mockey.PatchConvey("conversation", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+		ts := time.Now().Unix()
+		cName := "conversation_" + strconv.FormatInt(ts, 10)
+		ctx := t.Context()
+		t.Run("create & update & delete conversation template", func(t *testing.T) {
+			createReq := &workflow.CreateProjectConversationDefRequest{
+				ProjectID:        "123",
+				ConversationName: cName,
+				SpaceID:          "123",
+			}
+			response := post[workflow.CreateProjectConversationDefResponse](r, createReq)
+			response2 := post[workflow.CreateProjectConversationDefResponse](r, createReq)
+			assert.Equal(t, response2.Code, int64(720702200))
+			assert.Contains(t, response2.Msg, fmt.Sprintf("conversation name conversation_%d is duplicated", ts))
+			canvas := &vo.Canvas{}
+			data, err := os.ReadFile(fmt.Sprintf("../../../domain/workflow/internal/canvas/examples/%s", "chatflow/new_chatflow.json"))
+			assert.NoError(t, err)
+			err = sonic.Unmarshal(data, canvas)
+			assert.NoError(t, err)
+
+			updateName := cName + "update_name"
+			replacedWorkflow := func(nodes []*vo.Node) error {
+				var startNode *vo.Node
+				for _, node := range nodes {
+					if node.Type == entity.NodeTypeEntry.IDStr() {
+						startNode = node
+					}
+				}
+				if startNode == nil {
+					return fmt.Errorf("start node not found")
+				}
+				for idx, vAny := range startNode.Data.Outputs {
+					v, err := vo.ParseVariable(vAny)
+					if err != nil {
+						return err
+					}
+					if v.Name == "CONVERSATION_NAME" {
+						v.DefaultValue = cName
+					}
+					startNode.Data.Outputs[idx] = v
+				}
+				return nil
+			}
+
+			err = replacedWorkflow(canvas.Nodes)
+			assert.NoError(t, err)
+			data, err = sonic.Marshal(canvas)
+			assert.NoError(t, err)
+
+			_ = r.load("chatflow/new_chatflow.json", withID(ts), withProjectID(123), withWorkflowData(data), withMode(workflow.WorkflowMode_ChatFlow))
+
+			post[workflow.UpdateProjectConversationDefResponse](r, &workflow.UpdateProjectConversationDefRequest{
+				ProjectID:        "123",
+				UniqueID:         response.UniqueID,
+				ConversationName: updateName,
+			})
+
+			schemaJson, err := getCanvas(ctx, strconv.FormatInt(ts, 10))
+			assert.NoError(t, err)
+			canvas = &vo.Canvas{}
+			err = sonic.UnmarshalString(schemaJson, canvas)
+			assert.NoError(t, err)
+			for _, node := range canvas.Nodes {
+				if node.Type == entity.NodeTypeEntry.IDStr() {
+					for _, vAny := range node.Data.Outputs {
+						v, err := vo.ParseVariable(vAny)
+						assert.NoError(t, err)
+						if v.Name == "CONVERSATION_NAME" {
+							assert.Equal(t, v.DefaultValue, updateName)
+						}
+					}
+				}
+			}
+
+			deleteResponse := post[workflow.DeleteProjectConversationDefResponse](r, &workflow.DeleteProjectConversationDefRequest{
+				ProjectID: "123",
+				CheckOnly: true,
+				UniqueID:  response.UniqueID,
+				Replace:   make(map[string]string),
+				SpaceID:   "123",
+			})
+
+			workflowID := deleteResponse.NeedReplace[0].WorkflowID
+			assert.Equal(t, 1, len(deleteResponse.NeedReplace))
+			assert.Equal(t, strconv.FormatInt(ts, 10), workflowID)
+
+			createReq = &workflow.CreateProjectConversationDefRequest{
+				ProjectID:        "123",
+				ConversationName: cName + "copy",
+				SpaceID:          "123",
+			}
+			_ = post[workflow.CreateProjectConversationDefResponse](r, createReq)
+
+			post[workflow.DeleteProjectConversationDefResponse](r, &workflow.DeleteProjectConversationDefRequest{
+				ProjectID: "123",
+				CheckOnly: false,
+				UniqueID:  response.UniqueID,
+				Replace: map[string]string{
+					workflowID: cName + "copy",
+				},
+				SpaceID: "123",
+			})
+
+			schemaJson, err = getCanvas(ctx, strconv.FormatInt(ts, 10))
+			assert.NoError(t, err)
+			canvas = &vo.Canvas{}
+			err = sonic.UnmarshalString(schemaJson, canvas)
+			assert.NoError(t, err)
+
+			for _, node := range canvas.Nodes {
+				if node.Type == entity.NodeTypeEntry.IDStr() {
+					for _, vAny := range node.Data.Outputs {
+						v, err := vo.ParseVariable(vAny)
+						assert.NoError(t, err)
+						if v.Name == "CONVERSATION_NAME" {
+							assert.Equal(t, v.DefaultValue, cName+"copy")
+						}
+					}
+				}
+			}
+		})
+
+		t.Run("list conversation template", func(t *testing.T) {
+			tsStr := strconv.FormatInt(ts, 10)
+			c0Name := "conversation_list_" + tsStr + "0"
+			c1Name := "conversation_list_" + tsStr + "1"
+			c3bakName := "conversation_bak_list_" + tsStr + "3"
+
+			createReq := &workflow.CreateProjectConversationDefRequest{
+				ProjectID:        tsStr,
+				ConversationName: c0Name,
+				SpaceID:          "123",
+			}
+			_ = post[workflow.CreateProjectConversationDefResponse](r, createReq)
+
+			createReq = &workflow.CreateProjectConversationDefRequest{
+				ProjectID:        tsStr,
+				ConversationName: c1Name,
+				SpaceID:          "123",
+			}
+			_ = post[workflow.CreateProjectConversationDefResponse](r, createReq)
+
+			createReq = &workflow.CreateProjectConversationDefRequest{
+				ProjectID:        tsStr,
+				ConversationName: c3bakName,
+				SpaceID:          "123",
+			}
+			_ = post[workflow.CreateProjectConversationDefResponse](r, createReq)
+
+			response := post[workflow.ListProjectConversationResponse](r, &workflow.ListProjectConversationRequest{
+				ProjectID:    tsStr,
+				CreateMethod: workflow.CreateMethod_ManualCreate,
+				CreateEnv:    workflow.CreateEnv_Draft,
+				Cursor:       "1",
+				Limit:        10000,
+				ConnectorID:  "100001",
+			})
+			assert.Equal(t, 3, len(response.Data))
+			nameMap := map[string]bool{
+				c0Name:    true,
+				c1Name:    true,
+				c3bakName: true,
+			}
+			for _, v := range response.Data {
+				assert.True(t, nameMap[v.ConversationName])
+			}
+
+			response = post[workflow.ListProjectConversationResponse](r, &workflow.ListProjectConversationRequest{
+				ProjectID:    tsStr,
+				CreateMethod: workflow.CreateMethod_ManualCreate,
+				CreateEnv:    workflow.CreateEnv_Draft,
+				Cursor:       "1",
+				Limit:        10000,
+				ConnectorID:  "100001",
+				NameLike:     "conversation_list",
+			})
+			assert.Equal(t, 2, len(response.Data))
+		})
+	})
+
 }
