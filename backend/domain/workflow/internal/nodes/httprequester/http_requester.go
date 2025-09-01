@@ -627,7 +627,8 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 	return http.DefaultClient.Do(request)
 }
 
-func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
+func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
 	var request = &Request{}
 
 	request, err := hg.parserToRequest(input)
@@ -696,7 +697,9 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 		result["body"] = request.FileURL
 
 	}
-	return result, nil
+	return &nodes.StructuredCallbackInput{
+		Input: result,
+	}, nil
 }
 
 const (

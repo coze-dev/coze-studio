@@ -55,7 +55,7 @@ type nodeRunConfig[O any] struct {
 	postProcessors      []func(ctx context.Context, input map[string]any) (map[string]any, error)
 	streamPreProcessors []func(ctx context.Context,
 		input *schema.StreamReader[map[string]any]) *schema.StreamReader[map[string]any]
-	callbackInputConverter  func(context.Context, map[string]any) (map[string]any, error)
+	callbackInputConverter  func(context.Context, map[string]any) (*nodes.StructuredCallbackInput, error)
 	callbackOutputConverter func(context.Context, map[string]any) (*nodes.StructuredCallbackOutput, error)
 	init                    []func(context.Context) (context.Context, error)
 	i                       compose.Invoke[map[string]any, map[string]any, O]
@@ -197,7 +197,7 @@ func newNodeRunConfigWOOpt(ns *schema2.NodeSchema,
 }
 
 type newNodeOptions struct {
-	callbackInputConverter  func(context.Context, map[string]any) (map[string]any, error)
+	callbackInputConverter  func(context.Context, map[string]any) (*nodes.StructuredCallbackInput, error)
 	callbackOutputConverter func(context.Context, map[string]any) (*nodes.StructuredCallbackOutput, error)
 	init                    []func(context.Context) (context.Context, error)
 }
@@ -570,8 +570,8 @@ func (r *nodeRunner[O]) onStartStream(ctx context.Context, input *schema.StreamR
 	context.Context, *schema.StreamReader[map[string]any], error) {
 	if r.callbackInputConverter != nil {
 		copied := input.Copy(2)
-		realConverter := func(ctx context.Context) func(map[string]any) (map[string]any, error) {
-			return func(in map[string]any) (map[string]any, error) {
+		realConverter := func(ctx context.Context) func(map[string]any) (*nodes.StructuredCallbackInput, error) {
+			return func(in map[string]any) (*nodes.StructuredCallbackInput, error) {
 				return r.callbackInputConverter(ctx, in)
 			}
 		}

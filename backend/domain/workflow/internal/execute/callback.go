@@ -35,7 +35,6 @@ import (
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -624,10 +623,23 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 		panic("nil node context")
 	}
 
+	var responseExtra map[string]any
+
+	inputMap, ok := input.(map[string]any)
+	if !ok {
+		sInput, ok := input.(*nodes.StructuredCallbackInput)
+		if !ok {
+			panic(fmt.Errorf("unexpected callback input  type: %T", input))
+		}
+
+		inputMap = sInput.Input
+		responseExtra = sInput.Extra
+	}
+
 	e := &Event{
 		Type:    NodeStart,
 		Context: c,
-		Input:   input.(map[string]any),
+		Input:   inputMap,
 		extra:   &entity.NodeExtra{},
 	}
 
@@ -635,6 +647,10 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 		e.extra.CurrentSubExecuteID = c.RootExecuteID
 	} else {
 		e.extra.CurrentSubExecuteID = c.SubExecuteID
+	}
+
+	if responseExtra != nil {
+		e.extra.ResponseExtra = responseExtra
 	}
 
 	n.ch <- e
@@ -814,25 +830,16 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 		Type:    NodeStart,
 		Context: c,
 	}
-	if entity.NodeType(info.Type) == entity.NodeTypeExit { // TODO: define StructuredCallbackInput
-		terminatePlan := n.terminatePlan
-		if terminatePlan == nil {
-			terminatePlan = ptr.Of(vo.ReturnVariables)
-		}
-		if *terminatePlan == vo.UseAnswerContent {
-			e.extra = &entity.NodeExtra{
-				ResponseExtra: map[string]any{
-					"terminal_plan": workflow2.TerminatePlanType_USESETTING,
-				},
-			}
-		}
-	}
 	n.ch <- e
 
 	safego.Go(ctx, func() {
 		defer input.Close()
-		fullInput := make(map[string]any)
-		var previous map[string]any
+		var (
+			inputList  []map[string]any
+			sInputList []*nodes.StructuredCallbackInput
+			first      bool
+		)
+
 		for {
 			chunk, e := input.Recv()
 			if e != nil {
@@ -844,27 +851,77 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 				_ = n.OnError(newCtx, info, e)
 				return
 			}
-			previous = fullInput
-			fullInput, e = nodes.ConcatTwoMaps(fullInput, chunk.(map[string]any))
-			if e != nil {
-				logs.Errorf("failed to concat two maps: %v", e)
-				return
+
+			inputMap, ok := chunk.(map[string]any)
+			if ok {
+				inputList = append(inputList, inputMap)
+			} else {
+				sInput, ok := chunk.(*nodes.StructuredCallbackInput)
+				if !ok {
+					panic(fmt.Errorf("wrong callback input type: %T", chunk))
+				}
+
+				sInputList = append(sInputList, sInput)
 			}
 
-			if info.Type == string(entity.NodeTypeVariableAggregator) { // TODO: define IncrementalInput
-				if !reflect.DeepEqual(fullInput, previous) {
+			if !first {
+				first = true
+				if len(sInputList) > 0 {
+					e := &Event{
+						Type:    NodeStreamingInput,
+						Context: c,
+						Input:   sInputList[0].Input,
+					}
+
+					if sInputList[0].Extra != nil {
+						e.extra = &entity.NodeExtra{
+							ResponseExtra: sInputList[0].Extra,
+						}
+					}
+
+					n.ch <- e
+				} else {
 					n.ch <- &Event{
 						Type:    NodeStreamingInput,
 						Context: c,
-						Input:   fullInput,
+						Input:   inputList[0],
 					}
 				}
 			}
 		}
-		n.ch <- &Event{
-			Type:    NodeStreamingInput,
-			Context: c,
-			Input:   fullInput,
+
+		if len(sInputList) > 0 {
+			sInput, err := nodes.ConcatStructuredCallbackInputs(sInputList)
+			if err != nil {
+				_ = n.OnError(newCtx, info, err)
+				return
+			}
+
+			e := &Event{
+				Type:    NodeStreamingInput,
+				Context: c,
+				Input:   sInput.Input,
+			}
+
+			if sInput.Extra != nil {
+				e.extra = &entity.NodeExtra{
+					ResponseExtra: sInput.Extra,
+				}
+			}
+
+			n.ch <- e
+		} else {
+			inputR, err := nodes.ConcatMaps(reflect.ValueOf(inputList))
+			if err != nil {
+				_ = n.OnError(newCtx, info, err)
+				return
+			}
+
+			n.ch <- &Event{
+				Type:    NodeStreamingInput,
+				Context: c,
+				Input:   inputR.Interface().(map[string]any),
+			}
 		}
 	})
 

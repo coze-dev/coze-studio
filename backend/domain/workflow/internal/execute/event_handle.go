@@ -589,6 +589,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		nodeExec := &entity.NodeExecution{
 			ID:    event.NodeExecuteID,
 			Input: ptr.Of(mustMarshalToString(event.Input)),
+			Extra: event.extra,
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)

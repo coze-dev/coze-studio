@@ -463,12 +463,14 @@ func (b *Batch) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Nod
 	return output, nil
 }
 
-func (b *Batch) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
+func (b *Batch) ToCallbackInput(_ context.Context, in map[string]any) (*nodes.StructuredCallbackInput, error) {
 	trimmed := make(map[string]any, len(b.inputArrays))
 	for _, arrayKey := range b.inputArrays {
 		if v, ok := in[arrayKey]; ok {
 			trimmed[arrayKey] = v
 		}
 	}
-	return trimmed, nil
+	return &nodes.StructuredCallbackInput{
+		Input: trimmed,
+	}, nil
 }

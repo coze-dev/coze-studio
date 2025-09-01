@@ -234,9 +234,10 @@ func (kr *Retrieve) GetChatHistoryOrNil(ctx context.Context, ChatHistorySetting 
 	return historyMessages
 }
 
-func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map[string]any, error) {
+func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
 	if kr.ChatHistorySetting == nil || !kr.ChatHistorySetting.EnableChatHistory {
-		return in, nil
+		return &nodes.StructuredCallbackInput{Input: in}, nil
 	}
 
 	var messages []*crossmessage.WfMessage
@@ -255,11 +256,11 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 	maps.Copy(ret, in)
 
 	if len(messages) == 0 {
-		return ret, nil
+		return &nodes.StructuredCallbackInput{Input: ret}, nil
 	}
 
 	if sectionID != nil && messages[0].SectionID != *sectionID {
-		return ret, nil
+		return &nodes.StructuredCallbackInput{Input: ret}, nil
 	}
 
 	maxRounds := int(kr.ChatHistorySetting.ChatHistoryRound)
@@ -294,5 +295,5 @@ func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (map
 	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
 
 	ret["chatHistory"] = historyMessages
-	return ret, nil
+	return &nodes.StructuredCallbackInput{Input: ret}, nil
 }

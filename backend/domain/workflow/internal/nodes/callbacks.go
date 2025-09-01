@@ -36,6 +36,11 @@ type StructuredCallbackOutput struct {
 	OutputStr *string
 }
 
+type StructuredCallbackInput struct {
+	Input map[string]any
+	Extra map[string]any // node specific extra info, will go into node execution's extra.ResponseExtra
+}
+
 func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 	*StructuredCallbackOutput, error) {
 	if len(outputs) == 0 {
@@ -149,5 +154,51 @@ func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 		Input:     input,
 		Answer:    answer,
 		OutputStr: outputStr,
+	}, nil
+}
+
+func ConcatStructuredCallbackInputs(inputs []*StructuredCallbackInput) (
+	*StructuredCallbackInput, error) {
+	if len(inputs) == 0 {
+		return nil, nil
+	}
+
+	if len(inputs) == 1 {
+		return inputs[0], nil
+	}
+
+	var (
+		extra map[string]any
+		input map[string]any
+	)
+
+	inputLists := make([]map[string]any, len(inputs))
+	var extraList []map[string]any
+	for i, o := range inputs {
+		inputLists[i] = o.Input
+		if o.Extra != nil {
+			extraList = append(extraList, o.Extra)
+		}
+	}
+
+	m, err := ConcatMaps(reflect.ValueOf(inputLists))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(extraList) > 0 {
+		if len(extraList) == 1 {
+			extra = extraList[0]
+		} else {
+			if m, err = ConcatMaps(reflect.ValueOf(extraList)); err != nil {
+				return nil, err
+			}
+			extra = m.Interface().(map[string]any)
+		}
+	}
+
+	return &StructuredCallbackInput{
+		Input: input,
+		Extra: extra,
 	}, nil
 }

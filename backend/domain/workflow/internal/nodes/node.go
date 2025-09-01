@@ -114,7 +114,7 @@ type TransformableNodeWOpt interface {
 // The converted input will be displayed on canvas when test run,
 // and will be returned when querying the node's input through OpenAPI.
 type CallbackInputConverted interface {
-	ToCallbackInput(ctx context.Context, in map[string]any) (map[string]any, error)
+	ToCallbackInput(ctx context.Context, in map[string]any) (*StructuredCallbackInput, error)
 }
 
 // CallbackOutputConverted converts node input to a form better suited for UI.

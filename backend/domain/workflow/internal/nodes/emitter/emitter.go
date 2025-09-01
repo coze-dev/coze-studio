@@ -560,6 +560,30 @@ func renderAndSend(tp nodes.TemplatePart, k string, v any, sw *schema.StreamWrit
 	return false
 }
 
+func (e *OutputEmitter) ToCallbackInput(ctx context.Context, in map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
+	type streamExtraChunkDone struct{}
+	var extraChunkDone bool
+	extraChunkDone = ctxcache.HasKey(ctx, streamExtraChunkDone{})
+	defer func() {
+		if !extraChunkDone {
+			ctxcache.Store(ctx, streamExtraChunkDone{}, true)
+		}
+	}()
+
+	sci := &nodes.StructuredCallbackInput{
+		Input: in,
+	}
+
+	if !extraChunkDone {
+		sci.Extra = map[string]any{
+			"terminal_plan": workflow2.TerminatePlanType_USESETTING,
+		}
+	}
+
+	return sci, nil
+}
+
 func (e *OutputEmitter) ToCallbackOutput(ctx context.Context, out map[string]any) (
 	*nodes.StructuredCallbackOutput, error) {
 	type streamExtraChunkDone struct{}

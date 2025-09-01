@@ -551,7 +551,8 @@ type streamMarkerType string
 
 const streamMarker streamMarkerType = "<Stream Data...>"
 
-func (v *VariableAggregator) ToCallbackInput(ctx context.Context, input map[string]any) (map[string]any, error) {
+func (v *VariableAggregator) ToCallbackInput(ctx context.Context, input map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
 	var resolvedSources map[string]*schema2.SourceInfo
 	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
 		resolvedSources = state.GetFullSources(v.nodeKey)
@@ -594,9 +595,9 @@ func (v *VariableAggregator) ToCallbackInput(ctx context.Context, input map[stri
 		return merged[i].Name < merged[j].Name
 	})
 
-	return map[string]any{
+	return &nodes.StructuredCallbackInput{Input: map[string]any{
 		"mergeGroups": merged,
-	}, nil
+	}}, nil
 }
 
 func (v *VariableAggregator) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {
