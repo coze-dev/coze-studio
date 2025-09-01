@@ -22,6 +22,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 )
 
+//go:generate mockgen -source=./oauth_repository.go -package=mock_plugin_oauth -destination=./mock/mock_oauth_repository.go
 type OAuthRepository interface {
 	GetAuthorizationCode(ctx context.Context, meta *entity.AuthorizationCodeMeta) (info *entity.AuthorizationCodeInfo, exist bool, err error)
 	UpsertAuthorizationCode(ctx context.Context, info *entity.AuthorizationCodeInfo) (err error)
