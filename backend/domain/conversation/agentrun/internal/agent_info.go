@@ -17,6 +17,7 @@ package internal
 
 import (
 	"context"
+	"errors"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
@@ -32,13 +33,17 @@ func getAgentHistoryRounds(agentInfo *singleagent.SingleAgent) int32 {
 	return conversationTurns
 }
 
-func getAgentInfo(ctx context.Context, agentID int64, isDraft bool) (*singleagent.SingleAgent, error) {
+func getAgentInfo(ctx context.Context, agentID int64, isDraft bool, connID int64) (*singleagent.SingleAgent, error) {
 	agentInfo, err := crossagent.DefaultSVC().ObtainAgentByIdentity(ctx, &singleagent.AgentIdentity{
-		AgentID: agentID,
-		IsDraft: isDraft,
+		AgentID:     agentID,
+		IsDraft:     isDraft,
+		ConnectorID: connID,
 	})
 	if err != nil {
 		return nil, err
+	}
+	if agentInfo == nil {
+		return nil, errors.New("agent not found")
 	}
 
 	return agentInfo, nil

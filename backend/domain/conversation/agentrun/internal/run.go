@@ -107,7 +107,7 @@ func (rd *AgentRuntime) GetHistory() []*msgEntity.Message {
 
 func (art *AgentRuntime) Run(ctx context.Context) (err error) {
 
-	agentInfo, err := getAgentInfo(ctx, art.GetRunMeta().AgentID, art.GetRunMeta().IsDraft)
+	agentInfo, err := getAgentInfo(ctx, art.GetRunMeta().AgentID, art.GetRunMeta().IsDraft, art.GetRunMeta().ConnectorID)
 	if err != nil {
 		return
 	}

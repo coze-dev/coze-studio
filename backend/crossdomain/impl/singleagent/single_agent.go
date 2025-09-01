@@ -97,5 +97,8 @@ func (c *impl) ObtainAgentByIdentity(ctx context.Context, identity *model.AgentI
 	if err != nil {
 		return nil, err
 	}
+	if agentInfo == nil {
+		return nil, nil
+	}
 	return agentInfo.SingleAgent, nil
 }
