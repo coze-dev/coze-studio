@@ -628,14 +628,10 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	if existed {
-		var data = lastUserMessage.Content
-		if info.NodeType == entity.NodeTypeInputReceiver {
-			data = parserInput(lastUserMessage.Content)
-		}
 		sr, err := GetWorkflowDomainSVC().StreamResume(ctx, &entity.ResumeRequest{
 			EventID:    info.EventID,
 			ExecuteID:  info.ExecID,
-			ResumeData: data,
+			ResumeData: lastUserMessage.Content,
 		}, workflowModel.ExecuteConfig{
 			Operator:     userID,
 			Mode:         ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),

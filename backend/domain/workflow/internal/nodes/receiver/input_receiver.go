@@ -26,6 +26,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflow0 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -146,7 +147,7 @@ func (i *InputReceiver) Invoke(ctx context.Context, _ map[string]any) (map[strin
 	}
 
 	exeCfg := execute.GetExeCtx(ctx).ExeCfg
-	if exeCfg.BizType == workflowModel.BizTypeAgent {
+	if exeCfg.BizType == workflowModel.BizTypeAgent || exeCfg.WorkflowMode == workflow0.WorkflowMode_ChatFlow {
 		m := make(map[string]any)
 		sList := strings.Split(resumeData, "\n")
 		for _, s := range sList {
