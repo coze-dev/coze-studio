@@ -651,7 +651,7 @@ func (u *UploadService) ApplyImageUpload(ctx context.Context, req *upload.ApplyU
 	sessionKey := uuid.NewString()
 	auth := uuid.NewString()
 	uploadID := uuid.NewString()
-	uploadHost := string(host) + consts.UploadURI
+	uploadHost := host + consts.UploadURI
 	resp.ResponseMetadata = &upload.ResponseMetadata{
 		RequestId: uuid.NewString(),
 		Action:    "ApplyImageUpload",

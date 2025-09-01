@@ -28,6 +28,7 @@ import { useChatActionLockService } from '../../../context/chat-action-lock';
 import { useSendTextMessage } from './text-message';
 import { useSendMessageAndAutoUpdate } from './new-message';
 import { useSendFileMessage, useSendImageMessage } from './file-message';
+import { fixUserMessageIdInGroup } from '../../../utils/message-group/fix-user-message-id';
 
 export const useResendMessage = () => {
   const sendTextMessage = useSendTextMessage();
@@ -86,9 +87,13 @@ export const useRegenerateMessage = () => {
 
   const chatActionLockService = useChatActionLockService();
 
-  return async (messageGroup: MessageGroup) =>
-    originRegenerateMessage({
-      messageGroup,
+  return async (messageGroup: MessageGroup) => {
+    // 修复可能缺失的 userMessageId
+    const { messages } = storeSet.useMessagesStore.getState();
+    const fixedMessageGroup = fixUserMessageIdInGroup(messageGroup, messages);
+    
+    return originRegenerateMessage({
+      messageGroup: fixedMessageGroup,
       context: {
         storeSet,
         sendMessage,
@@ -96,6 +101,7 @@ export const useRegenerateMessage = () => {
         reporter,
       },
     });
+  };
 };
 
 /**
@@ -107,10 +113,24 @@ export const useRegenerateMessageByUserMessageId = () => {
   const { useMessagesStore } = useChatAreaStoreSet();
 
   return async (messageId: string) => {
-    const { messageGroupList } = useMessagesStore.getState();
-    const messageGroup = messageGroupList.find(
+    const { messageGroupList, messages } = useMessagesStore.getState();
+    let messageGroup = messageGroupList.find(
       ({ memberSet }) => memberSet.userMessageId === messageId,
     );
+    
+    // 如果通过 userMessageId 找不到，尝试通过其他方式查找
+    if (!messageGroup) {
+      // 尝试通过 groupId 查找
+      messageGroup = messageGroupList.find(
+        ({ groupId }) => groupId === messageId
+      );
+      
+      // 如果找到了但 userMessageId 缺失，修复它
+      if (messageGroup) {
+        messageGroup = fixUserMessageIdInGroup(messageGroup, messages);
+      }
+    }
+    
     if (!messageGroup) {
       throw new Error('regenerate message error: failed to get message');
     }

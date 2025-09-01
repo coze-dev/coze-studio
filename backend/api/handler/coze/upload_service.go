@@ -4,12 +4,14 @@ package coze
 
 import (
 	"context"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	upload "github.com/coze-dev/coze-studio/backend/api/model/file/upload"
 	uploadSVC "github.com/coze-dev/coze-studio/backend/application/upload"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
@@ -45,15 +47,22 @@ func ApplyUploadAction(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 	resp := new(upload.ApplyUploadActionResponse)
-	host := c.Request.Host()
+	// 使用配置的 SERVER_HOST，但需要去掉协议前缀
+	host := conf.GetServerHost()
+	// 去掉 http:// 或 https:// 前缀，只保留主机名
+	if strings.HasPrefix(host, "http://") {
+		host = strings.TrimPrefix(host, "http://")
+	} else if strings.HasPrefix(host, "https://") {
+		host = strings.TrimPrefix(host, "https://")
+	}
 	if ptr.From(req.Action) == "ApplyImageUpload" {
-		resp, err = uploadSVC.SVC.ApplyImageUpload(ctx, &req, string(host))
+		resp, err = uploadSVC.SVC.ApplyImageUpload(ctx, &req, host)
 		if err != nil {
 			internalServerErrorResponse(ctx, c, err)
 			return
 		}
 	} else if ptr.From(req.Action) == "CommitImageUpload" {
-		resp, err = uploadSVC.SVC.CommitImageUpload(ctx, &req, string(host))
+		resp, err = uploadSVC.SVC.CommitImageUpload(ctx, &req, host)
 		if err != nil {
 			internalServerErrorResponse(ctx, c, err)
 			return

@@ -39,7 +39,7 @@ const makeGroup = (groupId: string, sectionId: string): MessageGroup => ({
   isLatest: false,
   showContextDivider: null,
   memberSet: {
-    userMessageId: '',
+    userMessageId: null,  // 改为 null 而不是空字符串
     functionCallMessageIdList: [],
     llmAnswerMessageIdList: [],
     followUpMessageIdList: [],
@@ -94,7 +94,13 @@ export const groupMessageList = (
 
     switch (memberSetType) {
       case 'user': {
-        modifiedGroup.memberSet.userMessageId = getMessageUniqueKey(message);
+        // 确保用户消息ID被正确设置
+        const messageKey = getMessageUniqueKey(message);
+        if (messageKey) {
+          modifiedGroup.memberSet.userMessageId = messageKey;
+        } else {
+          console.warn('[MessageGroup] Failed to get user message key', message);
+        }
         break;
       }
       case 'llm': {

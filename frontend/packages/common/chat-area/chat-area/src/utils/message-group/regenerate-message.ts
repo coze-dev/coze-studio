@@ -23,6 +23,7 @@ import { type ChatActionLockService } from '../../service/chat-action-lock';
 import { type useSendMessageAndAutoUpdate } from '../../hooks/messages/use-send-message/new-message';
 import { type StoreSet } from '../../context/chat-area-context/type';
 import { checkNoneMessageGroupMemberLeft } from './message-group-exhaustive-check';
+import { debugMessageGroup } from './debug-message-group';
 
 export const regenerateMessage = async ({
   messageGroup: { memberSet, groupId },
@@ -55,10 +56,35 @@ export const regenerateMessage = async ({
   checkNoneMessageGroupMemberLeft(rest);
 
   if (!userMessageId) {
-    throw new Error('regenerate message failed to get userMessageId');
+    // 调试信息
+    const { messages } = useMessagesStore.getState();
+    debugMessageGroup(messageGroup, messages, 'Regenerate - Missing UserMessageId');
+    
+    // 尝试从消息组中查找用户消息
+    const userMessages = messages.filter(msg => 
+      msg.role === 'user' && 
+      msg.reply_id === groupId
+    );
+    
+    if (userMessages.length > 0) {
+      // 使用找到的用户消息
+      userMessageId = userMessages[0].message_id || userMessages[0].extra_info?.local_message_id;
+      console.log('[Regenerate] Found user message as fallback:', userMessageId);
+    }
+    
+    if (!userMessageId) {
+      reporter.sendTracker('regenerate_message_error', {
+        error: 'userMessageId_not_found',
+        groupId,
+        memberSet: JSON.stringify(memberSet),
+      });
+      console.error('[Regenerate] Failed to find userMessageId for group:', groupId);
+      throw new Error('regenerate message failed to get userMessageId');
+    }
   }
 
-  const userMessage = findMessageById(messages, userMessageId);
+  const userMessage = findMessageById(messages, userMessageId) || 
+    messages.find(msg => msg.role === 'user' && msg.reply_id === groupId);
 
   if (!userMessage) {
     throw new Error('regenerate message error: failed to get userMessage');
