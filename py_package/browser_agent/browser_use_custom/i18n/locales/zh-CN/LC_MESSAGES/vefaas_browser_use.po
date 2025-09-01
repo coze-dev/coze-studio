@@ -1,0 +1,178 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: vefaas-browser-use\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-04 12:00+0000\n"
+"PO-Revision-Date: 2025-01-04 12:00+0000\n"
+"Last-Translator: Auto Generated\n"
+"Language-Team: Chinese (Simplified)\n"
+"Language: zh-CN\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+
+# Task management messages
+msgid "Task auto-stopped after 1 minute in paused state"
+msgstr "任务在暂停状态1分钟后自动停止"
+
+# Controller action descriptions
+msgid "Search the query in Baidu in the current tab, the query should be a search query like humans search in Baidu, concrete and not vague or super long. More the single most important items."
+msgstr "在当前标签页的百度中搜索查询，查询应该是像人类在百度中搜索的搜索查询，具体而不模糊或过长。更多的单个最重要的项目。"
+
+msgid "🔍 Searched for \"{query}\" in Baidu"
+msgstr "🔍 在百度搜索了\"{query}\""
+
+msgid "Pause agent"
+msgstr "暂停代理"
+
+msgid "👩 Pause agent, reason: {reason}"
+msgstr "👩 暂停代理，原因：{reason}"
+
+msgid "Extract page content to retrieve specific information from the page, e.g. all company names, a specific description, all information about xyc, 4 links with companies in structured format. Use include_links true if the goal requires links"
+msgstr "提取页面内容以从页面中检索特定信息，例如所有公司名称、特定描述、关于xyc的所有信息、4个具有结构化格式公司的链接。如果目标需要链接，请使用include_links true"
+
+msgid "Your task is to extract the content of the page. You will be given a page and a goal and you should extract all relevant information around this goal from the page. If the goal is vague, summarize the page. Respond in json format. Extraction goal: {goal}, Page: {page}"
+msgstr "您的任务是提取页面的内容。您将获得一个页面和一个目标，您应该从页面中提取围绕此目标的所有相关信息。如果目标模糊，请总结页面。以json格式响应。提取目标：{goal}，页面：{page}"
+
+msgid "📄 Extracted from page\n: {content}\n"
+msgstr "📄 从页面提取\n：{content}\n"
+
+msgid "Error extracting content: {error}"
+msgstr "提取内容错误：{error}"
+
+# SSE messages
+msgid "Starting new step..."
+msgstr "开始新步骤..."
+
+msgid "Taken action #{number}: {action}"
+msgstr "执行动作 #{number}：{action}"
+
+msgid "Agent creation failed: {error}"
+msgstr "代理创建失败：{error}"
+
+msgid "Agent execution failed: {error}"
+msgstr "代理执行失败：{error}"
+
+# Planning step status messages
+msgid "Unknown"
+msgstr "未知"
+
+msgid "Failed"
+msgstr "失败"
+
+msgid "Success"
+msgstr "成功"
+
+# Common action result messages
+msgid "Unknown - The task has just started, and no actions have been taken yet."
+msgstr "未知 - 任务刚刚开始，尚未执行任何操作。"
+
+msgid "Failed - The attempt to search for 'MCP news' was blocked by a CAPTCHA verification page. This requires human intervention to proceed."
+msgstr "失败 - 搜索'MCP news'的尝试被验证码页面阻止。需要人工干预才能继续。"
+
+msgid "CAPTCHA verification required to proceed with the search for MCP news. Please solve the CAPTCHA to continue."
+msgstr "需要验证码验证才能继续搜索MCP新闻。请解决验证码以继续。"
+
+# Dynamic evaluation patterns
+msgid "Unknown - The task has not yet begun as the current page is blank."
+msgstr "未知 - 任务尚未开始，因为当前页面为空白。"
+
+msgid "Success - Successfully navigated to Google's homepage."
+msgstr "成功 - 成功导航到Google主页。"
+
+# General pause patterns
+msgid "Pause execution due to CAPTCHA verification."
+msgstr "由于验证码验证而暂停执行。"
+
+# General evaluation patterns
+msgid "Failed - The search was blocked by Google's CAPTCHA verification."
+msgstr "失败 - 搜索被Google的验证码验证阻止。"
+
+msgid "Failed - The search was blocked by a CAPTCHA verification page."
+msgstr "失败 - 搜索被验证码页面阻止。"
+
+# General pause reasons
+msgid "CAPTCHA verification required. Human intervention is needed to proceed."
+msgstr "需要验证码验证。需要人工干预才能继续。"
+
+msgid "pause"
+msgstr "暂停"
+
+msgid "reason"
+msgstr "原因"
+
+msgid "Human intervention required to solve it before proceeding with the task."
+msgstr "需要人工干预解决后才能继续执行任务。"
+
+# CAPTCHA detection messages
+msgid "CAPTCHA detected on Amazon.com. Human intervention required to solve it before proceeding with the task."
+msgstr "在Amazon.com检测到验证码。需要人工干预解决后才能继续执行任务。"
+
+msgid "Pause execution and request human intervention to solve the CAPTCHA"
+msgstr "暂停执行并请求人工干预解决验证码"
+
+# Task status messages
+msgid "Task started."
+msgstr "任务已开始。"
+
+msgid "Task started:"
+msgstr "任务已开始："
+
+msgid "Pause the task and wait for human intervention to complete the CAPTCHA verification."
+msgstr "暂停任务并等待人工干预完成验证码验证。"
+
+# Extraction instruction
+msgid "Extract the titles, sources, and summaries of"
+msgstr "提取标题、来源和摘要"
+
+# Initial task status messages
+msgid "No previous actions have been taken yet."
+msgstr "尚未执行任何操作。"
+
+msgid "Submit the search query for"
+msgstr "提交搜索查询"
+
+# Key instruction messages
+msgid "'keys': 'Enter'"
+msgstr "'输入键': '回车'" 
+
+msgid "error"
+msgstr "失败"
+
+# Status/State translations
+msgid "queued"
+msgstr "排队中"
+
+msgid "starting"
+msgstr "开始执行"
+
+msgid "browser_initialized"
+msgstr "浏览器初始化"
+
+msgid "running"
+msgstr "执行中"
+
+msgid "failed"
+msgstr "失败"
+
+msgid "agent_initialized"
+msgstr "agent 初始化"
+
+msgid "completed"
+msgstr "完成"
+
+msgid "go_to_url"
+msgstr "访问网址"
+
+msgid "click_element_by_index"
+msgstr "按索引点击元素"
+
+msgid "index"
+msgstr "索引"
+
+msgid "include_links"
+msgstr "包含链接"
+
+
+

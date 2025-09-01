@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=64.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+package-dir = {"browser_agent" = "browser_agent","stream_helper" = "stream_helper"}
+
+[tool.setuptools.package-data]
+"browser_agent" = ["**/*.mo", "**/*.po"]
+
+[project]
+name = "coze-studio-py-package" # 包名，在PyPI上唯一。通常用中划线
+version = "0.1.0"
+description = "browser agent"
+
+# 如果你的包有依赖，在这里声明
+dependencies = [
+    "fastapi==0.109.2",
+    "uvicorn==0.27.0.post1",
+    "python-multipart==0.0.9",
+    "MainContentExtractor==0.0.4",
+    "aiohttp==3.11.16",
+    "websockets==15.0.1",
+    "faiss-cpu==1.10.0",
+    "browser_use @ git+https://github.com/zzxwill/browser-use.git@i18n_system_prompt",
+    "playwright==1.52.0",
+    "pillow==11.3.0"
+]
