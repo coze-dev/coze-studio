@@ -127,7 +127,7 @@ func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.Cha
 	}
 
 	if agentInfo == nil {
-		return nil, errors.New("agent info is nil")
+		return nil, errorx.New(errno.ErrAgentNotExists)
 	}
 	return agentInfo, nil
 }

@@ -17,12 +17,13 @@ package internal
 
 import (
 	"context"
-	"errors"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 func getAgentHistoryRounds(agentInfo *singleagent.SingleAgent) int32 {
@@ -43,7 +44,7 @@ func getAgentInfo(ctx context.Context, agentID int64, isDraft bool, connID int64
 		return nil, err
 	}
 	if agentInfo == nil {
-		return nil, errors.New("agent not found")
+		return nil, errorx.New(errno.ErrAgentNotExists)
 	}
 
 	return agentInfo, nil
