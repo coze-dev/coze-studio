@@ -57,10 +57,17 @@ const bizConfig: BizConfig = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {}) as any;
 
+      // 去掉端口号（如果有的话）
+      let cleanUploadHost = upload_host || '';
+      const portMatch = cleanUploadHost.match(/^([^:\/]+)(:\d+)(\/.*)?$/);
+      if (portMatch) {
+        cleanUploadHost = portMatch[1] + (portMatch[3] || '');
+      }
+
       return {
         schema,
         serviceId: service_id || '',
-        uploadHost: upload_host || '',
+        uploadHost: cleanUploadHost,
         stsToken: {
           CurrentTime: auth?.current_time || '',
           ExpiredTime: auth?.expired_time || '',
@@ -82,10 +89,17 @@ const bizConfig: BizConfig = {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         {}) as any;
 
+      // 去掉端口号（如果有的话）
+      let cleanUploadHost = upload_host || '';
+      const portMatch = cleanUploadHost.match(/^([^:\/]+)(:\d+)(\/.*)?$/);
+      if (portMatch) {
+        cleanUploadHost = portMatch[1] + (portMatch[3] || '');
+      }
+
       return {
         schema,
         serviceId: service_id || '',
-        uploadHost: upload_host || '',
+        uploadHost: cleanUploadHost,
         stsToken: {
           CurrentTime: auth?.current_time || '',
           ExpiredTime: auth?.expired_time || '',
@@ -141,6 +155,13 @@ export function upLoadFile({
           // cp-disable-next-line
           if (uploadHost.startsWith('https://')) {
             uploadHost = uploadHost.substr(8);
+          }
+          // 去掉端口号（如果有的话）
+          // 例如：localhost:8888/api/common/upload -> localhost/api/common/upload
+          const portMatch = uploadHost.match(/^([^:\/]+)(:\d+)(\/.*)?$/);
+          if (portMatch) {
+            // 如果匹配到端口号模式，去掉端口部分
+            uploadHost = portMatch[1] + (portMatch[3] || '');
           }
           stsToken = {
             // @ts-expect-error -- linter-disable-autofix
