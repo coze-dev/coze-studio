@@ -1513,8 +1513,38 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 	var collectDependence func(nodes []*vo.Node) error
 	collectDependence = func(nodes []*vo.Node) error {
 		for _, node := range nodes {
-			switch entity.IDStrToNodeType(node.Type) {
-			case entity.NodeTypePlugin:
+			nType := entity.IDStrToNodeType(node.Type)
+			meta := entity.NodeMetaByNodeType(nType)
+			if meta.UseDatabase {
+				dsList := node.Data.Inputs.DatabaseInfoList
+				if len(dsList) == 0 {
+					return fmt.Errorf("database info is requird")
+				}
+				for _, d := range dsList {
+					dsID, err := strconv.ParseInt(d.DatabaseInfoID, 10, 64)
+					if err != nil {
+						return err
+					}
+					ds.DatabaseIDs = append(ds.DatabaseIDs, dsID)
+				}
+				continue
+			}
+
+			if meta.UseKnowledge {
+				datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
+				datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
+				for _, id := range datasetIDs {
+					k, err := strconv.ParseInt(id.(string), 10, 64)
+					if err != nil {
+						return err
+					}
+					ds.KnowledgeIDs = append(ds.KnowledgeIDs, k)
+				}
+
+				continue
+			}
+
+			if meta.UsePlugin {
 				apiParams := slices.ToMap(node.Data.Inputs.APIParams, func(e *vo.Param) (string, *vo.Param) {
 					return e.Name, e
 				})
@@ -1536,29 +1566,9 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 				if pVersion == "0" { // version = 0 to represent the plug-in in the app
 					ds.PluginIDs = append(ds.PluginIDs, pID)
 				}
+			}
 
-			case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
-				datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
-				datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
-				for _, id := range datasetIDs {
-					k, err := strconv.ParseInt(id.(string), 10, 64)
-					if err != nil {
-						return err
-					}
-					ds.KnowledgeIDs = append(ds.KnowledgeIDs, k)
-				}
-			case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
-				dsList := node.Data.Inputs.DatabaseInfoList
-				if len(dsList) == 0 {
-					return fmt.Errorf("database info is requird")
-				}
-				for _, d := range dsList {
-					dsID, err := strconv.ParseInt(d.DatabaseInfoID, 10, 64)
-					if err != nil {
-						return err
-					}
-					ds.DatabaseIDs = append(ds.DatabaseIDs, dsID)
-				}
+			switch nType {
 			case entity.NodeTypeLLM:
 				if node.Data.Inputs.LLM != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
 					for idx := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
@@ -1571,7 +1581,6 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 							ds.PluginIDs = append(ds.PluginIDs, pluginID)
 
 						}
-
 					}
 				}
 				if node.Data.Inputs.LLM != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
@@ -1960,20 +1969,47 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 	)
 
 	for _, node := range nodes {
-		switch entity.IDStrToNodeType(node.Type) {
-		case entity.NodeTypeSubWorkflow:
-			if !hasWorkflowRelated || node.Data.Inputs.SubWorkflow == nil {
+		nType := entity.IDStrToNodeType(node.Type)
+		meta := entity.NodeMetaByNodeType(nType)
+		if meta.UseDatabase {
+			if !hasDatabaseRelated || node.Data.Inputs.DatabaseNode == nil {
 				continue
 			}
-			workflowID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
-			if err != nil {
-				return err
+			dsList := node.Data.Inputs.DatabaseInfoList
+			for idx := range dsList {
+				databaseInfo := dsList[idx]
+				did, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
+				if err != nil {
+					return err
+				}
+				if refDatabaseID, ok := related.DatabaseMap[did]; ok {
+					databaseInfo.DatabaseInfoID = strconv.FormatInt(refDatabaseID, 10)
+				}
+
 			}
-			if wf, ok := relatedWorkflows[workflowID]; ok {
-				node.Data.Inputs.WorkflowID = strconv.FormatInt(wf.ID, 10)
-				node.Data.Inputs.WorkflowVersion = wf.Version
+			continue
+		}
+
+		if meta.UseKnowledge {
+			if !hasKnowledgeRelated || node.Data.Inputs.Knowledge == nil {
+				continue
 			}
-		case entity.NodeTypePlugin:
+			datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
+			knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
+			for idx := range knowledgeIDs {
+				kid, err := strconv.ParseInt(knowledgeIDs[idx].(string), 10, 64)
+				if err != nil {
+					return err
+				}
+				if refKnowledgeID, ok := related.KnowledgeMap[kid]; ok {
+					knowledgeIDs[idx] = strconv.FormatInt(refKnowledgeID, 10)
+				}
+			}
+
+			continue
+		}
+
+		if meta.UsePlugin {
 			if !hasPluginRelated || node.Data.Inputs.PluginAPIParam == nil {
 				continue
 			}
@@ -2016,6 +2052,22 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 				apiIDParam.Input.Value.Content = strconv.FormatInt(refApiID, 10)
 			}
 
+			continue
+		}
+
+		switch nType {
+		case entity.NodeTypeSubWorkflow:
+			if !hasWorkflowRelated || node.Data.Inputs.SubWorkflow == nil {
+				continue
+			}
+			workflowID, err := strconv.ParseInt(node.Data.Inputs.WorkflowID, 10, 64)
+			if err != nil {
+				return err
+			}
+			if wf, ok := relatedWorkflows[workflowID]; ok {
+				node.Data.Inputs.WorkflowID = strconv.FormatInt(wf.ID, 10)
+				node.Data.Inputs.WorkflowVersion = wf.Version
+			}
 		case entity.NodeTypeLLM:
 			if node.Data.Inputs.LLM == nil {
 				continue
@@ -2078,40 +2130,6 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 
 				}
 			}
-
-		case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeRetriever:
-			if !hasKnowledgeRelated || node.Data.Inputs.Knowledge == nil {
-				continue
-			}
-			datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
-			knowledgeIDs := datasetListInfoParam.Input.Value.Content.([]any)
-			for idx := range knowledgeIDs {
-				kid, err := strconv.ParseInt(knowledgeIDs[idx].(string), 10, 64)
-				if err != nil {
-					return err
-				}
-				if refKnowledgeID, ok := related.KnowledgeMap[kid]; ok {
-					knowledgeIDs[idx] = strconv.FormatInt(refKnowledgeID, 10)
-				}
-			}
-
-		case entity.NodeTypeDatabaseCustomSQL, entity.NodeTypeDatabaseQuery, entity.NodeTypeDatabaseInsert, entity.NodeTypeDatabaseDelete, entity.NodeTypeDatabaseUpdate:
-			if !hasDatabaseRelated || node.Data.Inputs.DatabaseNode == nil {
-				continue
-			}
-			dsList := node.Data.Inputs.DatabaseInfoList
-			for idx := range dsList {
-				databaseInfo := dsList[idx]
-				did, err := strconv.ParseInt(databaseInfo.DatabaseInfoID, 10, 64)
-				if err != nil {
-					return err
-				}
-				if refDatabaseID, ok := related.DatabaseMap[did]; ok {
-					databaseInfo.DatabaseInfoID = strconv.FormatInt(refDatabaseID, 10)
-				}
-
-			}
-
 		}
 		if len(node.Blocks) > 0 {
 			err := replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(node.Blocks, relatedWorkflows, related)

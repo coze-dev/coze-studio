@@ -109,6 +109,21 @@ type ExecutableMeta struct {
 	// If not set and the node's output is stream, control will transfer to successor as
 	// soon as the end stream itself is created.
 	BlockEndStream bool `json:"block_end_stream,omitempty"`
+
+	// UseDatabase indicates the node REQUIRES a DataBase to work,
+	// and MUST have the non-empty config value of vo.Node.Data.Inputs.DatabaseInfoList in Canvas.
+	// Coze-Studio will copy/move the specified Database when copying/moving workflows.
+	UseDatabase bool `json:"use_database,omitempty"`
+
+	// UseKnowledge indicates the node REQUIRES a Knowledge dataset to work,
+	// and MUST have non-empty config value of vo.Node.Data.Inputs.DatasetParam[0].
+	// Coze-Studio will copy/move the specified Knowledge Dataset when copying/moving workflows.
+	UseKnowledge bool `json:"use_knowledge,omitempty"`
+
+	// UsePlugin indicates the node REQUIRES a Plugin to work,
+	// and MUST have non-empty config value of vo.Node.Data.Inputs.PluginAPIParam.
+	// Coze-Studio will copy/move the specified Plugin when copying/moving workflows.
+	UsePlugin bool `json:"use_plugin,omitempty"`
 }
 
 type PluginNodeMeta struct {
@@ -309,6 +324,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
+			UsePlugin:   true,
 		},
 		EnUSName:        "Plugin",
 		EnUSDescription: "Used to access external real-time data and perform operations",
@@ -342,9 +358,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
-			UseCtxCache: true,
+			PreFillZero:  true,
+			PostFillNil:  true,
+			UseCtxCache:  true,
+			UseKnowledge: true,
 		},
 		EnUSName:        "Knowledge retrieval",
 		EnUSDescription: "In the selected knowledge, the best matching information is recalled based on the input variable and returned as an Array.",
@@ -392,6 +409,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "SQL Customization",
 		EnUSDescription: "Complete the operations of adding, deleting, modifying and querying the database based on user-defined SQL",
@@ -528,8 +546,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
+			PreFillZero:  true,
+			PostFillNil:  true,
+			UseKnowledge: true,
 		},
 		EnUSName:        "Knowledge writing",
 		EnUSDescription: "The write node can add a knowledge base of type text. Only one knowledge base can be added.",
@@ -686,6 +705,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Update Data",
 		EnUSDescription: "Modify the existing data records in the table, and the user specifies the update conditions and contents to update the data",
@@ -702,6 +722,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Query Data",
 		EnUSDescription: "Query data from the table, and the user can define query conditions, select columns, etc., and output the data that meets the conditions",
@@ -718,6 +739,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Delete Data",
 		EnUSDescription: "Delete data records from the table, and the user specifies the deletion conditions to delete the records that meet the conditions",
@@ -751,6 +773,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Add Data",
 		EnUSDescription: "Add new data records to the table, and insert them into the database after the user enters the data content",
@@ -941,8 +964,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icons-dataset-delete.png",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
+			PreFillZero:  true,
+			PostFillNil:  true,
+			UseKnowledge: true,
 		},
 		EnUSName:        "Knowledge delete",
 		EnUSDescription: "The delete node can delete a document in knowledge base.",
