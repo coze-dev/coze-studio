@@ -590,13 +590,13 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 		}
 
 		managerConfig := &oceanbase.ManagerConfig{
-			Client:        client,
-			Embedding:     emb,
-			BatchSize:     batchSize,
-			EnableCache:   enableCache,
-			CacheTTL:      cacheTTL,
+			Client:         client,
+			Embedding:      emb,
+			BatchSize:      batchSize,
+			EnableCache:    enableCache,
+			CacheTTL:       cacheTTL,
 			MaxConnections: maxConnections,
-			ConnTimeout:   connTimeout,
+			ConnTimeout:    connTimeout,
 		}
 		mgr, err := oceanbase.NewManager(managerConfig)
 		if err != nil {

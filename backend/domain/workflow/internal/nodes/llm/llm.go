@@ -786,8 +786,8 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		requireCheckpoint:  requireCheckpoint,
 		fullSources:        ns.FullSources,
 		chatHistorySetting: c.ChatHistorySetting,
-		nodeKey:           ns.Key,
-		outputKey:         outputKey,
+		nodeKey:            ns.Key,
+		outputKey:          outputKey,
 	}
 
 	return llm, nil
@@ -848,6 +848,17 @@ func (c *Config) FieldStreamType(path compose.FieldPath, ns *schema2.NodeSchema,
 	return schema2.FieldNotStream, nil
 }
 
+func (c *Config) ChatHistoryEnabled() bool {
+	return c.ChatHistorySetting != nil && c.ChatHistorySetting.EnableChatHistory
+}
+
+func (c *Config) ChatHistoryRounds() int64 {
+	if c.ChatHistorySetting == nil {
+		return 0
+	}
+	return c.ChatHistorySetting.ChatHistoryRound
+}
+
 func toRetrievalSearchType(s int64) (knowledge.SearchType, error) {
 	switch s {
 	case 0:
@@ -867,8 +878,8 @@ type LLM struct {
 	requireCheckpoint  bool
 	fullSources        map[string]*schema2.SourceInfo
 	chatHistorySetting *vo.ChatHistorySetting
-	nodeKey           vo.NodeKey
-	outputKey         string
+	nodeKey            vo.NodeKey
+	outputKey          string
 }
 
 const (
@@ -1230,9 +1241,10 @@ func injectKnowledgeTool(_ context.Context, g *compose.Graph[map[string]any, map
 	return nil
 }
 
-func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[string]any, error) {
+func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
 	if l.chatHistorySetting == nil || !l.chatHistorySetting.EnableChatHistory {
-		return input, nil
+		return &nodes.StructuredCallbackInput{Input: input}, nil
 	}
 
 	var messages []*crossmessage.WfMessage
@@ -1251,11 +1263,11 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 	maps.Copy(ret, input)
 
 	if len(messages) == 0 {
-		return ret, nil
+		return &nodes.StructuredCallbackInput{Input: ret}, nil
 	}
 
 	if sectionID != nil && messages[0].SectionID != *sectionID {
-		return ret, nil
+		return &nodes.StructuredCallbackInput{Input: ret}, nil
 	}
 
 	maxRounds := int(l.chatHistorySetting.ChatHistoryRound)
@@ -1289,7 +1301,7 @@ func (l *LLM) ToCallbackInput(ctx context.Context, input map[string]any) (map[st
 	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
 
 	ret["chatHistory"] = historyMessages
-	return ret, nil
+	return &nodes.StructuredCallbackInput{Input: ret}, nil
 }
 
 func (l *LLM) ToCallbackOutput(ctx context.Context, output map[string]any) (*nodes.StructuredCallbackOutput, error) {

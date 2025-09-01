@@ -50,13 +50,13 @@ func (f *Factory) CreateManager(ctx context.Context, embedder embedding.Embedder
 	}
 
 	managerConfig := &ManagerConfig{
-		Client:        client,
-		Embedding:     embedder,
-		BatchSize:     f.config.BatchSize,
-		EnableCache:   f.config.EnableCache,
-		CacheTTL:      f.config.CacheTTL,
+		Client:         client,
+		Embedding:      embedder,
+		BatchSize:      f.config.BatchSize,
+		EnableCache:    f.config.EnableCache,
+		CacheTTL:       f.config.CacheTTL,
 		MaxConnections: f.config.MaxOpenConns,
-		ConnTimeout:   f.config.ConnTimeout,
+		ConnTimeout:    f.config.ConnTimeout,
 	}
 
 	manager, err := NewManager(managerConfig)

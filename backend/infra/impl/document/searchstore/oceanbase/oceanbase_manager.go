@@ -35,17 +35,17 @@ type ManagerConfig struct {
 	Embedding embedding.Embedder
 	BatchSize int
 
-	EnableCache     bool
-	CacheTTL        time.Duration
-	MaxConnections  int
-	ConnTimeout     time.Duration
+	EnableCache    bool
+	CacheTTL       time.Duration
+	MaxConnections int
+	ConnTimeout    time.Duration
 
 	EnableConnectionPool bool
-	PoolMaxIdle         int
-	PoolMaxLifetime     time.Duration
-	QueryTimeout        time.Duration
-	MaxRetries          int           // optional: default 3
-	RetryDelay          time.Duration // optional: default 1s
+	PoolMaxIdle          int
+	PoolMaxLifetime      time.Duration
+	QueryTimeout         time.Duration
+	MaxRetries           int           // optional: default 3
+	RetryDelay           time.Duration // optional: default 1s
 }
 
 // Create an OceanBase vector storage manager
@@ -70,7 +70,6 @@ func NewManager(config *ManagerConfig) (searchstore.Manager, error) {
 	if config.ConnTimeout == 0 {
 		config.ConnTimeout = 30 * time.Second
 	}
-
 
 	if config.PoolMaxIdle == 0 {
 		config.PoolMaxIdle = 10

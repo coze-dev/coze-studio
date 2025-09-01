@@ -324,7 +324,6 @@ func (s *oceanbaseSearchStore) normalizeScores(documents []*schema.Document) {
 
 	logs.CtxInfof(context.Background(), "Normalizing scores for %d documents", len(documents))
 
-
 	for i := range documents {
 		originalScore := documents[i].Score()
 		logs.CtxInfof(context.Background(), "Document %d original score: %f", i+1, originalScore)

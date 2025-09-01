@@ -21,11 +21,12 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestToVariable(t *testing.T) {

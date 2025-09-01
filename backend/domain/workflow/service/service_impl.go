@@ -39,9 +39,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/intentdetector"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/knowledge"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
@@ -524,20 +522,12 @@ func isEnableChatHistory(s *schema.NodeSchema) bool {
 		return false
 	}
 
-	switch s.Type {
-
-	case entity.NodeTypeLLM:
-		llmParam := s.Configs.(*llm.Config).LLMParams
-		return llmParam.EnableChatHistory
-	case entity.NodeTypeIntentDetector:
-		llmParam := s.Configs.(*intentdetector.Config).LLMParams
-		return llmParam.EnableChatHistory
-	case entity.NodeTypeKnowledgeRetriever:
-		chatParam := s.Configs.(*knowledge.RetrieveConfig).ChatHistorySetting
-		return chatParam != nil && chatParam.EnableChatHistory
-	default:
+	chatHistoryAware, ok := s.Configs.(nodes.ChatHistoryAware)
+	if !ok {
 		return false
 	}
+
+	return chatHistoryAware.ChatHistoryEnabled()
 }
 
 func isRefGlobalVariable(s *schema.NodeSchema) bool {

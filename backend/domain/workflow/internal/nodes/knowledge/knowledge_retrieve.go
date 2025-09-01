@@ -177,6 +177,17 @@ func (r *RetrieveConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...sch
 	}, nil
 }
 
+func (c *RetrieveConfig) ChatHistoryEnabled() bool {
+	return c.ChatHistorySetting != nil && c.ChatHistorySetting.EnableChatHistory
+}
+
+func (c *RetrieveConfig) ChatHistoryRounds() int64 {
+	if c.ChatHistorySetting == nil {
+		return 0
+	}
+	return c.ChatHistorySetting.ChatHistoryRound
+}
+
 type Retrieve struct {
 	knowledgeIDs       []int64
 	retrievalStrategy  *knowledge.RetrievalStrategy

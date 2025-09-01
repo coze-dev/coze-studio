@@ -42,9 +42,9 @@ type VectorData struct {
 }
 
 type VectorSearchResult struct {
-	ID       int64  `json:"id"`
-	Content  string `json:"content"`
-	Metadata string `json:"metadata"`
+	ID       int64   `json:"id"`
+	Content  string  `json:"content"`
+	Metadata string  `json:"metadata"`
 	Distance float64 `json:"distance"`
 }
 
@@ -55,12 +55,12 @@ type VectorMemoryEstimate struct {
 }
 
 const (
-	VectorIndexTypeHNSW    = "hnsw"
-	VectorIndexTypeHNSWSQ  = "hnsw_sq"
-	VectorIndexTypeHNSWBQ  = "hnsw_bq"
-	VectorIndexTypeIVF     = "ivf_flat"
-	VectorIndexTypeIVFSQ   = "ivf_sq8"
-	VectorIndexTypeIVFPQ   = "ivf_pq"
+	VectorIndexTypeHNSW   = "hnsw"
+	VectorIndexTypeHNSWSQ = "hnsw_sq"
+	VectorIndexTypeHNSWBQ = "hnsw_bq"
+	VectorIndexTypeIVF    = "ivf_flat"
+	VectorIndexTypeIVFSQ  = "ivf_sq8"
+	VectorIndexTypeIVFPQ  = "ivf_pq"
 )
 
 const (

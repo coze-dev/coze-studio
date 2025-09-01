@@ -194,6 +194,17 @@ func (c *Config) ExpectPorts(ctx context.Context, n *vo.Node) []string {
 	return expects
 }
 
+func (c *Config) ChatHistoryEnabled() bool {
+	return c.ChatHistorySetting != nil && c.ChatHistorySetting.EnableChatHistory
+}
+
+func (c *Config) ChatHistoryRounds() int64 {
+	if c.ChatHistorySetting == nil {
+		return 0
+	}
+	return c.ChatHistorySetting.ChatHistoryRound
+}
+
 type contextKey string
 
 const chatHistoryKey contextKey = "chatHistory"

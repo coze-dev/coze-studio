@@ -121,6 +121,9 @@ func (e *Exit) Invoke(_ context.Context, in map[string]any) (map[string]any, err
 func (e *Exit) ToCallbackOutput(ctx context.Context, out map[string]any) (
 	*nodes.StructuredCallbackOutput, error) {
 	c := execute.GetExeCtx(ctx)
+	if c == nil {
+		return &nodes.StructuredCallbackOutput{Output: out}, nil
+	}
 	if c.SubWorkflowCtx != nil {
 		return &nodes.StructuredCallbackOutput{
 			Output: out,

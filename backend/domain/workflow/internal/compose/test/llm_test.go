@@ -652,13 +652,13 @@ func TestLLM(t *testing.T) {
 							assert.NoError(t, e)
 						}
 
-						s, ok := chunk.(map[string]any)
+						s, ok := chunk.(*nodes.StructuredCallbackOutput)
 						assert.True(t, ok)
 
-						out := s["output"].(string)
+						out := s.Output["output"].(string)
 						if out != nodes.KeyIsFinished {
-							fmt.Print(s["output"])
-							fullOutput += s["output"].(string)
+							fmt.Print(s.Output["output"])
+							fullOutput += s.Output["output"].(string)
 						}
 					}
 

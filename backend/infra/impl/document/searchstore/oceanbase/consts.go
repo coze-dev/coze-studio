@@ -40,17 +40,17 @@ const (
 	maxContentLength                   = 65535
 	maxBatchSize                       = 1000
 
-	enableCacheDefault                 = true
-	enableMetricsDefault               = true
-	enableSlowQueryLogDefault          = true
-	slowQueryThreshold                 = 1000
+	enableCacheDefault        = true
+	enableMetricsDefault      = true
+	enableSlowQueryLogDefault = true
+	slowQueryThreshold        = 1000
 
-	ErrCodeInvalidConfig               = "INVALID_CONFIG"
-	ErrCodeConnectionFailed            = "CONNECTION_FAILED"
-	ErrCodeQueryTimeout                = "QUERY_TIMEOUT"
-	ErrCodeVectorDimensionMismatch     = "VECTOR_DIMENSION_MISMATCH"
-	ErrCodeCollectionNotFound          = "COLLECTION_NOT_FOUND"
-	ErrCodeDuplicateCollection         = "DUPLICATE_COLLECTION"
+	ErrCodeInvalidConfig           = "INVALID_CONFIG"
+	ErrCodeConnectionFailed        = "CONNECTION_FAILED"
+	ErrCodeQueryTimeout            = "QUERY_TIMEOUT"
+	ErrCodeVectorDimensionMismatch = "VECTOR_DIMENSION_MISMATCH"
+	ErrCodeCollectionNotFound      = "COLLECTION_NOT_FOUND"
+	ErrCodeDuplicateCollection     = "DUPLICATE_COLLECTION"
 )
 
 type Config struct {
@@ -69,13 +69,13 @@ type Config struct {
 	VectorMemoryLimitPercentage int
 	BatchSize                   int
 
-	EnableCache     bool
-	CacheTTL        time.Duration
-	EnableMetrics   bool
+	EnableCache        bool
+	CacheTTL           time.Duration
+	EnableMetrics      bool
 	EnableSlowQueryLog bool
-	MaxRetries      int
-	RetryDelay      time.Duration
-	ConnTimeout     time.Duration
+	MaxRetries         int
+	RetryDelay         time.Duration
+	ConnTimeout        time.Duration
 }
 
 func DefaultConfig() *Config {
@@ -152,7 +152,3 @@ func getVectorDimension() int {
 	}
 	return defaultVectorDimension
 }
-
-
-
-
