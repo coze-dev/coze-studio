@@ -92,6 +92,7 @@ func init() {
 	_ = compose.RegisterSerializableType[*schema.Message]("schema_message")
 	_ = compose.RegisterSerializableType[*crossmessage.WfMessage]("history_messages")
 	_ = compose.RegisterSerializableType[*crossmessage.Content]("content")
+	_ = compose.RegisterSerializableType[*model.PromptTokenDetails]("prompt_token_details")
 
 }
 

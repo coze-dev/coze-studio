@@ -72,7 +72,14 @@ func (q *UTChatModel) Generate(ctx context.Context, in []*schema.Message, _ ...m
 	}
 
 	if msg.ResponseMeta != nil {
-		callbackOut.TokenUsage = (*model.TokenUsage)(msg.ResponseMeta.Usage)
+		callbackOut.TokenUsage = &model.TokenUsage{
+			PromptTokens: msg.ResponseMeta.Usage.PromptTokens,
+			PromptTokenDetails: model.PromptTokenDetails{
+				CachedTokens: msg.ResponseMeta.Usage.PromptTokenDetails.CachedTokens,
+			},
+			CompletionTokens: msg.ResponseMeta.Usage.CompletionTokens,
+			TotalTokens:      msg.ResponseMeta.Usage.TotalTokens,
+		}
 	}
 
 	_ = callbacks.OnEnd(ctx, callbackOut)
@@ -112,7 +119,14 @@ func (q *UTChatModel) Stream(ctx context.Context, in []*schema.Message, _ ...mod
 		}
 
 		if t.ResponseMeta != nil {
-			callbackOut.TokenUsage = (*model.TokenUsage)(t.ResponseMeta.Usage)
+			callbackOut.TokenUsage = &model.TokenUsage{
+				PromptTokens: t.ResponseMeta.Usage.PromptTokens,
+				PromptTokenDetails: model.PromptTokenDetails{
+					CachedTokens: t.ResponseMeta.Usage.PromptTokenDetails.CachedTokens,
+				},
+				CompletionTokens: t.ResponseMeta.Usage.CompletionTokens,
+				TotalTokens:      t.ResponseMeta.Usage.TotalTokens,
+			}
 		}
 
 		return callbackOut, nil
