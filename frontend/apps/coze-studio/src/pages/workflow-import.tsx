@@ -14,470 +14,152 @@
  * limitations under the License.
  */
 
+import { useNavigate, useParams } from 'react-router-dom';
 import React, { useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { 
-  Button, 
-  Upload, 
-  Input, 
-  Form, 
-  Typography, 
-  Space,
-  Toast,
-  Divider,
-  Progress,
-  Tag
-} from '@coze-arch/coze-design';
-import { Card } from '@coze-arch/bot-semi';
-import { 
-  IconCozWorkflow, 
-  IconArrowLeft,
-  IconFile,
-  IconCheckCircle,
-  IconInfoCircle
-} from '@coze-arch/coze-design/icons';
-import { IconUpload } from '@coze-arch/bot-icons';
-import { I18n } from '@coze-arch/i18n';
-import * as yaml from 'js-yaml';
 
-const { Title, Paragraph, Text } = Typography;
+import { useImportHandler } from './workflow-import/hooks/use-import-handler';
+import { useFileProcessor } from './workflow-import/hooks/use-file-processor';
+import ImportModeSelector from './workflow-import/components/ImportModeSelector';
+import ImportHelp from './workflow-import/components/ImportHelp';
+import ImportHeader from './workflow-import/components/ImportHeader';
+import ImportButtons from './workflow-import/components/ImportButtons';
+import FileUpload from './workflow-import/components/FileUpload';
+import FileList from './workflow-import/components/FileList';
 
-interface WorkflowPreview {
-  name: string;
-  description?: string;
-  nodes?: any[];
-  edges?: any[];
-  schema?: any;
-}
-
-const WorkflowImportPage: React.FC = () => {
-  const { space_id } = useParams<{ space_id: string }>();
+const WorkflowImport: React.FC = () => {
   const navigate = useNavigate();
-  const [form] = Form.useForm();
-  
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [workflowPreview, setWorkflowPreview] = useState<WorkflowPreview | null>(null);
-  const [importing, setImporting] = useState(false);
-  const [parsing, setParsing] = useState(false);
+  const { space_id } = useParams<{ space_id: string }>();
 
-  // 处理文件选择
-  const handleFileSelect = async (file: File) => {
-    try {
-      // 验证文件类型 - 支持 JSON, YML, YAML
-      const fileName = file.name.toLowerCase();
-      const isValidFile = fileName.endsWith('.json') || fileName.endsWith('.yml') || fileName.endsWith('.yaml');
-      
-      if (!isValidFile) {
-        Toast.error(I18n.t('workflow_import_error_invalid_file'));
-        return false;
-      }
+  const {
+    selectedFiles,
+    addFiles,
+    removeFile,
+    updateWorkflowName,
+    clearAllFiles,
+    setSelectedFiles,
+  } = useFileProcessor();
 
-      // 验证文件大小（限制为10MB）
-      if (file.size > 10 * 1024 * 1024) {
-        Toast.error(I18n.t('workflow_import_error_invalid_file'));
-        return false;
-      }
+  const { isImporting, handleBatchImport } = useImportHandler();
 
-      setSelectedFile(file);
-      setParsing(true);
-      
-      // 读取并预览文件内容
-      const fileContent = await file.text();
-      try {
-        let workflowData;
-        
-        // 根据文件扩展名选择解析器
-        if (fileName.endsWith('.yml') || fileName.endsWith('.yaml')) {
-          workflowData = yaml.load(fileContent) as any;
-        } else {
-          workflowData = JSON.parse(fileContent);
-        }
-        
-        // 验证工作流数据结构
-        if (workflowData && typeof workflowData === 'object') {
-          // 兼容不同的数据结构
-          const workflowName = workflowData.name || workflowData.workflow_id || `Imported_${Date.now()}`;
-          
-          setWorkflowPreview({
-            name: workflowName,
-            description: workflowData.description,
-            nodes: workflowData.nodes || [],
-            edges: workflowData.edges || [],
-            schema: workflowData.schema
-          });
-          form.setFieldsValue({ workflowName: workflowName });
-        } else {
-          Toast.error(I18n.t('workflow_import_error_invalid_structure'));
-          return false;
-        }
-      } catch (error) {
-        console.error('File parsing error:', error);
-        Toast.error(I18n.t('workflow_import_error_parse_failed'));
-        return false;
-      } finally {
-        setParsing(false);
-      }
+  const [importMode, setImportMode] = useState<'batch' | 'transaction'>(
+    'batch',
+  );
+  const [dragActive, setDragActive] = useState(false);
 
-      return false; // 阻止自动上传
-    } catch (error) {
-      console.error('File selection error:', error);
-      Toast.error(I18n.t('workflow_import_error_invalid_file'));
-      setParsing(false);
-      return false;
-    }
+  const handleGoBack = () => {
+    navigate(`/space/${space_id}/library`);
   };
 
-  // 处理导入
-  const handleImport = async () => {
-    if (!selectedFile || !space_id) {
-      Toast.error(I18n.t('workflow_import_failed'));
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.target.files || []);
+    addFiles(files);
+  };
+
+  const handleDragEnter = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    const files = Array.from(e.dataTransfer.files);
+    addFiles(files);
+  };
+
+  const handleImport = () => {
+    if (!space_id) {
       return;
     }
-
-    try {
-      await form.validateFields();
-      setImporting(true);
-      
-      // 读取文件内容
-      const fileContent = await selectedFile.text();
-      const values = form.getFieldsValue();
-      
-      // 确定文件格式
-      const fileName = selectedFile.name.toLowerCase();
-      const importFormat = fileName.endsWith('.yml') ? 'yml' : 
-                          fileName.endsWith('.yaml') ? 'yaml' : 'json';
-      
-      // 调用导入API
-      const response = await fetch('/api/workflow_api/import', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          workflow_data: fileContent,
-          workflow_name: values.workflowName,
-          space_id: space_id,
-          creator_id: '1', // 这里应该从用户上下文获取
-          import_format: importFormat,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(I18n.t('workflow_import_failed'));
-      }
-
-      const result = await response.json();
-      
-      if (result.code === 200 && result.data?.workflow_id) {
-        Toast.success(I18n.t('workflow_import_success'));
-        
-        // 跳转到新创建的工作流或资源库
-        setTimeout(() => {
-          navigate(`/space/${space_id}/library`);
-        }, 1500);
-      } else {
-        throw new Error(result.msg || I18n.t('workflow_import_failed'));
-      }
-    } catch (error) {
-      console.error('导入工作流失败:', error);
-      Toast.error(error instanceof Error ? error.message : I18n.t('workflow_import_failed'));
-    } finally {
-      setImporting(false);
-    }
+    handleBatchImport({
+      selectedFiles,
+      spaceId: space_id,
+      importMode,
+      setSelectedFiles,
+    });
   };
 
-  // 重置表单
-  const handleReset = () => {
-    setSelectedFile(null);
-    setWorkflowPreview(null);
-    setParsing(false);
-    form.resetFields();
-  };
-
-  // 格式化文件大小
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
+  const validFileCount = selectedFiles.filter(f => f.status === 'valid').length;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-8">
-      <div className="max-w-6xl mx-auto px-4">
-        {/* 页面头部 */}
-        <div className="mb-8">
-          <Button
-            type="tertiary"
-            icon={<IconArrowLeft />}
-            onClick={() => navigate(`/space/${space_id}/library`)}
-            className="mb-4 hover:bg-white/80 transition-colors"
-          >
-            {I18n.t('workflow_import_back_to_library')}
-          </Button>
-          
-          <div className="flex items-center mb-6">
-            <div className="p-3 bg-blue-100 rounded-full mr-4">
-              <IconCozWorkflow className="text-3xl text-blue-600" />
-            </div>
-            <div>
-              <Title level={1} className="m-0 text-gray-800">
-                {I18n.t('workflow_import')}
-              </Title>
-              <Paragraph className="text-gray-600 mt-2 text-lg">
-                {I18n.t('workflow_import_description')}
-              </Paragraph>
-            </div>
-          </div>
-        </div>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '20px',
+      }}
+    >
+      <div
+        style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          background: 'white',
+          borderRadius: '20px',
+          padding: '40px',
+          boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
+        }}
+      >
+        <ImportHeader onGoBack={handleGoBack} />
 
-        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* 左侧：文件上传和基本信息 */}
-          <div className="xl:col-span-2">
-            <Card 
-              title={
-                <div className="flex items-center">
-                  <IconFile className="mr-2 text-blue-600" />
-                  {I18n.t('workflow_import_select_file')}
-                </div>
-              } 
-              className="h-fit shadow-lg border-0 bg-white/90 backdrop-blur-sm"
-            >
-              <Form form={form} layout="vertical">
-                <Form.Item label={I18n.t('workflow_import_select_workflow_file')} required>
-                  <Upload
-                    accept=".json,.yml,.yaml"
-                    beforeUpload={handleFileSelect}
-                    showUploadList={false}
-                    maxCount={1}
-                  >
-                    <div className={`
-                      w-full h-40 border-2 border-dashed rounded-lg transition-all duration-300
-                      ${selectedFile 
-                        ? 'border-green-300 bg-green-50 hover:border-green-400' 
-                        : 'border-gray-300 bg-gray-50 hover:border-blue-400 hover:bg-blue-50'
-                      }
-                      flex flex-col items-center justify-center cursor-pointer
-                    `}>
-                      {selectedFile ? (
-                        <div className="text-center">
-                          <IconCheckCircle className="text-4xl text-green-500 mb-3" />
-                          <div className="text-lg font-medium text-green-700 mb-2">
-                            {I18n.t('workflow_import_file_selected')}
-                          </div>
-                          <div className="text-sm text-green-600 mb-1">
-                            {selectedFile.name}
-                          </div>
-                          <div className="text-xs text-green-500">
-                            {formatFileSize(selectedFile.size)}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="text-center">
-                          <IconUpload className="text-4xl text-gray-400 mb-3" />
-                          <div className="text-lg font-medium text-gray-600 mb-2">
-                            {I18n.t('workflow_import_drag_drop')}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {I18n.t('workflow_import_support_format')}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </Upload>
-                </Form.Item>
+        <ImportModeSelector
+          importMode={importMode}
+          isImporting={isImporting}
+          onChange={setImportMode}
+        />
 
-                {parsing && (
-                  <div className="mb-4">
-                    <div className="flex items-center mb-2">
-                      <IconInfoCircle className="text-blue-500 mr-2" />
-                      <Text className="text-blue-600">{I18n.t('workflow_import_preview_loading')}</Text>
-                    </div>
-                    <Progress percent={100} status="active" showInfo={false} />
-                  </div>
-                )}
+        <FileUpload
+          dragActive={dragActive}
+          isImporting={isImporting}
+          onFileSelect={handleFileSelect}
+          onDragEnter={handleDragEnter}
+          onDragLeave={handleDragLeave}
+          onDragOver={handleDragOver}
+          onDrop={handleDrop}
+        />
 
-                <Form.Item
-                  label={I18n.t('workflow_import_workflow_name')}
-                  name="workflowName"
-                  rules={[
-                    { required: true, message: I18n.t('workflow_import_workflow_name_required') },
-                    { min: 1, message: I18n.t('workflow_import_workflow_name_min_length') },
-                    { max: 50, message: I18n.t('workflow_import_workflow_name_max_length') }
-                  ]}
-                >
-                  <Input
-                    placeholder={I18n.t('workflow_import_workflow_name_placeholder')}
-                    size="large"
-                    className="text-lg"
-                  />
-                </Form.Item>
+        {selectedFiles.length > 0 && (
+          <FileList
+            selectedFiles={selectedFiles}
+            isImporting={isImporting}
+            onRemoveFile={removeFile}
+            onUpdateWorkflowName={updateWorkflowName}
+            onClearAll={clearAllFiles}
+          />
+        )}
 
-                <Divider />
+        <ImportButtons
+          isImporting={isImporting}
+          validFileCount={validFileCount}
+          onGoBack={handleGoBack}
+          onImport={handleImport}
+        />
 
-                <div className="flex gap-3">
-                  <Button
-                    type="primary"
-                    size="large"
-                    loading={importing}
-                    disabled={!selectedFile || parsing}
-                    onClick={handleImport}
-                    className="flex-1 h-12 text-lg font-medium"
-                    icon={importing ? undefined : <IconCheckCircle />}
-                  >
-                    {importing ? I18n.t('Loading') : I18n.t('import')}
-                  </Button>
-                  
-                  <Button
-                    size="large"
-                    onClick={handleReset}
-                    disabled={importing || parsing}
-                    className="h-12 px-6"
-                  >
-                    {I18n.t('Reset')}
-                  </Button>
-                </div>
-              </Form>
-            </Card>
-          </div>
-
-          {/* 右侧：工作流预览 */}
-          <div className="xl:col-span-1">
-            <Card 
-              title={
-                <div className="flex items-center">
-                  <IconCozWorkflow className="mr-2 text-green-600" />
-                  {I18n.t('workflow_import_preview')}
-                </div>
-              } 
-              className="h-fit shadow-lg border-0 bg-white/90 backdrop-blur-sm"
-            >
-              {workflowPreview ? (
-                <Space direction="vertical" className="w-full" size="large">
-                  <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg border border-blue-200">
-                    <div className="flex items-center mb-3">
-                      <IconCheckCircle className="text-green-500 mr-2" />
-                      <Text strong className="text-green-700">{I18n.t('workflow_import_name')}</Text>
-                    </div>
-                    <div className="text-lg font-medium text-gray-800 bg-white p-3 rounded border">
-                      {workflowPreview.name}
-                    </div>
-                  </div>
-                  
-                  {workflowPreview.description && (
-                    <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-                      <div className="flex items-center mb-3">
-                        <IconInfoCircle className="text-purple-500 mr-2" />
-                        <Text strong className="text-purple-700">{I18n.t('workflow_import_description')}</Text>
-                      </div>
-                      <div className="text-gray-700 bg-white p-3 rounded border">
-                        {workflowPreview.description}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
-                      <div className="text-3xl font-bold text-blue-600 mb-1">
-                        {workflowPreview.nodes?.length || 0}
-                      </div>
-                      <div className="text-sm font-medium text-blue-700">{I18n.t('workflow_import_nodes')}</div>
-                      <Tag color="blue" className="mt-2">节点</Tag>
-                    </div>
-                    
-                    <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg border border-green-200">
-                      <div className="text-3xl font-bold text-green-600 mb-1">
-                        {workflowPreview.edges?.length || 0}
-                      </div>
-                      <div className="text-sm font-medium text-green-700">{I18n.t('workflow_import_edges')}</div>
-                      <Tag color="green" className="mt-2">连接</Tag>
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-lg">
-                    <div className="flex items-start">
-                      <IconInfoCircle className="text-yellow-600 mr-2 mt-0.5 flex-shrink-0" />
-                      <Text className="text-yellow-800 text-sm leading-relaxed">
-                        💡 {I18n.t('workflow_import_tip')}
-                      </Text>
-                    </div>
-                  </div>
-                </Space>
-              ) : (
-                <div className="text-center py-16 text-gray-500">
-                  <div className="p-4 bg-gray-100 rounded-full w-20 h-20 mx-auto mb-4 flex items-center justify-center">
-                    <IconCozWorkflow className="text-3xl opacity-50" />
-                  </div>
-                  <div className="text-lg font-medium mb-2">{I18n.t('workflow_import_select_file_tip')}</div>
-                  <div className="text-sm text-gray-400">选择工作流文件后将显示预览信息</div>
-                </div>
-              )}
-            </Card>
-          </div>
-        </div>
-
-        {/* 使用说明 */}
-        <Card 
-          title={
-            <div className="flex items-center">
-              <IconInfoCircle className="mr-2 text-indigo-600" />
-              {I18n.t('workflow_import_usage_guide')}
-            </div>
-          } 
-          className="mt-8 shadow-lg border-0 bg-white/90 backdrop-blur-sm"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-lg border border-blue-200">
-              <Title level={4} className="text-blue-800 mb-4 flex items-center">
-                <IconFile className="mr-2" />
-                {I18n.t('workflow_import_supported_formats')}
-              </Title>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  {I18n.t('workflow_import_format_json')}
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  {I18n.t('workflow_import_format_size')}
-                </li>
-                <li className="flex items-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                  {I18n.t('workflow_import_format_complete')}
-                </li>
-              </ul>
-            </div>
-            
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-6 rounded-lg border border-green-200">
-              <Title level={4} className="text-green-800 mb-4 flex items-center">
-                <IconCozWorkflow className="mr-2" />
-                {I18n.t('workflow_import_process')}
-              </Title>
-              <ul className="space-y-3 text-gray-700">
-                <li className="flex items-center">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full mr-3 flex items-center justify-center text-sm font-bold">1</div>
-                  {I18n.t('workflow_import_process_step1')}
-                </li>
-                <li className="flex items-center">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full mr-3 flex items-center justify-center text-sm font-bold">2</div>
-                  {I18n.t('workflow_import_process_step2')}
-                </li>
-                <li className="flex items-center">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full mr-3 flex items-center justify-center text-sm font-bold">3</div>
-                  {I18n.t('workflow_import_process_step3')}
-                </li>
-                <li className="flex items-center">
-                  <div className="w-6 h-6 bg-green-500 text-white rounded-full mr-3 flex items-center justify-center text-sm font-bold">4</div>
-                  {I18n.t('workflow_import_process_step4')}
-                </li>
-              </ul>
-            </div>
-          </div>
-        </Card>
+        <ImportHelp />
       </div>
+
+      <style>
+        {`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}
+      </style>
     </div>
   );
 };
 
-export default WorkflowImportPage;
+export default WorkflowImport;

@@ -346,6 +346,13 @@ services:
     command: >
       bash -c "
         # Set proper permissions for data directories
+        # 禁用代理环境变量
+        unset http_proxy
+        unset https_proxy
+        unset HTTP_PROXY
+        unset HTTPS_PROXY
+        unset no_proxy
+        unset NO_PROXY
         chown -R root:root /var/lib/milvus
         chmod g+s /var/lib/milvus
 
@@ -442,16 +449,35 @@ services:
       - ./volumes/minio/official_plugin_icon/:/official_plugin_icon
     entrypoint: >
       /bin/sh -c  "
-        (/usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && \
+        echo 'Waiting for MinIO to be fully ready...'
+        for i in \$(seq 1 60); do
+          if /usr/bin/mc alias set localminio http://coze-minio:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} 2>/dev/null; then
+            echo 'MinIO connection successful, proceeding with setup...'
+            break
+          fi
+          echo 'MinIO not ready, waiting... (\$i/60)'
+          sleep 2
+        done
+        
+        if [ \$i -eq 60 ]; then
+          echo 'ERROR: MinIO setup timed out after 120 seconds'
+          exit 1
+        fi
+        
+        echo 'Creating bucket and uploading files...'
         /usr/bin/mc mb --ignore-existing localminio/${STORAGE_BUCKET} && \
         /usr/bin/mc cp --recursive /default_icon/ localminio/${STORAGE_BUCKET}/default_icon/ && \
         /usr/bin/mc cp --recursive /official_plugin_icon/ localminio/${STORAGE_BUCKET}/official_plugin_icon/ && \
-        echo 'upload files to minio complete: Files uploaded to ${STORAGE_BUCKET} bucket.') || exit 1; \
+        echo 'upload files to minio complete: Files uploaded to ${STORAGE_BUCKET} bucket.'
       "
     networks:
       - coze-network
     restart: 'no'
-
+    environment:
+      - HTTP_PROXY=
+      - HTTPS_PROXY=
+      - http_proxy=
+      - https_proxy=
   mysql-setup-schema:
     image: arigaio/atlas:0.35.0-community-alpine
     container_name: coze-mysql-setup-schema
@@ -490,6 +516,7 @@ services:
          exit 1
     networks:
       - coze-network
+    
   mysql-setup-init-sql:
     image: mysql:8.4.5
     container_name: coze-mysql-setup-init-sql
