@@ -19,10 +19,13 @@ import React, { useState } from 'react';
 
 import { useImportHandler } from './workflow-import/hooks/use-import-handler';
 import { useFileProcessor } from './workflow-import/hooks/use-file-processor';
+import { createDragHandlers } from './workflow-import/utils/drag-handlers';
+import { createImportHandlers } from './workflow-import/utils/component-handlers';
 import ImportModeSelector from './workflow-import/components/ImportModeSelector';
 import ImportHelp from './workflow-import/components/ImportHelp';
 import ImportHeader from './workflow-import/components/ImportHeader';
 import ImportButtons from './workflow-import/components/ImportButtons';
+import ImportResultModal from './workflow-import/components/ImportResultModal';
 import FileUpload from './workflow-import/components/FileUpload';
 import FileList from './workflow-import/components/FileList';
 
@@ -39,58 +42,31 @@ const WorkflowImport: React.FC = () => {
     setSelectedFiles,
   } = useFileProcessor();
 
-  const { isImporting, handleBatchImport } = useImportHandler();
+  const { 
+    isImporting, 
+    showResultModal, 
+    resultModalData, 
+    setShowResultModal,
+    navigateToWorkflow,
+    handleBatchImport,
+  } = useImportHandler();
 
-  const [importMode, setImportMode] = useState<'batch' | 'transaction'>(
-    'batch',
-  );
+  const [importMode, setImportMode] = useState<'batch' | 'transaction'>('batch');
   const [dragActive, setDragActive] = useState(false);
 
-  const handleGoBack = () => {
-    navigate(`/space/${space_id}/library`);
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(event.target.files || []);
-    addFiles(files);
-  };
-
-  const handleDragEnter = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    const files = Array.from(e.dataTransfer.files);
-    addFiles(files);
-  };
-
-  const handleImport = () => {
-    if (!space_id) {
-      return;
-    }
-    handleBatchImport({
-      selectedFiles,
-      spaceId: space_id,
-      importMode,
-      setSelectedFiles,
-    });
-  };
+  const dragHandlers = createDragHandlers(setDragActive, addFiles);
+  const importHandlers = createImportHandlers({
+    navigate,
+    spaceId: space_id,
+    addFiles,
+    selectedFiles,
+    importMode,
+    setSelectedFiles,
+    handleBatchImport,
+    resultModalData,
+    navigateToWorkflow,
+    setShowResultModal,
+  });
 
   const validFileCount = selectedFiles.filter(f => f.status === 'valid').length;
 
@@ -112,7 +88,7 @@ const WorkflowImport: React.FC = () => {
           boxShadow: '0 20px 60px rgba(0,0,0,0.1)',
         }}
       >
-        <ImportHeader onGoBack={handleGoBack} />
+        <ImportHeader onGoBack={importHandlers.handleGoBack} />
 
         <ImportModeSelector
           importMode={importMode}
@@ -123,11 +99,11 @@ const WorkflowImport: React.FC = () => {
         <FileUpload
           dragActive={dragActive}
           isImporting={isImporting}
-          onFileSelect={handleFileSelect}
-          onDragEnter={handleDragEnter}
-          onDragLeave={handleDragLeave}
-          onDragOver={handleDragOver}
-          onDrop={handleDrop}
+          onFileSelect={importHandlers.handleFileSelect}
+          onDragEnter={dragHandlers.handleDragEnter}
+          onDragLeave={dragHandlers.handleDragLeave}
+          onDragOver={dragHandlers.handleDragOver}
+          onDrop={dragHandlers.handleDrop}
         />
 
         {selectedFiles.length > 0 && (
@@ -143,12 +119,22 @@ const WorkflowImport: React.FC = () => {
         <ImportButtons
           isImporting={isImporting}
           validFileCount={validFileCount}
-          onGoBack={handleGoBack}
-          onImport={handleImport}
+          onGoBack={importHandlers.handleGoBack}
+          onImport={importHandlers.handleImport}
         />
 
         <ImportHelp />
       </div>
+
+      <ImportResultModal
+        visible={showResultModal}
+        successCount={resultModalData.successCount}
+        failedCount={resultModalData.failedCount}
+        firstWorkflowId={resultModalData.firstWorkflowId}
+        spaceId={space_id}
+        onConfirm={importHandlers.handleConfirmResult}
+        onCancel={importHandlers.handleCancelResult}
+      />
 
       <style>
         {`

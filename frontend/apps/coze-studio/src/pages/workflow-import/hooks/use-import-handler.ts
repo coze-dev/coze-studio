@@ -15,6 +15,7 @@
  */
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import type { WorkflowFile, ImportProgress, ImportResults } from '../types';
 import {
@@ -33,6 +34,7 @@ interface ImportHandlerParams {
 }
 
 export const useImportHandler = () => {
+  const navigate = useNavigate();
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState<ImportProgress | null>(
     null,
@@ -54,6 +56,10 @@ export const useImportHandler = () => {
   ) => {
     setResultModalData({ successCount, failedCount, firstWorkflowId });
     setShowResultModal(true);
+  };
+
+  const navigateToWorkflow = (workflowId: string, spaceId: string) => {
+    navigate(`/work_flow?workflow_id=${workflowId}&space_id=${spaceId}`);
   };
 
   const validateImportRequest = (params: ImportHandlerParams): boolean => {
@@ -149,6 +155,7 @@ export const useImportHandler = () => {
     resultModalData,
     setShowResultModal,
     showImportResultModal,
+    navigateToWorkflow,
     handleBatchImport,
   };
 };
