@@ -57,13 +57,14 @@ func newAppDynamicConversationOnline(db *gorm.DB, opts ...gen.DOOption) appDynam
 	return _appDynamicConversationOnline
 }
 
+// appDynamicConversationOnline 应用动态对话在线表
 type appDynamicConversationOnline struct {
 	appDynamicConversationOnlineDo
 
 	ALL            field.Asterisk
 	ID             field.Int64  // id
 	AppID          field.Int64  // app id
-	Name           field.String // conversion name
+	Name           field.String // conversation name
 	UserID         field.Int64  // user id
 	ConnectorID    field.Int64  // connector id
 	ConversationID field.Int64  // conversation id

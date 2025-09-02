@@ -26,10 +26,11 @@ import (
 
 const TableNameChatFlowRoleConfig = "chat_flow_role_config"
 
-// ChatFlowRoleConfig mapped from table <chat_flow_role_config>
+// ChatFlowRoleConfig ChatFlow角色配置表
 type ChatFlowRoleConfig struct {
 	ID                  int64          `gorm:"column:id;primaryKey;comment:id" json:"id"`                                                                                 // id
 	WorkflowID          int64          `gorm:"column:workflow_id;not null;comment:workflow id" json:"workflow_id"`                                                        // workflow id
+	ConnectorID         int64          `gorm:"column:connector_id;comment:connector id" json:"connector_id"`                                                              // connector id
 	Name                string         `gorm:"column:name;not null;comment:role name" json:"name"`                                                                        // role name
 	Description         string         `gorm:"column:description;not null;comment:role description" json:"description"`                                                   // role description
 	Version             string         `gorm:"column:version;not null;comment:version" json:"version"`                                                                    // version
@@ -43,7 +44,6 @@ type ChatFlowRoleConfig struct {
 	CreatedAt           int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:create time in millisecond" json:"created_at"`                      // create time in millisecond
 	UpdatedAt           int64          `gorm:"column:updated_at;autoUpdateTime:milli;comment:update time in millisecond" json:"updated_at"`                               // update time in millisecond
 	DeletedAt           gorm.DeletedAt `gorm:"column:deleted_at;comment:delete time in millisecond" json:"deleted_at"`                                                    // delete time in millisecond
-	ConnectorID         int64          `gorm:"column:connector_id;comment:connector id" json:"connector_id"`                                                              // connector id
 }
 
 // TableName ChatFlowRoleConfig's table name

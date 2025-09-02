@@ -26,12 +26,12 @@ import (
 
 const TableNameAppConversationTemplateDraft = "app_conversation_template_draft"
 
-// AppConversationTemplateDraft mapped from table <app_conversation_template_draft>
+// AppConversationTemplateDraft 应用对话模板草稿表
 type AppConversationTemplateDraft struct {
 	ID         int64          `gorm:"column:id;primaryKey;comment:id" json:"id"`                                                            // id
 	AppID      int64          `gorm:"column:app_id;not null;comment:app id" json:"app_id"`                                                  // app id
 	SpaceID    int64          `gorm:"column:space_id;not null;comment:space id" json:"space_id"`                                            // space id
-	Name       string         `gorm:"column:name;not null;comment:conversion name" json:"name"`                                             // conversion name
+	Name       string         `gorm:"column:name;not null;comment:conversation name" json:"name"`                                           // conversation name
 	TemplateID int64          `gorm:"column:template_id;not null;comment:template id" json:"template_id"`                                   // template id
 	CreatorID  int64          `gorm:"column:creator_id;not null;comment:creator id" json:"creator_id"`                                      // creator id
 	CreatedAt  int64          `gorm:"column:created_at;not null;autoCreateTime:milli;comment:create time in millisecond" json:"created_at"` // create time in millisecond

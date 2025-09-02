@@ -40,6 +40,14 @@ type SingleAgentDraftDAO struct {
 	cacheClient cache.Cmdable
 }
 
+// Helper function to convert *string to string
+func getStringValue(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
 func NewSingleAgentDraftDAO(db *gorm.DB, idGen idgen.IDGenerator, cli cache.Cmdable) *SingleAgentDraftDAO {
 	query.SetDefault(db)
 
@@ -129,7 +137,7 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 			CreatorID:               po.CreatorID,
 			SpaceID:                 po.SpaceID,
 			Name:                    po.Name,
-			Desc:                    po.Description,
+			Desc:                    getStringValue(po.Description),
 			IconURI:                 po.IconURI,
 			CreatedAt:               po.CreatedAt,
 			UpdatedAt:               po.UpdatedAt,
@@ -158,7 +166,7 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *mo
 		CreatorID:               do.CreatorID,
 		SpaceID:                 do.SpaceID,
 		Name:                    do.Name,
-		Description:             do.Desc,
+		Description:             &do.Desc,
 		IconURI:                 do.IconURI,
 		CreatedAt:               do.CreatedAt,
 		UpdatedAt:               do.UpdatedAt,

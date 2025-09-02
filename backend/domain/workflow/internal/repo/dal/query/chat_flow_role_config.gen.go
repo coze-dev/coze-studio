@@ -45,6 +45,7 @@ func newChatFlowRoleConfig(db *gorm.DB, opts ...gen.DOOption) chatFlowRoleConfig
 	_chatFlowRoleConfig.ALL = field.NewAsterisk(tableName)
 	_chatFlowRoleConfig.ID = field.NewInt64(tableName, "id")
 	_chatFlowRoleConfig.WorkflowID = field.NewInt64(tableName, "workflow_id")
+	_chatFlowRoleConfig.ConnectorID = field.NewInt64(tableName, "connector_id")
 	_chatFlowRoleConfig.Name = field.NewString(tableName, "name")
 	_chatFlowRoleConfig.Description = field.NewString(tableName, "description")
 	_chatFlowRoleConfig.Version = field.NewString(tableName, "version")
@@ -58,19 +59,20 @@ func newChatFlowRoleConfig(db *gorm.DB, opts ...gen.DOOption) chatFlowRoleConfig
 	_chatFlowRoleConfig.CreatedAt = field.NewInt64(tableName, "created_at")
 	_chatFlowRoleConfig.UpdatedAt = field.NewInt64(tableName, "updated_at")
 	_chatFlowRoleConfig.DeletedAt = field.NewField(tableName, "deleted_at")
-	_chatFlowRoleConfig.ConnectorID = field.NewInt64(tableName, "connector_id")
 
 	_chatFlowRoleConfig.fillFieldMap()
 
 	return _chatFlowRoleConfig
 }
 
+// chatFlowRoleConfig ChatFlow角色配置表
 type chatFlowRoleConfig struct {
 	chatFlowRoleConfigDo
 
 	ALL                 field.Asterisk
 	ID                  field.Int64  // id
 	WorkflowID          field.Int64  // workflow id
+	ConnectorID         field.Int64  // connector id
 	Name                field.String // role name
 	Description         field.String // role description
 	Version             field.String // version
@@ -84,7 +86,6 @@ type chatFlowRoleConfig struct {
 	CreatedAt           field.Int64  // create time in millisecond
 	UpdatedAt           field.Int64  // update time in millisecond
 	DeletedAt           field.Field  // delete time in millisecond
-	ConnectorID         field.Int64  // connector id
 
 	fieldMap map[string]field.Expr
 }
@@ -103,6 +104,7 @@ func (c *chatFlowRoleConfig) updateTableName(table string) *chatFlowRoleConfig {
 	c.ALL = field.NewAsterisk(table)
 	c.ID = field.NewInt64(table, "id")
 	c.WorkflowID = field.NewInt64(table, "workflow_id")
+	c.ConnectorID = field.NewInt64(table, "connector_id")
 	c.Name = field.NewString(table, "name")
 	c.Description = field.NewString(table, "description")
 	c.Version = field.NewString(table, "version")
@@ -116,7 +118,6 @@ func (c *chatFlowRoleConfig) updateTableName(table string) *chatFlowRoleConfig {
 	c.CreatedAt = field.NewInt64(table, "created_at")
 	c.UpdatedAt = field.NewInt64(table, "updated_at")
 	c.DeletedAt = field.NewField(table, "deleted_at")
-	c.ConnectorID = field.NewInt64(table, "connector_id")
 
 	c.fillFieldMap()
 
@@ -136,6 +137,7 @@ func (c *chatFlowRoleConfig) fillFieldMap() {
 	c.fieldMap = make(map[string]field.Expr, 16)
 	c.fieldMap["id"] = c.ID
 	c.fieldMap["workflow_id"] = c.WorkflowID
+	c.fieldMap["connector_id"] = c.ConnectorID
 	c.fieldMap["name"] = c.Name
 	c.fieldMap["description"] = c.Description
 	c.fieldMap["version"] = c.Version
@@ -149,7 +151,6 @@ func (c *chatFlowRoleConfig) fillFieldMap() {
 	c.fieldMap["created_at"] = c.CreatedAt
 	c.fieldMap["updated_at"] = c.UpdatedAt
 	c.fieldMap["deleted_at"] = c.DeletedAt
-	c.fieldMap["connector_id"] = c.ConnectorID
 }
 
 func (c chatFlowRoleConfig) clone(db *gorm.DB) chatFlowRoleConfig {

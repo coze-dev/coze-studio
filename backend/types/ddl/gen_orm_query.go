@@ -40,6 +40,11 @@ import (
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
+	"domain/statistics/internal/dal/query": {
+		"message": {
+			"ext": map[string]string{}, // ext 字段是json
+		},
+	},
 	"domain/datacopy/internal/dal/query": {
 		"data_copy_task": {},
 	},
@@ -216,7 +221,7 @@ var fieldNullablePath = map[string]bool{
 func main() {
 	dsn := os.Getenv("MYSQL_DSN")
 	os.Setenv("LANG", "en_US.UTF-8")
-	dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
+	dsn = "root:root@tcp(10.10.10.224:3306)/opencoze?charset=utf8mb4&parseTime=True"
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,

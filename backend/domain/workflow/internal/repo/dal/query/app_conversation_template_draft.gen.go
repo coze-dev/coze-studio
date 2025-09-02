@@ -58,6 +58,7 @@ func newAppConversationTemplateDraft(db *gorm.DB, opts ...gen.DOOption) appConve
 	return _appConversationTemplateDraft
 }
 
+// appConversationTemplateDraft 应用对话模板草稿表
 type appConversationTemplateDraft struct {
 	appConversationTemplateDraftDo
 
@@ -65,7 +66,7 @@ type appConversationTemplateDraft struct {
 	ID         field.Int64  // id
 	AppID      field.Int64  // app id
 	SpaceID    field.Int64  // space id
-	Name       field.String // conversion name
+	Name       field.String // conversation name
 	TemplateID field.Int64  // template id
 	CreatorID  field.Int64  // creator id
 	CreatedAt  field.Int64  // create time in millisecond

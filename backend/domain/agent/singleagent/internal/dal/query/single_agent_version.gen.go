@@ -90,7 +90,7 @@ type singleAgentVersion struct {
 	CreatedAt               field.Int64  // Create Time in Milliseconds
 	UpdatedAt               field.Int64  // Update Time in Milliseconds
 	DeletedAt               field.Field  // delete time in millisecond
-	VariablesMetaID         field.Int64  // variables meta table ID
+	VariablesMetaID         field.Int64  // variables meta 表 ID
 	ModelInfo               field.Field  // Model Configuration Information
 	OnboardingInfo          field.Field  // Onboarding Information
 	Prompt                  field.Field  // Agent Prompt Configuration
@@ -103,7 +103,7 @@ type singleAgentVersion struct {
 	Version                 field.String // Agent Version
 	BackgroundImageInfoList field.Field  // Background image
 	DatabaseConfig          field.Field  // Agent Database Base Configuration
-	BotMode                 field.Int32  // mod,0:single mode 2:chatflow mode
+	BotMode                 field.Int32  // bot mode,0:single mode 2:chatflow mode
 	ShortcutCommand         field.Field  // shortcut command
 	LayoutInfo              field.Field  // chatflow layout info
 

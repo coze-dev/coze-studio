@@ -26,7 +26,7 @@ import (
 
 const TableNameAppStaticConversationDraft = "app_static_conversation_draft"
 
-// AppStaticConversationDraft mapped from table <app_static_conversation_draft>
+// AppStaticConversationDraft 应用静态对话草稿表
 type AppStaticConversationDraft struct {
 	ID             int64          `gorm:"column:id;primaryKey;comment:id" json:"id"`                                                            // id
 	TemplateID     int64          `gorm:"column:template_id;not null;comment:template id" json:"template_id"`                                   // template id
