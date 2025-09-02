@@ -37,5 +37,5 @@ type ConversationRepo interface {
 	Get(ctx context.Context, userID int64, agentID int64, scene int32, connectorID int64) (*entity.Conversation, error)
 	Update(ctx context.Context, req *entity.UpdateMeta) (*entity.Conversation, error)
 	Delete(ctx context.Context, id int64) (int64, error)
-	List(ctx context.Context, userID int64, agentID int64, connectorID int64, scene int32, limit int, page int) ([]*entity.Conversation, bool, error)
+	List(ctx context.Context, req *entity.ListMeta) ([]*entity.Conversation, bool, error)
 }

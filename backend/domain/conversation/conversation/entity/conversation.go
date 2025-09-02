@@ -50,6 +50,7 @@ type ListMeta struct {
 	AgentID     int64        `json:"agent_id"`
 	Limit       int          `json:"limit"`
 	Page        int          `json:"page"`
+	OrderBy     *string      `json:"order_by"`
 }
 
 type UpdateMeta struct {

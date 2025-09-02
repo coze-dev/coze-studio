@@ -156,6 +156,8 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		ConnectorID:      connectorID,
 		ContentType:      contentType,
 		Ext:              ar.ExtraParams,
+		CustomVariables:  ar.CustomVariables,
+		CozeUID:          conversationData.CreatorID,
 	}
 	return arm, nil
 }

@@ -107,7 +107,7 @@ func (c *conversationImpl) Update(ctx context.Context, req *entity.UpdateMeta) (
 }
 
 func (c *conversationImpl) List(ctx context.Context, req *entity.ListMeta) ([]*entity.Conversation, bool, error) {
-	conversationList, hasMore, err := c.ConversationRepo.List(ctx, req.UserID, req.AgentID, req.ConnectorID, int32(req.Scene), req.Limit, req.Page)
+	conversationList, hasMore, err := c.ConversationRepo.List(ctx, req)
 
 	if err != nil {
 		return nil, hasMore, err

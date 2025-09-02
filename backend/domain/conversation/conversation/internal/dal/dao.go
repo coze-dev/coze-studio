@@ -29,6 +29,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -140,22 +141,26 @@ func (dao *ConversationDAO) Get(ctx context.Context, userID int64, agentID int64
 	return dao.conversationPO2DO(ctx, po), nil
 }
 
-func (dao *ConversationDAO) List(ctx context.Context, userID int64, agentID int64, connectorID int64, scene int32, limit int, page int) ([]*entity.Conversation, bool, error) {
+func (dao *ConversationDAO) List(ctx context.Context, listMeta *entity.ListMeta) ([]*entity.Conversation, bool, error) {
 	var hasMore bool
 
 	do := dao.query.Conversation.WithContext(ctx).Debug()
-	do = do.Where(dao.query.Conversation.CreatorID.Eq(userID)).
-		Where(dao.query.Conversation.AgentID.Eq(agentID)).
-		Where(dao.query.Conversation.Scene.Eq(scene)).
-		Where(dao.query.Conversation.ConnectorID.Eq(connectorID)).
+	do = do.Where(dao.query.Conversation.CreatorID.Eq(listMeta.UserID)).
+		Where(dao.query.Conversation.AgentID.Eq(listMeta.AgentID)).
+		Where(dao.query.Conversation.Scene.Eq(int32(listMeta.Scene))).
+		Where(dao.query.Conversation.ConnectorID.Eq(listMeta.ConnectorID)).
 		Where(dao.query.Conversation.Status.Eq(int32(conversation.ConversationStatusNormal)))
 
-	do = do.Offset((page - 1) * limit)
+	do = do.Offset((listMeta.Page - 1) * listMeta.Limit)
 
-	if limit > 0 {
-		do = do.Limit(int(limit) + 1)
+	if listMeta.Limit > 0 {
+		do = do.Limit(int(listMeta.Limit) + 1)
 	}
-	do = do.Order(dao.query.Conversation.CreatedAt.Desc())
+	if listMeta.OrderBy != nil && ptr.From(listMeta.OrderBy) == "asc" {
+		do = do.Order(dao.query.Conversation.CreatedAt.Asc())
+	} else {
+		do = do.Order(dao.query.Conversation.CreatedAt.Desc())
+	}
 
 	poList, err := do.Find()
 
@@ -169,7 +174,7 @@ func (dao *ConversationDAO) List(ctx context.Context, userID int64, agentID int6
 	if len(poList) == 0 {
 		return nil, hasMore, nil
 	}
-	if len(poList) > limit {
+	if len(poList) > listMeta.Limit {
 		hasMore = true
 		return dao.conversationBatchPO2DO(ctx, poList[:(len(poList)-1)]), hasMore, nil
 

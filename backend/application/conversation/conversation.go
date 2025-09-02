@@ -18,6 +18,8 @@ package conversation
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/conversation"
@@ -121,10 +123,12 @@ func (c *ConversationApplicationService) CreateSection(ctx context.Context, conv
 	return convRes.SectionID, nil
 }
 
-func (c *ConversationApplicationService) CreateConversation(ctx context.Context, agentID int64, connectorID int64) (*conversation.CreateConversationResponse, error) {
+func (c *ConversationApplicationService) CreateConversation(ctx context.Context, req *conversation.CreateConversationRequest) (*conversation.CreateConversationResponse, error) {
 	resp := new(conversation.CreateConversationResponse)
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
+	connectorID := req.GetConnectorId()
+	agentID := req.GetBotId()
 	if connectorID != consts.WebSDKConnectorID {
 		connectorID = apiKeyInfo.ConnectorID
 	}
@@ -134,6 +138,7 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		UserID:      userID,
 		ConnectorID: connectorID,
 		Scene:       common.Scene_SceneOpenApi,
+		Ext:         parseMetaData(req.MetaData),
 	})
 	if err != nil {
 		return nil, err
@@ -143,10 +148,33 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		LastSectionID: &conversationData.SectionID,
 		ConnectorID:   &conversationData.ConnectorID,
 		CreatedAt:     conversationData.CreatedAt / 1000,
+		MetaData:      parseExt(conversationData.Ext),
 	}
 	return resp, nil
 }
 
+func parseMetaData(metaData map[string]string) string {
+	if metaData == nil {
+		return ""
+	}
+	j, err := json.Marshal(metaData)
+	if err != nil {
+		return ""
+	}
+	return string(j)
+}
+
+func parseExt(ext string) map[string]string {
+	if ext == "" {
+		return nil
+	}
+	var metaData map[string]string
+	err := json.Unmarshal([]byte(ext), &metaData)
+	if err != nil {
+		return nil
+	}
+	return metaData
+}
 func (c *ConversationApplicationService) ListConversation(ctx context.Context, req *conversation.ListConversationsApiRequest) (*conversation.ListConversationsApiResponse, error) {
 
 	resp := new(conversation.ListConversationsApiResponse)
@@ -169,6 +197,12 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 		Scene:       common.Scene_SceneOpenApi,
 		Page:        int(req.GetPageNum()),
 		Limit:       int(req.GetPageSize()),
+		OrderBy: func() *string {
+			if strings.ToLower(req.GetSortOrder()) == "asc" {
+				return ptr.Of("asc")
+			}
+			return nil
+		}(),
 	})
 	if err != nil {
 		return resp, err
@@ -180,6 +214,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 			ConnectorID:   &conv.ConnectorID,
 			CreatedAt:     conv.CreatedAt / 1000,
 			Name:          ptr.Of(conv.Name),
+			MetaData:      parseExt(conv.Ext),
 		}
 	})
 

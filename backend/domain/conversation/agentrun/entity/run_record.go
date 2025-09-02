@@ -113,6 +113,7 @@ type AgentRunMeta struct {
 	SectionID        int64                    `json:"section_id"`
 	Name             string                   `json:"name"`
 	UserID           string                   `json:"user_id"`
+	CozeUID          int64                    `json:"coze_uid"`
 	AgentID          int64                    `json:"agent_id"`
 	ContentType      message.ContentType      `json:"content_type"`
 	Content          []*message.InputMetaData `json:"content"`
