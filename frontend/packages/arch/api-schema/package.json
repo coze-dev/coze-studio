@@ -8,7 +8,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./passport": "./src/idl/passport/passport.ts",
-    "./marketplace": "./src/idl/marketplace/public_api.ts"
+    "./marketplace": "./src/idl/marketplace/public_api.ts",
+    "./upload": "./src/idl/upload/upload.ts"
   },
   "main": "src/index.ts",
   "typesVersions": {
@@ -18,6 +19,9 @@
       ],
       "marketplace": [
         "./src/idl/marketplace/public_api.ts"
+      ],
+      "upload": [
+        "./src/idl/upload/upload.ts"
       ]
     }
   },

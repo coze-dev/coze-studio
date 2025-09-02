@@ -20,10 +20,11 @@ import { useState } from 'react';
 import { nanoid } from 'nanoid';
 import { workflowApi } from '@coze-workflow/base/api';
 import { type ViewVariableType } from '@coze-workflow/base';
+import { upload as uploadAPI } from '@coze-studio/api-schema';
 import { I18n } from '@coze-arch/i18n';
+import { Toast } from '@coze-arch/coze-design';
 import { upLoadFile } from '@coze-arch/bot-utils';
 import { CustomError } from '@coze-arch/bot-error';
-import { Toast } from '@coze-arch/coze-design';
 
 import { validate } from './validate';
 import { FileItemStatus, type FileItem } from './types';
@@ -101,7 +102,10 @@ export const useUpload = (props?: UploadConfig) => {
 
       // Upload complete, clear timeout timer
       clearTimeout(progressTimer);
-
+      await uploadAPI.RecordFileInfo({
+        FileURI: uri,
+        FileName: file.name,
+      });
       // Add uri and get the url.
       const { url } = await workflowApi.SignImageURL(
         {
@@ -134,7 +138,8 @@ export const useUpload = (props?: UploadConfig) => {
   const validateFile = async (file: FileItem): Promise<string | undefined> => {
     const validateMsg = await validate(file, {
       customValidate,
-      maxSize: maxSize ?? fileType === 'image' ? MAX_IMAGE_SIZE : MAX_FILE_SIZE,
+      maxSize:
+        (maxSize ?? fileType === 'image') ? MAX_IMAGE_SIZE : MAX_FILE_SIZE,
       accept,
     });
     if (validateMsg) {
