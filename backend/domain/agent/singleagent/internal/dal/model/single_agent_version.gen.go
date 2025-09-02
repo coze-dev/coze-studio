@@ -34,12 +34,12 @@ type SingleAgentVersion struct {
 	CreatorID               int64                             `gorm:"column:creator_id;not null;comment:Creator ID" json:"creator_id"`                                              // Creator ID
 	SpaceID                 int64                             `gorm:"column:space_id;not null;comment:Space ID" json:"space_id"`                                                    // Space ID
 	Name                    string                            `gorm:"column:name;not null;comment:Agent Name" json:"name"`                                                          // Agent Name
-	Description             string                            `gorm:"column:description;not null;comment:Agent Description" json:"description"`                                     // Agent Description
+	Description             *string                           `gorm:"column:description;comment:Agent Description" json:"description"`                                              // Agent Description
 	IconURI                 string                            `gorm:"column:icon_uri;not null;comment:Icon URI" json:"icon_uri"`                                                    // Icon URI
 	CreatedAt               int64                             `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"`        // Create Time in Milliseconds
 	UpdatedAt               int64                             `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"`        // Update Time in Milliseconds
 	DeletedAt               gorm.DeletedAt                    `gorm:"column:deleted_at;comment:delete time in millisecond" json:"deleted_at"`                                       // delete time in millisecond
-	VariablesMetaID         *int64                            `gorm:"column:variables_meta_id;comment:variables meta table ID" json:"variables_meta_id"`                            // variables meta table ID
+	VariablesMetaID         *int64                            `gorm:"column:variables_meta_id;comment:variables meta 表 ID" json:"variables_meta_id"`                                // variables meta 表 ID
 	ModelInfo               *bot_common.ModelInfo             `gorm:"column:model_info;comment:Model Configuration Information;serializer:json" json:"model_info"`                  // Model Configuration Information
 	OnboardingInfo          *bot_common.OnboardingInfo        `gorm:"column:onboarding_info;comment:Onboarding Information;serializer:json" json:"onboarding_info"`                 // Onboarding Information
 	Prompt                  *bot_common.PromptInfo            `gorm:"column:prompt;comment:Agent Prompt Configuration;serializer:json" json:"prompt"`                               // Agent Prompt Configuration
@@ -52,7 +52,7 @@ type SingleAgentVersion struct {
 	Version                 string                            `gorm:"column:version;not null;comment:Agent Version" json:"version"`                                                 // Agent Version
 	BackgroundImageInfoList []*bot_common.BackgroundImageInfo `gorm:"column:background_image_info_list;comment:Background image;serializer:json" json:"background_image_info_list"` // Background image
 	DatabaseConfig          []*bot_common.Database            `gorm:"column:database_config;comment:Agent Database Base Configuration;serializer:json" json:"database_config"`      // Agent Database Base Configuration
-	BotMode                 int32                             `gorm:"column:bot_mode;not null;comment:mod,0:single mode 2:chatflow mode" json:"bot_mode"`                           // mod,0:single mode 2:chatflow mode
+	BotMode                 int32                             `gorm:"column:bot_mode;not null;comment:bot mode,0:single mode 2:chatflow mode" json:"bot_mode"`                      // bot mode,0:single mode 2:chatflow mode
 	ShortcutCommand         []string                          `gorm:"column:shortcut_command;comment:shortcut command;serializer:json" json:"shortcut_command"`                     // shortcut command
 	LayoutInfo              *bot_common.LayoutInfo            `gorm:"column:layout_info;comment:chatflow layout info;serializer:json" json:"layout_info"`                           // chatflow layout info
 }

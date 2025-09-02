@@ -39,6 +39,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/search"
 	"github.com/coze-dev/coze-studio/backend/application/shortcutcmd"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
+	"github.com/coze-dev/coze-studio/backend/application/statistics"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	"github.com/coze-dev/coze-studio/backend/application/workflow"
@@ -80,14 +81,15 @@ type eventbusImpl struct {
 }
 
 type basicServices struct {
-	infra        *appinfra.AppDependencies
-	eventbus     *eventbusImpl
-	modelMgrSVC  *modelmgr.ModelmgrApplicationService
-	connectorSVC *connector.ConnectorApplicationService
-	userSVC      *user.UserApplicationService
-	promptSVC    *prompt.PromptApplicationService
-	templateSVC  *template.ApplicationService
-	openAuthSVC  *openauth.OpenAuthApplicationService
+	infra         *appinfra.AppDependencies
+	eventbus      *eventbusImpl
+	modelMgrSVC   *modelmgr.ModelmgrApplicationService
+	connectorSVC  *connector.ConnectorApplicationService
+	userSVC       *user.UserApplicationService
+	promptSVC     *prompt.PromptApplicationService
+	templateSVC   *template.ApplicationService
+	openAuthSVC   *openauth.OpenAuthApplicationService
+	statisticsApp *statistics.StatisticsApp
 }
 
 type primaryServices struct {
@@ -121,6 +123,9 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("Init - initBasicServices failed, err: %v", err)
 	}
+	
+	// 设置全局统计服务
+	globalStatisticsApp = basicServices.statisticsApp
 
 	primaryServices, err := initPrimaryServices(ctx, basicServices)
 	if err != nil {
@@ -182,16 +187,18 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		IDGen:   infra.IDGenSVC,
 		Storage: infra.TOSClient,
 	})
+	statisticsApp := statistics.NewStatisticsApp(infra.DB)
 
 	return &basicServices{
-		infra:        infra,
-		eventbus:     e,
-		modelMgrSVC:  modelMgrSVC,
-		connectorSVC: connectorSVC,
-		userSVC:      userSVC,
-		promptSVC:    promptSVC,
-		templateSVC:  templateSVC,
-		openAuthSVC:  openAuthSVC,
+		infra:         infra,
+		eventbus:      e,
+		modelMgrSVC:   modelMgrSVC,
+		connectorSVC:  connectorSVC,
+		userSVC:       userSVC,
+		promptSVC:     promptSVC,
+		templateSVC:   templateSVC,
+		openAuthSVC:   openAuthSVC,
+		statisticsApp: statisticsApp,
 	}, nil
 }
 
@@ -381,4 +388,11 @@ func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.S
 func initModelService(infra *appinfra.AppDependencies) modelservice.ModelService {
 	repo := modelrepository.NewModelRepository(infra.DB)
 	return modelservice.NewModelService(repo, infra.TOSClient)
+}
+
+var globalStatisticsApp *statistics.StatisticsApp
+
+// GetStatisticsApp 获取统计应用实例
+func GetStatisticsApp() *statistics.StatisticsApp {
+	return globalStatisticsApp
 }

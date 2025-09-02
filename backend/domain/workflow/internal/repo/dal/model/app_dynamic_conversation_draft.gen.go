@@ -26,11 +26,11 @@ import (
 
 const TableNameAppDynamicConversationDraft = "app_dynamic_conversation_draft"
 
-// AppDynamicConversationDraft mapped from table <app_dynamic_conversation_draft>
+// AppDynamicConversationDraft 应用动态对话草稿表
 type AppDynamicConversationDraft struct {
 	ID             int64          `gorm:"column:id;primaryKey;comment:id" json:"id"`                                                            // id
 	AppID          int64          `gorm:"column:app_id;not null;comment:app id" json:"app_id"`                                                  // app id
-	Name           string         `gorm:"column:name;not null;comment:conversion name" json:"name"`                                             // conversion name
+	Name           string         `gorm:"column:name;not null;comment:conversation name" json:"name"`                                           // conversation name
 	UserID         int64          `gorm:"column:user_id;not null;comment:user id" json:"user_id"`                                               // user id
 	ConnectorID    int64          `gorm:"column:connector_id;not null;comment:connector id" json:"connector_id"`                                // connector id
 	ConversationID int64          `gorm:"column:conversation_id;not null;comment:conversation id" json:"conversation_id"`                       // conversation id

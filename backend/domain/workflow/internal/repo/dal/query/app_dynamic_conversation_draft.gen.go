@@ -57,13 +57,14 @@ func newAppDynamicConversationDraft(db *gorm.DB, opts ...gen.DOOption) appDynami
 	return _appDynamicConversationDraft
 }
 
+// appDynamicConversationDraft 应用动态对话草稿表
 type appDynamicConversationDraft struct {
 	appDynamicConversationDraftDo
 
 	ALL            field.Asterisk
 	ID             field.Int64  // id
 	AppID          field.Int64  // app id
-	Name           field.String // conversion name
+	Name           field.String // conversation name
 	UserID         field.Int64  // user id
 	ConnectorID    field.Int64  // connector id
 	ConversationID field.Int64  // conversation id

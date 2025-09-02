@@ -182,7 +182,7 @@ func loadModelInfo(ctx context.Context, manager modelmgr.Manager, modelID int64,
 	}
 	if len(models) == 0 {
 		// 如果模型在空间中被停用，这里会返回空列表
-		return nil, fmt.Errorf("model not found or not available in space, modelID=%v, spaceID=%v", modelID, spaceID)
+		return nil, fmt.Errorf("model not found or not available in space,please switch model！, modelID=%v, spaceID=%v", modelID, spaceID)
 	}
 
 	model := models[0]

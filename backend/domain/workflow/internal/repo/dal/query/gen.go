@@ -33,7 +33,6 @@ import (
 
 var (
 	Q                             = new(Query)
-	ConnectorWorkflowVersion      *connectorWorkflowVersion
 	AppConversationTemplateDraft  *appConversationTemplateDraft
 	AppConversationTemplateOnline *appConversationTemplateOnline
 	AppDynamicConversationDraft   *appDynamicConversationDraft
@@ -41,6 +40,7 @@ var (
 	AppStaticConversationDraft    *appStaticConversationDraft
 	AppStaticConversationOnline   *appStaticConversationOnline
 	ChatFlowRoleConfig            *chatFlowRoleConfig
+	ConnectorWorkflowVersion      *connectorWorkflowVersion
 	NodeExecution                 *nodeExecution
 	WorkflowDraft                 *workflowDraft
 	WorkflowExecution             *workflowExecution
@@ -52,7 +52,6 @@ var (
 
 func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	*Q = *Use(db, opts...)
-	ConnectorWorkflowVersion = &Q.ConnectorWorkflowVersion
 	AppConversationTemplateDraft = &Q.AppConversationTemplateDraft
 	AppConversationTemplateOnline = &Q.AppConversationTemplateOnline
 	AppDynamicConversationDraft = &Q.AppDynamicConversationDraft
@@ -60,6 +59,7 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 	AppStaticConversationDraft = &Q.AppStaticConversationDraft
 	AppStaticConversationOnline = &Q.AppStaticConversationOnline
 	ChatFlowRoleConfig = &Q.ChatFlowRoleConfig
+	ConnectorWorkflowVersion = &Q.ConnectorWorkflowVersion
 	NodeExecution = &Q.NodeExecution
 	WorkflowDraft = &Q.WorkflowDraft
 	WorkflowExecution = &Q.WorkflowExecution
@@ -72,7 +72,6 @@ func SetDefault(db *gorm.DB, opts ...gen.DOOption) {
 func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 	return &Query{
 		db:                            db,
-		ConnectorWorkflowVersion:      newConnectorWorkflowVersion(db, opts...),
 		AppConversationTemplateDraft:  newAppConversationTemplateDraft(db, opts...),
 		AppConversationTemplateOnline: newAppConversationTemplateOnline(db, opts...),
 		AppDynamicConversationDraft:   newAppDynamicConversationDraft(db, opts...),
@@ -80,6 +79,7 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 		AppStaticConversationDraft:    newAppStaticConversationDraft(db, opts...),
 		AppStaticConversationOnline:   newAppStaticConversationOnline(db, opts...),
 		ChatFlowRoleConfig:            newChatFlowRoleConfig(db, opts...),
+		ConnectorWorkflowVersion:      newConnectorWorkflowVersion(db, opts...),
 		NodeExecution:                 newNodeExecution(db, opts...),
 		WorkflowDraft:                 newWorkflowDraft(db, opts...),
 		WorkflowExecution:             newWorkflowExecution(db, opts...),
@@ -93,7 +93,6 @@ func Use(db *gorm.DB, opts ...gen.DOOption) *Query {
 type Query struct {
 	db *gorm.DB
 
-	ConnectorWorkflowVersion      connectorWorkflowVersion
 	AppConversationTemplateDraft  appConversationTemplateDraft
 	AppConversationTemplateOnline appConversationTemplateOnline
 	AppDynamicConversationDraft   appDynamicConversationDraft
@@ -101,6 +100,7 @@ type Query struct {
 	AppStaticConversationDraft    appStaticConversationDraft
 	AppStaticConversationOnline   appStaticConversationOnline
 	ChatFlowRoleConfig            chatFlowRoleConfig
+	ConnectorWorkflowVersion      connectorWorkflowVersion
 	NodeExecution                 nodeExecution
 	WorkflowDraft                 workflowDraft
 	WorkflowExecution             workflowExecution
@@ -115,7 +115,6 @@ func (q *Query) Available() bool { return q.db != nil }
 func (q *Query) clone(db *gorm.DB) *Query {
 	return &Query{
 		db:                            db,
-		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.clone(db),
 		AppConversationTemplateDraft:  q.AppConversationTemplateDraft.clone(db),
 		AppConversationTemplateOnline: q.AppConversationTemplateOnline.clone(db),
 		AppDynamicConversationDraft:   q.AppDynamicConversationDraft.clone(db),
@@ -123,6 +122,7 @@ func (q *Query) clone(db *gorm.DB) *Query {
 		AppStaticConversationDraft:    q.AppStaticConversationDraft.clone(db),
 		AppStaticConversationOnline:   q.AppStaticConversationOnline.clone(db),
 		ChatFlowRoleConfig:            q.ChatFlowRoleConfig.clone(db),
+		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.clone(db),
 		NodeExecution:                 q.NodeExecution.clone(db),
 		WorkflowDraft:                 q.WorkflowDraft.clone(db),
 		WorkflowExecution:             q.WorkflowExecution.clone(db),
@@ -144,7 +144,6 @@ func (q *Query) WriteDB() *Query {
 func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 	return &Query{
 		db:                            db,
-		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.replaceDB(db),
 		AppConversationTemplateDraft:  q.AppConversationTemplateDraft.replaceDB(db),
 		AppConversationTemplateOnline: q.AppConversationTemplateOnline.replaceDB(db),
 		AppDynamicConversationDraft:   q.AppDynamicConversationDraft.replaceDB(db),
@@ -152,6 +151,7 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 		AppStaticConversationDraft:    q.AppStaticConversationDraft.replaceDB(db),
 		AppStaticConversationOnline:   q.AppStaticConversationOnline.replaceDB(db),
 		ChatFlowRoleConfig:            q.ChatFlowRoleConfig.replaceDB(db),
+		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.replaceDB(db),
 		NodeExecution:                 q.NodeExecution.replaceDB(db),
 		WorkflowDraft:                 q.WorkflowDraft.replaceDB(db),
 		WorkflowExecution:             q.WorkflowExecution.replaceDB(db),
@@ -163,7 +163,6 @@ func (q *Query) ReplaceDB(db *gorm.DB) *Query {
 }
 
 type queryCtx struct {
-	ConnectorWorkflowVersion      IConnectorWorkflowVersionDo
 	AppConversationTemplateDraft  IAppConversationTemplateDraftDo
 	AppConversationTemplateOnline IAppConversationTemplateOnlineDo
 	AppDynamicConversationDraft   IAppDynamicConversationDraftDo
@@ -171,6 +170,7 @@ type queryCtx struct {
 	AppStaticConversationDraft    IAppStaticConversationDraftDo
 	AppStaticConversationOnline   IAppStaticConversationOnlineDo
 	ChatFlowRoleConfig            IChatFlowRoleConfigDo
+	ConnectorWorkflowVersion      IConnectorWorkflowVersionDo
 	NodeExecution                 INodeExecutionDo
 	WorkflowDraft                 IWorkflowDraftDo
 	WorkflowExecution             IWorkflowExecutionDo
@@ -182,7 +182,6 @@ type queryCtx struct {
 
 func (q *Query) WithContext(ctx context.Context) *queryCtx {
 	return &queryCtx{
-		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.WithContext(ctx),
 		AppConversationTemplateDraft:  q.AppConversationTemplateDraft.WithContext(ctx),
 		AppConversationTemplateOnline: q.AppConversationTemplateOnline.WithContext(ctx),
 		AppDynamicConversationDraft:   q.AppDynamicConversationDraft.WithContext(ctx),
@@ -190,6 +189,7 @@ func (q *Query) WithContext(ctx context.Context) *queryCtx {
 		AppStaticConversationDraft:    q.AppStaticConversationDraft.WithContext(ctx),
 		AppStaticConversationOnline:   q.AppStaticConversationOnline.WithContext(ctx),
 		ChatFlowRoleConfig:            q.ChatFlowRoleConfig.WithContext(ctx),
+		ConnectorWorkflowVersion:      q.ConnectorWorkflowVersion.WithContext(ctx),
 		NodeExecution:                 q.NodeExecution.WithContext(ctx),
 		WorkflowDraft:                 q.WorkflowDraft.WithContext(ctx),
 		WorkflowExecution:             q.WorkflowExecution.WithContext(ctx),

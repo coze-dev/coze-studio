@@ -57,6 +57,7 @@ func newAppConversationTemplateOnline(db *gorm.DB, opts ...gen.DOOption) appConv
 	return _appConversationTemplateOnline
 }
 
+// appConversationTemplateOnline 应用对话模板在线表
 type appConversationTemplateOnline struct {
 	appConversationTemplateOnlineDo
 
@@ -64,7 +65,7 @@ type appConversationTemplateOnline struct {
 	ID         field.Int64  // id
 	AppID      field.Int64  // app id
 	SpaceID    field.Int64  // space id
-	Name       field.String // conversion name
+	Name       field.String // conversation name
 	TemplateID field.Int64  // template id
 	Version    field.String // version name
 	CreatorID  field.Int64  // creator id

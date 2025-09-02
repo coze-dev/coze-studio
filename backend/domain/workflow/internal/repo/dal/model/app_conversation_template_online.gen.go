@@ -22,12 +22,12 @@ package model
 
 const TableNameAppConversationTemplateOnline = "app_conversation_template_online"
 
-// AppConversationTemplateOnline mapped from table <app_conversation_template_online>
+// AppConversationTemplateOnline 应用对话模板在线表
 type AppConversationTemplateOnline struct {
 	ID         int64  `gorm:"column:id;primaryKey;comment:id" json:"id"`                                                            // id
 	AppID      int64  `gorm:"column:app_id;not null;comment:app id" json:"app_id"`                                                  // app id
 	SpaceID    int64  `gorm:"column:space_id;not null;comment:space id" json:"space_id"`                                            // space id
-	Name       string `gorm:"column:name;not null;comment:conversion name" json:"name"`                                             // conversion name
+	Name       string `gorm:"column:name;not null;comment:conversation name" json:"name"`                                           // conversation name
 	TemplateID int64  `gorm:"column:template_id;not null;comment:template id" json:"template_id"`                                   // template id
 	Version    string `gorm:"column:version;not null;comment:version name" json:"version"`                                          // version name
 	CreatorID  int64  `gorm:"column:creator_id;not null;comment:creator id" json:"creator_id"`                                      // creator id

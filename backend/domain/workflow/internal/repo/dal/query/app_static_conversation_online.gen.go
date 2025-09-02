@@ -55,6 +55,7 @@ func newAppStaticConversationOnline(db *gorm.DB, opts ...gen.DOOption) appStatic
 	return _appStaticConversationOnline
 }
 
+// appStaticConversationOnline 应用静态对话在线表
 type appStaticConversationOnline struct {
 	appStaticConversationOnlineDo
 

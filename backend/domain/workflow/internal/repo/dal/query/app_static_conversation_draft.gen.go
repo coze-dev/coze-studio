@@ -56,6 +56,7 @@ func newAppStaticConversationDraft(db *gorm.DB, opts ...gen.DOOption) appStaticC
 	return _appStaticConversationDraft
 }
 
+// appStaticConversationDraft 应用静态对话草稿表
 type appStaticConversationDraft struct {
 	appStaticConversationDraftDo
 
