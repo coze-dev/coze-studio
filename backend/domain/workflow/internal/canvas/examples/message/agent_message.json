@@ -29,8 +29,8 @@
       "id": "100001",
       "meta": {
         "position": {
-          "x": 0,
-          "y": 0
+          "x": -222,
+          "y": 48.72071651807994
         }
       },
       "type": "1"
@@ -45,7 +45,7 @@
                 "type": "boolean",
                 "value": {
                   "content": {
-                    "blockID": "195185",
+                    "blockID": "128683",
                     "name": "isSuccess",
                     "source": "block-output"
                   },
@@ -55,24 +55,41 @@
                   "type": "ref"
                 }
               },
-              "name": "output"
+              "name": "create_success"
             },
             {
               "input": {
-                "type": "string",
+                "type": "boolean",
                 "value": {
                   "content": {
-                    "blockID": "195185",
-                    "name": "message.messageId",
+                    "blockID": "166060",
+                    "name": "isSuccess",
                     "source": "block-output"
                   },
                   "rawMeta": {
-                    "type": 1
+                    "type": 3
                   },
                   "type": "ref"
                 }
               },
-              "name": "mID"
+              "name": "edit_success"
+            },
+            {
+              "input": {
+                "type": "boolean",
+                "value": {
+                  "content": {
+                    "blockID": "194802",
+                    "name": "isSuccess",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 3
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "delete_success"
             }
           ],
           "terminatePlan": "returnVariables"
@@ -88,8 +105,8 @@
       "id": "900001",
       "meta": {
         "position": {
-          "x": 1000,
-          "y": 0
+          "x": 1092.75,
+          "y": 46.510710144593645
         }
       },
       "type": "2"
@@ -107,9 +124,6 @@
                     "blockID": "100001",
                     "name": "CONVERSATION_NAME",
                     "source": "block-output"
-                  },
-                  "rawMeta": {
-                    "type": 1
                   },
                   "type": "ref"
                 }
@@ -130,7 +144,7 @@
               "input": {
                 "type": "string",
                 "value": {
-                  "content": "1",
+                  "content": "123",
                   "rawMeta": {
                     "type": 1
                   },
@@ -178,11 +192,11 @@
         ]
       },
       "edges": null,
-      "id": "195185",
+      "id": "128683",
       "meta": {
         "position": {
-          "x": 482,
-          "y": -13
+          "x": 272.375,
+          "y": -62.38428666866321
         }
       },
       "type": "55"
@@ -201,63 +215,149 @@
                     "name": "CONVERSATION_NAME",
                     "source": "block-output"
                   },
+                  "type": "ref"
+                }
+              },
+              "name": "conversationName"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "128683",
+                    "name": "message.messageId",
+                    "source": "block-output"
+                  },
                   "rawMeta": {
                     "type": 1
                   },
                   "type": "ref"
                 }
               },
-              "name": "conversationName"
+              "name": "messageId"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": "456",
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "literal"
+                }
+              },
+              "name": "newContent"
             }
           ]
         },
         "nodeMeta": {
-          "description": "用于创建会话",
-          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
+          "description": "用于修改消息的内容",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-修改消息.jpg",
           "mainColor": "#F2B600",
-          "subTitle": "创建会话",
-          "title": "创建会话"
+          "subTitle": "修改消息",
+          "title": "修改消息"
         },
         "outputs": [
           {
             "name": "isSuccess",
             "type": "boolean"
-          },
-          {
-            "name": "isExisted",
-            "type": "boolean"
-          },
-          {
-            "name": "conversationId",
-            "type": "string"
           }
         ]
       },
       "edges": null,
-      "id": "121849",
+      "id": "166060",
       "meta": {
         "position": {
-          "x": 302,
-          "y": -236
+          "x": 195.375,
+          "y": 229.6157133313368
         }
       },
-      "type": "39"
+      "type": "56"
+    },
+    {
+      "blocks": [],
+      "data": {
+        "inputs": {
+          "inputParameters": [
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "100001",
+                    "name": "CONVERSATION_NAME",
+                    "source": "block-output"
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "conversationName"
+            },
+            {
+              "input": {
+                "type": "string",
+                "value": {
+                  "content": {
+                    "blockID": "128683",
+                    "name": "message.messageId",
+                    "source": "block-output"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  },
+                  "type": "ref"
+                }
+              },
+              "name": "messageId"
+            }
+          ]
+        },
+        "nodeMeta": {
+          "description": "用于删除消息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除消息.jpg",
+          "mainColor": "#F2B600",
+          "subTitle": "删除消息",
+          "title": "删除消息"
+        },
+        "outputs": [
+          {
+            "name": "isSuccess",
+            "type": "boolean"
+          }
+        ]
+      },
+      "edges": null,
+      "id": "194802",
+      "meta": {
+        "position": {
+          "x": 612.375,
+          "y": 83.61571333133679
+        }
+      },
+      "type": "57"
     }
   ],
   "edges": [
     {
       "sourceNodeID": "100001",
-      "targetNodeID": "121849",
+      "targetNodeID": "128683",
       "sourcePortID": ""
     },
     {
-      "sourceNodeID": "195185",
+      "sourceNodeID": "194802",
       "targetNodeID": "900001",
       "sourcePortID": ""
     },
     {
-      "sourceNodeID": "121849",
-      "targetNodeID": "195185",
+      "sourceNodeID": "128683",
+      "targetNodeID": "166060",
+      "sourcePortID": ""
+    },
+    {
+      "sourceNodeID": "166060",
+      "targetNodeID": "194802",
       "sourcePortID": ""
     }
   ],

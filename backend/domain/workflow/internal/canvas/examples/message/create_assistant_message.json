@@ -120,7 +120,7 @@
               "input": {
                 "type": "string",
                 "value": {
-                  "content": "user",
+                  "content": "assistant",
                   "type": "literal"
                 }
               },
