@@ -22,42 +22,23 @@ import {
 } from '../utils';
 import type { WorkflowFile } from '../types';
 
-const HTTP_STATUS_OK = 200;
-
 export const processZipFile = async (
   workflowFile: WorkflowFile,
 ): Promise<{ workflowData: Record<string, unknown>; error?: string }> => {
   try {
     const zipBase64 = await convertFileToBase64(workflowFile.file);
 
-    const response = await fetch('/api/workflow_api/parse_zip', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
+    // ZIP文件直接作为工作流数据，让批量导入API处理
+    return {
+      workflowData: {
+        name: sanitizeWorkflowName(
+          workflowFile.fileName.replace(/\.zip$/i, ''),
+        ),
+        description: 'ZIP工作流文件，将在导入时自动解析',
+        format: 'zip',
+        data: zipBase64,
       },
-      body: JSON.stringify({
-        zip_data: zipBase64,
-        file_name: workflowFile.fileName,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('API Error:', errorText);
-      return { workflowData: {}, error: `解析失败: ${response.statusText}` };
-    }
-
-    const result = await response.json();
-    console.log('ZIP解析结果:', result);
-
-    if (result.code === HTTP_STATUS_OK && result.data?.workflow_data) {
-      return { workflowData: result.data.workflow_data };
-    } else {
-      return {
-        workflowData: {},
-        error: result.msg || 'ZIP文件解析失败，请检查文件格式',
-      };
-    }
+    };
   } catch (error) {
     console.error('ZIP处理失败:', error);
     return {

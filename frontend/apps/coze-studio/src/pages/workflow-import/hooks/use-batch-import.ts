@@ -55,11 +55,24 @@ export const callBatchImportAPI = async (
   spaceId: string,
   importMode: 'batch' | 'transaction',
 ): Promise<ImportResults> => {
-  const workflowFiles = validFiles.map(file => ({
-    file_name: file.fileName,
-    workflow_data: file.originalContent,
-    workflow_name: file.workflowName,
-  }));
+  const workflowFiles = validFiles.map(file => {
+    // 对于ZIP文件，使用处理后的workflowData中的data字段
+    if (file.fileName.toLowerCase().endsWith('.zip')) {
+      const workflowData = JSON.parse(file.workflowData);
+      return {
+        file_name: file.fileName,
+        workflow_data: workflowData.data, // ZIP文件的base64数据
+        workflow_name: file.workflowName,
+      };
+    }
+
+    // 对于其他文件类型，使用原始内容
+    return {
+      file_name: file.fileName,
+      workflow_data: file.originalContent,
+      workflow_name: file.workflowName,
+    };
+  });
 
   console.log(
     '批量导入文件:',
