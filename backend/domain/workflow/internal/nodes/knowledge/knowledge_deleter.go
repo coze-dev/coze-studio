@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/spf13/cast"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -29,7 +31,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/spf13/cast"
 )
 
 type DeleterConfig struct {

@@ -108,6 +108,17 @@ func (m *minioClient) test() {
 		logs.CtxErrorf(ctx, "upload file failed: %v", err)
 	}
 
+	f, err := m.HeadObject(ctx, objectName, true)
+	if err != nil {
+		logs.CtxErrorf(ctx, "head object failed: %v", err)
+	}
+	if f != nil {
+		logs.CtxInfof(ctx, "head object success, f: %v, tagging: %v", *f, f.Tagging)
+	}
+
+	f, err = m.HeadObject(ctx, "not_exit.txt", true)
+	logs.CtxInfof(context.Background(), "HeadObject not exit success, f: %v, err: %v", f, err)
+
 	logs.CtxInfof(ctx, "upload file success")
 
 	files, err := m.ListAllObjects(ctx, "test-file-", true)
@@ -277,4 +288,33 @@ func (m *minioClient) ListAllObjects(ctx context.Context, prefix string, withTag
 	}
 
 	return files, nil
+}
+
+func (m *minioClient) HeadObject(ctx context.Context, objectKey string, withTagging bool) (*storage.FileInfo, error) {
+	stat, err := m.client.StatObject(ctx, m.bucketName, objectKey, minio.StatObjectOptions{})
+	if err != nil {
+		if minio.ToErrorResponse(err).Code == "NoSuchKey" {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("HeadObject failed for key %s: %w", objectKey, err)
+	}
+
+	f := &storage.FileInfo{
+		Key:          objectKey,
+		LastModified: stat.LastModified,
+		ETag:         stat.ETag,
+		Size:         stat.Size,
+	}
+
+	if withTagging {
+		tags, err := m.client.GetObjectTagging(ctx, m.bucketName, objectKey, minio.GetObjectTaggingOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		f.Tagging = tags.ToMap()
+	}
+
+	return f, nil
 }

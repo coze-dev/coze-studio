@@ -87,6 +87,17 @@ func (t *tosClient) test() {
 		logs.CtxErrorf(context.Background(), "PutObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
 
+	f, err := t.HeadObject(ctx, objectKey, true)
+	if err != nil {
+		logs.CtxErrorf(context.Background(), "HeadObject failed, objectKey: %s, err: %v", objectKey, err)
+	}
+	if f != nil {
+		logs.CtxInfof(context.Background(), "HeadObject success, f: %v, tagging: %v", *f, f.Tagging)
+	}
+
+	f, err = t.HeadObject(ctx, "not_exit.txt", true)
+	logs.CtxInfof(context.Background(), "HeadObject not exit success, f: %v, err: %v", f, err)
+
 	t.ListAllObjects(ctx, "", true)
 
 	// test download
@@ -358,6 +369,39 @@ func (t *tosClient) ListAllObjects(ctx context.Context, prefix string, withTaggi
 	}
 
 	return files, nil
+}
+
+func (t *tosClient) HeadObject(ctx context.Context, objectKey string, withTagging bool) (*storage.FileInfo, error) {
+	output, err := t.client.HeadObjectV2(ctx, &tos.HeadObjectV2Input{Bucket: t.bucketName, Key: objectKey})
+	if err != nil {
+		if serverErr, ok := err.(*tos.TosServerError); ok {
+			if serverErr.StatusCode == http.StatusNotFound {
+				return nil, nil
+			}
+		}
+		return nil, err
+	}
+
+	fileInfo := &storage.FileInfo{
+		Key:          objectKey,
+		LastModified: output.LastModified,
+		ETag:         output.ETag,
+		Size:         output.ContentLength,
+	}
+
+	if withTagging {
+		tagging, err := t.client.GetObjectTagging(ctx, &tos.GetObjectTaggingInput{
+			Bucket: t.bucketName,
+			Key:    objectKey,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		fileInfo.Tagging = tagsToMap(tagging.TagSet.Tags)
+	}
+
+	return fileInfo, nil
 }
 
 func tagsToMap(tags []tos.Tag) map[string]string {

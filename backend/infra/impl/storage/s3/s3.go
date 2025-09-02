@@ -19,6 +19,7 @@ package s3
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"time"
@@ -358,6 +359,49 @@ func (t *s3Client) ListObjectsPaginated(ctx context.Context, input *storage.List
 	}
 
 	return output, nil
+}
+
+func (t *s3Client) HeadObject(ctx context.Context, objectKey string, withTagging bool) (*storage.FileInfo, error) {
+	obj, err := t.client.HeadObject(ctx, &s3.HeadObjectInput{
+		Bucket: aws.String(t.bucketName),
+		Key:    aws.String(objectKey),
+	})
+	if err != nil {
+		var nsk *types.NotFound
+		if errors.As(err, &nsk) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	f := &storage.FileInfo{
+		Key: objectKey,
+	}
+	if obj.LastModified != nil {
+		f.LastModified = *obj.LastModified
+	}
+
+	if obj.ETag != nil {
+		f.ETag = *obj.ETag
+	}
+
+	if obj.ContentLength != nil {
+		f.Size = *obj.ContentLength
+	}
+
+	if withTagging {
+		tagging, err := t.client.GetObjectTagging(ctx, &s3.GetObjectTaggingInput{
+			Bucket: aws.String(t.bucketName),
+			Key:    aws.String(objectKey),
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		f.Tagging = tagsToMap(tagging.TagSet)
+	}
+
+	return f, nil
 }
 
 func tagsToMap(tags []types.Tag) map[string]string {

@@ -35,6 +35,8 @@ type Storage interface {
 	// GetObjectUrl returns a presigned URL for the object.
 	// The URL is valid for the specified duration.
 	GetObjectUrl(ctx context.Context, objectKey string, opts ...GetOptFn) (string, error)
+	// HeadObject returns the object metadata with the specified key.
+	HeadObject(ctx context.Context, objectKey string, withTagging bool) (*FileInfo, error)
 	// ListAllObjects returns all objects with the specified prefix.
 	// It may return a large number of objects, consider using ListObjectsPaginated for better performance.
 	ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*FileInfo, error)
@@ -66,6 +68,7 @@ type ListObjectsPaginatedOutput struct {
 	// true: There are more results to return
 	IsTruncated bool
 }
+
 type FileInfo struct {
 	Key          string
 	LastModified time.Time
