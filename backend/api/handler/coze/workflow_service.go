@@ -1128,3 +1128,138 @@ func GetExampleWorkFlowList(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ExportWorkflow 导出工作流
+// @router /api/workflow_api/export [POST]
+func ExportWorkflow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ExportWorkflowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := appworkflow.SVC.ExportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ImportWorkflow 导入工作流
+// @router /api/workflow_api/import [POST]
+func ImportWorkflow(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req workflow.ImportWorkflowRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := appworkflow.SVC.ImportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// BatchImportWorkflow 批量导入工作流
+// @router /api/workflow_api/batch_import [POST]
+func BatchImportWorkflow(ctx context.Context, c *app.RequestContext) {
+	// IMPORTANT: 添加明显的标记确认代码被执行
+	logs.CtxInfof(ctx, "=== CLAUDE MODIFIED VERSION - BatchImportWorkflow START ===")
+
+	var err error
+	var req workflow.BatchImportWorkflowRequest
+
+	// Add debugging to see raw request body
+	rawData, _ := c.Request.BodyE()
+	logs.CtxInfof(ctx, "BatchImportWorkflow: Request body size: %d bytes", len(rawData))
+
+	// Try to parse JSON manually first to see what's in the request
+	var rawRequest map[string]interface{}
+	if jsonErr := sonic.Unmarshal(rawData, &rawRequest); jsonErr == nil {
+		logs.CtxInfof(ctx, "BatchImportWorkflow: Raw JSON parsed successfully")
+		if spaceID, ok := rawRequest["space_id"].(string); ok {
+			logs.CtxInfof(ctx, "BatchImportWorkflow: space_id: %s", spaceID)
+		}
+		if creatorID, ok := rawRequest["creator_id"].(string); ok {
+			logs.CtxInfof(ctx, "BatchImportWorkflow: creator_id: %s", creatorID)
+		}
+		if importFormat, ok := rawRequest["import_format"].(string); ok {
+			logs.CtxInfof(ctx, "BatchImportWorkflow: import_format: %s", importFormat)
+		}
+		if importMode, ok := rawRequest["import_mode"].(string); ok {
+			logs.CtxInfof(ctx, "BatchImportWorkflow: import_mode: %s", importMode)
+		}
+		if workflowFiles, ok := rawRequest["workflow_files"].([]interface{}); ok {
+			logs.CtxInfof(ctx, "BatchImportWorkflow: workflow_files count: %d", len(workflowFiles))
+		}
+	} else {
+		logs.CtxErrorf(ctx, "BatchImportWorkflow: Failed to parse JSON manually: %v", jsonErr)
+	}
+
+	// Use BindJSON instead of BindAndValidate to bypass validation
+	err = c.BindJSON(&req)
+	if err != nil {
+		logs.CtxErrorf(ctx, "BatchImportWorkflow: BindJSON failed: %v", err)
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	// Manual validation
+	if req.SpaceID == "" {
+		logs.CtxErrorf(ctx, "BatchImportWorkflow: Missing space_id")
+		invalidParamRequestResponse(c, "Missing required field: space_id")
+		return
+	}
+	if req.CreatorID == "" {
+		logs.CtxErrorf(ctx, "BatchImportWorkflow: Missing creator_id")
+		invalidParamRequestResponse(c, "Missing required field: creator_id")
+		return
+	}
+	if req.ImportFormat == "" {
+		logs.CtxErrorf(ctx, "BatchImportWorkflow: Missing import_format")
+		invalidParamRequestResponse(c, "Missing required field: import_format")
+		return
+	}
+	if len(req.WorkflowFiles) == 0 {
+		logs.CtxErrorf(ctx, "BatchImportWorkflow: Empty workflow_files")
+		invalidParamRequestResponse(c, "Missing required field: workflow_files")
+		return
+	}
+
+	for i, file := range req.WorkflowFiles {
+		if file.FileName == "" {
+			logs.CtxErrorf(ctx, "BatchImportWorkflow: Missing file_name for file %d", i)
+			invalidParamRequestResponse(c, fmt.Sprintf("Missing required field: workflow_files[%d].file_name", i))
+			return
+		}
+		if file.WorkflowName == "" {
+			logs.CtxErrorf(ctx, "BatchImportWorkflow: Missing workflow_name for file %d", i)
+			invalidParamRequestResponse(c, fmt.Sprintf("Missing required field: workflow_files[%d].workflow_name", i))
+			return
+		}
+		if file.WorkflowData == "" {
+			logs.CtxErrorf(ctx, "BatchImportWorkflow: Missing workflow_data for file %d", i)
+			invalidParamRequestResponse(c, fmt.Sprintf("Missing required field: workflow_files[%d].workflow_data", i))
+			return
+		}
+	}
+
+	logs.CtxInfof(ctx, "BatchImportWorkflow: Validation passed, proceeding with import")
+
+	resp, err := appworkflow.SVC.BatchImportWorkflow(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

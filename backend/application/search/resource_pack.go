@@ -157,6 +157,27 @@ func (w *workflowPacker) GetDataInfo(ctx context.Context) (*dataInfo, error) {
 	}, nil
 }
 
+func (w *workflowPacker) GetActions(ctx context.Context) []*common.ResourceAction {
+	return []*common.ResourceAction{
+		{
+			Key:    common.ActionKey_Edit,
+			Enable: true,
+		},
+		{
+			Key:    common.ActionKey_Delete,
+			Enable: true,
+		},
+		{
+			Key:    common.ActionKey_Copy,
+			Enable: true,
+		},
+		{
+			Key:    common.ActionKey_Export,
+			Enable: true,
+		},
+	}
+}
+
 func (w *workflowPacker) GetProjectDefaultActions(ctx context.Context) []*common.ProjectResourceAction {
 	return []*common.ProjectResourceAction{
 		{

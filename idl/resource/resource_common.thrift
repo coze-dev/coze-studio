@@ -22,6 +22,7 @@ enum ActionKey{
     Delete       = 2, // delete
     EnableSwitch = 3, // enable/disable
     Edit         = 4, // edit
+    Export       = 5, // export
     SwitchToFuncflow = 8, // Switch to funcflow
     SwitchToChatflow = 9, // Switch to chatflow
     CrossSpaceCopy = 10, // Cross-space copy

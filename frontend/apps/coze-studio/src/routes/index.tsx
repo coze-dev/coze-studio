@@ -33,6 +33,7 @@ import {
   spaceSubMenu,
   exploreSubMenu,
   WorkflowPage,
+  WorkflowImportPage,
   ProjectIDE,
   ProjectIDEPublish,
   Library,
@@ -175,6 +176,15 @@ export const router: ReturnType<typeof createBrowserRouter> =
                 {
                   path: 'library',
                   Component: Library,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.LIBRARY,
+                  }),
+                },
+
+                // workflow import
+                {
+                  path: 'workflow/import',
+                  Component: WorkflowImportPage,
                   loader: () => ({
                     subMenuKey: SpaceSubModuleEnum.LIBRARY,
                   }),
