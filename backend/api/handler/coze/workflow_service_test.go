@@ -43,13 +43,14 @@ import (
 	"github.com/cloudwego/hertz/pkg/common/ut"
 	"github.com/cloudwego/hertz/pkg/protocol"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
-	message0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	message0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
@@ -740,6 +741,7 @@ func (r *wfTestRunner) getProcess(id, exeID string, opts ...func(options *getPro
 	var nodeType string
 	var token *workflow.TokenAndCost
 	var reason string
+	var count int
 	for {
 		if nodeEvent != nil {
 			if options.previousInterruptEventID != "" {
@@ -753,6 +755,10 @@ func (r *wfTestRunner) getProcess(id, exeID string, opts ...func(options *getPro
 
 		if workflowStatus != workflow.WorkflowExeStatus_Running {
 			break
+		}
+
+		if count > 1000 {
+			r.t.Fatal("get process for too long")
 		}
 
 		getProcessResp := getProcess(r.t, r.h, id, exeID)
@@ -788,6 +794,8 @@ func (r *wfTestRunner) getProcess(id, exeID string, opts ...func(options *getPro
 			eventID = nodeEvent.ID
 		}
 		r.t.Logf("getProcess output= %s, status= %v, eventID= %s, nodeType= %s", output, workflowStatus, eventID, nodeType)
+
+		count++
 	}
 
 	return &exeResult{
@@ -1609,6 +1617,7 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			post[workflow.DeleteWorkflowResponse](r, &workflow.DeleteWorkflowRequest{
 				WorkflowID: topID,
 			})
+			time.Sleep(time.Second)
 		}()
 
 		midID := r.load("subworkflow/middle_workflow.json", withID(7494849202016272435))
@@ -1826,6 +1835,7 @@ func TestPublishWorkflow(t *testing.T) {
 			WorkflowID: id,
 		}
 		_ = post[workflow.DeleteWorkflowResponse](r, deleteReq)
+		time.Sleep(time.Second)
 	})
 }
 
@@ -1949,6 +1959,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 			post[workflow.DeleteWorkflowResponse](r, &workflow.DeleteWorkflowRequest{
 				WorkflowID: id,
 			})
+			time.Sleep(time.Second)
 		}()
 
 		exeID := r.testRun(id, map[string]string{
@@ -2613,6 +2624,7 @@ func TestListWorkflowAsToolData(t *testing.T) {
 			WorkflowID: id,
 		}
 		_ = post[workflow.DeleteWorkflowResponse](r, deleteReq)
+		time.Sleep(time.Second)
 	})
 }
 
@@ -2647,6 +2659,7 @@ func TestWorkflowDetailAndDetailInfo(t *testing.T) {
 			WorkflowID: id,
 		}
 		_ = post[workflow.DeleteWorkflowResponse](r, deleteReq)
+		time.Sleep(time.Second)
 	})
 }
 
@@ -4527,6 +4540,8 @@ func TestMoveWorkflowAppToLibrary(t *testing.T) {
 					assert.Equal(t, "v0.0.1", node.Data.Inputs.WorkflowVersion)
 				}
 			}
+
+			time.Sleep(time.Second)
 		})
 
 	})

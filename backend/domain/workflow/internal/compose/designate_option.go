@@ -38,7 +38,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
-func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context, []einoCompose.Option, error) {
+func (r *WorkflowRunner) designateOptions(ctx context.Context) ([]einoCompose.Option, error) {
 	var (
 		wb           = r.basic
 		exeCfg       = r.config
@@ -83,13 +83,13 @@ func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context,
 					ns,
 					string(key))
 				if err != nil {
-					return ctx, nil, err
+					return nil, err
 				}
 				opts = append(opts, subOpts...)
 			} else if ns.Type == entity.NodeTypeLLM {
 				llmNodeOpts, err := llmToolCallbackOptions(ctx, ns, eventChan, sw)
 				if err != nil {
-					return ctx, nil, err
+					return nil, err
 				}
 
 				opts = append(opts, llmNodeOpts...)
@@ -103,7 +103,7 @@ func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context,
 					ns,
 					string(key))
 				if err != nil {
-					return ctx, nil, err
+					return nil, err
 				}
 				for _, subO := range subOpts {
 					opts = append(opts, WrapOpt(subO, parent.Key))
@@ -111,7 +111,7 @@ func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context,
 			} else if ns.Type == entity.NodeTypeLLM {
 				llmNodeOpts, err := llmToolCallbackOptions(ctx, ns, eventChan, sw)
 				if err != nil {
-					return ctx, nil, err
+					return nil, err
 				}
 				for _, subO := range llmNodeOpts {
 					opts = append(opts, WrapOpt(subO, parent.Key))
@@ -124,7 +124,7 @@ func (r *WorkflowRunner) designateOptions(ctx context.Context) (context.Context,
 		opts = append(opts, einoCompose.WithCheckPointID(strconv.FormatInt(executeID, 10)))
 	}
 
-	return ctx, opts, nil
+	return opts, nil
 }
 
 func nodeCallbackOption(key vo.NodeKey, name string, eventChan chan *execute.Event, resumeEvent *entity.InterruptEvent,

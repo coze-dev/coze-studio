@@ -167,7 +167,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 		}()
 	}
 
-	ctx, composeOpts, err := r.designateOptions(ctx)
+	composeOpts, err := r.designateOptions(ctx)
 	if err != nil {
 		return ctx, 0, nil, nil, err
 	}

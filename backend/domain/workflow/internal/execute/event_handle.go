@@ -672,7 +672,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				ExecuteID:    event.RootExecuteID,
 				Role:         schema.Assistant,
 				Type:         entity.FunctionCall,
-				FunctionCall: event.functionCall,
+				FunctionCall: event.functionCall.FunctionCallInfo,
 			},
 		}, nil)
 	case ToolResponse:
@@ -704,8 +704,6 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}, nil)
 	case ToolError:
-		// TODO: optimize this log
-		logs.CtxErrorf(ctx, "received tool error event: %v", event)
 	default:
 		panic("unimplemented event type: " + event.Type)
 	}
@@ -715,8 +713,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 type fcCacheKey struct{}
 type fcInfo struct {
-	input  *entity.FunctionCallInfo
-	output *entity.ToolResponseInfo
+	input          *entity.FunctionCallInfo
+	output         *entity.ToolResponseInfo
+	toolFinishChan chan struct{}
 }
 
 func HandleExecuteEvent(ctx context.Context,
@@ -772,7 +771,8 @@ func HandleExecuteEvent(ctx context.Context,
 			lastNodeIsDone = true
 			if wfSuccessEvent != nil {
 				if err = setRootWorkflowSuccess(ctx, wfSuccessEvent, repo, sw); err != nil {
-					logs.CtxErrorf(ctx, "failed to set root workflow success: %v", err)
+					logs.CtxErrorf(ctx, "failed to set root workflow success for workflow %d: %v",
+						wfSuccessEvent.RootWorkflowBasic.ID, err)
 				}
 				return wfSuccessEvent
 			}
@@ -786,10 +786,12 @@ func HandleExecuteEvent(ctx context.Context,
 		// Add cancellation check timer
 		cancelTicker := time.NewTicker(cancelCheckInterval)
 		defer func() {
-			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
+			logs.CtxInfof(ctx, "[handleExecuteEvent] cancellable finish, returned event type: %v, workflow id: %d",
 				event.Type, event.Context.RootWorkflowBasic.ID)
-			cancelTicker.Stop() // Clean up timer
 			waitUntilToolFinish(ctx)
+			logs.CtxInfof(ctx, "[handleExecuteEvent] cancellable wait until tool finished done, workflow id: %d",
+				event.Context.RootWorkflowBasic.ID)
+			cancelTicker.Stop() // Clean up timer
 			if timeoutFn != nil {
 				timeoutFn()
 			}
@@ -825,6 +827,9 @@ func HandleExecuteEvent(ctx context.Context,
 		defer func() {
 			logs.CtxInfof(ctx, "[handleExecuteEvent] finish, returned event type: %v, workflow id: %d",
 				event.Type, event.Context.RootWorkflowBasic.ID)
+			waitUntilToolFinish(ctx)
+			logs.CtxInfof(ctx, "[handleExecuteEvent] wait until tool finished done, workflow id: %d",
+				event.Context.RootWorkflowBasic.ID)
 			if timeoutFn != nil {
 				timeoutFn()
 			}
@@ -859,29 +864,26 @@ func cacheFunctionCall(ctx context.Context, event *Event) {
 		c[event.NodeKey] = make(map[string]*fcInfo)
 	}
 	c[event.NodeKey][event.functionCall.CallID] = &fcInfo{
-		input: event.functionCall,
+		input:          event.functionCall.FunctionCallInfo,
+		toolFinishChan: event.functionCall.toolFinishChan,
 	}
 }
 
 func cacheToolResponse(ctx context.Context, event *Event) {
 	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
-	if _, ok := c[event.NodeKey]; !ok {
-		c[event.NodeKey] = make(map[string]*fcInfo)
-	}
-
 	c[event.NodeKey][event.toolResponse.CallID].output = event.toolResponse
 }
 
 func cacheToolStreamingResponse(ctx context.Context, event *Event) {
 	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
-	if _, ok := c[event.NodeKey]; !ok {
-		c[event.NodeKey] = make(map[string]*fcInfo)
-	}
 	if c[event.NodeKey][event.toolResponse.CallID].output == nil {
 		c[event.NodeKey][event.toolResponse.CallID].output = event.toolResponse
+	} else {
+		c[event.NodeKey][event.toolResponse.CallID].output.Response += event.toolResponse.Response
 	}
-	c[event.NodeKey][event.toolResponse.CallID].output.Response += event.toolResponse.Response
-	c[event.NodeKey][event.toolResponse.CallID].output.Complete = event.toolResponse.Complete
+
+	logs.CtxInfof(ctx, "receive tool response: %s, callID: %s",
+		event.toolResponse.Response, event.toolResponse.CallID)
 }
 
 func getFCInfos(ctx context.Context, nodeKey vo.NodeKey) map[string]*fcInfo {
@@ -890,29 +892,17 @@ func getFCInfos(ctx context.Context, nodeKey vo.NodeKey) map[string]*fcInfo {
 }
 
 func waitUntilToolFinish(ctx context.Context) {
-	var cnt int
-outer:
-	for {
-		if cnt > 1000 {
-			return
-		}
+	c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
+	if len(c) == 0 {
+		return
+	}
 
-		c := ctx.Value(fcCacheKey{}).(map[vo.NodeKey]map[string]*fcInfo)
-		if len(c) == 0 {
-			return
-		}
-
-		for _, m := range c {
-			for _, info := range m {
-				if info.output == nil {
-					cnt++
-					continue outer
-				}
-
-				if !info.output.Complete {
-					cnt++
-					continue outer
-				}
+	for _, m := range c {
+		for _, info := range m {
+			if info.toolFinishChan != nil {
+				<-info.toolFinishChan
+				logs.CtxInfof(ctx, "tool finished, callID: %s, pluginID: %v", info.output.CallID,
+					info.input.PluginID)
 			}
 		}
 	}

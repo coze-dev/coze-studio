@@ -1271,6 +1271,11 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 	return ctx
 }
 
+const (
+	ToolCallIDKey     = "call_id"
+	ToolFinishChanKey = "tool_finish_chan"
+)
+
 func (t *ToolHandler) OnStart(ctx context.Context, info *callbacks.RunInfo,
 	input *tool.CallbackInput,
 ) context.Context {
@@ -1286,13 +1291,35 @@ func (t *ToolHandler) OnStart(ctx context.Context, info *callbacks.RunInfo,
 		}
 	}
 
+	var (
+		callID         string
+		toolFinishChan chan struct{}
+	)
+	if input.Extra != nil {
+		callIDAny, ok := input.Extra[ToolCallIDKey]
+		if ok {
+			callID = callIDAny.(string)
+		}
+		toolFinishChanAny, ok := input.Extra[ToolFinishChanKey]
+		if ok {
+			toolFinishChan = toolFinishChanAny.(chan struct{})
+		}
+	}
+
+	if len(callID) == 0 {
+		callID = compose.GetToolCallID(ctx)
+	}
+
 	t.ch <- &Event{
 		Type:    FunctionCall,
 		Context: GetExeCtx(ctx),
-		functionCall: &entity.FunctionCallInfo{
-			FunctionInfo: t.info,
-			CallID:       compose.GetToolCallID(ctx),
-			Arguments:    args,
+		functionCall: &FunctionCallInfo{
+			FunctionCallInfo: &entity.FunctionCallInfo{
+				FunctionInfo: t.info,
+				CallID:       callID,
+				Arguments:    args,
+			},
+			toolFinishChan: toolFinishChan,
 		},
 	}
 
@@ -1306,14 +1333,25 @@ func (t *ToolHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo,
 		return ctx
 	}
 
+	var callID string
+	if output.Extra != nil {
+		callIDAny, ok := output.Extra[ToolCallIDKey]
+		if ok {
+			callID = callIDAny.(string)
+		}
+	}
+
+	if len(callID) == 0 {
+		callID = compose.GetToolCallID(ctx)
+	}
+
 	t.ch <- &Event{
 		Type:    ToolResponse,
 		Context: GetExeCtx(ctx),
 		toolResponse: &entity.ToolResponseInfo{
 			FunctionInfo: t.info,
-			CallID:       compose.GetToolCallID(ctx),
+			CallID:       callID,
 			Response:     output.Response,
-			Complete:     true,
 		},
 	}
 
@@ -1352,7 +1390,6 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 							toolResponse: &entity.ToolResponseInfo{
 								FunctionInfo: t.info,
 								CallID:       callID,
-								Complete:     true,
 							},
 						}
 					}
@@ -1374,7 +1411,7 @@ func (t *ToolHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				Context: c,
 				toolResponse: &entity.ToolResponseInfo{
 					FunctionInfo: t.info,
-					CallID:       compose.GetToolCallID(ctx),
+					CallID:       callID,
 					Response:     chunk.Response,
 				},
 			}
@@ -1398,9 +1435,11 @@ func (t *ToolHandler) OnError(ctx context.Context, info *callbacks.RunInfo, err 
 	t.ch <- &Event{
 		Type:    ToolError,
 		Context: GetExeCtx(ctx),
-		functionCall: &entity.FunctionCallInfo{
-			FunctionInfo: t.info,
-			CallID:       compose.GetToolCallID(ctx),
+		functionCall: &FunctionCallInfo{
+			FunctionCallInfo: &entity.FunctionCallInfo{
+				FunctionInfo: t.info,
+				CallID:       compose.GetToolCallID(ctx),
+			},
 		},
 		Err: err,
 	}

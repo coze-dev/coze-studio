@@ -17,7 +17,7 @@ require (
 	github.com/bytedance/gopkg v0.1.3
 	github.com/bytedance/mockey v1.2.14
 	github.com/bytedance/sonic v1.14.0
-	github.com/cloudwego/eino v0.5.0-alpha.6.0.20250902093128-26a2ebdb6cff
+	github.com/cloudwego/eino v0.4.8
 	github.com/cloudwego/eino-ext/components/embedding/ark v0.1.0
 	github.com/cloudwego/eino-ext/components/embedding/gemini v0.0.0-20250814083140-54b99ff82f8e
 	github.com/cloudwego/eino-ext/components/embedding/ollama v0.0.0-20250728060543-79ec300857b8

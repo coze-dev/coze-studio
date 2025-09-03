@@ -26,11 +26,10 @@ import (
 )
 
 type workflowToolOption struct {
-	resumeReq            *entity.ResumeRequest
-	streamContainer      *StreamContainer
-	exeCfg               workflowModel.ExecuteConfig
-	allInterruptEvents   map[string]*entity.ToolInterruptEvent
-	parentTokenCollector *TokenCollector
+	resumeReq          *entity.ResumeRequest
+	streamContainer    *StreamContainer
+	exeCfg             workflowModel.ExecuteConfig
+	allInterruptEvents map[string]*entity.ToolInterruptEvent
 }
 
 func WithResume(req *entity.ResumeRequest, all map[string]*entity.ToolInterruptEvent) tool.Option {
