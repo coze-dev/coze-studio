@@ -26,6 +26,7 @@ import (
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
 type TokenCollector struct {
@@ -88,6 +89,33 @@ func (t *TokenCollector) finishStreamCounting() {
 	if t.Parent != nil {
 		t.Parent.finishStreamCounting()
 	}
+}
+
+type tokenCollector struct {
+	Key    string
+	Usage  *model.TokenUsage
+	Parent *TokenCollector
+}
+
+func (t *TokenCollector) MarshalJSON() ([]byte, error) {
+	t.wait()
+	return sonic.Marshal(&tokenCollector{
+		Key:    t.Key,
+		Usage:  t.Usage,
+		Parent: t.Parent,
+	})
+}
+
+func (t *TokenCollector) UnmarshalJSON(bytes []byte) error {
+	tc := &tokenCollector{}
+	if err := sonic.Unmarshal(bytes, tc); err != nil {
+		return err
+	}
+
+	t.Key = tc.Key
+	t.Usage = tc.Usage
+	t.Parent = tc.Parent
+	return nil
 }
 
 func getTokenCollector(ctx context.Context) *TokenCollector {

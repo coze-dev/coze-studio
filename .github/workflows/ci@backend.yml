@@ -31,7 +31,7 @@ jobs:
     env:
       COVERAGE_FILE: coverage.out
       BREAKDOWN_FILE: main.breakdown
-      
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
@@ -52,7 +52,7 @@ jobs:
           mysql version: '8.4.5'
           mysql database: 'opencoze'
           mysql root password: 'root'
-          
+
       - name: Verify MySQL Startup
         run: |
           echo "Waiting for MySQL to be ready..."
@@ -70,8 +70,12 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y mysql-client
 
       - name: Initialize Database
-        run: mysql -h 127.0.0.1 -P 3306 -u root -proot opencoze < docker/volumes/mysql/schema.sql
-                    
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 20
+          command: mysql -h 127.0.0.1 -P 3306 -u root -proot opencoze < docker/volumes/mysql/schema.sql
+
       - name: Run Go Test
         run: |
           modules=`find . -name "go.mod" -exec dirname {} \;`
@@ -82,7 +86,7 @@ jobs:
           for module in $modules; do go work use $module; list=$module"/... "$list; coverpkg=$module"/...,"$coverpkg; done
           go work sync
           go test -race -v -coverprofile=${{ env.COVERAGE_FILE }} -gcflags="all=-l -N" -coverpkg=$coverpkg $list
-          
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:

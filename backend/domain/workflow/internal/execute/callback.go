@@ -370,10 +370,6 @@ func (w *WorkflowHandler) OnError(ctx context.Context, info *callbacks.RunInfo, 
 				interruptEvent.EventType, interruptEvent.NodeKey)
 		}
 
-		if c.TokenCollector != nil { // wait until all streaming chunks are collected
-			_ = c.TokenCollector.wait()
-		}
-
 		done := make(chan struct{})
 
 		w.ch <- &Event{
