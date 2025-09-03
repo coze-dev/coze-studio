@@ -493,7 +493,7 @@ struct ShortcutToolParam {
 	3: string description
 	4: string type
 	5: string default_value
-	6: bool is_refer_component  // 是否是panel参数
+	6: bool is_refer_component
 }
 
 struct ShortcutCommandToolInfo {
@@ -505,8 +505,8 @@ struct ShortcutCommandToolInfo {
     6: optional list<ShortcutToolParam> params
 }
 typedef string ShortcutSendType
-const ShortcutSendType ShortcutSendTypeQuery = 'query' // 发送 query
-const ShortcutSendType ShortcutSendTypePanel = 'panel' // 使用快捷指令面板
+const ShortcutSendType ShortcutSendTypeQuery = 'query'
+const ShortcutSendType ShortcutSendTypePanel = 'panel'
 
 struct ShortcutCommandInfo {
     1: i64 id (api.js_conv="true") // Quick Command ID
