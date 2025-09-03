@@ -743,22 +743,20 @@ func (s *SingleAgentApplicationService) getAgentInfo(ctx context.Context, botID 
 					}
 
 					switch i.InputType {
-						case playground.InputType_Select:
-							sc.Options = i.Options
-						case playground.InputType_MixUpload:
-							options := make([]string, 0)
-							for _, uploadOption := range i.UploadOptions {
-								options = append(options, string(getShortcutCommandComponentFileType(uploadOption)))
-							}
-							sc.Options = options
-						case playground.InputType_UploadImage, playground.InputType_UploadDoc, playground.InputType_UploadTable, playground.InputType_UploadAudio,
-							playground.InputType_VIDEO, playground.InputType_ARCHIVE, playground.InputType_CODE, playground.InputType_TXT,
-							playground.InputType_PPT:
-							options := make([]string, 0)
-							options = append(options, string(getShortcutCommandComponentFileType(i.InputType)))
-							sc.Options = options
-						default:
+					case playground.InputType_Select:
+						sc.Options = i.Options
+					case playground.InputType_MixUpload:
+						options := make([]string, 0, len(i.UploadOptions))
+						for _, uploadOption := range i.UploadOptions {
+							options = append(options, string(getShortcutCommandComponentFileType(uploadOption)))
 						}
+						sc.Options = options
+					case playground.InputType_UploadImage, playground.InputType_UploadDoc, playground.InputType_UploadTable, playground.InputType_UploadAudio,
+						playground.InputType_VIDEO, playground.InputType_ARCHIVE, playground.InputType_CODE, playground.InputType_TXT,
+						playground.InputType_PPT:
+						sc.Options = []string{string(getShortcutCommandComponentFileType(i.InputType))}
+					default:
+					}
 
 					return sc
 				}),
@@ -818,7 +816,6 @@ func (s *SingleAgentApplicationService) OpenGetBotInfo(ctx context.Context, req 
 	resp.Data = agentInfo
 	return resp, nil
 }
-
 
 func getShortcutCommandComponentType(inputType playground.InputType) string {
 	componentType := agent.ShortcutCommandComponentTypeMapping[inputType]
