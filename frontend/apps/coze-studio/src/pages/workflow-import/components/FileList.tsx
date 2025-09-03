@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import React from 'react';
+import React, { useState, useCallback } from 'react';
+
+import { I18n } from '@coze-arch/i18n';
 
 import type { WorkflowFile } from '../types';
 import FileStatus from './FileStatus';
@@ -30,6 +32,129 @@ interface FileListProps {
 }
 
 const OPACITY_DISABLED = 0.6;
+const MIN_NAME_LENGTH = 2;
+const MAX_NAME_LENGTH = 50;
+
+const validateWorkflowName = (
+  name: string,
+): { isValid: boolean; message?: string } => {
+  if (!name || name.trim().length === 0) {
+    return { isValid: false, message: '工作流名称不能为空' };
+  }
+
+  const trimmedName = name.trim();
+  if (trimmedName.length < MIN_NAME_LENGTH) {
+    return {
+      isValid: false,
+      message: `工作流名称至少需要${MIN_NAME_LENGTH}个字符`,
+    };
+  }
+
+  if (trimmedName.length > MAX_NAME_LENGTH) {
+    return {
+      isValid: false,
+      message: `工作流名称不能超过${MAX_NAME_LENGTH}个字符`,
+    };
+  }
+
+  if (!/^[a-zA-Z0-9\u4e00-\u9fa5_\-\s]+$/.test(trimmedName)) {
+    return {
+      isValid: false,
+      message: '工作流名称只能包含中文、英文、数字、下划线、短横线和空格',
+    };
+  }
+
+  return { isValid: true };
+};
+
+const WorkflowNameInput: React.FC<{
+  file: WorkflowFile;
+  isImporting: boolean;
+  onUpdateName: (id: string, name: string) => void;
+}> = ({ file, isImporting, onUpdateName }) => {
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [isFocused, setIsFocused] = useState(false);
+
+  const handleNameChange = useCallback(
+    (value: string) => {
+      onUpdateName(file.id, value);
+
+      if (value.trim().length > 0) {
+        const validation = validateWorkflowName(value);
+        setNameError(validation.isValid ? null : validation.message || null);
+      } else {
+        setNameError(null);
+      }
+    },
+    [file.id, onUpdateName],
+  );
+
+  const handleFocus = useCallback(() => {
+    setIsFocused(true);
+  }, []);
+
+  const handleBlur = useCallback(() => {
+    setIsFocused(false);
+    if (file.workflowName.trim().length > 0) {
+      const validation = validateWorkflowName(file.workflowName);
+      setNameError(validation.isValid ? null : validation.message || null);
+    }
+  }, [file.workflowName]);
+
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+      <label
+        style={{
+          fontSize: '14px',
+          fontWeight: '500',
+          color: '#374151',
+          lineHeight: '34px',
+          minWidth: '80px',
+        }}
+      >
+        工作流名称：
+      </label>
+      <div style={{ flex: 1 }}>
+        <input
+          type="text"
+          value={file.workflowName}
+          onChange={e => handleNameChange(e.target.value)}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          placeholder={I18n.t('workflow_import_workflow_name_placeholder')}
+          disabled={isImporting}
+          style={{
+            width: '250px',
+            padding: '8px 12px',
+            border: `1px solid ${
+              nameError ? '#ef4444' : isFocused ? '#3b82f6' : '#e2e8f0'
+            }`,
+            borderRadius: '6px',
+            fontSize: '14px',
+            outline: 'none',
+            transition: 'border-color 0.2s ease',
+          }}
+        />
+      </div>
+      <div style={{ minWidth: '200px', paddingLeft: '8px' }}>
+        {nameError ? (
+          <div
+            style={{
+              fontSize: '12px',
+              color: '#ef4444',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '4px',
+            }}
+          >
+            <span>⚠️</span>
+            {nameError}
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+};
 
 const FileItem: React.FC<{
   file: WorkflowFile;
@@ -71,19 +196,10 @@ const FileItem: React.FC<{
 
         {file.status === 'valid' && (
           <div style={{ marginBottom: '12px' }}>
-            <input
-              type="text"
-              value={file.workflowName}
-              onChange={e => onUpdateName(file.id, e.target.value)}
-              placeholder="工作流名称"
-              disabled={isImporting}
-              style={{
-                width: '300px',
-                padding: '8px 12px',
-                border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '14px',
-              }}
+            <WorkflowNameInput
+              file={file}
+              isImporting={isImporting}
+              onUpdateName={onUpdateName}
             />
           </div>
         )}
