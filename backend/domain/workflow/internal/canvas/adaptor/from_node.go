@@ -19,6 +19,7 @@ package adaptor
 import (
 	"context"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 
 	einoCompose "github.com/cloudwego/eino/compose"
 	"golang.org/x/exp/maps"
@@ -66,6 +67,17 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 	nsList, hierarchy, err := NodeToNodeSchema(ctx, n, c)
 	if err != nil {
 		return nil, err
+	}
+	historyRounds := int64(0)
+	for _, ns := range nsList {
+		if ns.SubWorkflowSchema != nil {
+			historyRounds = max(historyRounds, ns.SubWorkflowSchema.HistoryRounds())
+		} else {
+			chatHistoryAware, ok := ns.Configs.(nodes.ChatHistoryAware)
+			if ok && chatHistoryAware.ChatHistoryEnabled() {
+				historyRounds = max(historyRounds, chatHistoryAware.ChatHistoryRounds())
+			}
+		}
 	}
 
 	var (
@@ -231,6 +243,7 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 		Hierarchy:   hierarchy,
 		Branches:    branches,
 	}
+	trimmedSC.SetHistoryRounds(historyRounds)
 
 	if enabled {
 		trimmedSC.GeneratedNodes = append(trimmedSC.GeneratedNodes, ns.Key)
