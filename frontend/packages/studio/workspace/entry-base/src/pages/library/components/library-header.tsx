@@ -14,29 +14,26 @@
  * limitations under the License.
  */
 
-import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
 import { IconCozPlus } from '@coze-arch/coze-design/icons';
 import { Button, Menu } from '@coze-arch/coze-design';
 
 import { type LibraryEntityConfig } from '../types';
+import WorkflowImportModal from '../../../components/workflow-import-modal';
 
 export const LibraryHeader: React.FC<{
   entityConfigs: LibraryEntityConfig[];
 }> = ({ entityConfigs }) => {
-  const { space_id } = useParams<{ space_id: string }>();
-  const navigate = useNavigate();
+  const [showImportModal, setShowImportModal] = useState(false);
 
   const handleImportWorkflow = () => {
-    try {
-      if (space_id) {
-        navigate(`/space/${space_id}/workflow/import`);
-      }
-    } catch (error) {
-      console.error('导航到导入页面失败:', error);
-    }
+    setShowImportModal(true);
+  };
+
+  const handleCloseImportModal = () => {
+    setShowImportModal(false);
   };
 
   return (
@@ -53,7 +50,7 @@ export const LibraryHeader: React.FC<{
           onClick={handleImportWorkflow}
           data-testid="workspace.library.header.import-workflow"
         >
-          导入工作流
+          {I18n.t('workflow_import')}
         </Button>
         
         {/* 创建资源按钮 */}
@@ -76,6 +73,9 @@ export const LibraryHeader: React.FC<{
           </Button>
         </Menu>
       </div>
+      
+      {/* 工作流导入弹窗 */}
+      <WorkflowImportModal visible={showImportModal} onCancel={handleCloseImportModal} />
     </div>
   );
 };

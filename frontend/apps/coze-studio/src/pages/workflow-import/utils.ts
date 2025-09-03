@@ -15,6 +15,7 @@
  */
 
 import { load } from 'js-yaml';
+import { t } from './utils/i18n';
 
 const RANDOM_ID_LENGTH = 9;
 const MIN_WORKFLOW_NAME_LENGTH = 2;
@@ -53,22 +54,22 @@ export const sanitizeWorkflowName = (fileName: string): string => {
 
 export const validateWorkflowName = (name: string): string => {
   if (!name.trim()) {
-    return '工作流名称不能为空';
+    return t('workflow_name_empty');
   }
 
   if (!/^[a-zA-Z]/.test(name)) {
-    return '工作流名称必须以字母开头';
+    return t('workflow_name_must_start_letter');
   }
 
   if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(name)) {
-    return '工作流名称只能包含字母、数字和下划线';
+    return t('workflow_name_invalid_chars');
   }
 
   if (
     name.length < MIN_WORKFLOW_NAME_LENGTH ||
     name.length > MAX_WORKFLOW_NAME_LENGTH
   ) {
-    return '工作流名称长度应在2-100个字符之间';
+    return t('workflow_name_length_invalid');
   }
 
   return '';
@@ -89,23 +90,24 @@ export const convertFileToBase64 = (file: File): Promise<string> =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => {
-      const arrayBuffer = e.target?.result as ArrayBuffer;
-      if (!arrayBuffer) {
-        reject(new Error('Failed to read ZIP file'));
+      const result = e.target?.result;
+      if (!result) {
+        reject(new Error('Failed to read file'));
         return;
       }
-
-      const bytes = new Uint8Array(arrayBuffer);
-      let binary = '';
-      const len = bytes.byteLength;
-      for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
+      
+      // FileReader.readAsDataURL() returns "data:type;base64,base64data"
+      // We only need the base64 part
+      const base64 = (result as string).split(',')[1];
+      if (!base64) {
+        reject(new Error('Failed to extract base64 data'));
+        return;
       }
-      const base64 = btoa(binary);
+      
       resolve(base64);
     };
-    reader.onerror = () => reject(new Error('Failed to read ZIP file'));
-    reader.readAsArrayBuffer(file);
+    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.readAsDataURL(file);
   });
 
 export const isValidWorkflowData = (data: Record<string, unknown>): boolean => {

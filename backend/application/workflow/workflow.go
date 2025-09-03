@@ -82,6 +82,54 @@ type ApplicationService struct {
 
 var SVC = &ApplicationService{}
 
+// getLocalizedMessage 获取本地化消息
+func getLocalizedMessage(ctx context.Context, key string) string {
+	locale := i18n.GetLocale(ctx)
+
+	// 中英文消息映射
+	messages := map[string]map[string]string{
+		"zh-CN": {
+			"no_valid_files_to_import":  "没有有效的文件可以导入",
+			"file_parse_failed":         "文件 \"%s\" 解析失败：%v",
+			"file_missing_schema_nodes": "文件 %s 缺少必要字段：schema 或 nodes",
+			"workflow_name_duplicate":   "工作流名称重复：\"%s\"",
+			"batch_import_files":        "批量导入文件：",
+			"batch_import_failed_http":  "批量导入失败，HTTP状态码：%d",
+			"invalid_response_format":   "服务器返回了无效的响应格式，请检查API接口",
+			"batch_import_api_response": "批量导入API响应：",
+			"batch_import_failed":       "批量导入失败",
+		},
+		"en-US": {
+			"no_valid_files_to_import":  "No valid files to import",
+			"file_parse_failed":         "File \"%s\" parse failed: %v",
+			"file_missing_schema_nodes": "File %s missing required fields: schema or nodes",
+			"workflow_name_duplicate":   "Duplicate workflow name: \"%s\"",
+			"batch_import_files":        "Batch import files:",
+			"batch_import_failed_http":  "Batch import failed, HTTP status code: %d",
+			"invalid_response_format":   "Server returned invalid response format, please check API interface",
+			"batch_import_api_response": "Batch import API response:",
+			"batch_import_failed":       "Batch import failed",
+		},
+	}
+
+	// 获取对应语言的消息
+	if localeMessages, exists := messages[string(locale)]; exists {
+		if message, exists := localeMessages[key]; exists {
+			return message
+		}
+	}
+
+	// 默认返回英文
+	if enMessages, exists := messages["en-US"]; exists {
+		if message, exists := enMessages[key]; exists {
+			return message
+		}
+	}
+
+	// 如果都没找到，返回key本身
+	return key
+}
+
 func GetWorkflowDomainSVC() domainWorkflow.Service {
 	return SVC.DomainSVC
 }
@@ -4322,11 +4370,9 @@ func (w *ApplicationService) BatchImportWorkflow(ctx context.Context, req *workf
 	// 3. 构建导入配置
 	config := w.buildBatchImportConfig(req)
 
-	// 4. 预验证所有文件（如果启用）
+	// 4. 预验证所有文件（如果启用）- 改为警告模式，不阻止导入
 	if config.ValidateBeforeImport {
-		if err := w.preValidateWorkflowFiles(ctx, req.WorkflowFiles); err != nil {
-			return nil, err
-		}
+		w.preValidateWorkflowFilesWithWarning(ctx, req.WorkflowFiles)
 	}
 
 	// 5. 执行批量导入
@@ -4478,6 +4524,52 @@ func (w *ApplicationService) preValidateWorkflowFiles(ctx context.Context, files
 	return nil
 }
 
+// preValidateWorkflowFilesWithWarning 预验证所有工作流文件（警告模式，不阻断导入）
+func (w *ApplicationService) preValidateWorkflowFilesWithWarning(ctx context.Context, files []workflow.WorkflowFileData) {
+	for i, file := range files {
+		// 根据文件名确定格式
+		fileName := strings.ToLower(file.FileName)
+		var format string
+		if strings.HasSuffix(fileName, ".yml") {
+			format = "yml"
+		} else if strings.HasSuffix(fileName, ".yaml") {
+			format = "yaml"
+		} else if strings.HasSuffix(fileName, ".zip") {
+			format = "zip"
+		} else {
+			format = "json"
+		}
+
+		// 对于ZIP文件，数据是base64编码的，需要特殊处理
+		if format == "zip" {
+			// ZIP文件验证：检查是否为有效的base64数据
+			if _, err := base64.StdEncoding.DecodeString(file.WorkflowData); err != nil {
+				logs.CtxWarnf(ctx, "File %d (%s): invalid base64 ZIP data: %v", i, file.FileName, err)
+				continue
+			}
+			// 暂时跳过ZIP文件的详细验证，在实际导入时再进行
+			continue
+		}
+
+		exportData, err := w.parseWorkflowData(ctx, file.WorkflowData, format)
+		if err != nil {
+			logs.CtxWarnf(ctx, "File %d (%s): invalid %s format: %v", i, file.FileName, format, err)
+			continue
+		}
+
+		// 验证工作流数据结构
+		if exportData.Schema == nil {
+			logs.CtxWarnf(ctx, "File %d (%s): missing schema", i, file.FileName)
+			continue
+		}
+
+		if exportData.Nodes == nil {
+			logs.CtxWarnf(ctx, "File %d (%s): missing nodes", i, file.FileName)
+			continue
+		}
+	}
+}
+
 // executeBatchImport 执行批量导入
 func (w *ApplicationService) executeBatchImport(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
 	if config.ImportMode == string(workflow.BatchImportModeTransaction) {
@@ -4576,7 +4668,7 @@ func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file work
 	exportData, err := w.parseWorkflowData(ctx, file.WorkflowData, format)
 	if err != nil {
 		result.ErrorCode = int64(errno.ErrSerializationDeserializationFail)
-		result.ErrorMessage = fmt.Sprintf("文件 %s 解析失败：%v", file.FileName, err)
+		result.ErrorMessage = fmt.Sprintf(getLocalizedMessage(ctx, "file_parse_failed"), file.FileName, err)
 		result.FailReason = workflow.FailReasonInvalidFormat
 		logs.CtxErrorf(ctx, "Failed to parse file %s: %v", file.FileName, err)
 		return result
@@ -4585,7 +4677,7 @@ func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file work
 	// 3. 验证数据结构
 	if exportData.Schema == nil || exportData.Nodes == nil {
 		result.ErrorCode = int64(errno.ErrInvalidParameter)
-		result.ErrorMessage = fmt.Sprintf("文件 %s 缺少必要字段：schema 或 nodes", file.FileName)
+		result.ErrorMessage = fmt.Sprintf(getLocalizedMessage(ctx, "file_missing_schema_nodes"), file.FileName)
 		result.FailReason = workflow.FailReasonInvalidData
 		logs.CtxErrorf(ctx, "Invalid data structure in file %s: missing schema or nodes", file.FileName)
 		return result

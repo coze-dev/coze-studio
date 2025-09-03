@@ -16,6 +16,7 @@
 
 import React from 'react';
 
+import { t } from '../utils/i18n';
 import type { WorkflowFile } from '../types';
 
 interface FilePreviewProps {
@@ -38,10 +39,10 @@ const FilePreview: React.FC<FilePreviewProps> = ({ preview }) => {
       }}
     >
       <div>
-        名称: {preview.name} | 节点: {preview.nodeCount} | 连接:{' '}
-        {preview.edgeCount} | 版本: {preview.version}
+        {t('file_preview_name')}: {preview.name} | {t('file_preview_nodes')}: {preview.nodeCount} | {t('file_preview_connections')}:{' '}
+        {preview.edgeCount} | {t('file_preview_version')}: {preview.version}
       </div>
-      {preview.description ? <div>描述: {preview.description}</div> : null}
+      {preview.description ? <div>{t('file_preview_description')}: {preview.description}</div> : null}
     </div>
   );
 };

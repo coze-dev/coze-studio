@@ -15,11 +15,12 @@
  */
 
 import React from 'react';
+import { I18n } from '@coze-arch/i18n';
 
 interface FileUploadProps {
   dragActive: boolean;
   isImporting: boolean;
-  onFileSelect: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onFilesSelected: (files: FileList) => void;
   onDragEnter: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
   onDragOver: (e: React.DragEvent) => void;
@@ -29,12 +30,20 @@ interface FileUploadProps {
 const FileUpload: React.FC<FileUploadProps> = ({
   dragActive,
   isImporting,
-  onFileSelect,
+  onFilesSelected,
   onDragEnter,
   onDragLeave,
   onDragOver,
   onDrop,
-}) => (
+}) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const files = event.target.files;
+    if (files && files.length > 0) {
+      onFilesSelected(files);
+    }
+  };
+
+  return (
   <div style={{ marginBottom: '30px' }}>
     <div
       style={{
@@ -63,23 +72,32 @@ const FileUpload: React.FC<FileUploadProps> = ({
           marginBottom: '8px',
         }}
       >
-        拖拽文件到此处或点击选择文件
+        {I18n.t('workflow_import_drag_and_drop')}
       </h3>
       <p
         style={{
           fontSize: '14px',
           color: '#718096',
+          marginBottom: '8px',
+        }}
+      >
+        {I18n.t('workflow_import_support_format')}
+      </p>
+      <p
+        style={{
+          fontSize: '12px',
+          color: '#9ca3af',
           marginBottom: '16px',
         }}
       >
-        支持同时选择多个工作流文件（JSON、YAML、ZIP格式），最多50个文件。ZIP文件将自动解析。
+        {I18n.t('workflow_import_batch_description')}
       </p>
       <input
         id="file-input"
         type="file"
         multiple
         accept=".json,.yml,.yaml,.zip"
-        onChange={onFileSelect}
+        onChange={handleFileChange}
         style={{ display: 'none' }}
         disabled={isImporting}
       />
@@ -95,10 +113,11 @@ const FileUpload: React.FC<FileUploadProps> = ({
           cursor: 'pointer',
         }}
       >
-        选择文件
+        {I18n.t('workflow_import_select_file')}
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default FileUpload;

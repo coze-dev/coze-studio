@@ -16,7 +16,9 @@
 
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useUserInfo } from '@coze-foundation/account-adapter';
 
+import { t } from '../utils/i18n';
 import type { WorkflowFile, ImportProgress, ImportResults } from '../types';
 import {
   validateFiles,
@@ -35,6 +37,7 @@ interface ImportHandlerParams {
 
 export const useImportHandler = () => {
   const navigate = useNavigate();
+  const userInfo = useUserInfo();
   const [isImporting, setIsImporting] = useState(false);
   const [importProgress, setImportProgress] = useState<ImportProgress | null>(
     null,
@@ -47,14 +50,28 @@ export const useImportHandler = () => {
     successCount: number;
     failedCount: number;
     firstWorkflowId?: string;
+    failedFiles?: Array<{
+      file_name: string;
+      workflow_name: string;
+      error_code: string;
+      error_message: string;
+      fail_reason?: string;
+    }>;
   }>({ successCount: 0, failedCount: 0 });
 
   const showImportResultModal = (
     successCount: number,
     failedCount: number,
     firstWorkflowId?: string,
+    failedFiles?: Array<{
+      file_name: string;
+      workflow_name: string;
+      error_code: string;
+      error_message: string;
+      fail_reason?: string;
+    }>,
   ) => {
-    setResultModalData({ successCount, failedCount, firstWorkflowId });
+    setResultModalData({ successCount, failedCount, firstWorkflowId, failedFiles });
     setShowResultModal(true);
   };
 
@@ -64,18 +81,18 @@ export const useImportHandler = () => {
 
   const validateImportRequest = (params: ImportHandlerParams): boolean => {
     if (!params.spaceId) {
-      alert('缺少工作空间ID，请重新进入页面');
+      alert(t('missing_workspace_id') || '缺少工作空间ID，请重新进入页面');
       return false;
     }
 
     if (params.selectedFiles.length === 0) {
-      alert('请先选择文件');
+      alert(t('please_select_files') || '请先选择文件');
       return false;
     }
 
     const nameErrors = validateFiles(params.selectedFiles);
     if (nameErrors.length > 0) {
-      alert(`名称验证失败:\n${nameErrors.join('\n')}`);
+      alert(`${t('name_validation_failed') || '名称验证失败'}:\n${nameErrors.join('\n')}`);
       return false;
     }
 
@@ -113,7 +130,12 @@ export const useImportHandler = () => {
         : null;
 
       setTimeout(() => {
-        showImportResultModal(successCount, failedCount, firstWorkflowId);
+        showImportResultModal(successCount, failedCount, firstWorkflowId, responseData.failed_list);
+      }, DELAY_TIME_MS);
+    } else if (failedCount > 0) {
+      // 如果没有成功的文件但有失败的文件，也显示结果模态框
+      setTimeout(() => {
+        showImportResultModal(successCount, failedCount, undefined, responseData.failed_list);
       }, DELAY_TIME_MS);
     }
   };
@@ -137,11 +159,12 @@ export const useImportHandler = () => {
         validFiles,
         params.spaceId,
         params.importMode,
+        userInfo?.uid,
       );
       processImportResult(responseData, params);
     } catch (error) {
-      console.error('批量导入失败:', error);
-      alert(error instanceof Error ? error.message : '批量导入失败，请重试');
+      console.error(t('batch_import_failed') || '批量导入失败:', error);
+      alert(error instanceof Error ? error.message : t('batch_import_failed_retry') || '批量导入失败，请重试');
     } finally {
       setIsImporting(false);
     }

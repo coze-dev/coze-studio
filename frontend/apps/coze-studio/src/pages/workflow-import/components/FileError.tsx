@@ -16,6 +16,7 @@
 
 import React from 'react';
 
+import { t } from '../utils/i18n';
 import type { WorkflowFile } from '../types';
 
 interface FileErrorProps {
@@ -49,9 +50,9 @@ const FileError: React.FC<FileErrorProps> = ({ file }) => {
           gap: '6px',
         }}
       >
-        🚨 {file.status === 'failed' ? '导入失败' : '文件无效'}
+        🚨 {file.status === 'failed' ? t('file_error_import_failed') : t('file_error_invalid_file')}
       </div>
-      <div>{file.error || '未知错误，请检查文件格式和内容'}</div>
+      <div>{file.error || t('file_error_unknown')}</div>
       {file.status === 'failed' && (
         <div
           style={{
@@ -63,7 +64,7 @@ const FileError: React.FC<FileErrorProps> = ({ file }) => {
             fontWeight: '500',
           }}
         >
-          💡 建议：请检查文件内容格式，或查看后端日志获取详细信息
+          {t('file_error_suggestion')}
         </div>
       )}
     </div>

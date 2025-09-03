@@ -16,6 +16,7 @@
 
 import React from 'react';
 
+import { t } from '../utils/i18n';
 import type { WorkflowFile } from '../types';
 
 interface FileStatusProps {
@@ -53,19 +54,19 @@ const getFileStatusStyle = (status: WorkflowFile['status']) => {
 const getStatusText = (status: WorkflowFile['status']) => {
   switch (status) {
     case 'pending':
-      return '等待中';
+      return t('file_status_pending');
     case 'validating':
-      return '验证中...';
+      return t('file_status_validating');
     case 'valid':
-      return '✅ 有效';
+      return t('file_status_valid');
     case 'invalid':
-      return '❌ 无效';
+      return t('file_status_invalid');
     case 'importing':
-      return '导入中...';
+      return t('file_status_importing');
     case 'success':
-      return '✅ 导入成功';
+      return t('file_status_success');
     case 'failed':
-      return '❌ 导入失败';
+      return t('file_status_failed');
     default:
       return '';
   }
@@ -85,7 +86,7 @@ const FileStatus: React.FC<FileStatusProps> = ({ status }) => (
           fontWeight: '600',
         }}
       >
-        需要检查
+        {t('file_status_needs_check')}
       </span>
     )}
   </>
