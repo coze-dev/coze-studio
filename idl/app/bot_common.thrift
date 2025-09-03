@@ -518,8 +518,8 @@ struct ShortcutCommandInfo {
     7: optional list<ShortcutCommandComponent> components // Component list (parameter list)
     8: optional ShortcutCommandToolInfo tool // Tool information
     9: optional i64 agent_id (api.js_conv="true") //When the multi instruction is executed by which node, it will not be returned without configuration
-    10: optional ShortcutSendType send_type // chatsdk 使用
-    11: optional string card_schema // chatsdk 使用，表单的schema
+    10: optional ShortcutSendType send_type // chatsdk used
+    11: optional string card_schema // chatsdk schema
 }
 
 
