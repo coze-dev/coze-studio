@@ -59,14 +59,14 @@ type ListConversationPolicy struct {
 }
 
 type CreateStaticConversation struct {
-	AppID       int64
+	BizID       int64
 	UserID      int64
 	ConnectorID int64
 
 	TemplateID int64
 }
 type CreateDynamicConversation struct {
-	AppID       int64
+	BizID       int64
 	UserID      int64
 	ConnectorID int64
 

@@ -98,7 +98,7 @@ func (c *CreateMessage) getConversationIDByName(ctx context.Context, env vo.Env,
 	var conversationID int64
 	if isExist {
 		cID, _, _, err := workflow.GetRepository().GetOrCreateStaticConversation(ctx, env, conversationIDGenerator, &vo.CreateStaticConversation{
-			AppID:       ptr.From(appID),
+			BizID:       ptr.From(appID),
 			TemplateID:  template.TemplateID,
 			UserID:      userID,
 			ConnectorID: connectorID,
@@ -150,7 +150,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 
 	var conversationID int64
 	var err error
-	var resolvedAppID int64
+	var bizID int64
 	if appID == nil {
 		if conversationName != "Default" {
 			return nil, vo.WrapError(errno.ErrOnlyDefaultConversationAllowInAgentScenario, errors.New("conversation node only allow in application"))
@@ -167,13 +167,13 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			}, nil
 		}
 		conversationID = *execCtx.ExeCfg.ConversationID
-		resolvedAppID = *agentID
+		bizID = *agentID
 	} else {
 		conversationID, err = c.getConversationIDByName(ctx, env, appID, version, conversationName, userID, connectorID)
 		if err != nil {
 			return nil, err
 		}
-		resolvedAppID = *appID
+		bizID = *appID
 	}
 
 	if conversationID == 0 {
@@ -209,7 +209,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 	if role == "user" {
 		// For user messages, always create a new run and store the ID in the context.
 		runRecord, err := crossagentrun.DefaultSVC().Create(ctx, &agententity.AgentRunMeta{
-			AgentID:        resolvedAppID,
+			AgentID:        bizID,
 			ConversationID: conversationID,
 			UserID:         strconv.FormatInt(userID, 10),
 			ConnectorID:    connectorID,
@@ -244,7 +244,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		runIDs, err := crossmessage.DefaultSVC().GetLatestRunIDs(ctx, &crossmessage.GetLatestRunIDsRequest{
 			ConversationID: conversationID,
 			UserID:         userID,
-			AppID:          resolvedAppID,
+			BizID:          bizID,
 			Rounds:         1,
 		})
 		if err != nil {
@@ -254,7 +254,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 			runID = runIDs[0]
 		} else {
 			runRecord, err := crossagentrun.DefaultSVC().Create(ctx, &agententity.AgentRunMeta{
-				AgentID:        resolvedAppID,
+				AgentID:        bizID,
 				ConversationID: conversationID,
 				UserID:         strconv.FormatInt(userID, 10),
 				ConnectorID:    connectorID,
@@ -273,7 +273,7 @@ func (c *CreateMessage) Invoke(ctx context.Context, input map[string]any) (map[s
 		Content:        content,
 		ContentType:    model.ContentType("text"),
 		UserID:         strconv.FormatInt(userID, 10),
-		AgentID:        resolvedAppID,
+		AgentID:        bizID,
 		RunID:          runID,
 		SectionID:      sectionID,
 	}

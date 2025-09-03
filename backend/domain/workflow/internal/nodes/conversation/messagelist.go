@@ -115,7 +115,7 @@ func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[str
 
 	var conversationID int64
 	var err error
-	var resolvedAppID int64
+	var bizID int64
 	if appID == nil {
 		if conversationName != "Default" {
 			return nil, vo.WrapError(errno.ErrOnlyDefaultConversationAllowInAgentScenario, errors.New("conversation node only allow in application"))
@@ -129,18 +129,18 @@ func (m *MessageList) Invoke(ctx context.Context, input map[string]any) (map[str
 			}, nil
 		}
 		conversationID = *execCtx.ExeCfg.ConversationID
-		resolvedAppID = *agentID
+		bizID = *agentID
 	} else {
 		conversationID, err = m.getConversationIDByName(ctx, env, appID, version, conversationName, userID, connectorID)
 		if err != nil {
 			return nil, err
 		}
-		resolvedAppID = *appID
+		bizID = *appID
 	}
 
 	req := &crossmessage.MessageListRequest{
 		UserID:         userID,
-		AppID:          resolvedAppID,
+		BizID:          bizID,
 		ConversationID: conversationID,
 	}
 

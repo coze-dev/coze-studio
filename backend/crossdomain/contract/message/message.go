@@ -58,7 +58,7 @@ type MessageListRequest struct {
 	BeforeID       *string
 	AfterID        *string
 	UserID         int64
-	AppID          int64
+	BizID          int64
 	OrderBy        *string
 }
 
@@ -88,7 +88,7 @@ type WfMessage struct {
 type GetLatestRunIDsRequest struct {
 	ConversationID int64
 	UserID         int64
-	AppID          int64
+	BizID          int64
 	Rounds         int64
 	SectionID      int64
 	InitRunID      *int64

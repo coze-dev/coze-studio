@@ -54,7 +54,7 @@ func (c *impl) MessageList(ctx context.Context, req *crossmessage.MessageListReq
 		ConversationID: req.ConversationID,
 		Limit:          int(req.Limit), // Since the value of limit is checked inside the node, the type cast here is safe
 		UserID:         strconv.FormatInt(req.UserID, 10),
-		AgentID:        req.AppID,
+		AgentID:        req.BizID,
 		OrderBy:        req.OrderBy,
 	}
 	if req.BeforeID != nil {
@@ -96,7 +96,7 @@ func (c *impl) MessageList(ctx context.Context, req *crossmessage.MessageListReq
 func (c *impl) GetLatestRunIDs(ctx context.Context, req *crossmessage.GetLatestRunIDsRequest) ([]int64, error) {
 	listMeta := &agententity.ListRunRecordMeta{
 		ConversationID: req.ConversationID,
-		AgentID:        req.AppID,
+		AgentID:        req.BizID,
 		Limit:          int32(req.Rounds),
 		SectionID:      req.SectionID,
 	}

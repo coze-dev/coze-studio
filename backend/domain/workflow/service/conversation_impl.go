@@ -248,7 +248,7 @@ func (c *conversationImpl) findReplaceWorkflowByConversationName(ctx context.Con
 			if err != nil {
 				return false, err
 			}
-			if v.Name == "CONVERSATION_NAME" && v.DefaultValue == name {
+			if v.Name == vo.ConversationNameKey && v.DefaultValue == name {
 				return true, nil
 			}
 		}
@@ -296,7 +296,7 @@ func (c *conversationImpl) replaceWorkflowsConversationName(ctx context.Context,
 			if err != nil {
 				return err
 			}
-			if v.Name == "CONVERSATION_NAME" {
+			if v.Name == vo.ConversationNameKey {
 				v.DefaultValue = conversionName
 			}
 			startNode.Data.Outputs[idx] = v
@@ -351,18 +351,18 @@ func (c *conversationImpl) DeleteDynamicConversation(ctx context.Context, env vo
 	return c.repo.DeleteDynamicConversation(ctx, env, templateID)
 }
 
-func (c *conversationImpl) GetOrCreateConversation(ctx context.Context, env vo.Env, appID, connectorID, userID int64, conversationName string) (int64, int64, error) {
+func (c *conversationImpl) GetOrCreateConversation(ctx context.Context, env vo.Env, bizID, connectorID, userID int64, conversationName string) (int64, int64, error) {
 	t, existed, err := c.repo.GetConversationTemplate(ctx, env, vo.GetConversationTemplatePolicy{
-		AppID: ptr.Of(appID),
+		AppID: ptr.Of(bizID),
 		Name:  ptr.Of(conversationName),
 	})
 	if err != nil {
 		return 0, 0, err
 	}
 
-	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (*conventity.Conversation, error) {
+	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, bizID int64, userID, connectorID int64) (*conventity.Conversation, error) {
 		return crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
-			AgentID:     appID,
+			AgentID:     bizID,
 			UserID:      userID,
 			ConnectorID: connectorID,
 			Scene:       common.Scene_SceneWorkflow,
@@ -371,7 +371,7 @@ func (c *conversationImpl) GetOrCreateConversation(ctx context.Context, env vo.E
 
 	if existed {
 		conversationID, sectionID, _, err := c.repo.GetOrCreateStaticConversation(ctx, env, conversationIDGenerator, &vo.CreateStaticConversation{
-			AppID:       appID,
+			BizID:       bizID,
 			ConnectorID: connectorID,
 			UserID:      userID,
 			TemplateID:  t.TemplateID,
@@ -383,7 +383,7 @@ func (c *conversationImpl) GetOrCreateConversation(ctx context.Context, env vo.E
 	}
 
 	conversationID, sectionID, _, err := c.repo.GetOrCreateDynamicConversation(ctx, env, conversationIDGenerator, &vo.CreateDynamicConversation{
-		AppID:       appID,
+		BizID:       bizID,
 		ConnectorID: connectorID,
 		UserID:      userID,
 		Name:        conversationName,
@@ -465,8 +465,8 @@ func (c *conversationImpl) GetDynamicConversationByName(ctx context.Context, env
 	return c.repo.GetDynamicConversationByName(ctx, env, appID, connectorID, userID, name)
 }
 
-func (c *conversationImpl) GetConversationNameByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error) {
-	sc, existed, err := c.repo.GetStaticConversationByID(ctx, env, appID, connectorID, conversationID)
+func (c *conversationImpl) GetConversationNameByID(ctx context.Context, env vo.Env, bizID, connectorID, conversationID int64) (string, bool, error) {
+	sc, existed, err := c.repo.GetStaticConversationByID(ctx, env, bizID, connectorID, conversationID)
 	if err != nil {
 		return "", false, err
 	}
@@ -474,7 +474,7 @@ func (c *conversationImpl) GetConversationNameByID(ctx context.Context, env vo.E
 		return sc, true, nil
 	}
 
-	dc, existed, err := c.repo.GetDynamicConversationByID(ctx, env, appID, connectorID, conversationID)
+	dc, existed, err := c.repo.GetDynamicConversationByID(ctx, env, bizID, connectorID, conversationID)
 	if err != nil {
 		return "", false, err
 	}

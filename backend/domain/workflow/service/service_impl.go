@@ -39,7 +39,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
@@ -522,7 +521,7 @@ func isEnableChatHistory(s *schema.NodeSchema) bool {
 		return false
 	}
 
-	chatHistoryAware, ok := s.Configs.(nodes.ChatHistoryAware)
+	chatHistoryAware, ok := s.Configs.(schema.ChatHistoryAware)
 	if !ok {
 		return false
 	}
@@ -2171,15 +2170,15 @@ func (i *impl) adaptToChatFlow(ctx context.Context, wID int64) error {
 		vMap[v.Name] = true
 	}
 
-	if _, ok := vMap["USER_INPUT"]; !ok {
+	if _, ok := vMap[vo.UserInputKey]; !ok {
 		startNode.Data.Outputs = append(startNode.Data.Outputs, &vo.Variable{
-			Name: "USER_INPUT",
+			Name: vo.UserInputKey,
 			Type: vo.VariableTypeString,
 		})
 	}
-	if _, ok := vMap["CONVERSATION_NAME"]; !ok {
+	if _, ok := vMap[vo.ConversationNameKey]; !ok {
 		startNode.Data.Outputs = append(startNode.Data.Outputs, &vo.Variable{
-			Name:         "CONVERSATION_NAME",
+			Name:         vo.ConversationNameKey,
 			Type:         vo.VariableTypeString,
 			DefaultValue: "Default",
 		})

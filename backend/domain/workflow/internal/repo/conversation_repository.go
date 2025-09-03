@@ -432,7 +432,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 
 		appDynamicConversationDraft := r.query.AppDynamicConversationDraft
 		ret, err := appDynamicConversationDraft.WithContext(ctx).Where(
-			appDynamicConversationDraft.AppID.Eq(meta.AppID),
+			appDynamicConversationDraft.AppID.Eq(meta.BizID),
 			appDynamicConversationDraft.ConnectorID.Eq(meta.ConnectorID),
 			appDynamicConversationDraft.UserID.Eq(meta.UserID),
 			appDynamicConversationDraft.Name.Eq(meta.Name),
@@ -452,7 +452,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 		}
 
-		conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+		conv, err := idGen(ctx, meta.BizID, meta.UserID, meta.ConnectorID)
 		if err != nil {
 			return 0, 0, false, err
 		}
@@ -464,7 +464,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 
 		err = r.query.AppDynamicConversationDraft.WithContext(ctx).Create(&model.AppDynamicConversationDraft{
 			ID:             id,
-			AppID:          meta.AppID,
+			AppID:          meta.BizID,
 			Name:           meta.Name,
 			UserID:         meta.UserID,
 			ConnectorID:    meta.ConnectorID,
@@ -479,7 +479,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 	} else if env == vo.Online {
 		appDynamicConversationOnline := r.query.AppDynamicConversationOnline
 		ret, err := appDynamicConversationOnline.WithContext(ctx).Where(
-			appDynamicConversationOnline.AppID.Eq(meta.AppID),
+			appDynamicConversationOnline.AppID.Eq(meta.BizID),
 			appDynamicConversationOnline.ConnectorID.Eq(meta.ConnectorID),
 			appDynamicConversationOnline.UserID.Eq(meta.UserID),
 			appDynamicConversationOnline.Name.Eq(meta.Name),
@@ -498,7 +498,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 			return 0, 0, false, vo.WrapError(errno.ErrDatabaseError, err)
 		}
 
-		conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+		conv, err := idGen(ctx, meta.BizID, meta.UserID, meta.ConnectorID)
 		if err != nil {
 			return 0, 0, false, err
 		}
@@ -509,7 +509,7 @@ func (r *RepositoryImpl) GetOrCreateDynamicConversation(ctx context.Context, env
 
 		err = r.query.AppDynamicConversationOnline.WithContext(ctx).Create(&model.AppDynamicConversationOnline{
 			ID:             id,
-			AppID:          meta.AppID,
+			AppID:          meta.BizID,
 			Name:           meta.Name,
 			UserID:         meta.UserID,
 			ConnectorID:    meta.ConnectorID,
@@ -586,7 +586,7 @@ func (r *RepositoryImpl) getOrCreateDraftStaticConversation(ctx context.Context,
 		return cs[0].ConversationID, cInfo.SectionID, true, nil
 	}
 
-	conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+	conv, err := idGen(ctx, meta.BizID, meta.UserID, meta.ConnectorID)
 	if err != nil {
 		return 0, 0, false, err
 	}
@@ -627,7 +627,7 @@ func (r *RepositoryImpl) getOrCreateOnlineStaticConversation(ctx context.Context
 		return cs[0].ConversationID, cInfo.SectionID, true, nil
 	}
 
-	conv, err := idGen(ctx, meta.AppID, meta.UserID, meta.ConnectorID)
+	conv, err := idGen(ctx, meta.BizID, meta.UserID, meta.ConnectorID)
 	if err != nil {
 		return 0, 0, false, err
 	}
@@ -841,7 +841,7 @@ func (r *RepositoryImpl) CopyTemplateConversationByAppID(ctx context.Context, ap
 
 }
 
-func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (string, bool, error) {
+func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.Env, bizID, connectorID, conversationID int64) (string, bool, error) {
 	if env == vo.Draft {
 		appStaticConversationDraft := r.query.AppStaticConversationDraft
 		ret, err := appStaticConversationDraft.WithContext(ctx).Where(
@@ -857,7 +857,7 @@ func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.E
 		appConversationTemplateDraft := r.query.AppConversationTemplateDraft
 		template, err := appConversationTemplateDraft.WithContext(ctx).Where(
 			appConversationTemplateDraft.TemplateID.Eq(ret.TemplateID),
-			appConversationTemplateDraft.AppID.Eq(appID),
+			appConversationTemplateDraft.AppID.Eq(bizID),
 		).First()
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -881,7 +881,7 @@ func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.E
 		appConversationTemplateOnline := r.query.AppConversationTemplateOnline
 		template, err := appConversationTemplateOnline.WithContext(ctx).Where(
 			appConversationTemplateOnline.TemplateID.Eq(ret.TemplateID),
-			appConversationTemplateOnline.AppID.Eq(appID),
+			appConversationTemplateOnline.AppID.Eq(bizID),
 		).First()
 		if err != nil {
 			if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -894,11 +894,11 @@ func (r *RepositoryImpl) GetStaticConversationByID(ctx context.Context, env vo.E
 	return "", false, fmt.Errorf("unknown env %v", env)
 }
 
-func (r *RepositoryImpl) GetDynamicConversationByID(ctx context.Context, env vo.Env, appID, connectorID, conversationID int64) (*entity.DynamicConversation, bool, error) {
+func (r *RepositoryImpl) GetDynamicConversationByID(ctx context.Context, env vo.Env, bizID, connectorID, conversationID int64) (*entity.DynamicConversation, bool, error) {
 	if env == vo.Draft {
 		appDynamicConversationDraft := r.query.AppDynamicConversationDraft
 		ret, err := appDynamicConversationDraft.WithContext(ctx).Where(
-			appDynamicConversationDraft.AppID.Eq(appID),
+			appDynamicConversationDraft.AppID.Eq(bizID),
 			appDynamicConversationDraft.ConnectorID.Eq(connectorID),
 			appDynamicConversationDraft.ConversationID.Eq(conversationID),
 		).First()
@@ -918,7 +918,7 @@ func (r *RepositoryImpl) GetDynamicConversationByID(ctx context.Context, env vo.
 	} else if env == vo.Online {
 		appDynamicConversationOnline := r.query.AppDynamicConversationOnline
 		ret, err := appDynamicConversationOnline.WithContext(ctx).Where(
-			appDynamicConversationOnline.AppID.Eq(appID),
+			appDynamicConversationOnline.AppID.Eq(bizID),
 			appDynamicConversationOnline.ConnectorID.Eq(connectorID),
 			appDynamicConversationOnline.ConversationID.Eq(conversationID),
 		).First()

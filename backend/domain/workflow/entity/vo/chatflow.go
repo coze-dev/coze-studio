@@ -32,6 +32,11 @@ const (
 	ChatFlowMessageCompleted ChatFlowEvent = "conversation.message.completed"
 )
 
+const (
+	ConversationNameKey = "CONVERSATION_NAME"
+	UserInputKey        = "USER_INPUT"
+)
+
 type Usage struct {
 	TokenCount   *int32 `form:"token_count" json:"token_count,omitempty"`
 	OutputTokens *int32 `form:"output_count" json:"output_count,omitempty"`

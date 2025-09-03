@@ -235,6 +235,7 @@ func WorkflowSchemaFromNode(ctx context.Context, c *vo.Canvas, nodeID string) (
 	if enabled {
 		trimmedSC.GeneratedNodes = append(trimmedSC.GeneratedNodes, ns.Key)
 	}
+	trimmedSC.Init()
 
 	return trimmedSC, nil
 }

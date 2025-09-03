@@ -221,7 +221,7 @@ const (
             "id": "5fJt3qKpSz",
             "name": "list",
             "defaultValue": [
-				
+
             ]
         }
     },
@@ -504,7 +504,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		workflowID     = mustParseInt64(req.GetWorkflowID())
 		isDebug        = req.GetExecuteMode() == "DEBUG"
 		appID, agentID *int64
-		resolveAppID   int64
+		bizID          int64
 		conversationID int64
 		sectionID      int64
 		version        string
@@ -521,11 +521,11 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 	if req.IsSetAppID() {
 		appID = ptr.Of(mustParseInt64(req.GetAppID()))
-		resolveAppID = mustParseInt64(req.GetAppID())
+		bizID = mustParseInt64(req.GetAppID())
 	}
 	if req.IsSetBotID() {
 		agentID = ptr.Of(mustParseInt64(req.GetBotID()))
-		resolveAppID = mustParseInt64(req.GetBotID())
+		bizID = mustParseInt64(req.GetBotID())
 	}
 
 	if appID != nil && agentID != nil {
@@ -564,16 +564,16 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		sectionID = cInfo.SectionID
 
 		//  only trust the conversation name under the app
-		conversationName, existed, err := GetWorkflowDomainSVC().GetConversationNameByID(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), resolveAppID, connectorID, conversationID)
+		conversationName, existed, err := GetWorkflowDomainSVC().GetConversationNameByID(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), bizID, connectorID, conversationID)
 		if err != nil {
 			return nil, err
 		}
 		if !existed {
 			return nil, fmt.Errorf("conversation not found")
 		}
-		parameters["CONVERSATION_NAME"] = conversationName
+		parameters[vo.ConversationNameKey] = conversationName
 	} else if req.IsSetConversationID() && req.IsSetBotID() {
-		parameters["CONVERSATION_NAME"] = "Default"
+		parameters[vo.ConversationNameKey] = "Default"
 		conversationID = mustParseInt64(req.GetConversationID())
 		cInfo, err := crossconversation.DefaultSVC().GetByID(ctx, conversationID)
 		if err != nil {
@@ -581,11 +581,11 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		}
 		sectionID = cInfo.SectionID
 	} else {
-		conversationName, ok := parameters["CONVERSATION_NAME"].(string)
+		conversationName, ok := parameters[vo.ConversationNameKey].(string)
 		if !ok {
 			return nil, fmt.Errorf("conversation name is requried")
 		}
-		cID, sID, err := GetWorkflowDomainSVC().GetOrCreateConversation(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), resolveAppID, connectorID, userID, conversationName)
+		cID, sID, err := GetWorkflowDomainSVC().GetOrCreateConversation(ctx, ternary.IFElse(isDebug, vo.Draft, vo.Online), bizID, connectorID, userID, conversationName)
 		if err != nil {
 			return nil, err
 		}
@@ -594,7 +594,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	runRecord, err := crossagentrun.DefaultSVC().Create(ctx, &agententity.AgentRunMeta{
-		AgentID:        resolveAppID,
+		AgentID:        bizID,
 		ConversationID: conversationID,
 		UserID:         strconv.FormatInt(userID, 10),
 		ConnectorID:    connectorID,
@@ -606,7 +606,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 	roundID := runRecord.ID
 
-	userMessage, err := toConversationMessage(ctx, resolveAppID, conversationID, userID, roundID, sectionID, message.MessageTypeQuestion, lastUserMessage)
+	userMessage, err := toConversationMessage(ctx, bizID, conversationID, userID, roundID, sectionID, message.MessageTypeQuestion, lastUserMessage)
 	if err != nil {
 		return nil, err
 	}
@@ -648,7 +648,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			return nil, err
 		}
 		return schema.StreamReaderWithConvert(sr, w.convertToChatFlowRunResponseList(ctx, convertToChatFlowInfo{
-			appID:            resolveAppID,
+			bizID:            bizID,
 			conversationID:   conversationID,
 			roundID:          roundID,
 			workflowID:       workflowID,
@@ -684,7 +684,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		Cancellable: isDebug,
 	}
 
-	historyMessages, err := makeChatFlowHistoryMessages(ctx, resolveAppID, conversationID, userID, sectionID, connectorID, messages[:len(req.GetAdditionalMessages())-1])
+	historyMessages, err := makeChatFlowHistoryMessages(ctx, bizID, conversationID, userID, sectionID, connectorID, messages[:len(req.GetAdditionalMessages())-1])
 	if err != nil {
 		return nil, err
 	}
@@ -706,7 +706,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			logs.CtxWarnf(ctx, "create history message failed, err=%v", err)
 		}
 	}
-	parameters["USER_INPUT"], err = w.makeChatFlowUserInput(ctx, lastUserMessage)
+	parameters[vo.UserInputKey], err = w.makeChatFlowUserInput(ctx, lastUserMessage)
 	if err != nil {
 		return nil, err
 	}
@@ -717,7 +717,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	return schema.StreamReaderWithConvert(sr, w.convertToChatFlowRunResponseList(ctx, convertToChatFlowInfo{
-		appID:            resolveAppID,
+		bizID:            bizID,
 		conversationID:   conversationID,
 		roundID:          roundID,
 		workflowID:       workflowID,
@@ -731,7 +731,7 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 
 func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Context, info convertToChatFlowInfo) func(msg *entity.Message) (responses []*workflow.ChatFlowRunResponse, err error) {
 	var (
-		appID          = info.appID
+		bizID          = info.bizID
 		conversationID = info.conversationID
 		roundID        = info.roundID
 		workflowID     = info.workflowID
@@ -798,7 +798,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 									ChatID:         strconv.FormatInt(roundID, 10),
 									ConversationID: strconv.FormatInt(conversationID, 10),
 									SectionID:      strconv.FormatInt(sectionID, 10),
-									BotID:          strconv.FormatInt(appID, 10),
+									BotID:          strconv.FormatInt(bizID, 10),
 									Role:           string(schema.Assistant),
 									Type:           "follow_up",
 									ContentType:    "text",
@@ -815,7 +815,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 					ID:             strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
 					SectionID:      strconv.FormatInt(sectionID, 10),
-					BotID:          strconv.FormatInt(appID, 10),
+					BotID:          strconv.FormatInt(bizID, 10),
 					Status:         vo.Completed,
 					ExecuteID:      strconv.FormatInt(executeID, 10),
 					Usage: &vo.Usage{
@@ -929,7 +929,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				}
 
 				_, err = crossmessage.DefaultSVC().Create(ctx, &message.Message{
-					AgentID:        appID,
+					AgentID:        bizID,
 					RunID:          roundID,
 					SectionID:      sectionID,
 					Content:        msgContent,
@@ -947,7 +947,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 					ChatID:         strconv.FormatInt(roundID, 10),
 					ConversationID: strconv.FormatInt(conversationID, 10),
 					SectionID:      strconv.FormatInt(sectionID, 10),
-					BotID:          strconv.FormatInt(appID, 10),
+					BotID:          strconv.FormatInt(bizID, 10),
 					Role:           string(schema.Assistant),
 					Type:           string(entity.Answer),
 					ContentType:    string(contentType),
@@ -1046,7 +1046,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				}
 				intermediateMessage = &message.Message{
 					ID:             id,
-					AgentID:        appID,
+					AgentID:        bizID,
 					RunID:          roundID,
 					SectionID:      sectionID,
 					ConversationID: conversationID,
@@ -1066,7 +1066,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				ChatID:         strconv.FormatInt(roundID, 10),
 				ConversationID: strconv.FormatInt(conversationID, 10),
 				SectionID:      strconv.FormatInt(sectionID, 10),
-				BotID:          strconv.FormatInt(appID, 10),
+				BotID:          strconv.FormatInt(bizID, 10),
 				Role:           string(dataMessage.Role),
 				Type:           string(dataMessage.Type),
 				ContentType:    string(message.ContentTypeText),
@@ -1092,7 +1092,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				ChatID:         strconv.FormatInt(roundID, 10),
 				ConversationID: strconv.FormatInt(conversationID, 10),
 				SectionID:      strconv.FormatInt(sectionID, 10),
-				BotID:          strconv.FormatInt(appID, 10),
+				BotID:          strconv.FormatInt(bizID, 10),
 				Role:           string(dataMessage.Role),
 				Type:           string(dataMessage.Type),
 				ContentType:    string(message.ContentTypeText),
@@ -1155,9 +1155,9 @@ func (w *ApplicationService) makeChatFlowUserInput(ctx context.Context, message 
 	} else {
 		return "", fmt.Errorf("invalid message ccontent type %v", message.ContentType)
 	}
-
 }
-func makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, userID, sectionID, connectorID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
+
+func makeChatFlowHistoryMessages(ctx context.Context, bizID, conversationID, userID, sectionID, connectorID int64, messages []*workflow.EnterMessage) ([]*message.Message, error) {
 
 	var (
 		rID       int64
@@ -1170,7 +1170,7 @@ func makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, use
 	for _, msg := range messages {
 		if msg.Role == userRole {
 			runRecord, err = crossagentrun.DefaultSVC().Create(ctx, &agententity.AgentRunMeta{
-				AgentID:        appID,
+				AgentID:        bizID,
 				ConversationID: conversationID,
 				UserID:         strconv.FormatInt(userID, 10),
 				ConnectorID:    connectorID,
@@ -1180,13 +1180,15 @@ func makeChatFlowHistoryMessages(ctx context.Context, appID, conversationID, use
 				return nil, err
 			}
 			rID = runRecord.ID
-		} else if msg.Role == assistantRole && rID == 0 {
-			continue
+		} else if msg.Role == assistantRole {
+			if rID == 0 {
+				continue
+			}
 		} else {
 			return nil, fmt.Errorf("invalid role type %v", msg.Role)
 		}
 
-		m, err := toConversationMessage(ctx, appID, conversationID, userID, rID, sectionID, ternary.IFElse(msg.Role == userRole, message.MessageTypeQuestion, message.MessageTypeAnswer), msg)
+		m, err := toConversationMessage(ctx, bizID, conversationID, userID, rID, sectionID, ternary.IFElse(msg.Role == userRole, message.MessageTypeQuestion, message.MessageTypeAnswer), msg)
 		if err != nil {
 			return nil, err
 		}
@@ -1274,7 +1276,7 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 	}, nil
 }
 
-func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sectionID int64, messageType message.MessageType, msg *workflow.EnterMessage) (*message.Message, error) {
+func toConversationMessage(ctx context.Context, bizID, cid, userID, roundID, sectionID int64, messageType message.MessageType, msg *workflow.EnterMessage) (*message.Message, error) {
 	type content struct {
 		Type   string  `json:"type"`
 		FileID *string `json:"file_id"`
@@ -1284,7 +1286,7 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 		return &message.Message{
 			Role:           schema.User,
 			ConversationID: cid,
-			AgentID:        appID,
+			AgentID:        bizID,
 			RunID:          roundID,
 			Content:        msg.Content,
 			ContentType:    message.ContentTypeText,
@@ -1304,7 +1306,7 @@ func toConversationMessage(ctx context.Context, appID, cid, userID, roundID, sec
 			Role:           schema.User,
 			MessageType:    messageType,
 			ConversationID: cid,
-			AgentID:        appID,
+			AgentID:        bizID,
 			UserID:         strconv.FormatInt(userID, 10),
 			RunID:          roundID,
 			ContentType:    message.ContentTypeMix,
@@ -1432,7 +1434,7 @@ func toSchemaMessage(ctx context.Context, msg *workflow.EnterMessage) (*schema.M
 
 type convertToChatFlowInfo struct {
 	userMessage      *schema.Message
-	appID            int64
+	bizID            int64
 	conversationID   int64
 	roundID          int64
 	workflowID       int64

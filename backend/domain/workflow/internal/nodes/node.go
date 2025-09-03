@@ -192,8 +192,3 @@ type StreamGenerator interface {
 	FieldStreamType(path compose.FieldPath, ns *schema.NodeSchema,
 		sc *schema.WorkflowSchema) (schema.FieldStreamType, error)
 }
-
-type ChatHistoryAware interface {
-	ChatHistoryEnabled() bool
-	ChatHistoryRounds() int64
-}

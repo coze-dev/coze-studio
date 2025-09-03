@@ -148,7 +148,7 @@ func (ch *ConversationHistory) Invoke(ctx context.Context, input map[string]any)
 	runIDs, err := crossmessage.DefaultSVC().GetLatestRunIDs(ctx, &crossmessage.GetLatestRunIDsRequest{
 		ConversationID: conversationID,
 		UserID:         userID,
-		AppID:          *appID,
+		BizID:          *appID,
 		Rounds:         rounds,
 		InitRunID:      initRunID,
 		SectionID:      sectionID,

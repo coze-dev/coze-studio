@@ -109,7 +109,7 @@ func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (
 
 	if existed {
 		cID, _, existed, err := workflow.GetRepository().GetOrCreateStaticConversation(ctx, env, conversationIDGenerator, &vo.CreateStaticConversation{
-			AppID:       ptr.From(appID),
+			BizID:       ptr.From(appID),
 			TemplateID:  template.TemplateID,
 			UserID:      userID,
 			ConnectorID: connectorID,
@@ -125,7 +125,7 @@ func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (
 	}
 
 	cID, _, existed, err := workflow.GetRepository().GetOrCreateDynamicConversation(ctx, env, conversationIDGenerator, &vo.CreateDynamicConversation{
-		AppID:       ptr.From(appID),
+		BizID:       ptr.From(appID),
 		UserID:      userID,
 		ConnectorID: connectorID,
 		Name:        conversationName,

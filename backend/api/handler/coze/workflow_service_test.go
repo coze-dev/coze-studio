@@ -228,6 +228,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.POST("/api/workflow_api/chat_flow_role/delete", DeleteChatFlowRole)
 	h.POST("/api/workflow_api/chat_flow_role/create", CreateChatFlowRole)
 	h.GET("/api/workflow_api/chat_flow_role/get", GetChatFlowRole)
+	h.POST("/v1/workflows/chat", OpenAPIChatFlowRun)
 
 	ctrl := gomock.NewController(t, gomock.WithOverridableExpectations())
 	mockIDGen := mock.NewMockIDGenerator(ctrl)
@@ -1066,6 +1067,46 @@ func (r *wfTestRunner) openapiResume(id string, eventID string, resumeData strin
 	c, _ := client.NewClient()
 	hReq, hResp := protocol.AcquireRequest(), protocol.AcquireResponse()
 	hReq.SetRequestURI("http://localhost:8888" + "/v1/workflow/stream_resume")
+	hReq.SetMethod("POST")
+	hReq.SetBody(m)
+	hReq.SetHeader("Content-Type", "application/json")
+	err = c.Do(context.Background(), hReq, hResp)
+	assert.NoError(r.t, err)
+
+	if hResp.StatusCode() != http.StatusOK {
+		r.t.Errorf("unexpected status code: %d, body: %s", hResp.StatusCode(), string(hResp.Body()))
+	}
+
+	re, err := sse.NewReader(hResp)
+	assert.NoError(r.t, err)
+
+	return re
+}
+
+func (r *wfTestRunner) openapiChatFlowRun(wfID string, cID, appID, botID *string, input any, additionalMessage []*workflow.EnterMessage) *sse.Reader {
+	inputStr, _ := sonic.MarshalString(input)
+
+	req := &workflow.ChatFlowRunRequest{
+		WorkflowID:         wfID,
+		Parameters:         ptr.Of(inputStr),
+		AdditionalMessages: additionalMessage,
+	}
+	if cID != nil {
+		req.ConversationID = cID
+	}
+	if appID != nil {
+		req.AppID = appID
+	}
+	if botID != nil {
+		req.BotID = botID
+	}
+
+	m, err := sonic.Marshal(req)
+	assert.NoError(r.t, err)
+
+	c, _ := client.NewClient()
+	hReq, hResp := protocol.AcquireRequest(), protocol.AcquireResponse()
+	hReq.SetRequestURI("http://localhost:8888" + "/v1/workflows/chat")
 	hReq.SetMethod("POST")
 	hReq.SetBody(m)
 	hReq.SetHeader("Content-Type", "application/json")
@@ -5491,7 +5532,7 @@ func TestConversationOfChatFlow(t *testing.T) {
 					if err != nil {
 						return err
 					}
-					if v.Name == "CONVERSATION_NAME" {
+					if v.Name == vo.ConversationNameKey {
 						v.DefaultValue = cName
 					}
 					startNode.Data.Outputs[idx] = v
@@ -5522,7 +5563,7 @@ func TestConversationOfChatFlow(t *testing.T) {
 					for _, vAny := range node.Data.Outputs {
 						v, err := vo.ParseVariable(vAny)
 						assert.NoError(t, err)
-						if v.Name == "CONVERSATION_NAME" {
+						if v.Name == vo.ConversationNameKey {
 							assert.Equal(t, v.DefaultValue, updateName)
 						}
 					}
@@ -5569,7 +5610,7 @@ func TestConversationOfChatFlow(t *testing.T) {
 					for _, vAny := range node.Data.Outputs {
 						v, err := vo.ParseVariable(vAny)
 						assert.NoError(t, err)
-						if v.Name == "CONVERSATION_NAME" {
+						if v.Name == vo.ConversationNameKey {
 							assert.Equal(t, v.DefaultValue, cName+"copy")
 						}
 					}
@@ -5986,5 +6027,157 @@ func TestConversationHistoryNodes(t *testing.T) {
 		assert.Nil(t, err)
 		assert.Equal(t, true, outputMap["isSuccess"])
 		assert.Equal(t, []any{}, outputMap["history_list"])
+	})
+}
+
+func TestChatFlowRun(t *testing.T) {
+	mockey.PatchConvey("chat flow run", t, func() {
+		r := newWfTestRunner(t)
+		appworkflow.SVC.IDGenerator = r.idGen
+		defer r.closeFn()
+		defer r.runServer()()
+
+		chatModel1 := &testutil.UTChatModel{
+			StreamResultProvider: func(_ int, in []*schema.Message) (*schema.StreamReader[*schema.Message], error) {
+				sr := schema.StreamReaderFromArray([]*schema.Message{
+					{
+						Role:    schema.Assistant,
+						Content: "I ",
+					},
+					{
+						Role:    schema.Assistant,
+						Content: "don't know.",
+					},
+				})
+				return sr, nil
+			},
+		}
+		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil, nil).AnyTimes()
+
+		id := r.load("chatflow/llm_chat.json", withMode(workflow.WorkflowMode_ChatFlow))
+		r.publish(id, "v0.0.1", true)
+		cID := time.Now().UnixNano()
+		cIDStr := strconv.FormatInt(cID, 10)
+		appID := time.Now().UnixNano()
+		appIDStr := strconv.FormatInt(appID, 10)
+
+		// Create conversation first
+		r.conversation.EXPECT().CreateConversation(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID: cID,
+		}, nil).AnyTimes()
+		idStr := r.load("conversation_manager/update_dynamic_conversation.json")
+		r.publish(idStr, "v0.0.1", true)
+		ret, _ := r.openapiSyncRun(idStr, map[string]string{
+			"input":    "v1",
+			"new_name": "v2",
+		}, withRunProjectID(appID))
+		assert.Equal(t, map[string]any{"conversationId": strconv.FormatInt(cID, 10), "isExisted": false, "isSuccess": true}, ret["obj"])
+
+		msg := []*workflow.EnterMessage{
+			{
+				Role:        "user",
+				ContentType: "text",
+				Content:     "你好",
+			},
+		}
+		sID := time.Now().UnixNano()
+		r.conversation.EXPECT().GetByID(gomock.Any(), gomock.Any()).Return(&conventity.Conversation{
+			ID:        cID,
+			SectionID: sID,
+		}, nil).AnyTimes()
+		rID := time.Now().UnixNano()
+		r.agentRun.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&agententity.RunRecordMeta{
+			ID: rID,
+		}, nil).AnyTimes()
+		mID := time.Now().Unix()
+		r.message.EXPECT().Create(gomock.Any(), gomock.Any()).Return(&message.Message{
+			ID: mID,
+		}, nil).AnyTimes()
+
+		t.Run("chat flow run in app", func(t *testing.T) {
+			sseReader := r.openapiChatFlowRun(id, ptr.Of(cIDStr), ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, msg)
+			err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+				return nil
+			})
+			assert.NoError(t, err)
+		})
+
+		t.Run("chat flow run in bot", func(t *testing.T) {
+			botID := time.Now().UnixNano()
+			botIDStr := strconv.FormatInt(botID, 10)
+			sseReader := r.openapiChatFlowRun(id, ptr.Of(cIDStr), nil, ptr.Of(botIDStr), map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, msg)
+			err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+				return nil
+			})
+			assert.NoError(t, err)
+		})
+
+		t.Run("chat flow run without cID", func(t *testing.T) {
+			sseReader := r.openapiChatFlowRun(id, nil, ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, msg)
+			err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+				return nil
+			})
+			assert.NoError(t, err)
+		})
+
+		t.Run("chat flow run with additional messages", func(t *testing.T) {
+			additionalMsg := []*workflow.EnterMessage{
+				{
+					Role:        "user",
+					ContentType: "text",
+					Content:     "你好, 我叫小明",
+				},
+				{
+					Role:        "assistant",
+					ContentType: "text",
+					Content:     "你好小明, 很高兴认识你",
+				},
+				{
+					Role:        "user",
+					ContentType: "text",
+					Content:     "你好",
+				},
+			}
+			sseReader := r.openapiChatFlowRun(id, ptr.Of(cIDStr), ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, additionalMsg)
+			err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+				return nil
+			})
+			assert.NoError(t, err)
+		})
+
+		t.Run("chat flow run with history messages", func(t *testing.T) {
+			id := r.load("chatflow/llm_chat_with_history.json", withMode(workflow.WorkflowMode_ChatFlow))
+			r.publish(id, "v0.0.1", true)
+			r.message.EXPECT().GetLatestRunIDs(gomock.Any(), gomock.Any()).Return([]int64{rID}, nil).AnyTimes()
+			r.message.EXPECT().GetMessagesByRunIDs(gomock.Any(), gomock.Any()).Return(&message0.GetMessagesByRunIDsResponse{
+				Messages: []*message0.WfMessage{
+					{
+						ID:   mID,
+						Role: schema.User,
+						Text: ptr.Of("你好"),
+					},
+				},
+			}, nil).AnyTimes()
+			sseReader := r.openapiChatFlowRun(id, ptr.Of(cIDStr), ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, msg)
+			err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+				return nil
+			})
+			assert.NoError(t, err)
+		})
 	})
 }

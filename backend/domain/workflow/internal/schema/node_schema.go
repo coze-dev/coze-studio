@@ -129,3 +129,8 @@ func (s *NodeSchema) SetOutputType(key string, t *vo.TypeInfo) {
 func (s *NodeSchema) AddOutputSource(info ...*vo.FieldInfo) {
 	s.OutputSources = append(s.OutputSources, info...)
 }
+
+type ChatHistoryAware interface {
+	ChatHistoryEnabled() bool
+	ChatHistoryRounds() int64
+}
