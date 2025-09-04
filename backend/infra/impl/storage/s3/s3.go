@@ -31,7 +31,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/fileutil"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
@@ -247,7 +248,7 @@ func (t *s3Client) GetObjectUrl(ctx context.Context, objectKey string, opts ...s
 	return req.URL, nil
 }
 
-func (t *s3Client) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
+func (t *s3Client) ListAllObjects(ctx context.Context, prefix string, opts ...storage.GetOptFn) ([]*storage.FileInfo, error) {
 	const (
 		DefaultPageSize = 100
 		MaxListObjects  = 10000
@@ -257,11 +258,10 @@ func (t *s3Client) ListAllObjects(ctx context.Context, prefix string, withTaggin
 	var cursor string
 	for {
 		output, err := t.ListObjectsPaginated(ctx, &storage.ListObjectsPaginatedInput{
-			Prefix:      prefix,
-			PageSize:    DefaultPageSize,
-			WithTagging: withTagging,
-			Cursor:      cursor,
-		})
+			Prefix:   prefix,
+			PageSize: DefaultPageSize,
+			Cursor:   cursor,
+		}, opts...)
 
 		if err != nil {
 			return nil, err
@@ -284,7 +284,7 @@ func (t *s3Client) ListAllObjects(ctx context.Context, prefix string, withTaggin
 	return files, nil
 }
 
-func (t *s3Client) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput) (*storage.ListObjectsPaginatedOutput, error) {
+func (t *s3Client) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput, opts ...storage.GetOptFn) (*storage.ListObjectsPaginatedOutput, error) {
 	if input == nil {
 		return nil, fmt.Errorf("input cannot be nil")
 	}
@@ -335,7 +335,12 @@ func (t *s3Client) ListObjectsPaginated(ctx context.Context, input *storage.List
 		output.Cursor = *p.NextContinuationToken
 	}
 
-	if input.WithTagging {
+	opt := storage.GetOption{}
+	for _, optFn := range opts {
+		optFn(&opt)
+	}
+
+	if opt.WithTagging {
 		taskGroup := taskgroup.NewTaskGroup(ctx, 5)
 		for idx := range files {
 			f := files[idx]
@@ -358,10 +363,17 @@ func (t *s3Client) ListObjectsPaginated(ctx context.Context, input *storage.List
 		}
 	}
 
+	if opt.WithURL {
+		files, err = fileutil.AssembleFileUrl(ctx, &opt.Expire, files, t)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return output, nil
 }
 
-func (t *s3Client) HeadObject(ctx context.Context, objectKey string, withTagging bool) (*storage.FileInfo, error) {
+func (t *s3Client) HeadObject(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (*storage.FileInfo, error) {
 	obj, err := t.client.HeadObject(ctx, &s3.HeadObjectInput{
 		Bucket: aws.String(t.bucketName),
 		Key:    aws.String(objectKey),
@@ -389,7 +401,12 @@ func (t *s3Client) HeadObject(ctx context.Context, objectKey string, withTagging
 		f.Size = *obj.ContentLength
 	}
 
-	if withTagging {
+	opt := storage.GetOption{}
+	for _, optFn := range opts {
+		optFn(&opt)
+	}
+
+	if opt.WithTagging {
 		tagging, err := t.client.GetObjectTagging(ctx, &s3.GetObjectTaggingInput{
 			Bucket: aws.String(t.bucketName),
 			Key:    aws.String(objectKey),
@@ -399,6 +416,13 @@ func (t *s3Client) HeadObject(ctx context.Context, objectKey string, withTagging
 		}
 
 		f.Tagging = tagsToMap(tagging.TagSet)
+	}
+
+	if opt.WithURL {
+		f.URL, err = t.GetObjectUrl(ctx, objectKey, opts...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return f, nil

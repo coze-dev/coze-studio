@@ -29,7 +29,8 @@ import (
 	"github.com/volcengine/ve-tos-golang-sdk/v2/tos/enum"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/fileutil"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -78,48 +79,50 @@ func (t *tosClient) test() {
 
 	// test upload
 	objectKey := fmt.Sprintf("test-%s.txt", time.Now().Format("20060102150405"))
-	err := t.PutObject(context.Background(), objectKey, []byte("hello world"), storage.WithTagging(map[string]string{
+	err := t.PutObject(ctx, objectKey, []byte("hello world"), storage.WithTagging(map[string]string{
 		"uid":             "7543149965070155780",
 		"conversation_id": "7543149965070155781",
 		"type":            "user",
 	}))
 	if err != nil {
-		logs.CtxErrorf(context.Background(), "PutObject failed, objectKey: %s, err: %v", objectKey, err)
+		logs.CtxErrorf(ctx, "PutObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
 
-	f, err := t.HeadObject(ctx, objectKey, true)
+	f, err := t.HeadObject(ctx, objectKey, storage.WithGetTagging(true), storage.WithURL(true))
 	if err != nil {
-		logs.CtxErrorf(context.Background(), "HeadObject failed, objectKey: %s, err: %v", objectKey, err)
+		logs.CtxErrorf(ctx, "HeadObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
+	logs.CtxInfof(ctx, "HeadObject file success, f: %v, err: %v", conv.DebugJsonToStr(f), err)
+
 	if f != nil {
-		logs.CtxInfof(context.Background(), "HeadObject success, f: %v, tagging: %v", *f, f.Tagging)
+		logs.CtxInfof(ctx, "HeadObject success, f: %v, tagging: %v", *f, f.Tagging)
 	}
 
-	f, err = t.HeadObject(ctx, "not_exit.txt", true)
-	logs.CtxInfof(context.Background(), "HeadObject not exit success, f: %v, err: %v", f, err)
+	f, err = t.HeadObject(ctx, "not_exit.txt", storage.WithGetTagging(true), storage.WithURL(true))
+	logs.CtxInfof(ctx, "HeadObject not exit success, f: %v, err: %v", f, err)
 
-	t.ListAllObjects(ctx, "", true)
+	t.ListAllObjects(ctx, "", storage.WithGetTagging(true))
 
 	// test download
-	content, err := t.GetObject(context.Background(), objectKey)
+	content, err := t.GetObject(ctx, objectKey)
 	if err != nil {
-		logs.CtxErrorf(context.Background(), "GetObject failed, objectKey: %s, err: %v", objectKey, err)
+		logs.CtxErrorf(ctx, "GetObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
 
-	logs.CtxInfof(context.Background(), "GetObject content: %s", string(content))
+	logs.CtxInfof(ctx, "GetObject content: %s", string(content))
 
 	// Test Get URL
-	url, err := t.GetObjectUrl(context.Background(), objectKey)
+	url, err := t.GetObjectUrl(ctx, objectKey)
 	if err != nil {
-		logs.CtxErrorf(context.Background(), "GetObjectUrl failed, objectKey: %s, err: %v", objectKey, err)
+		logs.CtxErrorf(ctx, "GetObjectUrl failed, objectKey: %s, err: %v", objectKey, err)
 	}
 
-	logs.CtxInfof(context.Background(), "GetObjectUrl url: %s", url)
+	logs.CtxInfof(ctx, "GetObjectUrl url: %s", url)
 
 	// test delete
-	err = t.DeleteObject(context.Background(), objectKey)
+	err = t.DeleteObject(ctx, objectKey)
 	if err != nil {
-		logs.CtxErrorf(context.Background(), "DeleteObject failed, objectKey: %s, err: %v", objectKey, err)
+		logs.CtxErrorf(ctx, "DeleteObject failed, objectKey: %s, err: %v", objectKey, err)
 	}
 }
 
@@ -262,7 +265,7 @@ func (t *tosClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...
 	return output.SignedUrl, nil
 }
 
-func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput) (*storage.ListObjectsPaginatedOutput, error) {
+func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput, opts ...storage.GetOptFn) (*storage.ListObjectsPaginatedOutput, error) {
 	if input == nil {
 		return nil, fmt.Errorf("input cannot be nil")
 	}
@@ -273,10 +276,9 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 	output, err := t.client.ListObjectsV2(ctx, &tos.ListObjectsV2Input{
 		Bucket: t.bucketName,
 		ListObjectsInput: tos.ListObjectsInput{
-			MaxKeys:   int(input.PageSize),
-			Marker:    input.Cursor,
-			Prefix:    input.Prefix,
-			FetchMeta: input.WithTagging,
+			MaxKeys: int(input.PageSize),
+			Marker:  input.Cursor,
+			Prefix:  input.Prefix,
 		},
 	})
 	if err != nil {
@@ -298,7 +300,12 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 		})
 	}
 
-	if input.WithTagging {
+	opt := storage.GetOption{}
+	for _, optFn := range opts {
+		optFn(&opt)
+	}
+
+	if opt.WithTagging {
 		client := t.client
 		taskGroup := taskgroup.NewTaskGroup(ctx, 5)
 		for idx := range files {
@@ -322,6 +329,13 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 		}
 	}
 
+	if opt.WithURL {
+		files, err = fileutil.AssembleFileUrl(ctx, &opt.Expire, files, t)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &storage.ListObjectsPaginatedOutput{
 		Files:       files,
 		Cursor:      output.NextMarker,
@@ -329,7 +343,7 @@ func (t *tosClient) ListObjectsPaginated(ctx context.Context, input *storage.Lis
 	}, nil
 }
 
-func (t *tosClient) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
+func (t *tosClient) ListAllObjects(ctx context.Context, prefix string, opts ...storage.GetOptFn) ([]*storage.FileInfo, error) {
 	const (
 		DefaultPageSize = 100
 		MaxListObjects  = 10000
@@ -340,18 +354,17 @@ func (t *tosClient) ListAllObjects(ctx context.Context, prefix string, withTaggi
 
 	for {
 		output, err := t.ListObjectsPaginated(ctx, &storage.ListObjectsPaginatedInput{
-			Prefix:      prefix,
-			PageSize:    DefaultPageSize,
-			Cursor:      cursor,
-			WithTagging: withTagging,
-		})
+			Prefix:   prefix,
+			PageSize: DefaultPageSize,
+			Cursor:   cursor,
+		}, opts...)
 		if err != nil {
 			return nil, fmt.Errorf("list objects failed, prefix = %v, err: %v", prefix, err)
 		}
 
 		for _, object := range output.Files {
-			logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d, tagging = %v",
-				object.Key, object.LastModified, object.ETag, object.Size, object.Tagging)
+			logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d, tagging = %v, url = %s",
+				object.Key, object.LastModified, object.ETag, object.Size, object.Tagging, object.URL)
 			files = append(files, object)
 		}
 
@@ -371,7 +384,7 @@ func (t *tosClient) ListAllObjects(ctx context.Context, prefix string, withTaggi
 	return files, nil
 }
 
-func (t *tosClient) HeadObject(ctx context.Context, objectKey string, withTagging bool) (*storage.FileInfo, error) {
+func (t *tosClient) HeadObject(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (*storage.FileInfo, error) {
 	output, err := t.client.HeadObjectV2(ctx, &tos.HeadObjectV2Input{Bucket: t.bucketName, Key: objectKey})
 	if err != nil {
 		if serverErr, ok := err.(*tos.TosServerError); ok {
@@ -389,7 +402,12 @@ func (t *tosClient) HeadObject(ctx context.Context, objectKey string, withTaggin
 		Size:         output.ContentLength,
 	}
 
-	if withTagging {
+	opt := storage.GetOption{}
+	for _, optFn := range opts {
+		optFn(&opt)
+	}
+
+	if opt.WithTagging {
 		tagging, err := t.client.GetObjectTagging(ctx, &tos.GetObjectTaggingInput{
 			Bucket: t.bucketName,
 			Key:    objectKey,
@@ -399,6 +417,13 @@ func (t *tosClient) HeadObject(ctx context.Context, objectKey string, withTaggin
 		}
 
 		fileInfo.Tagging = tagsToMap(tagging.TagSet.Tags)
+	}
+
+	if opt.WithURL {
+		fileInfo.URL, err = t.GetObjectUrl(ctx, objectKey, opts...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return fileInfo, nil

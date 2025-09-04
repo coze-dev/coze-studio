@@ -21,10 +21,11 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository/mock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 	"go.uber.org/mock/gomock"
+
+	mock_plugin_oauth "github.com/coze-dev/coze-studio/backend/domain/plugin/repository/mock"
 )
 
 type pluginOAuthSuite struct {

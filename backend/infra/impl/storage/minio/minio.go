@@ -29,7 +29,8 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/fileutil"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -108,7 +109,7 @@ func (m *minioClient) test() {
 		logs.CtxErrorf(ctx, "upload file failed: %v", err)
 	}
 
-	f, err := m.HeadObject(ctx, objectName, true)
+	f, err := m.HeadObject(ctx, objectName, storage.WithGetTagging(true), storage.WithURL(true))
 	if err != nil {
 		logs.CtxErrorf(ctx, "head object failed: %v", err)
 	}
@@ -116,12 +117,12 @@ func (m *minioClient) test() {
 		logs.CtxInfof(ctx, "head object success, f: %v, tagging: %v", *f, f.Tagging)
 	}
 
-	f, err = m.HeadObject(ctx, "not_exit.txt", true)
+	f, err = m.HeadObject(ctx, "not_exit.txt", storage.WithGetTagging(true))
 	logs.CtxInfof(context.Background(), "HeadObject not exit success, f: %v, err: %v", f, err)
 
 	logs.CtxInfof(ctx, "upload file success")
 
-	files, err := m.ListAllObjects(ctx, "test-file-", true)
+	files, err := m.ListAllObjects(ctx, "test-file-", storage.WithGetTagging(true), storage.WithURL(true))
 	if err != nil {
 		logs.CtxErrorf(ctx, "list objects failed: %v", err)
 	}
@@ -240,7 +241,7 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	return presignedURL.String(), nil
 }
 
-func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput) (*storage.ListObjectsPaginatedOutput, error) {
+func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput, opts ...storage.GetOptFn) (*storage.ListObjectsPaginatedOutput, error) {
 	if input == nil {
 		return nil, fmt.Errorf("input cannot be nil")
 	}
@@ -248,9 +249,21 @@ func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.L
 		return nil, fmt.Errorf("page size must be positive")
 	}
 
-	files, err := m.ListAllObjects(ctx, input.Prefix, input.WithTagging)
+	files, err := m.ListAllObjects(ctx, input.Prefix, opts...)
 	if err != nil {
 		return nil, err
+	}
+
+	option := storage.GetOption{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
+	if option.WithURL {
+		files, err = fileutil.AssembleFileUrl(ctx, &option.Expire, files, m)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return &storage.ListObjectsPaginatedOutput{
@@ -260,14 +273,19 @@ func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.L
 	}, nil
 }
 
-func (m *minioClient) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
-	opts := minio.ListObjectsOptions{
-		Prefix:       prefix,
-		Recursive:    true,
-		WithMetadata: withTagging,
+func (m *minioClient) ListAllObjects(ctx context.Context, prefix string, opts ...storage.GetOptFn) ([]*storage.FileInfo, error) {
+	option := storage.GetOption{}
+	for _, opt := range opts {
+		opt(&option)
 	}
 
-	objectCh := m.client.ListObjects(ctx, m.bucketName, opts)
+	minioOpts := minio.ListObjectsOptions{
+		Prefix:       prefix,
+		Recursive:    true,
+		WithMetadata: option.WithTagging,
+	}
+
+	objectCh := m.client.ListObjects(ctx, m.bucketName, minioOpts)
 
 	var files []*storage.FileInfo
 	for object := range objectCh {
@@ -290,7 +308,12 @@ func (m *minioClient) ListAllObjects(ctx context.Context, prefix string, withTag
 	return files, nil
 }
 
-func (m *minioClient) HeadObject(ctx context.Context, objectKey string, withTagging bool) (*storage.FileInfo, error) {
+func (m *minioClient) HeadObject(ctx context.Context, objectKey string, opts ...storage.GetOptFn) (*storage.FileInfo, error) {
+	option := storage.GetOption{}
+	for _, opt := range opts {
+		opt(&option)
+	}
+
 	stat, err := m.client.StatObject(ctx, m.bucketName, objectKey, minio.StatObjectOptions{})
 	if err != nil {
 		if minio.ToErrorResponse(err).Code == "NoSuchKey" {
@@ -307,13 +330,20 @@ func (m *minioClient) HeadObject(ctx context.Context, objectKey string, withTagg
 		Size:         stat.Size,
 	}
 
-	if withTagging {
+	if option.WithTagging {
 		tags, err := m.client.GetObjectTagging(ctx, m.bucketName, objectKey, minio.GetObjectTaggingOptions{})
 		if err != nil {
 			return nil, err
 		}
 
 		f.Tagging = tags.ToMap()
+	}
+
+	if option.WithURL {
+		f.URL, err = m.GetObjectUrl(ctx, objectKey, opts...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return f, nil

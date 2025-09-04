@@ -61,7 +61,6 @@ func SetDefaultSVC(svc SingleAgent) {
 	defaultSVC = svc
 }
 
-
 type ShortcutCommandComponentType string
 
 const (
@@ -69,7 +68,6 @@ const (
 	ShortcutCommandComponentTypeSelect ShortcutCommandComponentType = "select"
 	ShortcutCommandComponentTypeFile   ShortcutCommandComponentType = "file"
 )
-
 
 var ShortcutCommandComponentTypeMapping = map[playground.InputType]ShortcutCommandComponentType{
 	playground.InputType_TextInput:   ShortcutCommandComponentTypeText,
@@ -85,6 +83,7 @@ var ShortcutCommandComponentTypeMapping = map[playground.InputType]ShortcutComma
 	playground.InputType_TXT:         ShortcutCommandComponentTypeFile,
 	playground.InputType_PPT:         ShortcutCommandComponentTypeFile,
 }
+
 type ShortcutCommandComponentFileType string
 
 const (

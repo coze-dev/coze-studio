@@ -23,12 +23,26 @@ import (
 type GetOptFn func(option *GetOption)
 
 type GetOption struct {
-	Expire int64 //  seconds
+	Expire      int64 //  seconds
+	WithURL     bool
+	WithTagging bool
 }
 
 func WithExpire(expire int64) GetOptFn {
 	return func(o *GetOption) {
 		o.Expire = expire
+	}
+}
+
+func WithURL(withURL bool) GetOptFn {
+	return func(o *GetOption) {
+		o.WithURL = withURL
+	}
+}
+
+func WithGetTagging(withTagging bool) GetOptFn {
+	return func(o *GetOption) {
+		o.WithTagging = withTagging
 	}
 }
 

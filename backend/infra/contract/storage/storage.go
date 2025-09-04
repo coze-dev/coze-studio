@@ -36,13 +36,13 @@ type Storage interface {
 	// The URL is valid for the specified duration.
 	GetObjectUrl(ctx context.Context, objectKey string, opts ...GetOptFn) (string, error)
 	// HeadObject returns the object metadata with the specified key.
-	HeadObject(ctx context.Context, objectKey string, withTagging bool) (*FileInfo, error)
+	HeadObject(ctx context.Context, objectKey string, opts ...GetOptFn) (*FileInfo, error)
 	// ListAllObjects returns all objects with the specified prefix.
 	// It may return a large number of objects, consider using ListObjectsPaginated for better performance.
-	ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*FileInfo, error)
+	ListAllObjects(ctx context.Context, prefix string, opts ...GetOptFn) ([]*FileInfo, error)
 	// ListObjectsPaginated returns objects with pagination support.
 	// Use this method when dealing with large number of objects.
-	ListObjectsPaginated(ctx context.Context, input *ListObjectsPaginatedInput) (*ListObjectsPaginatedOutput, error)
+	ListObjectsPaginated(ctx context.Context, input *ListObjectsPaginatedInput, opts ...GetOptFn) (*ListObjectsPaginatedOutput, error)
 }
 
 type SecurityToken struct {
@@ -57,8 +57,6 @@ type ListObjectsPaginatedInput struct {
 	Prefix   string
 	PageSize int
 	Cursor   string
-	// Include objects tagging in the listing
-	WithTagging bool
 }
 
 type ListObjectsPaginatedOutput struct {
@@ -74,5 +72,6 @@ type FileInfo struct {
 	LastModified time.Time
 	ETag         string
 	Size         int64
+	URL          string
 	Tagging      map[string]string
 }

@@ -105,6 +105,10 @@ type AppDependencies struct {
 func Init(ctx context.Context) (*AppDependencies, error) {
 	deps := &AppDependencies{}
 	var err error
+	deps.TOSClient, err = initTOS(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("init tos client failed, err=%w", err)
+	}
 
 	deps.DB, err = mysql.New()
 	if err != nil {
@@ -126,11 +130,6 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	deps.ImageXClient, err = initImageX(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("init imagex client failed, err=%w", err)
-	}
-
-	deps.TOSClient, err = initTOS(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("init tos client failed, err=%w", err)
 	}
 
 	deps.ResourceEventProducer, err = initResourceEventBusProducer()
