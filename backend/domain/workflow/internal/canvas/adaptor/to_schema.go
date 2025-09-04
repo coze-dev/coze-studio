@@ -79,6 +79,7 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *schema.Workf
 	sc = &schema.WorkflowSchema{}
 
 	nodeMap := make(map[string]*vo.Node)
+	historyRounds := int64(0)
 
 	for i, node := range s.Nodes {
 		nodeMap[node.ID] = s.Nodes[i]
@@ -116,6 +117,17 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *schema.Workf
 			return nil, err
 		}
 
+		for _, ns := range nsList {
+			if ns.SubWorkflowSchema != nil {
+				historyRounds = max(historyRounds, ns.SubWorkflowSchema.HistoryRounds())
+			} else {
+				chatHistoryAware, ok := ns.Configs.(nodes.ChatHistoryAware)
+				if ok && chatHistoryAware.ChatHistoryEnabled() {
+					historyRounds = max(historyRounds, chatHistoryAware.ChatHistoryRounds())
+				}
+			}
+		}
+
 		sc.Nodes = append(sc.Nodes, nsList...)
 		if len(hierarchy) > 0 {
 			if sc.Hierarchy == nil {
@@ -130,6 +142,10 @@ func CanvasToWorkflowSchema(ctx context.Context, s *vo.Canvas) (sc *schema.Workf
 		for _, edge := range node.Edges {
 			sc.Connections = append(sc.Connections, EdgeToConnection(edge))
 		}
+	}
+
+	if historyRounds > 0 {
+		sc.SetHistoryRounds(historyRounds)
 	}
 
 	for _, edge := range s.Edges {
@@ -446,7 +462,7 @@ func PruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node)
 
 func parseBatchMode(n *vo.Node) (
 	batchN *vo.Node, // the new batch node
-	enabled bool, // whether the node has enabled batch mode
+	enabled bool,    // whether the node has enabled batch mode
 	err error) {
 	if n.Data == nil || n.Data.Inputs == nil {
 		return nil, false, nil

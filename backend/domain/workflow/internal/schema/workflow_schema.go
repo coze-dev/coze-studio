@@ -38,6 +38,7 @@ type WorkflowSchema struct {
 	compositeNodes    []*CompositeNode           // won't serialize this
 	requireCheckPoint bool                       // won't serialize this
 	requireStreaming  bool
+	historyRounds     int64
 
 	once sync.Once
 }
@@ -120,6 +121,12 @@ func (w *WorkflowSchema) RequireCheckpoint() bool {
 
 func (w *WorkflowSchema) RequireStreaming() bool {
 	return w.requireStreaming
+}
+
+func (w *WorkflowSchema) HistoryRounds() int64 { return w.historyRounds }
+
+func (w *WorkflowSchema) SetHistoryRounds(historyRounds int64) {
+	w.historyRounds = historyRounds
 }
 
 func (w *WorkflowSchema) doGetCompositeNodes() (cNodes []*CompositeNode) {

@@ -22,6 +22,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/coze-dev/coze-studio/backend/types/consts"
+
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
@@ -308,16 +310,42 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 		}
 	}
 
+	c := &vo.Canvas{}
+	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
+		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
+	}
+
+	workflowSC, err := adaptor.WorkflowSchemaFromNode(ctx, c, nodeID)
+	if err != nil {
+		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
 	historyRounds := int64(0)
 	if config.WorkflowMode == workflowapimodel.WorkflowMode_ChatFlow {
-
-		historyRounds, err = getHistoryRoundsFromNode(ctx, wfEntity, nodeID, i.repo)
-		if err != nil {
-			return 0, err
-		}
+		historyRounds = workflowSC.HistoryRounds()
 	}
 
 	if historyRounds > 0 {
+		var cID, sID, resolveAppID int64
+		if config.AppID != nil {
+			resolveAppID = *config.AppID
+		} else if config.AgentID != nil {
+			resolveAppID = *config.AgentID
+		}
+		for k, v := range input {
+			if k == "CONVERSATION_NAME" {
+				cName, ok := v.(string)
+				if !ok {
+					return 0, errors.New("CONVERSATION_NAME must be string")
+				}
+				cID, sID, err = i.GetOrCreateConversation(ctx, vo.Draft, resolveAppID, consts.CozeConnectorID, config.Operator, cName)
+				if err != nil {
+					return 0, err
+				}
+				config.ConversationID = ptr.Of(cID)
+				config.SectionID = ptr.Of(sID)
+			}
+		}
 		messages, scMessages, err := i.prefetchChatHistory(ctx, config, historyRounds)
 		if err != nil {
 			logs.CtxErrorf(ctx, "failed to prefetch chat history: %v", err)
@@ -330,16 +358,6 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 		if len(scMessages) > 0 {
 			config.ConversationHistorySchemaMessages = scMessages
 		}
-
-	}
-	c := &vo.Canvas{}
-	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
-		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
-	}
-
-	workflowSC, err := adaptor.WorkflowSchemaFromNode(ctx, c, nodeID)
-	if err != nil {
-		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
 	wf, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
@@ -417,12 +435,19 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 		}
 	}
 
+	c := &vo.Canvas{}
+	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal canvas: %w", err)
+	}
+
+	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
+	}
+
 	historyRounds := int64(0)
 	if config.WorkflowMode == workflowapimodel.WorkflowMode_ChatFlow {
-		historyRounds, err = i.calculateMaxChatHistoryRounds(ctx, wfEntity, i.repo)
-		if err != nil {
-			return nil, err
-		}
+		historyRounds = workflowSC.HistoryRounds()
 	}
 
 	if historyRounds > 0 {
@@ -438,16 +463,6 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 		if len(scMessages) > 0 {
 			config.ConversationHistorySchemaMessages = scMessages
 		}
-
-	}
-	c := &vo.Canvas{}
-	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal canvas: %w", err)
-	}
-
-	workflowSC, err := adaptor.CanvasToWorkflowSchema(ctx, c)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
 	var wfOpts []compose.WorkflowOption
@@ -995,20 +1010,6 @@ func (i *impl) checkApplicationWorkflowReleaseVersion(ctx context.Context, appID
 	}
 
 	return nil
-}
-
-const maxHistoryRounds int64 = 30
-
-func (i *impl) calculateMaxChatHistoryRounds(ctx context.Context, wfEntity *entity.Workflow, repo workflow.Repository) (int64, error) {
-	if wfEntity == nil {
-		return 0, nil
-	}
-
-	maxRounds, err := getMaxHistoryRoundsRecursively(ctx, wfEntity, repo)
-	if err != nil {
-		return 0, err
-	}
-	return min(maxRounds, maxHistoryRounds), nil
 }
 
 func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.ExecuteConfig, historyRounds int64) ([]*crossmessage.WfMessage, []*schema.Message, error) {
