@@ -173,6 +173,10 @@ func (w *workflowPacker) GetActions(ctx context.Context) []*common.ResourceActio
 			Key:    common.ActionKey_Copy,
 			Enable: true,
 		},
+		{
+			Key:    common.ActionKey_Export,
+			Enable: true,
+		},
 	}
 	meta, err := w.appContext.WorkflowDomainSVC.Get(ctx, &vo.GetPolicy{
 		ID:       w.resID,

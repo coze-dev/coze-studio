@@ -1,0 +1,169 @@
+[0;34m[INFO][0m ============================================================
+[0;34m[INFO][0m 工作流API测试开始
+[0;34m[INFO][0m ============================================================
+[0;34m[INFO][0m 基础URL: http://172.31.114.205:8888
+[0;34m[INFO][0m Space ID: 7537995730808471552
+[0;34m[INFO][0m Bot ID: 7537995730808471552
+[0;34m[INFO][0m Workflow ID: 7538251939654402048
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 1. 测试服务器连接
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试服务器连接...
+[0;32m[SUCCESS][0m 服务器连接正常
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 2. 测试获取工作流信息
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试: 获取工作流信息
+[0;34m[INFO][0m URL: http://172.31.114.205:8888/v1/workflows/7538251939654402048
+[0;34m[INFO][0m HTTP状态码: 200
+[0;34m[INFO][0m 响应内容: {"BaseResp":null}
+[0;32m[SUCCESS][0m 获取工作流信息 成功
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 3. 测试工作流执行（同步）
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试: 工作流执行（同步）
+[0;34m[INFO][0m URL: http://172.31.114.205:8888/v1/workflow/run
+[0;34m[INFO][0m 数据: {
+        "workflow_id": "7538251939654402048",
+        "bot_id": "7537995730808471552",
+        "parameters": "{\"input\": \"你好，请介绍一下你自己\", \"user_id\": \"test_user_001\"}",
+        "ext": {},
+        "is_async": false
+    }
+[0;34m[INFO][0m HTTP状态码: 200
+[0;34m[INFO][0m 响应内容: {"code":720701013,"msg":"Workflow execution failure: [NodeRunError]
+failed to create chat completion: Error code: 429 - {\"code\":\"SetLimitExceeded\",\"message\":\"Your account [2109507571] has reached the set inference limit for the [doubao-seed-1-6] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \\"Safe Experience Mode\\". Request id: 021755152054598228e7bb4e1acb6eaedc167f31eda6eb0d5dfd5\",\"param\":\"\",\"type\":\"TooManyRequests\",\"request_id\":\"2025081406141400005BA5BD5950888D51\"}
+------------------------
+node path: [105583, llm]","data":null,"token":null,"cost":null,"debug_url":"http://127.0.0.1:3000/work_flow?execute_id=7538320669117775872&space_id=7537995730808471552&workflow_id=7538251939654402048&execute_mode=2","execute_id":null,"BaseResp":null}
+[0;32m[SUCCESS][0m 工作流执行（同步） 成功
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 4. 测试工作流执行（异步）
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试: 工作流执行（异步）
+[0;34m[INFO][0m URL: http://172.31.114.205:8888/v1/workflow/run
+[0;34m[INFO][0m 数据: {
+        "workflow_id": "7538251939654402048",
+        "bot_id": "7537995730808471552",
+        "parameters": "{\"input\": \"你好，请介绍一下你自己\", \"user_id\": \"test_user_001\"}",
+        "ext": {},
+        "is_async": true
+    }
+[0;34m[INFO][0m HTTP状态码: 200
+[0;34m[INFO][0m 响应内容: {"code":0,"msg":null,"data":null,"token":null,"cost":null,"debug_url":"http://127.0.0.1:3000/work_flow?execute_id=7538320674213855232&space_id=7537995730808471552&workflow_id=7538251939654402048&execute_mode=2","execute_id":"7538320674213855232","BaseResp":null}
+[0;32m[SUCCESS][0m 工作流执行（异步） 成功
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 5. 测试工作流流式执行
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试: 工作流流式执行
+[0;34m[INFO][0m URL: http://172.31.114.205:8888/v1/workflow/stream_run
+[0;34m[INFO][0m 数据: {
+        "workflow_id": "7538251939654402048",
+        "bot_id": "7537995730808471552",
+        "parameters": "{\"input\": \"你好，请介绍一下你自己\", \"user_id\": \"test_user_001\"}",
+        "ext": {}
+    }
+[0;34m[INFO][0m HTTP状态码: 200
+[0;34m[INFO][0m 响应内容: id: 0
+event: error
+data: {"debug_url":"http://127.0.0.1:3000/work_flow?execute_id=7538320674369044480&space_id=7537995730808471552&workflow_id=7538251939654402048&execute_mode=2","error_code":720701013,"error_message":"Workflow execution failure: Error code: 429 - {\"code\":\"SetLimitExceeded\",\"message\":\"Your account [2109507571] has reached the set inference limit for the [doubao-seed-1-6] model, and the model service has been paused. To continue using this model, please visit the Model Activation page to adjust or close the \\"Safe Experience Mode\\". Request id: 021755152055977228e7bb4e1acb6eaedc167f31eda6eb0d5f142\",\"param\":\"\",\"type\":\"TooManyRequests\",\"request_id\":\"2025081406141500004DBAC54C39978E04\"}"}
+[0;32m[SUCCESS][0m 工作流流式执行 成功
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 6. 测试聊天流执行
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试: 聊天流执行
+[0;34m[INFO][0m URL: http://172.31.114.205:8888/v1/workflows/chat
+[0;34m[INFO][0m 数据: {
+        "workflow_id": "7538251939654402048",
+        "message": "你好，请介绍一下你自己"
+    }
+[0;34m[INFO][0m HTTP状态码: 200
+[0;34m[INFO][0m 响应内容: {"event":"","data":"","BaseResp":null}
+[0;32m[SUCCESS][0m 聊天流执行 成功
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 7. 测试获取工作流执行历史
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试: 获取工作流执行历史
+[0;34m[INFO][0m URL: http://172.31.114.205:8888/v1/workflow/get_run_history?workflow_id=7538251939654402048
+[0;34m[INFO][0m HTTP状态码: 200
+[0;34m[INFO][0m 响应内容: {"code":777777775,"msg":"Workflow operation failure: panic error: strconv.ParseInt: parsing \"\": invalid syntax, 
+stack: goroutine 3979042 [running]:
+runtime/debug.Stack()
+	/usr/local/go/src/runtime/debug/stack.go:26 +0x5e
+github.com/coze-dev/coze-studio/backend/application/workflow.(*ApplicationService).OpenAPIGetWorkflowRunHistory.func1()
+	/app/application/workflow/workflow.go:1624 +0x4b
+panic({0x546e2a0?, 0xc000fbe510?})
+	/usr/local/go/src/runtime/panic.go:792 +0x132
+github.com/coze-dev/coze-studio/backend/application/workflow.mustParseInt64(...)
+	/app/application/workflow/workflow.go:3276
+github.com/coze-dev/coze-studio/backend/application/workflow.(*ApplicationService).OpenAPIGetWorkflowRunHistory(0xc000ce5210?, {0x66c6af8, 0xc000fbe420}, 0xc002d60360)
+	/app/application/workflow/workflow.go:1636 +0x869
+github.com/coze-dev/coze-studio/backend/api/handler/coze.OpenAPIGetWorkflowRunHistory({0x66c6af8, 0xc000fbe420}, 0xc0019fac08)
+	/app/api/handler/coze/workflow_service.go:1042 +0x7c
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc000fbe420})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.I18nMW.func11({0x66c6af8, 0xc001ba3230}, 0xc0019fac08)
+	/app/api/middleware/i18n.go:51 +0xcc
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc001ba3230})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.SessionAuthMW.func10({0x66c6af8, 0xc001ba3230}, 0xc0019fac08)
+	/app/api/middleware/session.go:44 +0x23f
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc001ba3230})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.OpenapiAuthMW.func9({0x66c6af8, 0xc001ba3230}, 0xc0019fac08)
+	/app/api/middleware/openapi_auth.go:139 +0x2c6
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc001ba3230})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.AccessLogMW.func8({0x66c6af8, 0xc001ba3230}, 0xc0019fac08)
+	/app/api/middleware/log.go:38 +0x6f
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc001ba3230})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.SetLogIDMW.func7({0x66c6af8, 0xc001ba30e0}, 0xc0019fac08)
+	/app/api/middleware/log.go:90 +0xbc
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc001ba30e0})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.SetHostMW.func6({0x66c6af8, 0xc001ba30e0}, 0xc0019fac08)
+	/app/api/middleware/host.go:32 +0xb9
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc001ba30e0})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.RequestInspectorMW.func5({0x66c6af8, 0xc001ba30e0}, 0xc0019fac08)
+	/app/api/middleware/request_inspector.go:47 +0x8c
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6af8, 0xc001ba30e0})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+main.startHttpServer.ContextCacheMW.func4({0x66c6ac0?, 0x9f6c060?}, 0xc0019fac08)
+	/app/api/middleware/ctx_cache.go:30 +0x35
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6ac0, 0x9f6c060})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+github.com/cloudwego/hertz/pkg/app/middlewares/server/recovery.Recovery.func1({0x66c6ac0?, 0x9f6c060?}, 0xc0006e1500?)
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/middlewares/server/recovery/recovery.go:50 +0x6f
+github.com/cloudwego/hertz/pkg/app.(*RequestContext).Next(0xc0019fac08, {0x66c6ac0, 0x9f6c060})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/app/context.go:833 +0x4f
+github.com/cloudwego/hertz/pkg/route.(*Engine).ServeHTTP(0xc000c60b48, {0x66c6ac0, 0x9f6c060}, 0xc0019fac08)
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/route/engine.go:796 +0x88f
+github.com/cloudwego/hertz/pkg/protocol/http1.Server.Serve({{0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x40000000, 0x29e8d60800, ...}, ...}, ...)
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/protocol/http1/server.go:348 +0x1053
+github.com/cloudwego/hertz/pkg/route.(*Engine).Serve(0xc000c60b48, {0x66c6ac0, 0x9f6c060}, {0x671d740, 0xc001d354b0})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/route/engine.go:560 +0x49d
+github.com/cloudwego/hertz/pkg/route.(*Engine).onData(0xc001cc36a8?, {0x66c6ac0?, 0x9f6c060?}, {0x5b4fc20?, 0xc001d354b0?})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/route/engine.go:451 +0xdd
+github.com/cloudwego/hertz/pkg/network/netpoll.(*transporter).ListenAndServe.func4({0x66c6ac0, 0x9f6c060}, {0x6718648?, 0xc001ea57c0})
+	/go/pkg/mod/github.com/cloudwego/hertz@v0.10.0/pkg/network/netpoll/transport.go:140 +0xef
+github.com/cloudwego/netpoll.(*connection).onProcess.func1()
+	/go/pkg/mod/github.com/cloudwego/netpoll@v0.7.0/connection_onevent.go:216 +0x1bd
+github.com/bytedance/gopkg/util/gopool.(*worker).run.func1.1(0xc001cc37d0?, 0x6f71c8?)
+	/go/pkg/mod/github.com/bytedance/gopkg@v0.1.1/util/gopool/worker.go:69 +0x48
+github.com/bytedance/gopkg/util/gopool.(*worker).run.func1()
+	/go/pkg/mod/github.com/bytedance/gopkg@v0.1.1/util/gopool/worker.go:70 +0xe9
+created by github.com/bytedance/gopkg/util/gopool.(*worker).run in goroutine 277
+	/go/pkg/mod/github.com/bytedance/gopkg@v0.1.1/util/gopool/worker.go:41 +0x4f
+","BaseResp":null}
+[0;32m[SUCCESS][0m 获取工作流执行历史 成功
+[0;34m[INFO][0m 
+[0;34m[INFO][0m 8. 生成测试报告
+[0;34m[INFO][0m ----------------------------------------
+[0;34m[INFO][0m 测试报告已保存到: workflow_api_test_report.txt
+[0;34m[INFO][0m 
+[0;34m[INFO][0m ============================================================
+[0;34m[INFO][0m 工作流API测试完成
+[0;34m[INFO][0m 测试报告已保存到: workflow_api_test_report.txt
+[0;34m[INFO][0m 详细日志已保存到: workflow_api_test.log
+[0;34m[INFO][0m ============================================================

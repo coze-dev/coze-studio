@@ -53,6 +53,11 @@ common/temp
 .rush
 .eslintcache
 
+# Python virtual environment
+venv/
+.venv/
+*.venv
+
 
 backend/conf/model/*.yaml
 values-dev.yaml

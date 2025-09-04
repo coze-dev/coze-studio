@@ -7,7 +7,7 @@
       "summary": "⭐️️ Use to run some task before commit",
       "safeForSimultaneousRushProcesses": true,
       "autoinstallerName": "rush-lint-staged",
-      "shellCommand": "lint-staged --config common/autoinstallers/rush-lint-staged/.lintstagedrc.js --shell '/bin/bash' --concurrent 8"
+      "shellCommand": "lint-staged --config common/autoinstallers/rush-lint-staged/.lintstagedrc.js --concurrent 8"
     },
     {
       "commandKind": "bulk",
