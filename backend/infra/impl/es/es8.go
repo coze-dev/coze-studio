@@ -50,6 +50,7 @@ type es8BulkIndexer struct {
 
 type es8Types struct{}
 
+
 func newES8() (Client, error) {
 	esAddr := os.Getenv("ES_ADDR")
 	esUsername := os.Getenv("ES_USERNAME")
