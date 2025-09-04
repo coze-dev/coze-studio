@@ -26,10 +26,13 @@ import (
 	"golang.org/x/exp/maps"
 
 	code2 "github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
+	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
@@ -105,15 +108,6 @@ var pythonBuiltinBlacklist = map[string]struct{}{
 	"socket":          {},
 	"pty":             {},
 	"tty":             {},
-}
-
-// pythonThirdPartyWhitelist is the whitelist of python third-party modules,
-// see: https://www.coze.cn/open/docs/guides/code_node#7f41f073
-// If you want to use other third-party libraries, you can add them to this whitelist.
-// And you also need to install them in `/scripts/setup/python.sh` and `/backend/Dockerfile` via `pip install`.
-var pythonThirdPartyWhitelist = map[string]struct{}{
-	"httpx": {},
-	"numpy": {},
 }
 
 type Config struct {
@@ -192,6 +186,9 @@ func validatePythonImports(code string) error {
 	imports := parsePythonImports(code)
 	importErrors := make([]string, 0)
 
+	pythonThirdPartyWhitelist := slices.ToMap(wf.GetRepository().GetNodeOfCodeConfig().GetSupportThirdPartModules(), func(e string) (string, bool) {
+		return e, true
+	})
 	var blacklistedModules []string
 	var nonWhitelistedModules []string
 	for _, imp := range imports {
@@ -254,13 +251,18 @@ func (c *Runner) ToCallbackOutput(ctx context.Context, output map[string]any) (*
 		return nil, errors.New("raw output config is required")
 	}
 
+	rawOutputStr, err := sonic.MarshalString(rawOutput)
+	if err != nil {
+		return nil, err
+	}
+
 	var wfe vo.WorkflowError
 	if warnings, ok := ctxcache.Get[nodes.ConversionWarnings](ctx, coderRunnerWarnErrorLevelCtxKey); ok {
 		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings, errorx.KV("warnings", warnings.Error()))
 	}
 	return &nodes.StructuredCallbackOutput{
 			Output:    output,
-			RawOutput: rawOutput,
+			RawOutput: &rawOutputStr,
 			Error:     wfe,
 		},
 		nil

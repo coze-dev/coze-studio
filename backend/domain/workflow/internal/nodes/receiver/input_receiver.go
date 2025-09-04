@@ -20,10 +20,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflow0 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -95,51 +98,71 @@ type InputReceiver struct {
 }
 
 const (
-	ReceivedDataKey    = "$received_data"
+	interruptedKey     = "&interrupted"
 	receiverWarningKey = "receiver_warning_%d_%s"
 )
 
-func (i *InputReceiver) Invoke(ctx context.Context, in map[string]any) (map[string]any, error) {
-	var input string
-	if in != nil {
-		receivedData, ok := in[ReceivedDataKey]
-		if ok {
-			input = receivedData.(string)
-		}
-	}
+func (i *InputReceiver) Invoke(ctx context.Context, _ map[string]any) (map[string]any, error) {
+	var (
+		resumeData string
+		resumed    bool
+		err        error
+	)
 
-	if len(input) == 0 {
-		err := compose.ProcessState(ctx, func(ctx context.Context, ieStore nodes.InterruptEventStore) error {
-			_, found, e := ieStore.GetInterruptEvent(i.nodeKey) // TODO: try not use InterruptEventStore or state in general
-			if e != nil {
-				return e
-			}
+	_ = compose.ProcessState(ctx, func(_ context.Context, s nodes.InterruptEventStore) error {
+		resumeData, resumed = s.GetAndClearResumeData(i.nodeKey)
+		return nil
+	})
 
-			if !found { // only generate a new event if it doesn't exist
-				eventID, err := workflow.GetRepository().GenID(ctx)
-				if err != nil {
-					return err
+	if !resumed {
+		var previouslyInterrupted bool
+		_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.IntermediateResultStore) error {
+			irs := state.GetIntermediateResult(i.nodeKey)
+			if len(irs) > 0 {
+				_, previouslyInterrupted = irs[interruptedKey]
+				if !previouslyInterrupted {
+					state.SetIntermediateResult(i.nodeKey, map[string]any{interruptedKey: true})
 				}
-				return ieStore.SetInterruptEvent(i.nodeKey, &entity.InterruptEvent{
-					ID:            eventID,
-					NodeKey:       i.nodeKey,
-					NodeType:      entity.NodeTypeInputReceiver,
-					NodeTitle:     i.nodeMeta.Name,
-					NodeIcon:      i.nodeMeta.IconURL,
-					InterruptData: i.interruptData,
-					EventType:     entity.InterruptEventInput,
-				})
 			}
-
 			return nil
 		})
+
+		if previouslyInterrupted {
+			return nil, compose.InterruptAndRerun
+		}
+
+		eventID, err := workflow.GetRepository().GenID(ctx)
+		if err != nil {
+			return nil, vo.WrapError(errno.ErrIDGenError, err)
+		}
+		return nil, compose.NewInterruptAndRerunErr(&entity.InterruptEvent{
+			ID:            eventID,
+			NodeKey:       i.nodeKey,
+			NodeType:      entity.NodeTypeInputReceiver,
+			NodeTitle:     i.nodeMeta.Name,
+			NodeIcon:      i.nodeMeta.IconURL,
+			InterruptData: i.interruptData,
+			EventType:     entity.InterruptEventInput,
+		})
+	}
+
+	exeCfg := execute.GetExeCtx(ctx).ExeCfg
+	if exeCfg.BizType == workflowModel.BizTypeAgent || exeCfg.WorkflowMode == workflow0.WorkflowMode_ChatFlow {
+		m := make(map[string]any)
+		sList := strings.Split(resumeData, "\n")
+		for _, s := range sList {
+			firstColon := strings.Index(s, ":")
+			k := s[:firstColon]
+			v := s[firstColon+1:]
+			m[k] = v
+		}
+		resumeData, err = sonic.MarshalString(m)
 		if err != nil {
 			return nil, err
 		}
-		return nil, compose.InterruptAndRerun
 	}
 
-	out, err := jsonParseRelaxed(ctx, input, i.outputTypes)
+	out, err := jsonParseRelaxed(ctx, resumeData, i.outputTypes)
 	if err != nil {
 		return nil, err
 	}
@@ -195,8 +218,8 @@ func (i *InputReceiver) ToCallbackOutput(ctx context.Context, output map[string]
 		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings, errorx.KV("warnings", warnings.Error()))
 	}
 	return &nodes.StructuredCallbackOutput{
-		Output:    output,
-		RawOutput: output,
-		Error:     wfe,
+		Output: output,
+		Error:  wfe,
+		Input:  output, // set input to be the same as output
 	}, nil
 }

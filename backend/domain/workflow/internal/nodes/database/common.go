@@ -26,7 +26,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
@@ -413,7 +413,7 @@ func isDebugExecute(ctx context.Context) bool {
 	if execCtx == nil {
 		panic(fmt.Errorf("unable to get exe context"))
 	}
-	return execCtx.RootCtx.ExeCfg.Mode == plugin.ExecuteModeDebug || execCtx.RootCtx.ExeCfg.Mode == plugin.ExecuteModeNodeDebug
+	return execCtx.RootCtx.ExeCfg.Mode == workflowModel.ExecuteModeDebug || execCtx.RootCtx.ExeCfg.Mode == workflowModel.ExecuteModeNodeDebug
 }
 
 func getExecUserID(ctx context.Context) string {

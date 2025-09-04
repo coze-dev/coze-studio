@@ -161,7 +161,7 @@ func notNeedTakeMapValue(op database.Operator) bool {
 	return op == database.OperatorIsNull || op == database.OperatorIsNotNull
 }
 
-func (ds *Query) ToCallbackInput(ctx context.Context, in map[string]any) (map[string]any, error) {
+func (ds *Query) ToCallbackInput(ctx context.Context, in map[string]any) (*nodes.StructuredCallbackInput, error) {
 	conditionGroup, err := convertClauseGroupToConditionGroup(ctx, ds.clauseGroup, in)
 	if err != nil {
 		return nil, err
@@ -170,7 +170,8 @@ func (ds *Query) ToCallbackInput(ctx context.Context, in map[string]any) (map[st
 	return ds.toDatabaseQueryCallbackInput(conditionGroup)
 }
 
-func (ds *Query) toDatabaseQueryCallbackInput(conditionGroup *database.ConditionGroup) (map[string]any, error) {
+func (ds *Query) toDatabaseQueryCallbackInput(conditionGroup *database.ConditionGroup) (
+	*nodes.StructuredCallbackInput, error) {
 	result := make(map[string]any)
 
 	databaseID := ds.databaseInfoID
@@ -208,7 +209,9 @@ func (ds *Query) toDatabaseQueryCallbackInput(conditionGroup *database.Condition
 		"orderByList": OrderList,
 	}
 
-	return result, nil
+	return &nodes.StructuredCallbackInput{
+		Input: result,
+	}, nil
 }
 
 type ConditionItem struct {

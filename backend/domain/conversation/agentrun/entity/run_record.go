@@ -43,6 +43,7 @@ type RunRecordMeta struct {
 	ChatRequest    *string         `json:"chat_message"`
 	CompletedAt    int64           `json:"completed_at"`
 	FailedAt       int64           `json:"failed_at"`
+	CreatorID      int64           `json:"creator_id"`
 }
 
 type ChunkRunItem = RunRecordMeta
@@ -112,6 +113,7 @@ type AgentRunMeta struct {
 	SectionID        int64                    `json:"section_id"`
 	Name             string                   `json:"name"`
 	UserID           string                   `json:"user_id"`
+	CozeUID          int64                    `json:"coze_uid"`
 	AgentID          int64                    `json:"agent_id"`
 	ContentType      message.ContentType      `json:"content_type"`
 	Content          []*message.InputMetaData `json:"content"`
@@ -157,4 +159,19 @@ type AgentRespEvent struct {
 type ModelAnswerEvent struct {
 	Message *schema.Message
 	Err     error
+}
+
+type ListRunRecordMeta struct {
+	ConversationID int64  `json:"conversation_id"`
+	AgentID        int64  `json:"agent_id"`
+	SectionID      int64  `json:"section_id"`
+	Limit          int32  `json:"limit"`
+	OrderBy        string `json:"order_by"` //desc asc
+	BeforeID       int64  `json:"before_id"`
+	AfterID        int64  `json:"after_id"`
+}
+
+type CancelRunMeta struct {
+	ConversationID int64 `json:"conversation_id"`
+	RunID          int64 `json:"run_id"`
 }

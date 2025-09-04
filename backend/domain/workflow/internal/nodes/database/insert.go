@@ -105,7 +105,8 @@ func (is *Insert) Invoke(ctx context.Context, input map[string]any) (map[string]
 	return ret, nil
 }
 
-func (is *Insert) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
+func (is *Insert) ToCallbackInput(_ context.Context, input map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
 	databaseID := is.databaseInfoID
 	fs := parseToInput(input)
 	result := make(map[string]any)
@@ -127,6 +128,8 @@ func (is *Insert) ToCallbackInput(_ context.Context, input map[string]any) (map[
 		"fieldInfo": fieldInfo,
 	}
 
-	return result, nil
+	return &nodes.StructuredCallbackInput{
+		Input: result,
+	}, nil
 
 }

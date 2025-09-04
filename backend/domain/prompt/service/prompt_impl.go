@@ -40,8 +40,8 @@ func (s *promptService) CreatePromptResource(ctx context.Context, p *entity.Prom
 	return s.Repo.CreatePromptResource(ctx, p)
 }
 
-func (s *promptService) UpdatePromptResource(ctx context.Context, p *entity.PromptResource) error {
-	return s.Repo.UpdatePromptResource(ctx, p)
+func (s *promptService) UpdatePromptResource(ctx context.Context, promptID int64, name, description, promptText *string) error {
+	return s.Repo.UpdatePromptResource(ctx, promptID, name, description, promptText)
 }
 
 func (s *promptService) GetPromptResource(ctx context.Context, promptID int64) (*entity.PromptResource, error) {

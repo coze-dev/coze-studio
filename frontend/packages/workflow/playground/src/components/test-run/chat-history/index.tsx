@@ -18,6 +18,7 @@ import React, { Suspense, lazy } from 'react';
 
 import { isEmpty } from 'lodash-es';
 import { userStoreService } from '@coze-studio/user-store';
+import { type IWorkflow, type IProject } from '@coze-studio/open-chat';
 import { IntelligenceType } from '@coze-arch/idl/intelligence_api';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozIllusAdd } from '@coze-arch/coze-design/illustrations';
@@ -26,7 +27,6 @@ import {
   type ProjectConversation,
   CreateEnv,
 } from '@coze-arch/bot-api/workflow_api';
-import { type IWorkflow, type IProject } from '@coze-studio/open-chat';
 
 import { useSkeleton } from './use-skeleton';
 
@@ -72,8 +72,8 @@ export const ChatHistory = ({
 
   const chatUserInfo = {
     id: userInfo?.user_id_str || '',
-    name: userInfo?.name || '',
-    avatar: userInfo?.avatar_url || '',
+    nickname: userInfo?.name || '',
+    url: userInfo?.avatar_url || '',
   };
 
   if (
@@ -123,10 +123,12 @@ export const ChatHistory = ({
         }}
         areaUi={{
           isNeedClearContext: false,
+          isNeedClearMessage: true,
           input: {
             isShow: showInputArea,
             defaultText,
             renderChatInputTopSlot: topSlot,
+            isNeedAudio: false,
           },
           renderLoading,
           uiTheme: 'chatFlow',

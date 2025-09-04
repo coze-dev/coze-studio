@@ -490,3 +490,72 @@ func mergeExpr(left, right ast.ExprNode, op sqlparser.SQLFilterOp) ast.ExprNode 
 		return nil
 	}
 }
+
+func (p *Impl) AddSelectFieldsToSelectSQL(origSQL string, cols []string) (string, error) {
+	if origSQL == "" {
+		return "", fmt.Errorf("empty SQL statement")
+	}
+	stmtNode, err := p.parser.ParseOneStmt(origSQL, mysql.UTF8MB4Charset, mysql.UTF8MB4GeneralCICollation)
+	if err != nil {
+		return "", fmt.Errorf("failed to parse SQL: %v", err)
+	}
+	stmt, ok := stmtNode.(*ast.SelectStmt)
+	if !ok {
+		return "", fmt.Errorf("not a select statement")
+	}
+	if containsAggregate(stmt) || isSelectAll(stmt) {
+		return origSQL, nil
+	}
+	for _, col := range cols {
+		stmt.Fields.Fields = append(stmt.Fields.Fields, &ast.SelectField{
+			Expr: &ast.ColumnNameExpr{
+				Name: &ast.ColumnName{
+					Name: ast.CIStr{O: col, L: strings.ToLower(col)},
+				},
+			},
+		})
+	}
+	var sb strings.Builder
+	restoreCtx := format.NewRestoreCtx(format.DefaultRestoreFlags, &sb)
+	if err := stmt.Restore(restoreCtx); err != nil {
+		return "", err
+	}
+
+	return sb.String(), nil
+}
+
+type aggregateVisitor struct {
+	hasAggregate bool
+}
+
+func (v *aggregateVisitor) Enter(n ast.Node) (node ast.Node, skipChildren bool) {
+	switch n.(type) {
+	case *ast.AggregateFuncExpr:
+		v.hasAggregate = true
+		return n, true
+	}
+	return n, false
+}
+
+func (v *aggregateVisitor) Leave(n ast.Node) (node ast.Node, ok bool) {
+	return n, true
+}
+
+func containsAggregate(stmt *ast.SelectStmt) bool {
+	visitor := &aggregateVisitor{}
+	stmt.Accept(visitor)
+	return visitor.hasAggregate
+}
+func isSelectAll(stmt *ast.SelectStmt) bool {
+	for _, field := range stmt.Fields.Fields {
+		if field.WildCard != nil {
+			return true
+		}
+		if columnExpr, ok := field.Expr.(*ast.ColumnNameExpr); ok {
+			if columnExpr.Name.Name.L == "*" {
+				return true
+			}
+		}
+	}
+	return false
+}

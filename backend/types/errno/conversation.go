@@ -35,9 +35,31 @@ const (
 	ErrConversationMessageNotFound = 103200001
 
 	ErrAgentRun = 103200002
+
+	ErrRecordNotFound = 103200003
+
+	ErrAgentRunWorkflowNotFound = 103200004
+	ErrInProgressCanNotCancel   = 103200005
 )
 
 func init() {
+	code.Register(
+		ErrInProgressCanNotCancel,
+		"in progress can not be cancelled",
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrAgentRunWorkflowNotFound,
+		"The chatflow is not configured. Please configure it and try again.",
+		code.WithAffectStability(false),
+	)
+	code.Register(
+		ErrRecordNotFound,
+		"record not found or nothing to update",
+		code.WithAffectStability(false),
+	)
+
 	code.Register(
 		ErrAgentRun,
 		"Interal Server Error",

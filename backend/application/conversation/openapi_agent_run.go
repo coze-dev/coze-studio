@@ -35,7 +35,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
+	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
+	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -125,7 +127,7 @@ func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.Cha
 	}
 
 	if agentInfo == nil {
-		return nil, errors.New("agent info is nil")
+		return nil, errorx.New(errno.ErrAgentNotExists)
 	}
 	return agentInfo, nil
 }
@@ -154,6 +156,8 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		ConnectorID:      connectorID,
 		ContentType:      contentType,
 		Ext:              ar.ExtraParams,
+		CustomVariables:  ar.CustomVariables,
+		CozeUID:          conversationData.CreatorID,
 	}
 	return arm, nil
 }
@@ -237,11 +241,26 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 						Text: ptr.From(one.Text),
 					})
 				case message.InputTypeImage, message.InputTypeFile:
+
+					var fileUrl, fileURI string
+					if one.GetFileURL() != "" {
+						fileUrl = one.GetFileURL()
+					} else if one.GetFileID() != 0 {
+						fileInfo, err := a.UploaodDomainSVC.GetFile(ctx, &uploadService.GetFileRequest{
+							ID: one.GetFileID(),
+						})
+						if err != nil {
+							return nil, contentType, err
+						}
+						fileUrl = fileInfo.File.Url
+						fileURI = fileInfo.File.TosURI
+					}
 					multiContents = append(multiContents, &message.InputMetaData{
 						Type: message.InputType(one.Type),
 						FileData: []*message.FileData{
 							{
-								Url: one.GetFileURL(),
+								Url: fileUrl,
+								URI: fileURI,
 							},
 						},
 					})
@@ -327,4 +346,63 @@ func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
 	}
 	mCM, _ := json.Marshal(chunkMessage)
 	return mCM
+}
+
+func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.CancelChatApiRequest) (*run.CancelChatApiResponse, error) {
+	resp := new(run.CancelChatApiResponse)
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	runRecord, err := ConversationSVC.AgentRunDomainSVC.GetByID(ctx, req.ChatID)
+	if err != nil {
+		return nil, err
+	}
+	if runRecord == nil {
+		return nil, errorx.New(errno.ErrRecordNotFound)
+	}
+
+	conversationData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, req.ConversationID)
+	if err != nil {
+		return nil, err
+	}
+
+	if userID != conversationData.CreatorID {
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
+	}
+
+	if runRecord.Status != entity.RunStatusInProgress && runRecord.Status != entity.RunStatusCreated {
+		return nil, errorx.New(errno.ErrInProgressCanNotCancel)
+	}
+
+	runMeta, err := ConversationSVC.AgentRunDomainSVC.Cancel(ctx, &entity.CancelRunMeta{
+		RunID:          req.ChatID,
+		ConversationID: req.ConversationID,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if runMeta == nil {
+		return nil, errorx.New(errno.ErrConversationAgentRunError)
+	}
+
+	resp.ChatV3ChatDetail = &run.ChatV3ChatDetail{
+		ID:             runMeta.ID,
+		ConversationID: runMeta.ConversationID,
+		BotID:          runMeta.AgentID,
+		Status:         string(runMeta.Status),
+		SectionID:      ptr.Of(runMeta.SectionID),
+		CreatedAt:      ptr.Of(int32(runMeta.CreatedAt / 1000)),
+		CompletedAt:    ptr.Of(int32(runMeta.CompletedAt / 1000)),
+		FailedAt:       ptr.Of(int32(runMeta.FailedAt / 1000)),
+	}
+	if runMeta.Usage != nil {
+		resp.ChatV3ChatDetail.Usage = &run.Usage{
+			TokenCount:   ptr.Of(int32(runMeta.Usage.LlmTotalTokens)),
+			InputTokens:  ptr.Of(int32(runMeta.Usage.LlmPromptTokens)),
+			OutputTokens: ptr.Of(int32(runMeta.Usage.LlmCompletionTokens)),
+		}
+	}
+
+	return resp, nil
 }

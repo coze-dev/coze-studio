@@ -9,6 +9,9 @@
     },
     {
       "path": "./tsconfig.misc.json"
+    },
+    {
+      "path": "./tsconfig.dev.json"
     }
   ],
   "exclude": ["**/*"]

@@ -75,7 +75,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 	for cid := range req.ConnectorPublishConfigs {
 		connectorIDs = append(connectorIDs, cid)
 	}
-	failedResources, err := a.packResources(ctx, req.APPID, req.Version, connectorIDs)
+	failedResources, err := a.packResources(ctx, req.APPID, req.Version, connectorIDs, req.ConnectorPublishConfigs)
 	if err != nil {
 		return false, err
 	}
@@ -92,7 +92,7 @@ func (a *appServiceImpl) publishByConnectors(ctx context.Context, recordID int64
 
 	for cid := range req.ConnectorPublishConfigs {
 		switch cid {
-		case commonConsts.APIConnectorID:
+		case commonConsts.APIConnectorID, commonConsts.WebSDKConnectorID:
 			updateSuccessErr := a.APPRepo.UpdateConnectorPublishStatus(ctx, recordID, entity.ConnectorPublishStatusOfSuccess)
 			if updateSuccessErr == nil {
 				continue
@@ -172,7 +172,8 @@ func (a *appServiceImpl) createPublishVersion(ctx context.Context, req *PublishA
 	return recordID, nil
 }
 
-func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string, connectorIDs []int64) (failedResources []*entity.PackResourceFailedInfo, err error) {
+func (a *appServiceImpl) packResources(ctx context.Context, appID int64, version string, connectorIDs []int64, pConfig map[int64]entity.PublishConfig) (failedResources []*entity.PackResourceFailedInfo, err error) {
+
 	failedPlugins, allDraftPlugins, err := a.packPlugins(ctx, appID, version)
 	if err != nil {
 		return nil, err

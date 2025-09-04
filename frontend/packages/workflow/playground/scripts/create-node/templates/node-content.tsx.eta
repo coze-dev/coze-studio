@@ -1,0 +1,10 @@
+import { InputParameters, Outputs } from '../common/components';
+
+export function <%= it.PASCAL_NAME_PLACE_HOLDER %>Content() {
+  return (
+    <>
+      <InputParameters />
+      <Outputs />
+    </>
+  );
+}

@@ -127,8 +127,7 @@ func (jd *Deserializer) ToCallbackOutput(ctx context.Context, out map[string]any
 		wfe = vo.WrapWarn(errno.ErrNodeOutputParseFail, warnings, errorx.KV("warnings", warnings.Error()))
 	}
 	return &nodes.StructuredCallbackOutput{
-		Output:    out,
-		RawOutput: out,
-		Error:     wfe,
+		Output: out,
+		Error:  wfe,
 	}, nil
 }

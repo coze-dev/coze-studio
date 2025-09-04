@@ -1,0 +1,111 @@
+
+.coze-ast-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 56px;
+  width: 56px;
+  cursor: pointer;
+  z-index: var(--coze-z-index-iframe);
+
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.16);
+  }
+
+  &:active {
+    transform: scale(1.08);
+  }
+
+  > img {
+    width: 100%;
+    height: 100%;
+  }
+
+  > svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  &.mobile {
+    bottom: 24px;
+    right: 24px;
+    height: 40px;
+    width: 40px;
+
+    &:active {
+      transform: scale(1.08);
+    }
+  }
+}
+
+.iframe-wrapper {
+  position: fixed;
+  z-index: calc(var(--coze-z-index-iframe) - 1);
+  background-color: #fff;
+
+  &:not(.mobile) {
+    height: calc(100% - 40px);
+    min-height: 400px;
+    max-height: 1200px;
+    bottom: 20px;
+    right: 20px;
+    border-radius: 8px;
+    box-shadow: 0 6px 8px 0 rgb(29 28 35 / 6%), 0 0 2px 0 rgb(29 28 35 / 18%);
+  }
+
+  .loading {
+    height: 100%;
+    width: 100%;
+  }
+
+  .close-btn {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    width: 32px;
+    height: 32px;
+    z-index: 100;
+  }
+
+  .extra-close {
+    width: 32px;
+    height: 32px;
+  }
+
+  .coze-iframe {
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border: none;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  &.mobile {
+    inset: 0;
+
+    .close-btn  {
+      right: 12px;
+      top: 24px;
+    }
+
+    .coze-iframe {
+      border-radius: 0;
+    }
+  }
+
+  &.auto-fix-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    right: 0;
+    bottom: 0;
+    min-height: auto;
+    max-height: auto;
+  }
+}

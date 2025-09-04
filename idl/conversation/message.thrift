@@ -197,11 +197,11 @@ struct OpenMessageApi {
     2:  i64                bot_id (api.js_conv='true') // agent id
     3:  string             role  // user / assistant/tool
     4:  string             content //message content
-    5:  i64                conversation_id //session id
+    5:  i64                conversation_id (api.js_conv='true')//session id
     6:  map<string,string> meta_data // custom field
     7:  i64                created_at //creation time
     8:  i64                updated_at   //update time
-    9:  i64                chat_id // ID of a conversation
+    9:  i64                chat_id (api.js_conv='true')// ID of a conversation
     10: string             content_type // Content type, text/mix
     11: string             type //Message Type answer/question/function_call/tool_response
     12: string             section_id // The section_id of conversation
@@ -214,4 +214,6 @@ struct ListMessageApiResponse {
     2:   optional bool                 has_more (api.body = "has_more") // Is there still data, true yes, false no
     3:   optional i64                  first_id (api.body = "first_id",api.js_conv='true') // The ID of the first piece of data
     4:   optional i64                  last_id (api.body = "last_id",api.js_conv='true')    // The id of the last piece of data.
+    253: i64                           code
+    254: string                        msg
 }

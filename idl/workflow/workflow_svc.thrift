@@ -68,6 +68,9 @@ service WorkflowService {
     // App Release Management
     workflow.ListPublishWorkflowResponse ListPublishWorkflow(1: workflow.ListPublishWorkflowRequest request) (api.post='/api/workflow_api/list_publish_workflow', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 
+    // Export workflow
+    workflow.ExportWorkflowResponse ExportWorkflow(1: workflow.ExportWorkflowRequest request) (api.post='/api/workflow_api/export', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+
     // Open API
     workflow.OpenAPIRunFlowResponse OpenAPIRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api" )
     workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/stream_run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
@@ -75,4 +78,6 @@ service WorkflowService {
     workflow.GetWorkflowRunHistoryResponse OpenAPIGetWorkflowRunHistory(1:workflow.GetWorkflowRunHistoryRequest request)(api.get='/v1/workflow/get_run_history', api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_api", agw.preserve_base = "false")
     workflow.ChatFlowRunResponse OpenAPIChatFlowRun(1: workflow.ChatFlowRunRequest request)(api.post = "/v1/workflows/chat", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
     workflow.OpenAPIGetWorkflowInfoResponse OpenAPIGetWorkflowInfo(1: workflow.OpenAPIGetWorkflowInfoRequest request)(api.get = "/v1/workflows/:workflow_id", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
+
+    workflow.CreateConversationResponse OpenAPICreateConversation(1: workflow.CreateConversationRequest request)(api.post = "/v1/workflow/conversation/create", api.category="workflow_open_api",api.tag="openapi", api.gen_path="workflow_open_api",  agw.preserve_base = "true")
 }

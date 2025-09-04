@@ -40,6 +40,7 @@ import (
 
 	_ "golang.org/x/image/tiff"
 	_ "golang.org/x/image/webp"
+	"gorm.io/gorm"
 
 	"github.com/google/uuid"
 
@@ -50,7 +51,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -61,16 +64,26 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func InitService(oss storage.Storage, cache cache.Cmdable) {
-	SVC.cache = cache
-	SVC.oss = oss
+func InitService(components *UploadComponents) *UploadService {
+	SVC.cache = components.Cache
+	SVC.oss = components.Oss
+	SVC.UploadSVC = service.NewUploadSVC(components.DB, components.Idgen, components.Oss)
+	return SVC
+}
+
+type UploadComponents struct {
+	Oss   storage.Storage
+	Cache cache.Cmdable
+	DB    *gorm.DB
+	Idgen idgen.IDGenerator
 }
 
 var SVC = &UploadService{}
 
 type UploadService struct {
-	oss   storage.Storage
-	cache cache.Cmdable
+	oss       storage.Storage
+	cache     cache.Cmdable
+	UploadSVC service.UploadService
 }
 
 const (
@@ -427,6 +440,23 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.Up
 	}
 	resp.File.CreatedAt = time.Now().Unix()
 	resp.File.URL = url
+	fileEntity := entity.File{
+		Name:          fileHeader.Filename,
+		FileSize:      fileHeader.Size,
+		TosURI:        objName,
+		Status:        entity.FileStatusValid,
+		CreatorID:     strconv.FormatInt(uid, 10),
+		Source:        entity.FileSourceAPI,
+		CozeAccountID: uid,
+		ContentType:   fileHeader.Header.Get("Content-Type"),
+		CreatedAt:     time.Now().UnixMilli(),
+		UpdatedAt:     time.Now().UnixMilli(),
+	}
+	domainResp, err := u.UploadSVC.UploadFile(ctx, &service.UploadFileRequest{File: &fileEntity})
+	if err != nil {
+		return &resp, err
+	}
+	resp.File.ID = strconv.FormatInt(domainResp.File.ID, 10)
 	return &resp, nil
 }
 

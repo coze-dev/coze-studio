@@ -74,6 +74,7 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 	var composeOpts []compose.Option
 	var pipeMsgOpt compose.Option
 	var workflowMsgSr *schema.StreamReader[*crossworkflow.WorkflowMessage]
+	var workflowMsgCloser func()
 	if r.containWfTool {
 		cfReq := crossworkflow.ExecuteConfig{
 			AgentID:      &req.Identity.AgentID,
@@ -88,7 +89,7 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 		}
 		wfConfig := crossworkflow.DefaultSVC().WithExecuteConfig(cfReq)
 		composeOpts = append(composeOpts, wfConfig)
-		pipeMsgOpt, workflowMsgSr = crossworkflow.DefaultSVC().WithMessagePipe()
+		pipeMsgOpt, workflowMsgSr, workflowMsgCloser = crossworkflow.DefaultSVC().WithMessagePipe()
 		composeOpts = append(composeOpts, pipeMsgOpt)
 	}
 
@@ -120,6 +121,9 @@ func (r *AgentRunner) StreamExecute(ctx context.Context, req *AgentRequest) (
 
 				sw.Send(nil, errors.New("internal server error"))
 			}
+			if workflowMsgCloser != nil {
+				workflowMsgCloser()
+			}
 			sw.Close()
 		}()
 		_, _ = r.runner.Stream(ctx, req, composeOpts...)
@@ -136,6 +140,7 @@ func (r *AgentRunner) processWfMidAnswerStream(_ context.Context, sw *schema.Str
 		if swT != nil {
 			swT.Close()
 		}
+		wfStream.Close()
 	}()
 	for {
 		msg, err := wfStream.Recv()

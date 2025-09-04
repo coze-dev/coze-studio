@@ -92,7 +92,6 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 		t, ok := tInfo[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the string value through
-			logs.CtxWarnf(ctx, "input %s not found in type info", k)
 			if !options.skipUnknownFields {
 				out[k] = in[k]
 			}
@@ -323,7 +322,6 @@ func convertToObject(ctx context.Context, in any, path string, t *vo.TypeInfo, o
 		propType, ok := t.Properties[k]
 		if !ok {
 			// for input fields not explicitly defined, just pass the value through
-			logs.CtxWarnf(ctx, "input %s.%s not found in type info", path, k)
 			if !options.skipUnknownFields {
 				out[k] = v
 			}

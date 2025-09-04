@@ -431,17 +431,13 @@ func (l *Loop) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Node
 		}
 
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
-			if e := setter.SaveNestedWorkflowState(l.nodeKey, compState); e != nil {
-				return e
-			}
-
-			return setter.SetInterruptEvent(l.nodeKey, iEvent)
+			return setter.SaveNestedWorkflowState(l.nodeKey, compState)
 		})
 		if err != nil {
 			return nil, err
 		}
 
-		return nil, compose.InterruptAndRerun
+		return nil, compose.NewInterruptAndRerunErr(iEvent)
 	} else {
 		err := compose.ProcessState(ctx, func(ctx context.Context, setter nodes.NestedWorkflowAware) error {
 			return setter.SaveNestedWorkflowState(l.nodeKey, compState)
@@ -507,12 +503,12 @@ func convertIntermediateVars(vars map[string]*any) map[string]any {
 	return ret
 }
 
-func (l *Loop) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
+func (l *Loop) ToCallbackInput(_ context.Context, in map[string]any) (*nodes.StructuredCallbackInput, error) {
 	trimmed := make(map[string]any, len(l.inputArrays))
 	for _, arrayKey := range l.inputArrays {
 		if v, ok := in[arrayKey]; ok {
 			trimmed[arrayKey] = v
 		}
 	}
-	return trimmed, nil
+	return &nodes.StructuredCallbackInput{Input: trimmed}, nil
 }

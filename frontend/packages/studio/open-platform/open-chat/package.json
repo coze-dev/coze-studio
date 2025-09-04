@@ -3,26 +3,72 @@
   "version": "0.0.1",
   "description": "Coze Web ChatApp SDK ",
   "license": "Apache-2.0",
-  "author": "gaoding.devingao@bytedance.com",
+  "author": "yangyu.1@bytedance.com",
   "maintainers": [
-    "gaoding.devingao@bytedance.com"
+    "gaoding.devingao@bytedance.com",
+    "yangyu.1@bytedance.com"
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./types": "./src/exports/types.ts",
+    "./envs": "./src/util/env.ts"
   },
   "main": "src/index.ts",
   "types": "./src/index.ts",
+  "typesVersions": {
+    "*": {
+      "types": [
+        "./src/exports/types.ts"
+      ],
+      "envs": [
+        "./src/util/env.ts"
+      ]
+    }
+  },
   "scripts": {
     "build": "exit 0",
     "lint": "eslint ./ --cache",
     "test": "vitest --run --passWithNoTests",
-    "test:cov": "npm run test -- --coverage"
+    "test:cov": "vitest run --coverage"
   },
   "dependencies": {
+    "@coze-arch/bot-api": "workspace:*",
+    "@coze-arch/bot-semi": "workspace:*",
+    "@coze-arch/bot-utils": "workspace:*",
+    "@coze-arch/coze-design": "0.0.6-alpha.346d77",
     "@coze-arch/i18n": "workspace:*",
-    "@coze/chat-sdk": "0.1.11-beta.19",
-    "react": "~18.2.0"
+    "@coze-arch/idl": "workspace:*",
+    "@coze-arch/logger": "workspace:*",
+    "@coze-common/chat-answer-action": "workspace:*",
+    "@coze-common/chat-area": "workspace:*",
+    "@coze-common/chat-area-plugin-chat-background": "workspace:*",
+    "@coze-common/chat-area-plugin-message-grab": "workspace:*",
+    "@coze-common/chat-area-plugin-reasoning": "workspace:*",
+    "@coze-common/chat-area-plugins-chat-shortcuts": "workspace:*",
+    "@coze-common/chat-core": "workspace:*",
+    "@coze-common/chat-uikit": "workspace:*",
+    "@coze-common/chat-uikit-shared": "workspace:*",
+    "@coze-common/chat-workflow-render": "workspace:*",
+    "@coze-studio/file-kit": "workspace:*",
+    "@coze-studio/open-env-adapter": "workspace:*",
+    "@coze-studio/slardar-adapter": "workspace:*",
+    "@coze/api": "1.3.5",
+    "@douyinfe/semi-icons": "^2.36.0",
+    "ahooks": "^3.7.8",
+    "axios": "^1.4.0",
+    "classnames": "^2.3.2",
+    "copy-to-clipboard": "^3.3.3",
+    "dayjs": "^1.11.7",
+    "eventemitter3": "^5.0.1",
+    "immer": "^10.0.3",
+    "lodash-es": "^4.17.21",
+    "nanoid": "^4.0.2",
+    "react": "~18.2.0",
+    "react-device-detect": "2.2.3",
+    "react-dom": "~18.2.0",
+    "react-router-dom": "^6.11.1",
+    "zustand": "^4.4.7"
   },
   "devDependencies": {
     "@coze-arch/bot-env": "workspace:*",
@@ -34,7 +80,6 @@
     "@coze-arch/tailwind-config": "workspace:*",
     "@coze-arch/ts-config": "workspace:*",
     "@coze-arch/vitest-config": "workspace:*",
-    "@coze-studio/open-env-adapter": "workspace:*",
     "@rspack/plugin-react-refresh": "0.6.0",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",

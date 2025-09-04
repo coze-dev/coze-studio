@@ -6,7 +6,8 @@
     "stories",
     "vitest.config.ts",
     "tailwind.config.ts",
-    "src/**/*.test.ts"
+    "src/**/*.test.ts",
+    "scripts/**/*.ts"
   ],
   "exclude": ["dist"],
   "references": [

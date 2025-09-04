@@ -217,9 +217,10 @@ type RetrieveContext struct {
 }
 
 type KnowledgeInfo struct {
-	DocumentIDs  []int64
-	DocumentType knowledge.DocumentType
-	TableColumns []*entity.TableColumn
+	KnowledgeName string
+	DocumentIDs   []int64
+	DocumentType  knowledge.DocumentType
+	TableColumns  []*entity.TableColumn
 }
 type AlterTableSchemaRequest struct {
 	DocumentID       int64

@@ -360,6 +360,11 @@ type HTTPRequester struct {
 	md5FieldMapping MD5FieldMapping
 }
 
+func adaptTemplate(template string) string {
+	return globalVariableReplaceRegexp.ReplaceAllString(template, "global_variable_$1.$2")
+
+}
+
 func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (output map[string]any, err error) {
 	var (
 		req         = &Request{}
@@ -380,7 +385,7 @@ func (hg *HTTPRequester) Invoke(ctx context.Context, input map[string]any) (outp
 		Header: http.Header{},
 	}
 
-	httpURL, err := nodes.TemplateRender(hg.urlConfig.Tpl, req.URLVars)
+	httpURL, err := nodes.TemplateRender(adaptTemplate(hg.urlConfig.Tpl), req.URLVars)
 	if err != nil {
 		return nil, err
 	}
@@ -524,7 +529,7 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 
 	switch b.BodyType {
 	case BodyTypeJSON:
-		jsonString, err := nodes.TemplateRender(b.TextJsonConfig.Tpl, req.JsonVars)
+		jsonString, err := nodes.TemplateRender(adaptTemplate(b.TextJsonConfig.Tpl), req.JsonVars)
 		if err != nil {
 			return nil, contentType, err
 		}
@@ -539,7 +544,7 @@ func (b *BodyConfig) getBodyAndContentType(ctx context.Context, req *Request) (i
 		body = strings.NewReader(form.Encode())
 		contentType = ContentTypeFormURLEncoded
 	case BodyTypeRawText:
-		textString, err := nodes.TemplateRender(b.TextPlainConfig.Tpl, req.TextPlainVars)
+		textString, err := nodes.TemplateRender(adaptTemplate(b.TextPlainConfig.Tpl), req.TextPlainVars)
 		if err != nil {
 			return nil, contentType, err
 		}
@@ -622,7 +627,8 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 	return http.DefaultClient.Do(request)
 }
 
-func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any) (map[string]any, error) {
+func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
 	var request = &Request{}
 
 	request, err := hg.parserToRequest(input)
@@ -632,7 +638,7 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 	result := make(map[string]any)
 	result["method"] = hg.method
 
-	u, err := nodes.TemplateRender(hg.urlConfig.Tpl, request.URLVars)
+	u, err := nodes.TemplateRender(adaptTemplate(hg.urlConfig.Tpl), request.URLVars)
 	if err != nil {
 		return nil, err
 	}
@@ -666,7 +672,7 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 	result["body"] = nil
 	switch hg.bodyConfig.BodyType {
 	case BodyTypeJSON:
-		js, err := nodes.TemplateRender(hg.bodyConfig.TextJsonConfig.Tpl, request.JsonVars)
+		js, err := nodes.TemplateRender(adaptTemplate(hg.bodyConfig.TextJsonConfig.Tpl), request.JsonVars)
 		if err != nil {
 			return nil, err
 		}
@@ -677,7 +683,7 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 		}
 		result["body"] = ret
 	case BodyTypeRawText:
-		tx, err := nodes.TemplateRender(hg.bodyConfig.TextPlainConfig.Tpl, request.TextPlainVars)
+		tx, err := nodes.TemplateRender(adaptTemplate(hg.bodyConfig.TextPlainConfig.Tpl), request.TextPlainVars)
 		if err != nil {
 
 			return nil, err
@@ -691,7 +697,9 @@ func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any
 		result["body"] = request.FileURL
 
 	}
-	return result, nil
+	return &nodes.StructuredCallbackInput{
+		Input: result,
+	}, nil
 }
 
 const (
@@ -729,7 +737,7 @@ func (hg *HTTPRequester) parserToRequest(input map[string]any) (*Request, error)
 				if strings.HasPrefix(urlKey, "global_variable_") {
 					urlKey = globalVariableReplaceRegexp.ReplaceAllString(urlKey, "global_variable_$1.$2")
 				}
-				nodes.SetMapValue(request.URLVars, strings.Split(urlKey, "."), value.(string))
+				nodes.SetMapValue(request.URLVars, strings.Split(urlKey, "."), value)
 			}
 		}
 		if strings.HasPrefix(key, headersPrefix) {
@@ -777,7 +785,6 @@ func (hg *HTTPRequester) parserToRequest(input map[string]any) (*Request, error)
 				if formDataKey, ok := hg.md5FieldMapping.BodyMD5Mapping[formDataMd5Key]; ok {
 					request.FormDataVars[formDataKey] = value.(string)
 				}
-
 			}
 
 			if strings.HasPrefix(bodyKey, bodyFormURLEncodedPrefix) {
@@ -811,15 +818,13 @@ func (hg *HTTPRequester) parserToRequest(input map[string]any) (*Request, error)
 func (hg *HTTPRequester) ToCallbackOutput(_ context.Context, out map[string]any) (*nodes.StructuredCallbackOutput, error) {
 	if body, ok := out["body"]; !ok {
 		return &nodes.StructuredCallbackOutput{
-			RawOutput: out,
-			Output:    out,
+			Output: out,
 		}, nil
 	} else {
 		output := maps.Clone(out)
 		output["body"] = decodeUnicode(body.(string))
 		return &nodes.StructuredCallbackOutput{
-			RawOutput: out,
-			Output:    output,
+			Output: output,
 		}, nil
 	}
 

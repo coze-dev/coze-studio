@@ -25,8 +25,9 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflowapimodel "github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -46,7 +47,7 @@ type executableImpl struct {
 	repo workflow.Repository
 }
 
-func (i *impl) SyncExecute(ctx context.Context, config model.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
+func (i *impl) SyncExecute(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*entity.WorkflowExecution, vo.TerminatePlan, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -63,8 +64,10 @@ func (i *impl) SyncExecute(ctx context.Context, config model.ExecuteConfig, inpu
 		return nil, "", err
 	}
 
+	config.WorkflowMode = wfEntity.Mode
+
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == model.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return nil, "", err
@@ -191,7 +194,7 @@ func (i *impl) SyncExecute(ctx context.Context, config model.ExecuteConfig, inpu
 // AsyncExecute executes the specified workflow asynchronously, returning the execution ID.
 // Intermediate results are not emitted on the fly.
 // The caller is expected to poll the execution status using the GetExecution method and the returned execution ID.
-func (i *impl) AsyncExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (int64, error) {
+func (i *impl) AsyncExecute(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -208,8 +211,10 @@ func (i *impl) AsyncExecute(ctx context.Context, config plugin.ExecuteConfig, in
 		return 0, err
 	}
 
+	config.WorkflowMode = wfEntity.Mode
+
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == plugin.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return 0, err
@@ -266,7 +271,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config plugin.ExecuteConfig, in
 		return 0, err
 	}
 
-	if config.Mode == plugin.ExecuteModeDebug {
+	if config.Mode == workflowModel.ExecuteModeDebug {
 		if err = i.repo.SetTestRunLatestExeID(ctx, wfEntity.ID, config.Operator, executeID); err != nil {
 			logs.CtxErrorf(ctx, "failed to set test run latest exe id: %v", err)
 		}
@@ -277,7 +282,7 @@ func (i *impl) AsyncExecute(ctx context.Context, config plugin.ExecuteConfig, in
 	return executeID, nil
 }
 
-func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config plugin.ExecuteConfig, input map[string]any) (int64, error) {
+func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workflowModel.ExecuteConfig, input map[string]any) (int64, error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -293,14 +298,40 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config plugi
 		return 0, err
 	}
 
+	config.WorkflowMode = wfEntity.Mode
+
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == plugin.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return 0, err
 		}
 	}
 
+	historyRounds := int64(0)
+	if config.WorkflowMode == workflowapimodel.WorkflowMode_ChatFlow {
+
+		historyRounds, err = getHistoryRoundsFromNode(ctx, wfEntity, nodeID, i.repo)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	if historyRounds > 0 {
+		messages, scMessages, err := i.prefetchChatHistory(ctx, config, historyRounds)
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to prefetch chat history: %v", err)
+		}
+
+		if len(messages) > 0 {
+			config.ConversationHistory = messages
+		}
+
+		if len(scMessages) > 0 {
+			config.ConversationHistorySchemaMessages = scMessages
+		}
+
+	}
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return 0, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -345,7 +376,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config plugi
 		return 0, err
 	}
 
-	if config.Mode == plugin.ExecuteModeNodeDebug {
+	if config.Mode == workflowModel.ExecuteModeNodeDebug {
 		if err = i.repo.SetNodeDebugLatestExeID(ctx, wfEntity.ID, nodeID, config.Operator, executeID); err != nil {
 			logs.CtxErrorf(ctx, "failed to set node debug latest exe id: %v", err)
 		}
@@ -358,7 +389,7 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config plugi
 
 // StreamExecute executes the specified workflow, returning a stream of execution events.
 // The caller is expected to receive from the returned stream immediately.
-func (i *impl) StreamExecute(ctx context.Context, config plugin.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error) {
+func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteConfig, input map[string]any) (*schema.StreamReader[*entity.Message], error) {
 	var (
 		err      error
 		wfEntity *entity.Workflow
@@ -376,14 +407,39 @@ func (i *impl) StreamExecute(ctx context.Context, config plugin.ExecuteConfig, i
 		return nil, err
 	}
 
+	config.WorkflowMode = wfEntity.Mode
+
 	isApplicationWorkflow := wfEntity.AppID != nil
-	if isApplicationWorkflow && config.Mode == plugin.ExecuteModeRelease {
+	if isApplicationWorkflow && config.Mode == workflowModel.ExecuteModeRelease {
 		err = i.checkApplicationWorkflowReleaseVersion(ctx, *wfEntity.AppID, config.ConnectorID, config.ID, config.Version)
 		if err != nil {
 			return nil, err
 		}
 	}
 
+	historyRounds := int64(0)
+	if config.WorkflowMode == workflowapimodel.WorkflowMode_ChatFlow {
+		historyRounds, err = i.calculateMaxChatHistoryRounds(ctx, wfEntity, i.repo)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if historyRounds > 0 {
+		messages, scMessages, err := i.prefetchChatHistory(ctx, config, historyRounds)
+		if err != nil {
+			logs.CtxErrorf(ctx, "failed to prefetch chat history: %v", err)
+		}
+
+		if len(messages) > 0 {
+			config.ConversationHistory = messages
+		}
+
+		if len(scMessages) > 0 {
+			config.ConversationHistorySchemaMessages = scMessages
+		}
+
+	}
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -547,7 +603,7 @@ func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string)
 		return nil, nil, fmt.Errorf("try getting workflow exe for exeID : %d, but not found", exeID)
 	}
 
-	if wfExe.Mode != plugin.ExecuteModeNodeDebug {
+	if wfExe.Mode != workflowModel.ExecuteModeNodeDebug {
 		return nodeExe, nil, nil
 	}
 
@@ -673,7 +729,7 @@ func mergeCompositeInnerNodes(nodeExes map[int]*entity.NodeExecution, maxIndex i
 // AsyncResume resumes a workflow execution asynchronously, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are not emitted on the fly.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) error {
+func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, config workflowModel.ExecuteConfig) error {
 	wfExe, found, err := i.repo.GetWorkflowExecution(ctx, req.ExecuteID)
 	if err != nil {
 		return err
@@ -691,11 +747,11 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 		return fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", req.ExecuteID, wfExe.Status)
 	}
 
-	var from plugin.Locator
+	var from workflowModel.Locator
 	if wfExe.Version == "" {
-		from = plugin.FromDraft
+		from = workflowModel.FromDraft
 	} else {
-		from = plugin.FromSpecificVersion
+		from = workflowModel.FromSpecificVersion
 	}
 
 	wfEntity, err := i.Get(ctx, &vo.GetPolicy{
@@ -719,12 +775,13 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 	config.AppID = wfExe.AppID
 	config.AgentID = wfExe.AgentID
 	config.CommitID = wfExe.CommitID
+	config.WorkflowMode = wfEntity.Mode
 
 	if config.ConnectorID == 0 {
 		config.ConnectorID = wfExe.ConnectorID
 	}
 
-	if wfExe.Mode == plugin.ExecuteModeNodeDebug {
+	if wfExe.Mode == workflowModel.ExecuteModeNodeDebug {
 		nodeExes, err := i.repo.GetNodeExecutionsByWfExeID(ctx, wfExe.ID)
 		if err != nil {
 			return err
@@ -753,7 +810,7 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 			return fmt.Errorf("failed to create workflow: %w", err)
 		}
 
-		config.Mode = plugin.ExecuteModeNodeDebug
+		config.Mode = workflowModel.ExecuteModeNodeDebug
 
 		cancelCtx, _, opts, _, err := compose.NewWorkflowRunner(
 			wfEntity.GetBasic(), workflowSC, config, compose.WithResumeReq(req)).Prepare(ctx)
@@ -795,7 +852,7 @@ func (i *impl) AsyncResume(ctx context.Context, req *entity.ResumeRequest, confi
 // StreamResume resumes a workflow execution, using the passed in executionID and eventID.
 // Intermediate results during the resuming run are emitted using the returned StreamReader.
 // Caller is expected to poll the execution status using the GetExecution method.
-func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, config plugin.ExecuteConfig) (
+func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, config workflowModel.ExecuteConfig) (
 	*schema.StreamReader[*entity.Message], error) {
 	// must get the interrupt event
 	// generate the state modifier
@@ -816,11 +873,11 @@ func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, conf
 		return nil, fmt.Errorf("workflow execution %d is not interrupted, status is %v, cannot resume", req.ExecuteID, wfExe.Status)
 	}
 
-	var from plugin.Locator
+	var from workflowModel.Locator
 	if wfExe.Version == "" {
-		from = plugin.FromDraft
+		from = workflowModel.FromDraft
 	} else {
-		from = plugin.FromSpecificVersion
+		from = workflowModel.FromSpecificVersion
 	}
 
 	wfEntity, err := i.Get(ctx, &vo.GetPolicy{
@@ -860,6 +917,7 @@ func (i *impl) StreamResume(ctx context.Context, req *entity.ResumeRequest, conf
 	config.AppID = wfExe.AppID
 	config.AgentID = wfExe.AgentID
 	config.CommitID = wfExe.CommitID
+	config.WorkflowMode = wfEntity.Mode
 
 	if config.ConnectorID == 0 {
 		config.ConnectorID = wfExe.ConnectorID
@@ -937,4 +995,74 @@ func (i *impl) checkApplicationWorkflowReleaseVersion(ctx context.Context, appID
 	}
 
 	return nil
+}
+
+const maxHistoryRounds int64 = 30
+
+func (i *impl) calculateMaxChatHistoryRounds(ctx context.Context, wfEntity *entity.Workflow, repo workflow.Repository) (int64, error) {
+	if wfEntity == nil {
+		return 0, nil
+	}
+
+	maxRounds, err := getMaxHistoryRoundsRecursively(ctx, wfEntity, repo)
+	if err != nil {
+		return 0, err
+	}
+	return min(maxRounds, maxHistoryRounds), nil
+}
+
+func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.ExecuteConfig, historyRounds int64) ([]*crossmessage.WfMessage, []*schema.Message, error) {
+	convID := config.ConversationID
+	agentID := config.AgentID
+	appID := config.AppID
+	userID := config.Operator
+	sectionID := config.SectionID
+	if sectionID == nil {
+		logs.CtxWarnf(ctx, "SectionID is nil, skipping chat history")
+		return nil, nil, nil
+	}
+
+	if convID == nil || *convID == 0 {
+		logs.CtxWarnf(ctx, "ConversationID is 0 or nil, skipping chat history")
+		return nil, nil, nil
+	}
+
+	var resolvedAppID int64
+	if appID != nil {
+		resolvedAppID = *appID
+	} else if agentID != nil {
+		resolvedAppID = *agentID
+	} else {
+		logs.CtxWarnf(ctx, "AppID and AgentID are both nil, skipping chat history")
+		return nil, nil, nil
+	}
+
+	runIdsReq := &crossmessage.GetLatestRunIDsRequest{
+		ConversationID: *convID,
+		AppID:          resolvedAppID,
+		UserID:         userID,
+		Rounds:         historyRounds + 1,
+		SectionID:      *sectionID,
+	}
+
+	runIds, err := crossmessage.DefaultSVC().GetLatestRunIDs(ctx, runIdsReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "failed to get latest run ids: %v", err)
+		return nil, nil, nil
+	}
+	if len(runIds) <= 1 {
+		return []*crossmessage.WfMessage{}, []*schema.Message{}, nil
+	}
+	runIds = runIds[1:]
+
+	response, err := crossmessage.DefaultSVC().GetMessagesByRunIDs(ctx, &crossmessage.GetMessagesByRunIDsRequest{
+		ConversationID: *convID,
+		RunIDs:         runIds,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "failed to get messages by run ids: %v", err)
+		return nil, nil, nil
+	}
+
+	return response.Messages, response.SchemaMessages, nil
 }

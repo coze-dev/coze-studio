@@ -35,12 +35,15 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	progressbarContract "github.com/coze-dev/coze-studio/backend/infra/contract/document/progressbar"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
+	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/progressbar"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -139,96 +142,166 @@ func (k *knowledgeSVC) indexDocuments(ctx context.Context, event *entity.Event) 
 	return nil
 }
 
+type indexDocCacheRecord struct {
+	ProcessingIDs       []int64
+	LastProcessedNumber int64
+	ParseUri            string
+}
+
+const (
+	indexDocCacheKey = "index_doc_cache:%d:%d"
+)
+
+// indexDocumentNew handles the indexing of a new document into the knowledge system
 func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (err error) {
 	doc := event.Document
 	if doc == nil {
-		return errorx.New(errno.ErrKnowledgeNonRetryableCode, errorx.KV("reason", "[indexDocument] document not provided"))
-	}
-
-	// 1. The index operations on the same document in the retry queue and the ordinary queue are concurrent, and the same document data is written twice (generated when the backend bugfix is online)
-	// 2. rebalance repeated consumption of the same message
-
-	// check knowledge and document status
-	if valid, err := k.isWritableKnowledgeAndDocument(ctx, doc.KnowledgeID, doc.ID); err != nil {
-		return err
-	} else if !valid {
 		return errorx.New(errno.ErrKnowledgeNonRetryableCode,
-			errorx.KVf("reason", "[indexDocument] not writable, knowledge_id=%d, document_id=%d", event.KnowledgeID, doc.ID))
+			errorx.KV("reason", "[indexDocument] document not provided"))
 	}
 
-	defer func() {
-		if e := recover(); e != nil {
-			err = errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("panic: %v", e)))
-			logs.CtxErrorf(ctx, "[indexDocument] panic, err: %v", err)
-			if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, int32(entity.DocumentStatusFailed), err.Error()); setStatusErr != nil {
-				logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
-			}
+	// Validate document and knowledge status
+	var valid bool
+	if valid, err = k.validateDocumentStatus(ctx, doc); err != nil || !valid {
+		return
+	}
+
+	// Setup error handling and recovery
+	defer k.handleIndexingErrors(ctx, event, &err)
+
+	// Start indexing process
+	if err = k.beginIndexingProcess(ctx, doc); err != nil {
+		return
+	}
+
+	// Process document parsing and chunking
+	var parseResult []*schema.Document
+	var cacheRecord *indexDocCacheRecord
+	parseResult, cacheRecord, err = k.processDocumentParsing(ctx, doc)
+	if err != nil {
+		return
+	}
+	if cacheRecord.LastProcessedNumber == 0 {
+		if err = k.cleanupPreviousProcessing(ctx, doc); err != nil {
 			return
 		}
-		if err != nil {
-			var errMsg string
-			var statusError errorx.StatusError
-			var status int32
-			if errors.As(err, &statusError) {
-				errMsg = errorx.ErrorWithoutStack(statusError)
-				if statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
-					status = int32(entity.DocumentStatusFailed)
-				} else {
-					status = int32(entity.DocumentStatusChunking)
-				}
+	}
+	// Handle table-type documents specially
+	if doc.Type == knowledge.DocumentTypeTable {
+		if err = k.handleTableDocument(ctx, doc, parseResult); err != nil {
+			return
+		}
+	}
+
+	// Process document chunks in batches
+	if err = k.processDocumentChunks(ctx, doc, parseResult, cacheRecord); err != nil {
+		return
+	}
+
+	// Finalize document indexing
+	err = k.finalizeDocumentIndexing(ctx, event.Document.KnowledgeID, event.Document.ID)
+	return
+}
+
+// validateDocumentStatus checks if the document can be indexed
+func (k *knowledgeSVC) validateDocumentStatus(ctx context.Context, doc *entity.Document) (bool, error) {
+	valid, err := k.isWritableKnowledgeAndDocument(ctx, doc.KnowledgeID, doc.ID)
+	if err != nil {
+		return false, err
+	}
+	if !valid {
+		return false, errorx.New(errno.ErrKnowledgeNonRetryableCode,
+			errorx.KVf("reason", "[indexDocument] not writable, knowledge_id=%d, document_id=%d",
+				doc.KnowledgeID, doc.ID))
+	}
+	return true, nil
+}
+
+// handleIndexingErrors manages errors and recovery during indexing
+func (k *knowledgeSVC) handleIndexingErrors(ctx context.Context, event *entity.Event, err *error) {
+	if e := recover(); e != nil {
+		err = ptr.Of(errorx.New(errno.ErrKnowledgeSystemCode,
+			errorx.KV("msg", fmt.Sprintf("panic: %v", e))))
+		logs.CtxErrorf(ctx, "[indexDocument] panic, err: %v", err)
+		k.setDocumentStatus(ctx, event.Document.ID,
+			int32(entity.DocumentStatusFailed), ptr.From(err).Error())
+		return
+	}
+
+	if ptr.From(err) != nil {
+		var status int32
+		var errMsg string
+
+		var statusError errorx.StatusError
+		if errors.As(ptr.From(err), &statusError) {
+			errMsg = errorx.ErrorWithoutStack(statusError)
+			if statusError.Code() == errno.ErrKnowledgeNonRetryableCode {
+				status = int32(entity.DocumentStatusFailed)
 			} else {
-				errMsg = err.Error()
 				status = int32(entity.DocumentStatusChunking)
 			}
-			if setStatusErr := k.documentRepo.SetStatus(ctx, event.Document.ID, status, errMsg); setStatusErr != nil {
-				logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
-			}
+		} else {
+			errMsg = ptr.From(err).Error()
+			status = int32(entity.DocumentStatusChunking)
 		}
-	}()
 
-	// clear
-	collectionName := getCollectionName(doc.KnowledgeID)
-
-	if !doc.IsAppend {
-		ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
-		if err != nil {
-			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document slice ids failed, err: %v", err)))
-		}
-		if len(ids) > 0 {
-			if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
-				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("delete document slice failed, err: %v", err)))
-			}
-			for _, manager := range k.searchStoreManagers {
-				s, err := manager.GetSearchStore(ctx, collectionName)
-				if err != nil {
-					return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
-				}
-				if err := s.Delete(ctx, slices.Transform(event.SliceIDs, func(id int64) string {
-					return strconv.FormatInt(id, 10)
-				})); err != nil {
-					logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
-					return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
-				}
-			}
-		}
+		k.setDocumentStatus(ctx, event.Document.ID, status, errMsg)
 	}
+}
 
-	// set chunk status
-	if err = k.documentRepo.SetStatus(ctx, doc.ID, int32(entity.DocumentStatusChunking), ""); err != nil {
+// beginIndexingProcess starts the indexing process
+func (k *knowledgeSVC) beginIndexingProcess(ctx context.Context, doc *entity.Document) error {
+	err := k.documentRepo.SetStatus(ctx, doc.ID, int32(entity.DocumentStatusChunking), "")
+	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("set document status failed, err: %v", err)))
 	}
+	return nil
+}
 
-	// parse & chunk
+// processDocumentParsing handles document parsing and caching
+func (k *knowledgeSVC) processDocumentParsing(ctx context.Context, doc *entity.Document) (
+	[]*schema.Document, *indexDocCacheRecord, error) {
+
+	cacheKey := fmt.Sprintf(indexDocCacheKey, doc.KnowledgeID, doc.ID)
+	cacheRecord := &indexDocCacheRecord{}
+
+	// Try to get cached parse results
+	val, err := k.cacheCli.Get(ctx, cacheKey).Result()
+	if err == nil {
+		if err = sonic.UnmarshalString(val, &cacheRecord); err != nil {
+			return nil, nil, errorx.New(errno.ErrKnowledgeParseJSONCode,
+				errorx.KV("msg", fmt.Sprintf("parse cache record failed, err: %v", err)))
+		}
+	}
+
+	// Parse document if not cached
+	if err != nil || len(cacheRecord.ParseUri) == 0 {
+		return k.parseAndCacheDocument(ctx, doc, cacheRecord, cacheKey)
+	}
+
+	// Load parse results from cache
+	return k.loadParsedDocument(ctx, cacheRecord)
+}
+
+// parseAndCacheDocument parses the document and caches the results
+func (k *knowledgeSVC) parseAndCacheDocument(ctx context.Context, doc *entity.Document,
+	cacheRecord *indexDocCacheRecord, cacheKey string) ([]*schema.Document, *indexDocCacheRecord, error) {
+
+	// Get document content from storage
 	bodyBytes, err := k.storage.GetObject(ctx, doc.URI)
 	if err != nil {
-		return errorx.New(errno.ErrKnowledgeGetObjectFailCode, errorx.KV("msg", fmt.Sprintf("get object failed, err: %v", err)))
+		return nil, nil, errorx.New(errno.ErrKnowledgeGetObjectFailCode,
+			errorx.KV("msg", fmt.Sprintf("get object failed, err: %v", err)))
 	}
 
+	// Get appropriate parser for document type
 	docParser, err := k.parseManager.GetParser(convert.DocumentToParseConfig(doc))
 	if err != nil {
-		return errorx.New(errno.ErrKnowledgeGetParserFailCode, errorx.KV("msg", fmt.Sprintf("get parser failed, err: %v", err)))
+		return nil, nil, errorx.New(errno.ErrKnowledgeGetParserFailCode,
+			errorx.KV("msg", fmt.Sprintf("get parser failed, err: %v", err)))
 	}
 
+	// Parse document content
 	parseResult, err := docParser.Parse(ctx, bytes.NewReader(bodyBytes), parser.WithExtraMeta(map[string]any{
 		document.MetaDataKeyCreatorID: doc.CreatorID,
 		document.MetaDataKeyExternalStorage: map[string]any{
@@ -236,77 +309,303 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 		},
 	}))
 	if err != nil {
-		return errorx.New(errno.ErrKnowledgeParserParseFailCode, errorx.KV("msg", fmt.Sprintf("parse document failed, err: %v", err)))
+		return nil, nil, errorx.New(errno.ErrKnowledgeParserParseFailCode,
+			errorx.KV("msg", fmt.Sprintf("parse document failed, err: %v", err)))
 	}
 
-	if doc.Type == knowledge.DocumentTypeTable {
-		noData, err := document.GetDocumentsColumnsOnly(parseResult)
-		if err != nil { // unexpected
-			return errorx.New(errno.ErrKnowledgeNonRetryableCode,
-				errorx.KVf("reason", "[indexDocument] get table data status failed, err: %v", err))
-		}
-		if noData {
-			parseResult = nil // clear parse result
-		}
+	// Cache parse results
+	if err := k.cacheParseResults(ctx, doc, parseResult, cacheRecord, cacheKey); err != nil {
+		return nil, nil, err
 	}
 
-	// set id
-	allIDs := make([]int64, 0, len(parseResult))
-	for l := 0; l < len(parseResult); l += 100 {
-		r := min(l+100, len(parseResult))
-		batchSize := r - l
-		ids, err := k.idgen.GenMultiIDs(ctx, batchSize)
-		if err != nil {
-			return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenMultiIDs failed, err: %v", err)))
-		}
-		allIDs = append(allIDs, ids...)
-		for i := 0; i < batchSize; i++ {
-			id := ids[i]
-			index := l + i
-			parseResult[index].ID = strconv.FormatInt(id, 10)
-		}
-	}
+	return parseResult, cacheRecord, nil
+}
 
-	convertFn := d2sMapping[doc.Type]
-	if convertFn == nil {
-		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", "convertFn is empty"))
-	}
+// cacheParseResults stores parse results in persistent storage and cache
+func (k *knowledgeSVC) cacheParseResults(ctx context.Context, doc *entity.Document,
+	parseResult []*schema.Document, cacheRecord *indexDocCacheRecord, cacheKey string) error {
 
-	sliceEntities, err := slices.TransformWithErrorCheck(parseResult, func(a *schema.Document) (*entity.Slice, error) {
-		return convertFn(a, doc.KnowledgeID, doc.ID, doc.CreatorID)
-	})
+	parseResultData, err := sonic.Marshal(parseResult)
 	if err != nil {
-		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("convert document failed, err: %v", err)))
+		return errorx.New(errno.ErrKnowledgeParseJSONCode,
+			errorx.KV("msg", fmt.Sprintf("marshal parse result failed, err: %v", err)))
 	}
 
-	// save slices
-	if doc.Type == knowledge.DocumentTypeTable {
-		// Table type to insert data into a database
-		err = k.upsertDataToTable(ctx, &doc.TableInfo, sliceEntities)
+	fileName := fmt.Sprintf("FileBizType.Knowledge/%d_%d.txt", doc.CreatorID, doc.ID)
+	if err = k.storage.PutObject(ctx, fileName, parseResultData); err != nil {
+		return errorx.New(errno.ErrKnowledgePutObjectFailCode,
+			errorx.KV("msg", fmt.Sprintf("put object failed, err: %v", err)))
+	}
+
+	cacheRecord.ParseUri = fileName
+	return k.recordIndexDocumentStatus(ctx, cacheRecord, cacheKey)
+}
+
+// loadParsedDocument loads previously parsed document from cache
+func (k *knowledgeSVC) loadParsedDocument(ctx context.Context,
+	cacheRecord *indexDocCacheRecord) ([]*schema.Document, *indexDocCacheRecord, error) {
+
+	data, err := k.storage.GetObject(ctx, cacheRecord.ParseUri)
+	if err != nil {
+		return nil, nil, errorx.New(errno.ErrKnowledgeGetObjectFailCode,
+			errorx.KV("msg", fmt.Sprintf("get object failed, err: %v", err)))
+	}
+
+	var parseResult []*schema.Document
+	if err = sonic.Unmarshal(data, &parseResult); err != nil {
+		return nil, nil, errorx.New(errno.ErrKnowledgeParseJSONCode,
+			errorx.KV("msg", fmt.Sprintf("marshal parse result failed, err: %v", err)))
+	}
+
+	return parseResult, cacheRecord, nil
+}
+
+// handleTableDocument handles special processing for table-type documents
+func (k *knowledgeSVC) handleTableDocument(ctx context.Context,
+	doc *entity.Document, parseResult []*schema.Document) error {
+
+	noData, err := document.GetDocumentsColumnsOnly(parseResult)
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeNonRetryableCode,
+			errorx.KVf("reason", "[indexDocument] get table data status failed, err: %v", err))
+	}
+	if noData {
+		parseResult = nil // clear parse result
+	}
+	return nil
+}
+
+// processDocumentChunks processes document chunks in batches
+func (k *knowledgeSVC) processDocumentChunks(ctx context.Context,
+	doc *entity.Document, parseResult []*schema.Document, cacheRecord *indexDocCacheRecord) error {
+
+	batchSize := 100
+	progressbar := progressbar.NewProgressBar(ctx, doc.ID,
+		int64(len(parseResult)*len(k.searchStoreManagers)), k.cacheCli, true)
+
+	if err := progressbar.AddN(int(cacheRecord.LastProcessedNumber) * len(k.searchStoreManagers)); err != nil {
+		return errorx.New(errno.ErrKnowledgeSystemCode,
+			errorx.KV("msg", fmt.Sprintf("add progress bar failed, err: %v", err)))
+	}
+
+	// Process chunks in batches
+	for i := int(cacheRecord.LastProcessedNumber); i < len(parseResult); i += batchSize {
+		chunks := parseResult[i:min(i+batchSize, len(parseResult))]
+		if err := k.batchProcessSlice(ctx, doc, i, chunks, cacheRecord, progressbar); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// finalizeDocumentIndexing completes the document indexing process
+func (k *knowledgeSVC) finalizeDocumentIndexing(ctx context.Context, knowledgeID, documentID int64) error {
+	if err := k.documentRepo.SetStatus(ctx, documentID, int32(entity.DocumentStatusEnable), ""); err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("set document status failed, err: %v", err)))
+	}
+	if err := k.documentRepo.UpdateDocumentSliceInfo(ctx, documentID); err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update document slice info failed, err: %v", err)))
+	}
+	if err := k.cacheCli.Del(ctx, fmt.Sprintf(indexDocCacheKey, knowledgeID, documentID)).Err(); err != nil {
+		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("del cache failed, err: %v", err)))
+	}
+	return nil
+}
+
+// batchProcessSlice processes a batch of document slices
+func (k *knowledgeSVC) batchProcessSlice(ctx context.Context, doc *entity.Document,
+	startIdx int, parseResult []*schema.Document, cacheRecord *indexDocCacheRecord,
+	progressBar progressbarContract.ProgressBar) error {
+
+	collectionName := getCollectionName(doc.KnowledgeID)
+	length := len(parseResult)
+	var ids []int64
+	var err error
+	// Generate IDs for this batch
+	if len(cacheRecord.ProcessingIDs) == 0 {
+		ids, err = k.genMultiIDs(ctx, length)
 		if err != nil {
+			return err
+		}
+	} else {
+		ids = cacheRecord.ProcessingIDs
+	}
+	for idx := range parseResult {
+		parseResult[idx].ID = strconv.FormatInt(ids[idx], 10)
+	}
+	// Update cache record with processing IDs
+	cacheRecord.ProcessingIDs = ids
+	if err := k.recordIndexDocumentStatus(ctx, cacheRecord,
+		fmt.Sprintf(indexDocCacheKey, doc.KnowledgeID, doc.ID)); err != nil {
+		return err
+	}
+
+	// Convert documents to slices
+	sliceEntities, err := k.convertToSlices(doc, parseResult)
+	if err != nil {
+		return err
+	}
+
+	// Handle table-type documents
+	if doc.Type == knowledge.DocumentTypeTable {
+		if err := k.upsertDataToTable(ctx, &doc.TableInfo, sliceEntities); err != nil {
 			logs.CtxErrorf(ctx, "[indexDocument] insert data to table failed, err: %v", err)
 			return err
 		}
 	}
 
+	// Store slices in database
+
+	if err := k.storeSlicesInDB(ctx, doc, parseResult, startIdx, ids); err != nil {
+		return err
+	}
+
+	// Index slices in search stores
+	if err := k.indexSlicesInSearchStores(ctx, doc, collectionName, sliceEntities,
+		cacheRecord, progressBar); err != nil {
+		return err
+	}
+
+	// Update cache record after successful processing
+	cacheRecord.LastProcessedNumber = int64(startIdx) + int64(length)
+	cacheRecord.ProcessingIDs = nil
+
+	// Mark slices as done
+	err = k.sliceRepo.BatchSetStatus(ctx, ids, int32(model.SliceStatusDone), "")
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("batch set slice status failed, err: %v", err)))
+	}
+
+	if err := k.recordIndexDocumentStatus(ctx, cacheRecord,
+		fmt.Sprintf(indexDocCacheKey, doc.KnowledgeID, doc.ID)); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// convertToSlices converts parsed documents to slice entities
+func (k *knowledgeSVC) convertToSlices(doc *entity.Document, parseResult []*schema.Document) ([]*entity.Slice, error) {
+
+	convertFn := d2sMapping[doc.Type]
+	if convertFn == nil {
+		return nil, errorx.New(errno.ErrKnowledgeSystemCode,
+			errorx.KV("msg", "convertFn is empty"))
+	}
+
+	return slices.TransformWithErrorCheck(parseResult, func(a *schema.Document) (*entity.Slice, error) {
+		return convertFn(a, doc.KnowledgeID, doc.ID, doc.CreatorID)
+	})
+}
+
+// cleanupPreviousProcessing cleans up partially processed data from previous attempts
+func (k *knowledgeSVC) cleanupPreviousProcessing(ctx context.Context, doc *entity.Document) error {
+	collectionName := getCollectionName(doc.KnowledgeID)
+	if doc.IsAppend || doc.Type == knowledge.DocumentTypeImage {
+		return nil
+	}
+	ids, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{doc.ID})
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get document slice ids failed, err: %v", err)))
+	}
+	if len(ids) > 0 {
+		if err = k.sliceRepo.DeleteByDocument(ctx, doc.ID); err != nil {
+			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("delete document slice failed, err: %v", err)))
+		}
+
+		for _, manager := range k.searchStoreManagers {
+			s, err := manager.GetSearchStore(ctx, collectionName)
+			if err != nil {
+				return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
+			}
+			if err := s.Delete(ctx, slices.Transform(ids, func(id int64) string {
+				return strconv.FormatInt(id, 10)
+			})); err != nil {
+				logs.Errorf("[indexDocument] delete knowledge failed, err: %v", err)
+				return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("delete search store failed, err: %v", err)))
+			}
+		}
+	}
+	if doc.Type == knowledge.DocumentTypeTable {
+		_, err := k.rdb.DeleteData(ctx, &rdb.DeleteDataRequest{
+			TableName: doc.TableInfo.PhysicalTableName,
+			Where: &rdb.ComplexCondition{
+				Conditions: []*rdb.Condition{
+					{
+						Field:    consts.RDBFieldID,
+						Operator: rdbEntity.OperatorIn,
+						Value:    ids,
+					},
+				},
+			},
+		})
+		if err != nil {
+			logs.CtxErrorf(ctx, "delete data failed, err: %v", err)
+			return errorx.New(errno.ErrKnowledgeCrossDomainCode, errorx.KV("msg", err.Error()))
+		}
+	}
+	return nil
+}
+
+// storeSlicesInDB stores slice data in the database
+func (k *knowledgeSVC) storeSlicesInDB(ctx context.Context, doc *entity.Document,
+	parseResult []*schema.Document, startIdx int, ids []int64) error {
+
 	var seqOffset float64
+	var err error
+
 	if doc.IsAppend {
 		seqOffset, err = k.sliceRepo.GetLastSequence(ctx, doc.ID)
 		if err != nil {
-			return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("get last sequence failed, err: %v", err)))
+			return errorx.New(errno.ErrKnowledgeDBCode,
+				errorx.KV("msg", fmt.Sprintf("get last sequence failed, err: %v", err)))
 		}
 		seqOffset += 1
 	}
-
+	if doc.Type == knowledge.DocumentTypeImage {
+		if len(parseResult) != 0 {
+			slices, _, err := k.sliceRepo.FindSliceByCondition(ctx, &entity.WhereSliceOpt{DocumentID: doc.ID})
+			if err != nil {
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("find slice failed, err: %v", err)))
+			}
+			var slice *model.KnowledgeDocumentSlice
+			if len(slices) > 0 {
+				slice = slices[0]
+				slice.Content = parseResult[0].Content
+			} else {
+				id, err := k.idgen.GenID(ctx)
+				if err != nil {
+					return errorx.New(errno.ErrKnowledgeIDGenCode, errorx.KV("msg", fmt.Sprintf("GenID failed, err: %v", err)))
+				}
+				slice = &model.KnowledgeDocumentSlice{
+					ID:          id,
+					KnowledgeID: doc.KnowledgeID,
+					DocumentID:  doc.ID,
+					Content:     parseResult[0].Content,
+					CreatedAt:   time.Now().UnixMilli(),
+					UpdatedAt:   time.Now().UnixMilli(),
+					CreatorID:   doc.CreatorID,
+					SpaceID:     doc.SpaceID,
+					Status:      int32(model.SliceStatusProcessing),
+					FailReason:  "",
+				}
+			}
+			if err = k.sliceRepo.Update(ctx, slice); err != nil {
+				return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update slice failed, err: %v", err)))
+			}
+		}
+		return nil
+	}
 	sliceModels := make([]*model.KnowledgeDocumentSlice, 0, len(parseResult))
 	for i, src := range parseResult {
 		now := time.Now().UnixMilli()
 		sliceModel := &model.KnowledgeDocumentSlice{
-			ID:          allIDs[i],
+			ID:          ids[i],
 			KnowledgeID: doc.KnowledgeID,
 			DocumentID:  doc.ID,
 			Content:     parseResult[i].Content,
-			Sequence:    seqOffset + float64(i),
+			Sequence:    seqOffset + float64(i+startIdx),
 			CreatedAt:   now,
 			UpdatedAt:   now,
 			CreatorID:   doc.CreatorID,
@@ -314,83 +613,108 @@ func (k *knowledgeSVC) indexDocument(ctx context.Context, event *entity.Event) (
 			Status:      int32(model.SliceStatusProcessing),
 			FailReason:  "",
 		}
+
 		if doc.Type == knowledge.DocumentTypeTable {
+			convertFn := d2sMapping[doc.Type]
 			sliceEntity, err := convertFn(src, doc.KnowledgeID, doc.ID, doc.CreatorID)
 			if err != nil {
 				logs.CtxErrorf(ctx, "[indexDocument] convert document failed, err: %v", err)
-				return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("convert document failed, err: %v", err)))
+				return errorx.New(errno.ErrKnowledgeSystemCode,
+					errorx.KV("msg", fmt.Sprintf("convert document failed, err: %v", err)))
 			}
 			sliceModel.Content = sliceEntity.GetSliceContent()
 		}
+
 		sliceModels = append(sliceModels, sliceModel)
 	}
-	if err = k.sliceRepo.BatchCreate(ctx, sliceModels); err != nil {
-		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("batch create slice failed, err: %v", err)))
+
+	err = k.sliceRepo.BatchCreate(ctx, sliceModels)
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeDBCode,
+			errorx.KV("msg", fmt.Sprintf("batch create slice failed, err: %v", err)))
 	}
+	return nil
+}
 
-	defer func() {
-		if err != nil { // set slice status
-			if setStatusErr := k.sliceRepo.BatchSetStatus(ctx, allIDs, int32(model.SliceStatusFailed), err.Error()); setStatusErr != nil {
-				logs.CtxErrorf(ctx, "[indexDocument] set slice status failed, err: %v", setStatusErr)
-			}
-		}
-	}()
+// indexSlicesInSearchStores indexes slices in appropriate search stores
+func (k *knowledgeSVC) indexSlicesInSearchStores(ctx context.Context, doc *entity.Document,
+	collectionName string, sliceEntities []*entity.Slice, cacheRecord *indexDocCacheRecord,
+	progressBar progressbarContract.ProgressBar) error {
 
-	// to vectorstore
 	fields, err := k.mapSearchFields(doc)
 	if err != nil {
 		return err
 	}
 	indexingFields := getIndexingFields(fields)
 
-	// reformat docs, mainly for enableCompactTable
+	// Convert slices to search documents
 	ssDocs, err := slices.TransformWithErrorCheck(sliceEntities, func(a *entity.Slice) (*schema.Document, error) {
 		return k.slice2Document(ctx, doc, a)
 	})
 	if err != nil {
-		return errorx.New(errno.ErrKnowledgeSystemCode, errorx.KV("msg", fmt.Sprintf("reformat document failed, err: %v", err)))
+		return errorx.New(errno.ErrKnowledgeSystemCode,
+			errorx.KV("msg", fmt.Sprintf("reformat document failed, err: %v", err)))
 	}
-	progressbar := progressbar.NewProgressBar(ctx, doc.ID, int64(len(ssDocs)*len(k.searchStoreManagers)), k.cacheCli, true)
+
+	// Skip if it's an image document with empty content
+	if doc.Type == knowledge.DocumentTypeImage && len(ssDocs) == 1 && len(ssDocs[0].Content) == 0 {
+		return nil
+	}
+
+	// Index in each search store manager
 	for _, manager := range k.searchStoreManagers {
 		now := time.Now()
-		if err = manager.Create(ctx, &searchstore.CreateRequest{
+		if err := manager.Create(ctx, &searchstore.CreateRequest{
 			CollectionName: collectionName,
 			Fields:         fields,
 			CollectionMeta: nil,
 		}); err != nil {
-			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("create search store failed, err: %v", err)))
+			return errorx.New(errno.ErrKnowledgeSearchStoreCode,
+				errorx.KV("msg", fmt.Sprintf("create search store failed, err: %v", err)))
 		}
-		// Picture knowledge base kn: doc: slice = 1: n: n, maybe the content is empty, no need to write
-		if doc.Type == knowledge.DocumentTypeImage && len(ssDocs) == 1 && len(ssDocs[0].Content) == 0 {
-			continue
-		}
+
 		ss, err := manager.GetSearchStore(ctx, collectionName)
 		if err != nil {
-			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
+			return errorx.New(errno.ErrKnowledgeSearchStoreCode,
+				errorx.KV("msg", fmt.Sprintf("get search store failed, err: %v", err)))
 		}
+
 		if _, err = ss.Store(ctx, ssDocs,
 			searchstore.WithIndexerPartitionKey(fieldNameDocumentID),
 			searchstore.WithPartition(strconv.FormatInt(doc.ID, 10)),
 			searchstore.WithIndexingFields(indexingFields),
-			searchstore.WithProgressBar(progressbar),
+			searchstore.WithProgressBar(progressBar),
 		); err != nil {
-			return errorx.New(errno.ErrKnowledgeSearchStoreCode, errorx.KV("msg", fmt.Sprintf("store search store failed, err: %v", err)))
+			return errorx.New(errno.ErrKnowledgeSearchStoreCode,
+				errorx.KV("msg", fmt.Sprintf("store search store failed, err: %v", err)))
 		}
+
 		logs.CtxDebugf(ctx, "[indexDocument] ss type=%v, len(docs)=%d, finished after %d ms",
 			manager.GetType(), len(ssDocs), time.Now().Sub(now).Milliseconds())
-	}
-	// set slice status
-	if err = k.sliceRepo.BatchSetStatus(ctx, allIDs, int32(model.SliceStatusDone), ""); err != nil {
-		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("batch set slice status failed, err: %v", err)))
+		if err := k.recordIndexDocumentStatus(ctx, cacheRecord,
+			fmt.Sprintf(indexDocCacheKey, doc.KnowledgeID, doc.ID)); err != nil {
+			return err
+		}
 	}
 
-	// set document status
+	return nil
+}
 
-	if err = k.documentRepo.SetStatus(ctx, doc.ID, int32(entity.DocumentStatusEnable), ""); err != nil {
-		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("set document status failed, err: %v", err)))
+// setDocumentStatus updates document status with error handling
+func (k *knowledgeSVC) setDocumentStatus(ctx context.Context, docID int64, status int32, errMsg string) {
+	if setStatusErr := k.documentRepo.SetStatus(ctx, docID, status, errMsg); setStatusErr != nil {
+		logs.CtxErrorf(ctx, "[indexDocument] set document status failed, err: %v", setStatusErr)
 	}
-	if err = k.documentRepo.UpdateDocumentSliceInfo(ctx, event.Document.ID); err != nil {
-		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", fmt.Sprintf("update document slice info failed, err: %v", err)))
+}
+
+func (k *knowledgeSVC) recordIndexDocumentStatus(ctx context.Context, r *indexDocCacheRecord, cacheKey string) error {
+	data, err := sonic.Marshal(r)
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeParseJSONCode, errorx.KV("msg", fmt.Sprintf("marshal parse result failed, err: %v", err)))
+	}
+	err = k.cacheCli.Set(ctx, cacheKey, data, time.Hour*2).Err()
+	if err != nil {
+		return errorx.New(errno.ErrKnowledgeCacheClientSetFailCode, errorx.KV("msg", fmt.Sprintf("set cache failed, err: %v", err)))
 	}
 	return nil
 }

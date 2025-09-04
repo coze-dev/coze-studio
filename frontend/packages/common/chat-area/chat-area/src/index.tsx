@@ -301,3 +301,5 @@ export {
 } from '@coze-common/chat-core';
 export { type OnboardingSelectChangeCallback } from './context/chat-area-context/chat-area-callback';
 export { ChatInputArea } from './components/chat-input';
+export { type ChatMessage } from '@coze-arch/bot-api/developer_api';
+export { useBuiltinButtonStatus } from './hooks/uikit/use-builtin-button-status';

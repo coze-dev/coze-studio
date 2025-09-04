@@ -19,48 +19,37 @@ package compose
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/crossdomain/variable"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/qa"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/receiver"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/variable"
 )
 
 type State struct {
-	Answers              map[vo.NodeKey][]string                   `json:"answers,omitempty"`
-	Questions            map[vo.NodeKey][]*qa.Question             `json:"questions,omitempty"`
-	Inputs               map[vo.NodeKey]map[string]any             `json:"inputs,omitempty"`
-	NodeExeContexts      map[vo.NodeKey]*execute.Context           `json:"-"`
-	WorkflowExeContext   *execute.Context                          `json:"-"`
-	InterruptEvents      map[vo.NodeKey]*entity.InterruptEvent     `json:"interrupt_events,omitempty"`
-	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState `json:"nested_workflow_states,omitempty"`
+	NodeExeContexts      map[vo.NodeKey]*execute.Context               `json:"-"`
+	WorkflowExeContext   *execute.Context                              `json:"-"`
+	ExecutedNodes        map[vo.NodeKey]bool                           `json:"executed_nodes,omitempty"`
+	SourceInfos          map[vo.NodeKey]map[string]*schema2.SourceInfo `json:"source_infos,omitempty"`
+	Inputs               map[vo.NodeKey]map[string]any                 `json:"inputs,omitempty"`
+	NestedWorkflowStates map[vo.NodeKey]*nodes.NestedWorkflowState     `json:"nested_workflow_states,omitempty"`
 
-	ExecutedNodes map[vo.NodeKey]bool                           `json:"executed_nodes,omitempty"`
-	SourceInfos   map[vo.NodeKey]map[string]*schema2.SourceInfo `json:"source_infos,omitempty"`
-	GroupChoices  map[vo.NodeKey]map[string]int                 `json:"group_choices,omitempty"`
-
-	ToolInterruptEvents map[vo.NodeKey]map[string] /*ToolCallID*/ *entity.ToolInterruptEvent `json:"tool_interrupt_events,omitempty"`
-	LLMToResumeData     map[vo.NodeKey]string                                                `json:"llm_to_resume_data,omitempty"`
+	ResumeData         map[vo.NodeKey]string         `json:"resume_data,omitempty"`
+	IntermediateResult map[vo.NodeKey]map[string]any `json:"intermediate_result,omitempty"`
 }
 
 func init() {
 	_ = compose.RegisterSerializableType[*State]("schema_state")
-	_ = compose.RegisterSerializableType[[]*qa.Question]("qa_question_list")
-	_ = compose.RegisterSerializableType[qa.Question]("qa_question")
 	_ = compose.RegisterSerializableType[vo.NodeKey]("node_key")
 	_ = compose.RegisterSerializableType[*execute.Context]("exe_context")
 	_ = compose.RegisterSerializableType[execute.RootCtx]("root_ctx")
@@ -80,25 +69,22 @@ func init() {
 	_ = compose.RegisterSerializableType[*entity.WorkflowBasic]("workflow_basic")
 	_ = compose.RegisterSerializableType[vo.TerminatePlan]("terminate_plan")
 	_ = compose.RegisterSerializableType[*entity.ToolInterruptEvent]("tool_interrupt_event")
-	_ = compose.RegisterSerializableType[plugin.ExecuteConfig]("execute_config")
-	_ = compose.RegisterSerializableType[plugin.ExecuteMode]("execute_mode")
-	_ = compose.RegisterSerializableType[plugin.TaskType]("task_type")
-	_ = compose.RegisterSerializableType[plugin.SyncPattern]("sync_pattern")
-	_ = compose.RegisterSerializableType[plugin.Locator]("wf_locator")
-	_ = compose.RegisterSerializableType[plugin.BizType]("biz_type")
+	_ = compose.RegisterSerializableType[workflowModel.ExecuteConfig]("execute_config")
+	_ = compose.RegisterSerializableType[workflowModel.ExecuteMode]("execute_mode")
+	_ = compose.RegisterSerializableType[workflowModel.TaskType]("task_type")
+	_ = compose.RegisterSerializableType[workflowModel.SyncPattern]("sync_pattern")
+	_ = compose.RegisterSerializableType[workflowModel.Locator]("wf_locator")
+	_ = compose.RegisterSerializableType[workflowModel.BizType]("biz_type")
 	_ = compose.RegisterSerializableType[*execute.AppVariables]("app_variables")
-}
+	_ = compose.RegisterSerializableType[workflow2.WorkflowMode]("workflow_mode")
+	_ = compose.RegisterSerializableType[*schema.Message]("schema_message")
+	_ = compose.RegisterSerializableType[*crossmessage.WfMessage]("history_messages")
+	_ = compose.RegisterSerializableType[*crossmessage.Content]("content")
+	_ = compose.RegisterSerializableType[*model.PromptTokenDetails]("prompt_token_details")
 
-func (s *State) AddQuestion(nodeKey vo.NodeKey, question *qa.Question) {
-	s.Questions[nodeKey] = append(s.Questions[nodeKey], question)
-}
-
-func (s *State) AddAnswer(nodeKey vo.NodeKey, answer string) {
-	s.Answers[nodeKey] = append(s.Answers[nodeKey], answer)
-}
-
-func (s *State) GetQuestionsAndAnswers(nodeKey vo.NodeKey) ([]*qa.Question, []string) {
-	return s.Questions[nodeKey], s.Answers[nodeKey]
+	_ = compose.RegisterSerializableType[*vo.TypeInfo]("type_info")
+	_ = compose.RegisterSerializableType[vo.DataType]("data_type")
+	_ = compose.RegisterSerializableType[vo.FileSubType]("file_sub_type")
 }
 
 func (s *State) GetNodeCtx(key vo.NodeKey) (*execute.Context, bool, error) {
@@ -128,24 +114,6 @@ func (s *State) SetWorkflowCtx(value *execute.Context) error {
 	return nil
 }
 
-func (s *State) GetInterruptEvent(nodeKey vo.NodeKey) (*entity.InterruptEvent, bool, error) {
-	if v, ok := s.InterruptEvents[nodeKey]; ok {
-		return v, true, nil
-	}
-
-	return nil, false, nil
-}
-
-func (s *State) SetInterruptEvent(nodeKey vo.NodeKey, value *entity.InterruptEvent) error {
-	s.InterruptEvents[nodeKey] = value
-	return nil
-}
-
-func (s *State) DeleteInterruptEvent(nodeKey vo.NodeKey) error {
-	delete(s.InterruptEvents, nodeKey)
-	return nil
-}
-
 func (s *State) GetNestedWorkflowState(key vo.NodeKey) (*nodes.NestedWorkflowState, bool, error) {
 	if v, ok := s.NestedWorkflowStates[key]; ok {
 		return v, true, nil
@@ -157,16 +125,8 @@ func (s *State) SaveNestedWorkflowState(key vo.NodeKey, value *nodes.NestedWorkf
 	return nil
 }
 
-func (s *State) SaveDynamicChoice(nodeKey vo.NodeKey, groupToChoice map[string]int) {
-	s.GroupChoices[nodeKey] = groupToChoice
-}
-
-func (s *State) GetDynamicChoice(nodeKey vo.NodeKey) map[string]int {
-	return s.GroupChoices[nodeKey]
-}
-
 func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.FieldStreamType, error) {
-	choices, ok := s.GroupChoices[nodeKey]
+	choices, ok := s.IntermediateResult[nodeKey]
 	if !ok {
 		return schema2.FieldMaybeStream, fmt.Errorf("choice not found for node %s", nodeKey)
 	}
@@ -176,7 +136,7 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.
 		return schema2.FieldMaybeStream, fmt.Errorf("choice not found for node %s and group %s", nodeKey, group)
 	}
 
-	if choice == -1 { // this group picks none of the elements
+	if choice == int64(-1) { // this group picks none of the elements
 		return schema2.FieldNotStream, nil
 	}
 
@@ -194,7 +154,7 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.
 		return schema2.FieldNotStream, fmt.Errorf("dynamic group %s of node %s does not contain any sub sources", group, nodeKey)
 	}
 
-	subInfo, ok := groupInfo.SubSources[strconv.Itoa(choice)]
+	subInfo, ok := groupInfo.SubSources[fmt.Sprintf("%v", choice)]
 	if !ok {
 		return schema2.FieldNotStream, fmt.Errorf("dynamic group %s of node %s does not contain sub source for choice %d", group, nodeKey, choice)
 	}
@@ -216,7 +176,7 @@ func (s *State) GetDynamicStreamType(nodeKey vo.NodeKey, group string) (schema2.
 
 func (s *State) GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]schema2.FieldStreamType, error) {
 	result := make(map[string]schema2.FieldStreamType)
-	choices, ok := s.GroupChoices[nodeKey]
+	choices, ok := s.IntermediateResult[nodeKey]
 	if !ok {
 		return result, nil
 	}
@@ -232,26 +192,33 @@ func (s *State) GetAllDynamicStreamTypes(nodeKey vo.NodeKey) (map[string]schema2
 	return result, nil
 }
 
-func (s *State) SetToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string, ie *entity.ToolInterruptEvent) error {
-	if _, ok := s.ToolInterruptEvents[llmNodeKey]; !ok {
-		s.ToolInterruptEvents[llmNodeKey] = make(map[string]*entity.ToolInterruptEvent)
+func (s *State) GetSourceForPath(nodeKey vo.NodeKey, path compose.FieldPath) *schema2.SourceInfo {
+	if len(s.SourceInfos) == 0 {
+		return nil
 	}
-	s.ToolInterruptEvents[llmNodeKey][toolCallID] = ie
-	return nil
+
+	sources, ok := s.SourceInfos[nodeKey]
+	if !ok || sources == nil {
+		return nil
+	}
+
+	var source *schema2.SourceInfo
+	for _, p := range path {
+		source, ok = sources[p]
+		if !ok {
+			return nil
+		}
+	}
+
+	return source
 }
 
-func (s *State) GetToolInterruptEvents(llmNodeKey vo.NodeKey) (map[string]*entity.ToolInterruptEvent, error) {
-	return s.ToolInterruptEvents[llmNodeKey], nil
-}
-
-func (s *State) ResumeToolInterruptEvent(llmNodeKey vo.NodeKey, toolCallID string) (string, error) {
-	resumeData, ok := s.LLMToResumeData[llmNodeKey]
-	if !ok {
-		return "", fmt.Errorf("resume data not found for llm node %s", llmNodeKey)
+func (s *State) GetFullSources(nodeKey vo.NodeKey) map[string]*schema2.SourceInfo {
+	if len(s.SourceInfos) == 0 {
+		return nil
 	}
-	delete(s.ToolInterruptEvents[llmNodeKey], toolCallID)
-	delete(s.LLMToResumeData, llmNodeKey)
-	return resumeData, nil
+
+	return s.SourceInfos[nodeKey]
 }
 
 func (s *State) NodeExecuted(key vo.NodeKey) bool {
@@ -262,20 +229,34 @@ func (s *State) NodeExecuted(key vo.NodeKey) bool {
 	return ok
 }
 
+func (s *State) GetAndClearResumeData(nodeKey vo.NodeKey) (string, bool) {
+	rd, ok := s.ResumeData[nodeKey]
+	if !ok {
+		return "", false
+	}
+
+	delete(s.ResumeData, nodeKey)
+	return rd, true
+}
+
+func (s *State) SetIntermediateResult(nodeKey vo.NodeKey, r map[string]any) {
+	s.IntermediateResult[nodeKey] = r
+}
+
+func (s *State) GetIntermediateResult(nodeKey vo.NodeKey) map[string]any {
+	return s.IntermediateResult[nodeKey]
+}
+
 func GenState() compose.GenLocalState[*State] {
 	return func(ctx context.Context) (state *State) {
 		return &State{
-			Answers:              make(map[vo.NodeKey][]string),
-			Questions:            make(map[vo.NodeKey][]*qa.Question),
 			Inputs:               make(map[vo.NodeKey]map[string]any),
 			NodeExeContexts:      make(map[vo.NodeKey]*execute.Context),
-			InterruptEvents:      make(map[vo.NodeKey]*entity.InterruptEvent),
 			NestedWorkflowStates: make(map[vo.NodeKey]*nodes.NestedWorkflowState),
 			ExecutedNodes:        make(map[vo.NodeKey]bool),
 			SourceInfos:          make(map[vo.NodeKey]map[string]*schema2.SourceInfo),
-			GroupChoices:         make(map[vo.NodeKey]map[string]int),
-			ToolInterruptEvents:  make(map[vo.NodeKey]map[string]*entity.ToolInterruptEvent),
-			LLMToResumeData:      make(map[vo.NodeKey]string),
+			ResumeData:           make(map[vo.NodeKey]string),
+			IntermediateResult:   make(map[vo.NodeKey]map[string]any),
 		}
 	}
 }
@@ -286,16 +267,9 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 		streamHandlers []compose.StreamStatePreHandler[map[string]any, *State]
 	)
 
-	if s.Type == entity.NodeTypeQuestionAnswer {
+	if entity.NodeMetaByNodeType(s.Type).PersistInputOnInterrupt {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			// even on first execution before any interruption, the input could be empty
-			// so we need to check if we have stored any questions in state, to decide whether this is the first execution
-			isFirst := false
-			if _, ok := state.Questions[s.Key]; !ok {
-				isFirst = true
-			}
-
-			if isFirst {
+			if _, ok := state.Inputs[s.Key]; !ok {
 				state.Inputs[s.Key] = in
 				return in, nil
 			}
@@ -305,29 +279,19 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 				out[k] = v
 			}
 
-			out[qa.QuestionsKey] = state.Questions[s.Key]
-			out[qa.AnswersKey] = state.Answers[s.Key]
 			return out, nil
 		})
-	} else if s.Type == entity.NodeTypeInputReceiver {
-		// InputReceiver node's only input is set by StateModifier when resuming
+	}
+
+	if s.FullSources != nil && !stream {
 		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			if userInput, ok := state.Inputs[s.Key]; ok && len(userInput) > 0 {
-				return userInput, nil
+			resolved, err := nodes.ResolveStreamSources(ctx, s.FullSources, state, state)
+			if err != nil {
+				return nil, err
 			}
+
+			state.SourceInfos[s.Key] = resolved
 			return in, nil
-		})
-	} else if entity.NodeMetaByNodeType(s.Type).IsComposite {
-		handlers = append(handlers, func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
-			if _, ok := state.Inputs[s.Key]; !ok { // first execution, store input for potential resume later
-				state.Inputs[s.Key] = in
-				return in, nil
-			}
-			out := make(map[string]any)
-			for k, v := range state.Inputs[s.Key] {
-				out[k] = v
-			}
-			return out, nil
 		})
 	}
 
@@ -336,6 +300,11 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 		if handlerForVars != nil {
 			handlers = append(handlers, handlerForVars)
 		}
+
+		if len(handlers) == 0 {
+			return nil
+		}
+
 		stateHandler := func(ctx context.Context, in map[string]any, state *State) (map[string]any, error) {
 			var err error
 			for _, h := range handlers {
@@ -350,9 +319,14 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 		return compose.WithStatePreHandler(stateHandler)
 	}
 
-	if s.Type == entity.NodeTypeVariableAggregator {
+	if s.FullSources != nil {
 		streamHandlers = append(streamHandlers, func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
-			state.SourceInfos[s.Key] = s.FullSources
+			resolved, err := nodes.ResolveStreamSources(ctx, s.FullSources, state, state)
+			if err != nil {
+				return nil, err
+			}
+
+			state.SourceInfos[s.Key] = resolved
 			return in, nil
 		})
 	}
@@ -361,11 +335,6 @@ func statePreHandler(s *schema2.NodeSchema, stream bool) compose.GraphAddNodeOpt
 	if handlerForVars != nil {
 		streamHandlers = append(streamHandlers, handlerForVars)
 	}
-
-	/*handlerForStreamSource := s.streamStatePreHandlerForStreamSources()
-	if handlerForStreamSource != nil {
-		streamHandlers = append(streamHandlers, handlerForStreamSource)
-	}*/
 
 	if len(streamHandlers) > 0 {
 		streamHandler := func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
@@ -533,163 +502,6 @@ func streamStatePreHandlerForVars(s *schema2.NodeSchema) compose.StreamStatePreH
 		variablesStream := schema.StreamReaderFromArray([]map[string]any{variables})
 
 		return schema.MergeStreamReaders([]*schema.StreamReader[map[string]any]{in, variablesStream}), nil
-	}
-}
-
-func streamStatePreHandlerForStreamSources(s *schema2.NodeSchema) compose.StreamStatePreHandler[map[string]any, *State] {
-	// if it does not have source info, do not add this pre handler
-	if s.Configs == nil {
-		return nil
-	}
-
-	switch s.Type {
-	case entity.NodeTypeVariableAggregator, entity.NodeTypeOutputEmitter:
-		return nil
-	case entity.NodeTypeExit:
-		terminatePlan := s.Configs.(*exit.Config).TerminatePlan
-		if terminatePlan != vo.ReturnVariables {
-			return nil
-		}
-	default:
-		// all other node can only accept non-stream inputs, relying on Eino's automatically stream concatenation.
-	}
-
-	sourceInfo := s.FullSources
-	if len(sourceInfo) == 0 {
-		return nil
-	}
-	// check the node's input sources, if it does not have any streaming sources, no need to add pre handler
-	// if one input is a stream, then in the pre handler, will trim the KeyIsFinished suffix.
-	// if one input may be a stream, then in the pre handler, will resolve it first, then handle it.
-	type resolvedStreamSource struct {
-		intermediate     bool
-		mustBeStream     bool
-		subStreamSources map[string]resolvedStreamSource
-	}
-
-	var (
-		anyStream bool
-		checker   func(source *schema2.SourceInfo) bool
-	)
-	checker = func(source *schema2.SourceInfo) bool {
-		if source.FieldType != schema2.FieldNotStream {
-			return true
-		}
-		for _, subSource := range source.SubSources {
-			if subAnyStream := checker(subSource); subAnyStream {
-				return true
-			}
-		}
-
-		return false
-	}
-	for _, source := range sourceInfo {
-		if hasStream := checker(source); hasStream {
-			anyStream = true
-			break
-		}
-	}
-
-	if !anyStream {
-		return nil
-	}
-
-	return func(ctx context.Context, in *schema.StreamReader[map[string]any], state *State) (*schema.StreamReader[map[string]any], error) {
-		resolved := map[string]resolvedStreamSource{}
-
-		var resolver func(source schema2.SourceInfo) (result *resolvedStreamSource, err error)
-		resolver = func(source schema2.SourceInfo) (result *resolvedStreamSource, err error) {
-			if source.IsIntermediate {
-				result = &resolvedStreamSource{
-					intermediate:     true,
-					subStreamSources: map[string]resolvedStreamSource{},
-				}
-				for key, subSource := range source.SubSources {
-					subResult, subE := resolver(*subSource)
-					if subE != nil {
-						return nil, subE
-					}
-					if subResult != nil {
-						result.subStreamSources[key] = *subResult
-					}
-				}
-
-				return result, nil
-			}
-
-			streamType := source.FieldType
-			if streamType == schema2.FieldMaybeStream {
-				streamType, err = state.GetDynamicStreamType(source.FromNodeKey, source.FromPath[0])
-				if err != nil {
-					return nil, err
-				}
-			}
-
-			if streamType == schema2.FieldNotStream {
-				return nil, nil
-			}
-
-			result = &resolvedStreamSource{
-				mustBeStream: true,
-			}
-			return result, nil
-		}
-
-		for key, source := range sourceInfo {
-			result, err := resolver(*source)
-			if err != nil {
-				return nil, err
-			}
-			if result != nil {
-				resolved[key] = *result
-			}
-		}
-
-		var converter func(v any, resolvedSource resolvedStreamSource) any
-		converter = func(v any, resolvedSource resolvedStreamSource) any {
-			if resolvedSource.intermediate {
-				vMap, ok := v.(map[string]any)
-				if !ok {
-					panic("intermediate value is not map[string]any")
-				}
-				outMap := make(map[string]any, len(vMap))
-				for k := range vMap {
-					subResolvedSource, ok := resolvedSource.subStreamSources[k]
-					if !ok { // not a stream field
-						outMap[k] = vMap[k]
-						continue
-					}
-
-					subV := converter(vMap[k], subResolvedSource)
-					outMap[k] = subV
-				}
-
-				return outMap
-			}
-
-			vStr, ok := v.(string)
-			if !ok {
-				panic("stream field is not string")
-			}
-
-			return strings.TrimSuffix(vStr, nodes.KeyIsFinished)
-		}
-
-		streamConverter := func(inChunk map[string]any) (outChunk map[string]any, chunkErr error) {
-			outChunk = make(map[string]any, len(inChunk))
-			for k, v := range inChunk {
-				if resolvedSource, ok := resolved[k]; !ok {
-					outChunk[k] = v // not a stream field
-				} else {
-					vOut := converter(v, resolvedSource)
-					outChunk[k] = vOut
-				}
-			}
-
-			return outChunk, nil
-		}
-
-		return schema.StreamReaderWithConvert(in, streamConverter), nil
 	}
 }
 
@@ -903,47 +715,13 @@ func streamStatePostHandlerForVars(s *schema2.NodeSchema) compose.StreamStatePos
 	}
 }
 
-func GenStateModifierByEventType(e entity.InterruptEventType,
+func GenStateModifierByEventType(_ entity.InterruptEventType,
 	nodeKey vo.NodeKey,
 	resumeData string,
-	exeCfg plugin.ExecuteConfig) (stateModifier compose.StateModifier) {
-	// TODO: can we unify them all to a map[NodeKey]resumeData?
-	switch e {
-	case entity.InterruptEventInput:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
-			if exeCfg.BizType == plugin.BizTypeAgent {
-				m := make(map[string]any)
-				sList := strings.Split(resumeData, "\n")
-				for _, s := range sList {
-					firstColon := strings.Index(s, ":")
-					k := s[:firstColon]
-					v := s[firstColon+1:]
-					m[k] = v
-				}
-				resumeData, err = sonic.MarshalString(m)
-				if err != nil {
-					return err
-				}
-			}
-
-			input := map[string]any{
-				receiver.ReceivedDataKey: resumeData,
-			}
-			state.(*State).Inputs[nodeKey] = input
-			return nil
-		}
-	case entity.InterruptEventQuestion:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-			state.(*State).AddAnswer(nodeKey, resumeData)
-			return nil
-		}
-	case entity.InterruptEventLLM:
-		stateModifier = func(ctx context.Context, path compose.NodePath, state any) error {
-			state.(*State).LLMToResumeData[nodeKey] = resumeData
-			return nil
-		}
-	default:
-		panic(fmt.Sprintf("unimplemented interrupt event type: %v", e))
+	_ workflowModel.ExecuteConfig) (stateModifier compose.StateModifier) {
+	stateModifier = func(ctx context.Context, path compose.NodePath, state any) (err error) {
+		state.(*State).ResumeData[nodeKey] = resumeData
+		return nil
 	}
 
 	return stateModifier

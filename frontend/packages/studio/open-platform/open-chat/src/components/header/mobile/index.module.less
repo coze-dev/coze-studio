@@ -1,0 +1,43 @@
+/* stylelint-disable declaration-no-important */
+.header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  height: 72px;
+  padding: 24px 16px 16px;
+
+  .conversation-list-btn {
+    margin-right: 8px;
+  }
+
+  .avatar {
+    width: 28px;
+    height: 28px;
+    margin-right: 15px;
+  }
+
+  .title {
+    flex: 1 1 auto;
+    font-size: 20px;
+    margin-right: 12px;
+    font-weight: 700;
+    color: #000000d9;
+  }
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  &.bg-theme {
+    .icon-btn,
+    .title {
+      color: #fff;
+    }
+
+    .icon-btn:disabled,
+    .icon-btn:hover {
+      color: rgba(255, 255, 255, 80%) !important;
+    }
+  }
+}

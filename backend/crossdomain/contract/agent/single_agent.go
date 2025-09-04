@@ -21,15 +21,30 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 )
 
 // Requests and responses must not reference domain entities and can only use models under api/model/crossdomain.
 type SingleAgent interface {
-	StreamExecute(ctx context.Context, historyMsg []*message.Message, query *message.Message,
-		agentRuntime *singleagent.AgentRuntime) (*schema.StreamReader[*singleagent.AgentEvent], error)
+	StreamExecute(ctx context.Context,
+		agentRuntime *AgentRuntime) (*schema.StreamReader[*singleagent.AgentEvent], error)
 	ObtainAgentByIdentity(ctx context.Context, identity *singleagent.AgentIdentity) (*singleagent.SingleAgent, error)
+}
+
+type AgentRuntime struct {
+	AgentVersion     string
+	UserID           string
+	AgentID          int64
+	IsDraft          bool
+	SpaceID          int64
+	ConnectorID      int64
+	PreRetrieveTools []*agentrun.Tool
+
+	HistoryMsg []*schema.Message
+	Input      *schema.Message
+	ResumeInfo *ResumeInfo
 }
 
 type ResumeInfo = singleagent.InterruptInfo
@@ -45,3 +60,59 @@ func DefaultSVC() SingleAgent {
 func SetDefaultSVC(svc SingleAgent) {
 	defaultSVC = svc
 }
+
+type ShortcutCommandComponentType string
+
+const (
+	ShortcutCommandComponentTypeText   ShortcutCommandComponentType = "text"
+	ShortcutCommandComponentTypeSelect ShortcutCommandComponentType = "select"
+	ShortcutCommandComponentTypeFile   ShortcutCommandComponentType = "file"
+)
+
+var ShortcutCommandComponentTypeMapping = map[playground.InputType]ShortcutCommandComponentType{
+	playground.InputType_TextInput:   ShortcutCommandComponentTypeText,
+	playground.InputType_Select:      ShortcutCommandComponentTypeSelect,
+	playground.InputType_MixUpload:   ShortcutCommandComponentTypeFile,
+	playground.InputType_UploadImage: ShortcutCommandComponentTypeFile,
+	playground.InputType_UploadDoc:   ShortcutCommandComponentTypeFile,
+	playground.InputType_UploadTable: ShortcutCommandComponentTypeFile,
+	playground.InputType_UploadAudio: ShortcutCommandComponentTypeFile,
+	playground.InputType_VIDEO:       ShortcutCommandComponentTypeFile,
+	playground.InputType_ARCHIVE:     ShortcutCommandComponentTypeFile,
+	playground.InputType_CODE:        ShortcutCommandComponentTypeFile,
+	playground.InputType_TXT:         ShortcutCommandComponentTypeFile,
+	playground.InputType_PPT:         ShortcutCommandComponentTypeFile,
+}
+
+type ShortcutCommandComponentFileType string
+
+const (
+	ShortcutCommandComponentFileTypeImage ShortcutCommandComponentFileType = "image"
+	ShortcutCommandComponentFileTypeDoc   ShortcutCommandComponentFileType = "doc"
+	ShortcutCommandComponentFileTypeTable ShortcutCommandComponentFileType = "table"
+	ShortcutCommandComponentFileTypeAudio ShortcutCommandComponentFileType = "audio"
+	ShortcutCommandComponentFileTypeVideo ShortcutCommandComponentFileType = "video"
+	ShortcutCommandComponentFileTypeZip   ShortcutCommandComponentFileType = "zip"
+	ShortcutCommandComponentFileTypeCode  ShortcutCommandComponentFileType = "code"
+	ShortcutCommandComponentFileTypeTxt   ShortcutCommandComponentFileType = "txt"
+	ShortcutCommandComponentFileTypePPT   ShortcutCommandComponentFileType = "ppt"
+)
+
+var ShortcutCommandComponentFileTypeMapping = map[playground.InputType]ShortcutCommandComponentFileType{
+	playground.InputType_UploadImage: ShortcutCommandComponentFileTypeImage,
+	playground.InputType_UploadDoc:   ShortcutCommandComponentFileTypeDoc,
+	playground.InputType_UploadTable: ShortcutCommandComponentFileTypeTable,
+	playground.InputType_UploadAudio: ShortcutCommandComponentFileTypeAudio,
+	playground.InputType_VIDEO:       ShortcutCommandComponentFileTypeVideo,
+	playground.InputType_ARCHIVE:     ShortcutCommandComponentFileTypeZip,
+	playground.InputType_CODE:        ShortcutCommandComponentFileTypeCode,
+	playground.InputType_TXT:         ShortcutCommandComponentFileTypeTxt,
+	playground.InputType_PPT:         ShortcutCommandComponentFileTypePPT,
+}
+
+type ShortcutCommandToolType string
+
+const (
+	ShortcutCommandToolTypeWorkflow ShortcutCommandToolType = "workflow"
+	ShortcutCommandToolTypePlugin   ShortcutCommandToolType = "plugin"
+)

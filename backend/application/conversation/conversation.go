@@ -18,6 +18,8 @@ package conversation
 
 import (
 	"context"
+	"encoding/json"
+	"strings"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/conversation"
@@ -27,6 +29,7 @@ import (
 	conversationService "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/service"
 	message "github.com/coze-dev/coze-studio/backend/domain/conversation/message/service"
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
+	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -48,6 +51,7 @@ var ConversationSVC = new(ConversationApplicationService)
 
 type OpenapiAgentRunApplication struct {
 	ShortcutDomainSVC service.ShortcutCmd
+	UploaodDomainSVC  uploadService.UploadService
 }
 
 var ConversationOpenAPISVC = new(OpenapiAgentRunApplication)
@@ -119,10 +123,12 @@ func (c *ConversationApplicationService) CreateSection(ctx context.Context, conv
 	return convRes.SectionID, nil
 }
 
-func (c *ConversationApplicationService) CreateConversation(ctx context.Context, agentID int64, connectorID int64) (*conversation.CreateConversationResponse, error) {
+func (c *ConversationApplicationService) CreateConversation(ctx context.Context, req *conversation.CreateConversationRequest) (*conversation.CreateConversationResponse, error) {
 	resp := new(conversation.CreateConversationResponse)
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
+	connectorID := req.GetConnectorId()
+	agentID := req.GetBotId()
 	if connectorID != consts.WebSDKConnectorID {
 		connectorID = apiKeyInfo.ConnectorID
 	}
@@ -132,6 +138,7 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		UserID:      userID,
 		ConnectorID: connectorID,
 		Scene:       common.Scene_SceneOpenApi,
+		Ext:         parseMetaData(req.MetaData),
 	})
 	if err != nil {
 		return nil, err
@@ -141,10 +148,33 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		LastSectionID: &conversationData.SectionID,
 		ConnectorID:   &conversationData.ConnectorID,
 		CreatedAt:     conversationData.CreatedAt / 1000,
+		MetaData:      parseExt(conversationData.Ext),
 	}
 	return resp, nil
 }
 
+func parseMetaData(metaData map[string]string) string {
+	if metaData == nil {
+		return ""
+	}
+	j, err := json.Marshal(metaData)
+	if err != nil {
+		return ""
+	}
+	return string(j)
+}
+
+func parseExt(ext string) map[string]string {
+	if ext == "" {
+		return nil
+	}
+	var metaData map[string]string
+	err := json.Unmarshal([]byte(ext), &metaData)
+	if err != nil {
+		return nil
+	}
+	return metaData
+}
 func (c *ConversationApplicationService) ListConversation(ctx context.Context, req *conversation.ListConversationsApiRequest) (*conversation.ListConversationsApiResponse, error) {
 
 	resp := new(conversation.ListConversationsApiResponse)
@@ -167,6 +197,12 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 		Scene:       common.Scene_SceneOpenApi,
 		Page:        int(req.GetPageNum()),
 		Limit:       int(req.GetPageSize()),
+		OrderBy: func() *string {
+			if strings.ToLower(req.GetSortOrder()) == "asc" {
+				return ptr.Of("asc")
+			}
+			return nil
+		}(),
 	})
 	if err != nil {
 		return resp, err
@@ -177,12 +213,81 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 			LastSectionID: &conv.SectionID,
 			ConnectorID:   &conv.ConnectorID,
 			CreatedAt:     conv.CreatedAt / 1000,
+			Name:          ptr.Of(conv.Name),
+			MetaData:      parseExt(conv.Ext),
 		}
 	})
 
 	resp.Data = &conversation.ListConversationData{
 		Conversations: conversationData,
 		HasMore:       hasMore,
+	}
+	return resp, nil
+}
+
+func (c *ConversationApplicationService) DeleteConversation(ctx context.Context, req *conversation.DeleteConversationApiRequest) (*conversation.DeleteConversationApiResponse, error) {
+	resp := new(conversation.DeleteConversationApiResponse)
+	convID := req.GetConversationID()
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	if userID == 0 {
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission check failed"))
+	}
+
+	conversationDO, err := c.ConversationDomainSVC.GetByID(ctx, convID)
+	if err != nil {
+		return resp, err
+	}
+	if conversationDO == nil {
+		return resp, errorx.New(errno.ErrConversationNotFound)
+	}
+	if conversationDO.CreatorID != userID {
+		return resp, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "user not match"))
+	}
+	err = c.ConversationDomainSVC.Delete(ctx, convID)
+	if err != nil {
+		return resp, err
+	}
+	return resp, nil
+}
+
+func (c *ConversationApplicationService) UpdateConversation(ctx context.Context, req *conversation.UpdateConversationApiRequest) (*conversation.UpdateConversationApiResponse, error) {
+	resp := new(conversation.UpdateConversationApiResponse)
+	convID := req.GetConversationID()
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	if userID == 0 {
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission check failed"))
+	}
+
+	conversationDO, err := c.ConversationDomainSVC.GetByID(ctx, convID)
+	if err != nil {
+		return resp, err
+	}
+	if conversationDO == nil {
+		return resp, errorx.New(errno.ErrConversationNotFound)
+	}
+	if conversationDO.CreatorID != userID {
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
+	}
+
+	updateResult, err := c.ConversationDomainSVC.Update(ctx, &entity.UpdateMeta{
+		ID:   convID,
+		Name: req.GetName(),
+	})
+	if err != nil {
+		return resp, err
+	}
+	resp.ConversationData = &conversation.ConversationData{
+		Id:            updateResult.ID,
+		LastSectionID: &updateResult.SectionID,
+		ConnectorID:   &updateResult.ConnectorID,
+		CreatedAt:     updateResult.CreatedAt / 1000,
+		Name:          ptr.Of(updateResult.Name),
 	}
 	return resp, nil
 }

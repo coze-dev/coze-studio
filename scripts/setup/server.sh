@@ -1,4 +1,20 @@
 #!/bin/bash
+#
+# Copyright 2025 coze-dev Authors
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/../../" && pwd)"
@@ -12,6 +28,8 @@ ENV_FILE="$DOCKER_DIR/.env"
 
 if [[ "$APP_ENV" == "debug" ]]; then
     ENV_FILE="$DOCKER_DIR/.env.debug"
+elif [[ "$APP_ENV" == "oceanbase" ]]; then
+    ENV_FILE="$DOCKER_DIR/.env"
 fi
 
 source "$ENV_FILE"

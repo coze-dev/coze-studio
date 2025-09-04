@@ -88,3 +88,28 @@ struct DraftProjectCopyResponseData {
     2 :  common_struct.AuditData audit_data
     3 :  common_struct.User user_info
 }
+
+struct GetOnlineAppDataRequest {
+    1: optional i64 app_id (api.path="app_id" api.js_conv="true")
+    2: optional i64 connector_id (api.js_conv="true")
+
+    255: optional base.Base Base
+}
+
+struct AppData {
+    1: string app_id
+    2: string version
+    3: string name
+    4: string description
+    5: string icon_url
+    6: list<common_struct.Variable> variables
+}
+
+
+struct GetOnlineAppDataResponse {
+    1  : optional i32                 Code     (api.body = "code")
+    2  : optional string              Message  (api.body = "message")
+    3  : AppData   Data     (api.body = "data")
+
+    255: base.BaseResp BaseResp
+}

@@ -38,20 +38,28 @@ import (
 const HeaderAuthorizationKey = "Authorization"
 
 var needAuthPath = map[string]bool{
-	"/v3/chat":                      true,
-	"/v1/conversations":             true,
-	"/v1/conversation/create":       true,
-	"/v1/conversation/message/list": true,
-	"/v1/files/upload":              true,
-	"/v1/workflow/run":              true,
-	"/v1/workflow/stream_run":       true,
-	"/v1/workflow/stream_resume":    true,
-	"/v1/workflow/get_run_history":  true,
-	"/v1/bot/get_online_info":       true,
+	"/v3/chat":                         true,
+	"/v1/conversations":                true,
+	"/v1/conversation/create":          true,
+	"/v1/conversation/message/list":    true,
+	"/v1/files/upload":                 true,
+	"/v1/workflow/run":                 true,
+	"/v1/workflow/stream_run":          true,
+	"/v1/workflow/stream_resume":       true,
+	"/v1/workflow/get_run_history":     true,
+	"/v1/bot/get_online_info":          true,
+	"/v1/workflows/chat":               true,
+	"/v1/workflow/conversation/create": true,
+	"/v3/chat/cancel":                  true,
 }
 
 var needAuthFunc = map[string]bool{
 	"^/v1/conversations/[0-9]+/clear$": true, // v1/conversations/:conversation_id/clear
+	"^/v1/bots/[0-9]+$":                true,
+	"^/v1/conversations/[0-9]+$":       true,
+
+	"^/v1/workflows/[0-9]+$": true,
+	"^/v1/apps/[0-9]+$":      true,
 }
 
 func parseBearerAuthToken(authHeader string) string {

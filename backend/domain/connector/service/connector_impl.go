@@ -41,7 +41,7 @@ func NewService(tos storage.Storage) Connector {
 
 var i18n2ConnectorDesc = map[i18n.Locale]map[int64]string{
 	i18n.LocaleEN: {
-		consts.WebSDKConnectorID: "Deploy the bot as a Web SDK",
+		consts.WebSDKConnectorID: "Deploy your project to the Chat SDK. This publishing method is supported only for projects that have created a conversation flow, please refer to [Installation Guidelines](coze://web-sdk-guide) for installation methods.",
 		consts.APIConnectorID:    "Supports OAuth 2.0 and personal access tokens",
 		consts.CozeConnectorID:   "Coze",
 	},
@@ -54,7 +54,7 @@ func (c *connectorImpl) AllConnectorInfo(ctx context.Context) []*entity.Connecto
 				ID:   consts.WebSDKConnectorID,
 				Name: "Chat SDK",
 				URI:  "default_icon/connector-chat-sdk.jpg",
-				Desc: "将Bot部署为Web SDK",
+				Desc: "将项目部署到Chat SDK。仅创建过对话流的项目支持该发布方式,安装方式请查看[安装指引](coze://web-sdk-guide)",
 			},
 		},
 		{

@@ -122,7 +122,7 @@ func (d *Delete) Invoke(ctx context.Context, in map[string]any) (map[string]any,
 	return ret, nil
 }
 
-func (d *Delete) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
+func (d *Delete) ToCallbackInput(_ context.Context, in map[string]any) (*nodes.StructuredCallbackInput, error) {
 	conditionGroup, err := convertClauseGroupToConditionGroup(context.Background(), d.clauseGroup, in)
 	if err != nil {
 		return nil, err
@@ -130,7 +130,8 @@ func (d *Delete) ToCallbackInput(_ context.Context, in map[string]any) (map[stri
 	return d.toDatabaseDeleteCallbackInput(conditionGroup)
 }
 
-func (d *Delete) toDatabaseDeleteCallbackInput(conditionGroup *database.ConditionGroup) (map[string]any, error) {
+func (d *Delete) toDatabaseDeleteCallbackInput(conditionGroup *database.ConditionGroup) (
+	*nodes.StructuredCallbackInput, error) {
 	databaseID := d.databaseInfoID
 	result := make(map[string]any)
 
@@ -148,5 +149,7 @@ func (d *Delete) toDatabaseDeleteCallbackInput(conditionGroup *database.Conditio
 	result["deleteParam"] = map[string]any{
 		"condition": condition}
 
-	return result, nil
+	return &nodes.StructuredCallbackInput{
+		Input: result,
+	}, nil
 }

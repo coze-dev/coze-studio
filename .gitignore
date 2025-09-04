@@ -7,6 +7,7 @@
 
 .env
 .env.debug
+.env.oceanbase
 
 # Test binary, built with `go test -c`
 *.test
@@ -51,6 +52,11 @@ node_modules
 common/temp
 .rush
 .eslintcache
+
+# Python virtual environment
+venv/
+.venv/
+*.venv
 
 
 backend/conf/model/*.yaml

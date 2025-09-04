@@ -47,6 +47,8 @@ import {
 } from '@coze-agent-ide/tool';
 import { getPluginApiKey, getApiUniqueId } from '@coze-agent-ide/plugin-shared';
 import { PluginSettingEnter } from '@coze-agent-ide/plugin-setting-adapter';
+import { IconDownload } from '@coze-arch/coze-design/icons';
+import axios from 'axios';
 
 export interface PluginContentProps {
   spaceID?: string;
@@ -238,6 +240,24 @@ const Actions: FC<ActionsProps> = ({
     setIsForceShowAction(visible);
   };
 
+  const handleExport = async () => {
+    try {
+      const response = await axios.post('/api/workflow/export', {
+        workflow_ids: [plugin.api.api_id],
+      }, { responseType: 'blob' });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${plugin.api.name || 'workflow'}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      Toast.success({ content: I18n.t('export_success'), showClose: false });
+    } catch (e) {
+      Toast.error({ content: I18n.t('export_failed'), showClose: false });
+    }
+  };
+
   return (
     <>
       {/* Icons - Info Tips */}
@@ -262,6 +282,15 @@ const Actions: FC<ActionsProps> = ({
       {!readonly && (
         <>
           {slot}
+          {/* Action Export */}
+          <IconButton
+            icon={<IconDownload />}
+            onClick={handleExport}
+            size="small"
+            tooltips={I18n.t('导出')}
+            data-testid="bot.editor.tool.plugin.export-button"
+            disabled={isBanned}
+          />
           {/* Action settings */}
           <PluginSettingEnter
             bindSubjectInfo={{

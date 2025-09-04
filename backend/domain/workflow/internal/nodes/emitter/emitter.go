@@ -23,13 +23,17 @@ import (
 	"strings"
 
 	"github.com/bytedance/sonic"
+	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 )
@@ -37,6 +41,7 @@ import (
 type OutputEmitter struct {
 	Template    string
 	FullSources map[string]*schema2.SourceInfo
+	NodeKey     vo.NodeKey
 }
 
 type Config struct {
@@ -96,6 +101,7 @@ func (c *Config) Build(_ context.Context, ns *schema2.NodeSchema, _ ...schema2.B
 	return &OutputEmitter{
 		Template:    c.Template,
 		FullSources: ns.FullSources,
+		NodeKey:     ns.Key,
 	}, nil
 }
 
@@ -292,45 +298,6 @@ func (c *cacheStore) readyForPart(part nodes.TemplatePart, sw *schema.StreamWrit
 	return false, false
 }
 
-func (c *cacheStore) fillZero(nodeKey vo.NodeKey) map[string]any {
-	filled := make(map[string]any)
-	for field, sInfo := range c.infos {
-		if !sInfo.FromNode(nodeKey) {
-			continue
-		}
-
-		cacheV, ok := c.store[field]
-		if !sInfo.IsIntermediate {
-			if !ok {
-				c.store[field] = &cachedVal{
-					val:       sInfo.TypeInfo.Zero(),
-					finished:  true,
-					subCaches: nil,
-				}
-
-				filled[field] = true
-			}
-
-			continue
-		}
-
-		if !ok {
-			cacheV = &cachedVal{
-				val:       make(map[string]any),
-				subCaches: newCacheStore(sInfo.SubSources),
-			}
-			c.store[field] = cacheV
-		}
-
-		subFilled := cacheV.subCaches.fillZero(nodeKey)
-		if len(subFilled) > 0 {
-			filled[field] = subFilled
-		}
-	}
-
-	return filled
-}
-
 func merge(a, b any) any {
 	aStr, ok1 := a.(string)
 	bStr, ok2 := b.(string)
@@ -364,9 +331,13 @@ func merge(a, b any) any {
 const outputKey = "output"
 
 func (e *OutputEmitter) Transform(ctx context.Context, in *schema.StreamReader[map[string]any]) (out *schema.StreamReader[map[string]any], err error) {
-	resolvedSources, err := nodes.ResolveStreamSources(ctx, e.FullSources)
-	if err != nil {
-		return nil, err
+	var resolvedSources map[string]*schema2.SourceInfo
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+		resolvedSources = state.GetFullSources(e.NodeKey)
+		return nil
+	})
+	if resolvedSources == nil {
+		return nil, fmt.Errorf("output emitter can't get resolved sources")
 	}
 
 	sr, sw := schema.Pipe[map[string]any](0)
@@ -439,28 +410,6 @@ func (e *OutputEmitter) Transform(ctx context.Context, in *schema.StreamReader[m
 						// current part is not fulfilled, emit the literal part content and move on to next part
 						sw.Send(map[string]any{outputKey: part.Value}, nil)
 						break
-					}
-
-					if sn, ok := schema.GetSourceName(err); ok {
-						// received end signal for a particular predecessor nodeID, do the following:
-						// - obtain the field sources mapped from this predecessor node
-						// - check which fields are still missing in the cache store
-						// - fill zero value for these missing fields
-						// - check if the current template part should be rendered and sent immediately
-						// - check if we should move on to next part in template
-						filled := caches.fillZero(vo.NodeKey(sn))
-						if _, okk := filled[part.Root]; okk {
-							// current part is influenced by the 'fill zero' operation
-							hasErr, shouldChangePart = caches.readyForPart(part, sw)
-							if hasErr {
-								return
-							}
-							if shouldChangePart {
-								continue partsLoop
-							}
-						}
-
-						continue
 					}
 
 					hasErr = true
@@ -567,7 +516,16 @@ func (e *OutputEmitter) Transform(ctx context.Context, in *schema.StreamReader[m
 }
 
 func (e *OutputEmitter) Invoke(ctx context.Context, in map[string]any) (output map[string]any, err error) {
-	s, err := nodes.Render(ctx, e.Template, in, e.FullSources)
+	var resolvedSources map[string]*schema2.SourceInfo
+	_ = compose.ProcessState(ctx, func(_ context.Context, state nodes.DynamicStreamContainer) error {
+		resolvedSources = state.GetFullSources(e.NodeKey)
+		return nil
+	})
+	if resolvedSources == nil {
+		return nil, fmt.Errorf("output emitter can't get resolved sources")
+	}
+
+	s, err := nodes.Render(ctx, e.Template, in, resolvedSources)
 	if err != nil {
 		return nil, err
 	}
@@ -600,4 +558,54 @@ func renderAndSend(tp nodes.TemplatePart, k string, v any, sw *schema.StreamWrit
 
 	sw.Send(map[string]any{outputKey: r}, nil)
 	return false
+}
+
+func (e *OutputEmitter) ToCallbackInput(ctx context.Context, in map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
+	type streamExtraChunkDone struct{}
+	var extraChunkDone bool
+	extraChunkDone = ctxcache.HasKey(ctx, streamExtraChunkDone{})
+	defer func() {
+		if !extraChunkDone {
+			ctxcache.Store(ctx, streamExtraChunkDone{}, true)
+		}
+	}()
+
+	sci := &nodes.StructuredCallbackInput{
+		Input: in,
+	}
+
+	if !extraChunkDone {
+		sci.Extra = map[string]any{
+			"terminal_plan": workflow2.TerminatePlanType_USESETTING,
+		}
+	}
+
+	return sci, nil
+}
+
+func (e *OutputEmitter) ToCallbackOutput(ctx context.Context, out map[string]any) (
+	*nodes.StructuredCallbackOutput, error) {
+	type streamExtraChunkDone struct{}
+	var extraChunkDone bool
+	extraChunkDone = ctxcache.HasKey(ctx, streamExtraChunkDone{})
+	defer func() {
+		if !extraChunkDone {
+			ctxcache.Store(ctx, streamExtraChunkDone{}, true)
+		}
+	}()
+
+	sco := &nodes.StructuredCallbackOutput{
+		Output:    out,
+		Answer:    ptr.Of(out[outputKey].(string)),
+		OutputStr: ptr.Of(out[outputKey].(string)),
+	}
+
+	if !extraChunkDone {
+		sco.Extra = map[string]any{
+			"terminal_plan": workflow2.TerminatePlanType_USESETTING,
+		}
+	}
+
+	return sco, nil
 }

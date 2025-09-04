@@ -1,0 +1,5 @@
+import type { NodeTestMeta } from '@/test-run-kit';
+
+const test: NodeTestMeta = <%= it.IS_SUPPORT_TEST %>;
+
+export { test, type NodeTestMeta };

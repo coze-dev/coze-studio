@@ -1100,15 +1100,15 @@ func (t *toolExecutor) processWithInvalidRespProcessStrategyOfReturnErr(_ contex
 	processor = func(paramName string, paramVal any, schemaVal *openapi3.Schema) (any, error) {
 		switch schemaVal.Type {
 		case openapi3.TypeObject:
-			newParamValMap := map[string]any{}
 			paramValMap, ok := paramVal.(map[string]any)
 			if !ok {
 				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
 					"expected '%s' to be of type 'object', but got '%T'", paramName, paramVal))
 			}
 
+			newParamValMap := map[string]any{}
 			for paramName_, paramVal_ := range paramValMap {
-				paramSchema_, ok := schemaVal.Properties[paramName]
+				paramSchema_, ok := schemaVal.Properties[paramName_]
 				if !ok || t.disabledParam(paramSchema_.Value) { // Only the object field can be disabled, and the top level of request and response must be the object structure
 					continue
 				}
@@ -1122,13 +1122,13 @@ func (t *toolExecutor) processWithInvalidRespProcessStrategyOfReturnErr(_ contex
 			return newParamValMap, nil
 
 		case openapi3.TypeArray:
-			newParamValSlice := []any{}
 			paramValSlice, ok := paramVal.([]any)
 			if !ok {
 				return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey,
 					"expected '%s' to be of type 'array', but got '%T'", paramName, paramVal))
 			}
 
+			newParamValSlice := []any{}
 			for _, paramVal_ := range paramValSlice {
 				newParamVal, err := processor(paramName, paramVal_, schemaVal.Items.Value)
 				if err != nil {
@@ -1426,7 +1426,7 @@ func (t *toolExecutor) buildRequestBody(ctx context.Context, op *model.Openapi3O
 				continue
 			}
 
-			_value, err := encoder.TryFixValueType(paramName, prop, value)
+			_value, err := encoder.TryCorrectValueType(paramName, prop, value)
 			if err != nil {
 				return nil, "", err
 			}

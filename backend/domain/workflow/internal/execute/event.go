@@ -57,22 +57,27 @@ type Event struct {
 	Answer    string
 	StreamEnd bool
 
-	RawOutput map[string]any
+	RawOutput *string
 
 	Err   error
 	Token *TokenInfo
 
 	InterruptEvents []*entity.InterruptEvent
 
-	functionCall *entity.FunctionCallInfo
+	functionCall *FunctionCallInfo
 	toolResponse *entity.ToolResponseInfo
 
-	outputExtractor func(o map[string]any) string
-	extra           *entity.NodeExtra
+	extra     *entity.NodeExtra
+	outputStr *string
 
 	done chan struct{}
 
 	nodeCount int32
+}
+
+type FunctionCallInfo struct {
+	*entity.FunctionCallInfo
+	toolFinishChan chan struct{}
 }
 
 type TokenInfo struct {
@@ -103,18 +108,4 @@ func (e *Event) GetResumedEventID() int64 {
 		return 0
 	}
 	return e.Context.RootCtx.ResumeEvent.ID
-}
-
-func (e *Event) GetFunctionCallInfo() (*entity.FunctionCallInfo, bool) {
-	if e.functionCall == nil {
-		return nil, false
-	}
-	return e.functionCall, true
-}
-
-func (e *Event) GetToolResponse() (*entity.ToolResponseInfo, bool) {
-	if e.toolResponse == nil {
-		return nil, false
-	}
-	return e.toolResponse, true
 }

@@ -74,4 +74,7 @@ type SQLParser interface {
 
 	// AppendSQLFilter appends a filter condition to the SQL statement.
 	AppendSQLFilter(sql string, op SQLFilterOp, filter string) (string, error)
+
+	// AddSelectFieldsToSelectSQL add select fields to select sql
+	AddSelectFieldsToSelectSQL(origSQL string, cols []string) (string, error)
 }

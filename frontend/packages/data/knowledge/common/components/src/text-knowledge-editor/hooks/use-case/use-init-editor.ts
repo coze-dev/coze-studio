@@ -23,11 +23,11 @@ import TableRow from '@tiptap/extension-table-row';
 import TableHeader from '@tiptap/extension-table-header';
 import TableCell from '@tiptap/extension-table-cell';
 import Table from '@tiptap/extension-table';
-import Image from '@tiptap/extension-image';
 
 import { type Chunk } from '@/text-knowledge-editor/types/chunk';
 import { getRenderHtmlContent } from '@/text-knowledge-editor/services/use-case/get-render-editor-content';
 import { getEditorContent } from '@/text-knowledge-editor/services/use-case/get-editor-content';
+import ImageWithTosKey from '@/text-knowledge-editor/extensions/image-with-tos-key';
 
 interface UseDocumentEditorProps {
   chunk: Chunk | null;
@@ -61,7 +61,7 @@ export const useInitEditor = ({
       TableRow,
       TableCell,
       TableHeader,
-      Image.configure({
+      ImageWithTosKey.configure({
         inline: false,
         allowBase64: true,
       }),

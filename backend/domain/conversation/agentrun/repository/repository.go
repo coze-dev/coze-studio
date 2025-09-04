@@ -23,7 +23,6 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 )
 
@@ -34,8 +33,9 @@ func NewRunRecordRepo(db *gorm.DB, idGen idgen.IDGenerator) RunRecordRepo {
 
 type RunRecordRepo interface {
 	Create(ctx context.Context, runMeta *entity.AgentRunMeta) (*entity.RunRecordMeta, error)
-	GetByID(ctx context.Context, id int64) (*entity.RunRecord, error)
+	GetByID(ctx context.Context, id int64) (*entity.RunRecordMeta, error)
+	Cancel(ctx context.Context, req *entity.CancelRunMeta) (*entity.RunRecordMeta, error)
 	Delete(ctx context.Context, id []int64) error
 	UpdateByID(ctx context.Context, id int64, update *entity.UpdateMeta) error
-	List(ctx context.Context, conversationID int64, sectionID int64, limit int32) ([]*model.RunRecord, error)
+	List(ctx context.Context, meta *entity.ListRunRecordMeta) ([]*entity.RunRecordMeta, error)
 }

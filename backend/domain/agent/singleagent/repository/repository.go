@@ -46,7 +46,7 @@ type SingleAgentDraftRepo interface {
 	MGet(ctx context.Context, agentIDs []int64) ([]*entity.SingleAgent, error)
 	Delete(ctx context.Context, spaceID, agentID int64) (err error)
 	Update(ctx context.Context, agentInfo *entity.SingleAgent) (err error)
-
+	Save(ctx context.Context, agentInfo *entity.SingleAgent) (err error)
 	GetDisplayInfo(ctx context.Context, userID, agentID int64) (*entity.AgentDraftDisplayInfo, error)
 	UpdateDisplayInfo(ctx context.Context, userID int64, e *entity.AgentDraftDisplayInfo) error
 }

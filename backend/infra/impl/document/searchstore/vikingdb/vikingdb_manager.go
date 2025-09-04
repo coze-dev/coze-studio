@@ -65,6 +65,10 @@ type VikingEmbeddingConfig struct {
 	BuiltinEmbedding embedding.Embedder
 }
 
+func NewVikingDBService(host string, region string, ak string, sk string, scheme string) *vikingdb.VikingDBService {
+	return vikingdb.NewVikingDBService(host, region, ak, sk, scheme)
+}
+
 func NewManager(config *ManagerConfig) (searchstore.Manager, error) {
 	if config.Service == nil {
 		return nil, fmt.Errorf("[NewManager] vikingdb service is nil")

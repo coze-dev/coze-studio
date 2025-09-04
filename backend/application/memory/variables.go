@@ -291,12 +291,13 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 
 	bizType := ternary.IFElse(req.BotID == 0, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
 	bizID := ternary.IFElse(req.BotID == 0, req.ProjectID, fmt.Sprintf("%d", req.BotID))
+	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
 
 	e := entity.NewUserVariableMeta(&model.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
 		Version:      "",
-		ConnectorID:  req.GetConnectorID(),
+		ConnectorID:  connectId,
 		ConnectorUID: fmt.Sprintf("%d", *uid),
 	})
 

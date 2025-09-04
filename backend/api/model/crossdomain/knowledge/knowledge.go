@@ -329,7 +329,8 @@ type CreateDocumentResponse struct {
 }
 
 type DeleteDocumentRequest struct {
-	DocumentID string
+	DocumentID  int64
+	KnowledgeID int64
 }
 
 type DeleteDocumentResponse struct {

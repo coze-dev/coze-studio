@@ -21,6 +21,7 @@ export interface UploadControllerProps {
   fileId: string;
   file: File;
   userId: string;
+  multiUploadPlugin?: typeof UploadPlugin;
   onProgress: (event: EventPayloadMap['progress'], fileId: string) => void;
   onComplete: (event: EventPayloadMap['complete'], fileId: string) => void;
   onError: (event: EventPayloadMap['error'], fileId: string) => void;
@@ -39,9 +40,10 @@ export class UploadController {
     onComplete,
     onError,
     onReady,
+    multiUploadPlugin = UploadPlugin,
   }: UploadControllerProps) {
     this.fileId = fileId;
-    this.uploadPlugin = new UploadPlugin({
+    this.uploadPlugin = new multiUploadPlugin({
       file,
       userId,
       type: isImage(file) ? 'image' : 'object',

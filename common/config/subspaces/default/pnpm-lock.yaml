@@ -9,7 +9,7 @@ neverBuiltDependencies:
   - canvas
 
 overrides:
-  '@coze-arch/coze-design': 0.0.6-alpha.101d0c
+  '@coze-arch/coze-design': 0.0.6-alpha.eec92c
   inversify: 6.0.2
   sass@1.74.1>immutable: 3.8.2
   web-streams-polyfill: 3.3.2
@@ -61,8 +61,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arch/bot-md-box-adapter
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../packages/arch/foundation-sdk
@@ -120,6 +120,9 @@ importers:
       '@coze-workflow/playground-adapter':
         specifier: workspace:*
         version: link:../../packages/workflow/adapter/playground
+      js-yaml:
+        specifier: ^4.1.0
+        version: 4.1.0
       path-browserify:
         specifier: ^1.0.1
         version: 1.0.1
@@ -193,6 +196,9 @@ importers:
       '@rspack/core':
         specifier: '>=0.7'
         version: 1.3.15
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/node':
         specifier: 18.18.9
         version: 18.18.9
@@ -1144,8 +1150,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -1408,8 +1414,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -1508,8 +1514,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -1787,8 +1793,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -2028,8 +2034,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -2215,8 +2221,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -2427,8 +2433,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -2536,8 +2542,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -2630,8 +2636,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -2940,8 +2946,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -3027,8 +3033,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3400,8 +3406,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3581,8 +3587,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3721,8 +3727,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3875,8 +3881,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4098,8 +4104,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4279,8 +4285,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4457,8 +4463,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4539,8 +4545,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-flags
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4676,8 +4682,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -4912,8 +4918,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -5178,8 +5184,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5192,6 +5198,9 @@ importers:
       '@coze-studio/components':
         specifier: workspace:*
         version: link:../../studio/components
+      axios:
+        specifier: ^1.4.0
+        version: 1.10.0(debug@4.3.3)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
@@ -5324,8 +5333,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5418,8 +5427,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5591,8 +5600,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5700,8 +5709,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5912,8 +5921,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/fetch-stream':
         specifier: workspace:*
         version: link:../../arch/fetch-stream
@@ -6096,8 +6105,8 @@ importers:
         specifier: workspace:*
         version: link:../space-bot
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -6235,8 +6244,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/fetch-stream':
         specifier: workspace:*
         version: link:../../arch/fetch-stream
@@ -6557,8 +6566,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -6718,7 +6727,7 @@ importers:
         version: 3.3.0(rollup@4.43.0)(typescript@5.8.2)(vite@4.5.14)
       vitest:
         specifier: ~3.0.5
-        version: 3.0.9(less@4.3.0)
+        version: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
       webpack:
         specifier: ~5.91.0
         version: 5.91.0(@swc/core@1.12.1)
@@ -6826,8 +6835,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -7114,8 +7123,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -7208,8 +7217,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -8402,8 +8411,8 @@ importers:
   ../../../frontend/packages/arch/foundation-sdk:
     devDependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -8487,8 +8496,8 @@ importers:
   ../../../frontend/packages/arch/i18n:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-studio/studio-i18n-resource-adapter':
         specifier: workspace:*
         version: link:../resources/studio-i18n-resource
@@ -9235,8 +9244,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -9414,8 +9423,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../../config/eslint-config
@@ -9510,8 +9519,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-common/chat-area-utils':
         specifier: workspace:*
         version: link:../utils
@@ -9861,8 +9870,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-typings
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -9950,13 +9959,13 @@ importers:
         version: 4.0.0(rollup@4.43.0)
       '@rspack/cli':
         specifier: 0.4.0
-        version: 0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.17.0)
+        version: 0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.14.0)
       '@rspack/core':
         specifier: 0.4.0
         version: 0.4.0
       '@rspack/plugin-react-refresh':
         specifier: 0.4.0
-        version: 0.4.0(react-refresh@0.17.0)(webpack@5.91.0)
+        version: 0.4.0(react-refresh@0.14.0)(webpack@5.91.0)
       '@storybook/addon-essentials':
         specifier: ^7.6.7
         version: 7.6.20(@types/react-dom@18.2.15)(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
@@ -10061,7 +10070,7 @@ importers:
         version: 3.3.7(ts-node@10.9.2)
       vitest:
         specifier: ~3.0.5
-        version: 3.0.9(less@4.3.0)
+        version: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
 
   ../../../frontend/packages/common/chat-area/chat-uikit-shared:
     dependencies:
@@ -10136,8 +10145,8 @@ importers:
   ../../../frontend/packages/common/chat-area/chat-workflow-render:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -10378,8 +10387,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -10520,8 +10529,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -10617,8 +10626,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-common/chat-area':
         specifier: workspace:*
         version: link:../chat-area
@@ -10879,8 +10888,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -11237,8 +11246,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
@@ -11368,8 +11377,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -11483,8 +11492,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -11741,8 +11750,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -11943,8 +11952,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-hooks
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -12363,8 +12372,8 @@ importers:
         specifier: workspace:*
         version: link:../bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -12463,8 +12472,8 @@ importers:
         specifier: workspace:*
         version: link:../bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -12639,8 +12648,8 @@ importers:
         specifier: workspace:*
         version: link:../bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -12953,7 +12962,7 @@ importers:
         version: 3.3.7(ts-node@10.9.2)
       vitest:
         specifier: ~3.0.5
-        version: 3.0.9(less@4.3.0)
+        version: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
 
   ../../../frontend/packages/data/common/utils:
     dependencies:
@@ -12967,8 +12976,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -13079,8 +13088,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../../arch/i18n
@@ -13224,8 +13233,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../../arch/i18n
@@ -13595,8 +13604,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -13767,8 +13776,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -13870,8 +13879,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14094,8 +14103,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -14269,8 +14278,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/pdfjs-shadow':
         specifier: workspace:*
         version: link:../../../arch/pdfjs-shadow
@@ -14345,8 +14354,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14509,7 +14518,7 @@ importers:
         version: 3.3.7(ts-node@10.9.2)
       vitest:
         specifier: ~3.0.5
-        version: 3.0.9(less@4.3.0)
+        version: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
 
   ../../../frontend/packages/data/memory/database-creator:
     dependencies:
@@ -14632,8 +14641,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14717,8 +14726,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14835,8 +14844,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -15083,8 +15092,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -15243,8 +15252,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -15383,8 +15392,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-typings
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../../config/eslint-config
@@ -15458,8 +15467,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -15544,7 +15553,7 @@ importers:
         version: 3.3.0(typescript@5.8.2)(vite@4.5.14)
       vitest:
         specifier: ~3.0.5
-        version: 3.0.9(less@4.3.0)
+        version: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
 
   ../../../frontend/packages/devops/mockset-manage:
     devDependencies:
@@ -15894,8 +15903,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -15985,8 +15994,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -16070,8 +16079,8 @@ importers:
   ../../../frontend/packages/foundation/browser-upgrade-banner:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16219,8 +16228,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-foundation/account-adapter':
         specifier: workspace:*
         version: link:../account-adapter
@@ -16268,8 +16277,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16362,8 +16371,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -16553,8 +16562,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16899,8 +16908,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-hooks
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16981,8 +16990,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17164,8 +17173,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-icons
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17258,8 +17267,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17385,8 +17394,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17443,8 +17452,8 @@ importers:
   ../../../frontend/packages/project-ide/biz-plugin-registry-adapter:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-project-ide/biz-plugin':
         specifier: workspace:*
         version: link:../biz-plugin
@@ -17519,8 +17528,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-typings
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17738,8 +17747,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17832,8 +17841,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/fetch-stream':
         specifier: workspace:*
         version: link:../../arch/fetch-stream
@@ -17901,8 +17910,8 @@ importers:
         specifier: workspace:*
         version: link:../../workflow/base
       '@coze/api':
-        specifier: 1.1.0-beta.4
-        version: 1.1.0-beta.4(axios@1.10.0)
+        specifier: 1.3.5
+        version: 1.3.5(axios@1.10.0)(debug@4.3.3)
       ahooks:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
@@ -18197,13 +18206,13 @@ importers:
         version: 3.3.0(typescript@5.8.2)(vite@4.5.14)
       vitest:
         specifier: ~3.0.5
-        version: 3.0.9(less@4.3.0)
+        version: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
 
   ../../../frontend/packages/studio/bot-utils:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -18381,8 +18390,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -18541,8 +18550,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -18888,6 +18897,187 @@ importers:
         specifier: ~3.0.5
         version: 3.0.9(jsdom@22.1.0)
 
+  ../../../frontend/packages/studio/open-platform/chat-app-sdk:
+    dependencies:
+      '@coze-common/assets':
+        specifier: workspace:*
+        version: link:../../../common/assets
+      classnames:
+        specifier: ^2.3.2
+        version: 2.5.1
+      core-js:
+        specifier: ^3.37.1
+        version: 3.43.0
+      immer:
+        specifier: ^10.0.3
+        version: 10.1.1
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
+      nanoid:
+        specifier: ^4.0.2
+        version: 4.0.2
+      react:
+        specifier: 18.2.0
+        version: 18.2.0
+      react-device-detect:
+        specifier: 2.2.3
+        version: 2.2.3(react-dom@18.2.0)(react@18.2.0)
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+      zustand:
+        specifier: ^4.4.7
+        version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
+    devDependencies:
+      '@coze-arch/bot-env':
+        specifier: workspace:*
+        version: link:../../../arch/bot-env
+      '@coze-arch/bot-semi':
+        specifier: workspace:*
+        version: link:../../../components/bot-semi
+      '@coze-arch/bot-typings':
+        specifier: workspace:*
+        version: link:../../../arch/bot-typings
+      '@coze-arch/bot-utils':
+        specifier: workspace:*
+        version: link:../../../arch/bot-utils
+      '@coze-arch/coze-design':
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+      '@coze-arch/eslint-config':
+        specifier: workspace:*
+        version: link:../../../../config/eslint-config
+      '@coze-arch/i18n':
+        specifier: workspace:*
+        version: link:../../../arch/i18n
+      '@coze-arch/pkg-root-webpack-plugin':
+        specifier: workspace:*
+        version: link:../../../../infra/plugins/pkg-root-webpack-plugin
+      '@coze-arch/postcss-config':
+        specifier: workspace:*
+        version: link:../../../../config/postcss-config
+      '@coze-arch/stylelint-config':
+        specifier: workspace:*
+        version: link:../../../../config/stylelint-config
+      '@coze-arch/tailwind-config':
+        specifier: workspace:*
+        version: link:../../../../config/tailwind-config
+      '@coze-arch/ts-config':
+        specifier: workspace:*
+        version: link:../../../../config/ts-config
+      '@coze-arch/vitest-config':
+        specifier: workspace:*
+        version: link:../../../../config/vitest-config
+      '@coze-studio/bot-env-adapter':
+        specifier: workspace:*
+        version: link:../../../arch/bot-env-adapter
+      '@coze-studio/open-chat':
+        specifier: workspace:*
+        version: link:../open-chat
+      '@douyinfe/semi-rspack-plugin':
+        specifier: 2.61.0
+        version: 2.61.0(patch_hash=jgvrbizgnsxhugflluipewtgrm)(sass@1.89.2)(webpack@5.91.0)
+      '@rspack/cli':
+        specifier: 0.6.0
+        version: 0.6.0(@rspack/core@0.6.0)(debug@4.3.3)(webpack@5.91.0)
+      '@rspack/core':
+        specifier: 0.6.0
+        version: 0.6.0
+      '@rspack/plugin-react-refresh':
+        specifier: 0.6.0
+        version: 0.6.0(react-refresh@0.14.0)
+      '@svgr/webpack':
+        specifier: ^8.1.0
+        version: 8.1.0(typescript@5.8.2)
+      '@testing-library/jest-dom':
+        specifier: ^6.1.5
+        version: 6.6.3
+      '@testing-library/react':
+        specifier: ^14.1.2
+        version: 14.3.1(react-dom@18.2.0)(react@18.2.0)
+      '@testing-library/react-hooks':
+        specifier: ^8.0.1
+        version: 8.0.1(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
+      '@types/lodash-es':
+        specifier: ^4.17.10
+        version: 4.17.12
+      '@types/node':
+        specifier: 18.18.9
+        version: 18.18.9
+      '@types/postcss-js':
+        specifier: ^4.0.2
+        version: 4.0.4
+      '@types/react':
+        specifier: 18.2.37
+        version: 18.2.37
+      '@types/react-dom':
+        specifier: 18.2.15
+        version: 18.2.15
+      '@vitest/coverage-v8':
+        specifier: ~3.0.5
+        version: 3.0.9(vitest@3.0.9)
+      autoprefixer:
+        specifier: ^10.4.16
+        version: 10.4.21(postcss@8.5.6)
+      concurrently:
+        specifier: ~8.2.2
+        version: 8.2.2
+      css-loader:
+        specifier: ^6.10.0
+        version: 6.11.0(@rspack/core@0.6.0)(webpack@5.91.0)
+      debug:
+        specifier: 4.3.3
+        version: 4.3.3(supports-color@5.5.0)
+      file-loader:
+        specifier: ^6.2.0
+        version: 6.2.0(webpack@5.91.0)
+      less:
+        specifier: ^4.2.0
+        version: 4.3.0
+      less-loader:
+        specifier: ~11.1.3
+        version: 11.1.4(less@4.3.0)(webpack@5.91.0)
+      postcss:
+        specifier: ^8.4.32
+        version: 8.5.6
+      postcss-loader:
+        specifier: ^7.3.3
+        version: 7.3.4(postcss@8.5.6)(typescript@5.8.2)(webpack@5.91.0)
+      react-refresh:
+        specifier: 0.14.0
+        version: 0.14.0
+      react-router-dom:
+        specifier: ^6.11.1
+        version: 6.30.1(react-dom@18.2.0)(react@18.2.0)
+      rspack-plugin-dotenv:
+        specifier: ^0.0.3
+        version: 0.0.3(@rspack/core@0.6.0)
+      sass:
+        specifier: ^1.69.5
+        version: 1.89.2
+      sass-loader:
+        specifier: ^14.1.0
+        version: 14.2.1(@rspack/core@0.6.0)(sass@1.89.2)(webpack@5.91.0)
+      style-loader:
+        specifier: ^3.3.4
+        version: 3.3.4(webpack@5.91.0)
+      tailwindcss:
+        specifier: ~3.3.3
+        version: 3.3.7(ts-node@10.9.2)
+      ts-node:
+        specifier: ^10.9.1
+        version: 10.9.2(@types/node@18.18.9)(typescript@5.8.2)
+      typescript:
+        specifier: 5.8.2
+        version: 5.8.2
+      vitest:
+        specifier: ~3.0.5
+        version: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
+      webpack:
+        specifier: ~5.91.0
+        version: 5.91.0
+
   ../../../frontend/packages/studio/open-platform/open-auth:
     dependencies:
       '@coze-arch/bot-api':
@@ -18897,8 +19087,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -19026,15 +19216,114 @@ importers:
 
   ../../../frontend/packages/studio/open-platform/open-chat:
     dependencies:
+      '@coze-arch/bot-api':
+        specifier: workspace:*
+        version: link:../../../arch/bot-api
+      '@coze-arch/bot-semi':
+        specifier: workspace:*
+        version: link:../../../components/bot-semi
+      '@coze-arch/bot-utils':
+        specifier: workspace:*
+        version: link:../../../arch/bot-utils
+      '@coze-arch/coze-design':
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
-      '@coze/chat-sdk':
-        specifier: 0.1.11-beta.19
-        version: 0.1.11-beta.19(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0)
+      '@coze-arch/idl':
+        specifier: workspace:*
+        version: link:../../../arch/idl
+      '@coze-arch/logger':
+        specifier: workspace:*
+        version: link:../../../arch/logger
+      '@coze-common/chat-answer-action':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/chat-answer-action
+      '@coze-common/chat-area':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/chat-area
+      '@coze-common/chat-area-plugin-chat-background':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/plugin-chat-background
+      '@coze-common/chat-area-plugin-message-grab':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/plugin-message-grab
+      '@coze-common/chat-area-plugin-reasoning':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/chat-area-plugin-reasoning
+      '@coze-common/chat-area-plugins-chat-shortcuts':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/plugin-chat-shortcuts
+      '@coze-common/chat-core':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/chat-core
+      '@coze-common/chat-uikit':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/chat-uikit
+      '@coze-common/chat-uikit-shared':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/chat-uikit-shared
+      '@coze-common/chat-workflow-render':
+        specifier: workspace:*
+        version: link:../../../common/chat-area/chat-workflow-render
+      '@coze-studio/file-kit':
+        specifier: workspace:*
+        version: link:../../common/file-kit
+      '@coze-studio/open-env-adapter':
+        specifier: workspace:*
+        version: link:../open-env-adapter
+      '@coze-studio/slardar-adapter':
+        specifier: workspace:*
+        version: link:../../../arch/slardar-adapter
+      '@coze/api':
+        specifier: 1.3.5
+        version: 1.3.5(axios@1.10.0)(debug@4.3.3)
+      '@douyinfe/semi-icons':
+        specifier: ^2.36.0
+        version: 2.81.0(react@18.2.0)
+      ahooks:
+        specifier: 3.7.8
+        version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
+      axios:
+        specifier: ^1.4.0
+        version: 1.10.0(debug@4.3.3)
+      classnames:
+        specifier: ^2.3.2
+        version: 2.5.1
+      copy-to-clipboard:
+        specifier: ^3.3.3
+        version: 3.3.3
+      dayjs:
+        specifier: ^1.11.7
+        version: 1.11.13
+      eventemitter3:
+        specifier: ^5.0.1
+        version: 5.0.1
+      immer:
+        specifier: ^10.0.3
+        version: 10.1.1
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
+      nanoid:
+        specifier: ^4.0.2
+        version: 4.0.2
       react:
         specifier: 18.2.0
         version: 18.2.0
+      react-device-detect:
+        specifier: 2.2.3
+        version: 2.2.3(react-dom@18.2.0)(react@18.2.0)
+      react-dom:
+        specifier: 18.2.0
+        version: 18.2.0(react@18.2.0)
+      react-router-dom:
+        specifier: ^6.11.1
+        version: 6.30.1(react-dom@18.2.0)(react@18.2.0)
+      zustand:
+        specifier: ^4.4.7
+        version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
     devDependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -19063,12 +19352,9 @@ importers:
       '@coze-arch/vitest-config':
         specifier: workspace:*
         version: link:../../../../config/vitest-config
-      '@coze-studio/open-env-adapter':
-        specifier: workspace:*
-        version: link:../open-env-adapter
       '@rspack/plugin-react-refresh':
         specifier: 0.6.0
-        version: 0.6.0
+        version: 0.6.0(react-refresh@0.14.0)
       '@testing-library/jest-dom':
         specifier: ^6.1.5
         version: 6.6.3
@@ -19098,7 +19384,7 @@ importers:
         version: 8.2.2
       css-loader:
         specifier: ^6.10.0
-        version: 6.11.0(webpack@5.91.0)
+        version: 6.11.0(@rspack/core@0.6.0)(webpack@5.91.0)
       debug:
         specifier: 4.3.3
         version: 4.3.3(supports-color@5.5.0)
@@ -19152,7 +19438,7 @@ importers:
         version: link:../../../../config/vitest-config
       '@rspack/plugin-react-refresh':
         specifier: 0.6.0
-        version: 0.6.0
+        version: 0.6.0(react-refresh@0.14.0)
       '@testing-library/jest-dom':
         specifier: ^6.1.5
         version: 6.6.3
@@ -19182,7 +19468,7 @@ importers:
         version: 8.2.2
       css-loader:
         specifier: ^6.10.0
-        version: 6.11.0(webpack@5.91.0)
+        version: 6.11.0(@rspack/core@0.6.0)(webpack@5.91.0)
       debug:
         specifier: 4.3.3
         version: 4.3.3(supports-color@5.5.0)
@@ -19223,8 +19509,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -19305,8 +19591,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -19837,8 +20123,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20083,8 +20369,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20186,8 +20472,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20470,8 +20756,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20588,8 +20874,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -20797,8 +21083,8 @@ importers:
         specifier: ^6.34.1
         version: 6.37.2
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20925,8 +21211,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-hooks
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -21240,8 +21526,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -21311,6 +21597,9 @@ importers:
       immer:
         specifier: ^10.0.3
         version: 10.1.1
+      js-yaml:
+        specifier: ^4.1.0
+        version: 4.1.0
       lodash-es:
         specifier: ^4.17.21
         version: 4.17.21
@@ -21369,6 +21658,9 @@ importers:
       '@testing-library/react-hooks':
         specifier: ^8.0.1
         version: 8.0.1(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)
+      '@types/js-yaml':
+        specifier: ^4.0.9
+        version: 4.0.9
       '@types/lodash-es':
         specifier: ^4.17.10
         version: 4.17.12
@@ -21439,8 +21731,8 @@ importers:
   ../../../frontend/packages/workflow/fabric-canvas:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -21569,8 +21861,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -21745,8 +22037,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -21953,8 +22245,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/hooks':
         specifier: workspace:*
         version: link:../../arch/hooks
@@ -22286,6 +22578,9 @@ importers:
       '@coze-arch/vitest-config':
         specifier: workspace:*
         version: link:../../../config/vitest-config
+      '@inquirer/prompts':
+        specifier: ^7.8.4
+        version: 7.8.4(@types/node@18.18.9)
       '@lezer/common':
         specifier: ^1.2.2
         version: 1.2.3
@@ -22334,6 +22629,12 @@ importers:
       debug:
         specifier: 4.3.3
         version: 4.3.3(supports-color@5.5.0)
+      esbuild-register:
+        specifier: ^3.6.0
+        version: 3.6.0(esbuild@0.15.18)
+      eta:
+        specifier: ^3.5.0
+        version: 3.5.0
       fp-ts:
         specifier: ^2.5.0
         version: 2.16.10
@@ -22346,9 +22647,6 @@ importers:
       monaco-editor:
         specifier: ^0.45.0
         version: 0.45.0
-      plop:
-        specifier: ~4.0.1
-        version: 4.0.1
       prop-types:
         specifier: ^15.5.7
         version: 15.8.1
@@ -22379,6 +22677,9 @@ importers:
       tailwindcss:
         specifier: ~3.3.3
         version: 3.3.7(ts-node@10.9.2)
+      ts-morph:
+        specifier: ^20.0.0
+        version: 20.0.0
       typescript:
         specifier: 5.8.2
         version: 5.8.2
@@ -22396,7 +22697,7 @@ importers:
         version: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
       webpack:
         specifier: ~5.91.0
-        version: 5.91.0
+        version: 5.91.0(esbuild@0.15.18)
 
   ../../../frontend/packages/workflow/render:
     dependencies:
@@ -22404,8 +22705,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-flags
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/report-tti':
         specifier: workspace:*
         version: link:../../arch/report-tti
@@ -22544,8 +22845,8 @@ importers:
   ../../../frontend/packages/workflow/setters:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -22701,8 +23002,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -22837,8 +23138,8 @@ importers:
   ../../../frontend/packages/workflow/test-run-next/form:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -22956,8 +23257,8 @@ importers:
         specifier: ^6.34.1
         version: 6.37.2
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-editor/editor':
         specifier: 0.1.0-alpha.dd871b
         version: 0.1.0-alpha.dd871b(@codemirror/autocomplete@6.18.6)(@codemirror/language@6.11.1)(@codemirror/merge@6.10.2)(@codemirror/state@6.5.2)(@codemirror/view@6.37.2)(@lezer/common@1.2.3)(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)(typescript@5.8.2)(vue@3.5.16)
@@ -23014,8 +23315,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.101d0c
-        version: 0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.6-alpha.eec92c
+        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -23355,7 +23656,7 @@ packages:
     resolution: {integrity: sha512-F3fZga2uv09wFdEjEQIJxXALXfz0+JaOb7SabvVMmjHxeVTuGW8wgE8Vp1Hd7O+zMTYtcfEISGRzPkeiaPPsvg==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      '@babel/types': 7.21.5
+      '@babel/types': 7.27.6
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
       jsesc: 2.5.2
@@ -25134,7 +25435,7 @@ packages:
       '@babel/helper-hoist-variables': 7.24.7
       '@babel/helper-split-export-declaration': 7.24.7
       '@babel/parser': 7.21.9
-      '@babel/types': 7.21.5
+      '@babel/types': 7.27.6
       debug: 4.3.3(supports-color@5.5.0)
       globals: 11.12.0
     transitivePeerDependencies:
@@ -25399,25 +25700,29 @@ packages:
     dev: true
     optional: true
 
-  /@coze-arch/arco-icon@0.0.6-alpha.101d0c:
-    resolution: {integrity: sha512-KYy7qlt5tDqPETkZNWev/yihg7/45CUpY5dKGhd/bYPkEx8Ma2gi7FSOtgEgo+oSBcw24X2tS8AU2DyPkfQmOg==}
+  /@coze-arch/arco-icon@0.0.6-alpha.eec92c(react@18.2.0):
+    resolution: {integrity: sha512-BzQdOtawSp92Uyg4LFvJSyawaFlJ4xliKvwlzbfMyK1hnFDpLLvx2UVP08o5+UrFBFllUtosErYolnNp+qF9dA==}
+    peerDependencies:
+      react: 18.2.0
     dependencies:
       react: 18.2.0
 
-  /@coze-arch/arco-illustration@0.0.12-alpha.101d0c:
-    resolution: {integrity: sha512-GglmQH0jo9D5y4V/Sc7rutxo0rswL5gJTP5oMNnNVux2IEbG+VF6DzzODXz5MUUnateiZMm1/1mcSu9GOaYZ7A==}
+  /@coze-arch/arco-illustration@0.0.12-alpha.eec92c(react@18.2.0):
+    resolution: {integrity: sha512-mTJQ9sHC/MqYxcpkmu/mYkoPOjiA3ICZ+37vysi9FlY0yXsO7aZ0aWceF4ew2vlYIPfrqJ/YTAj5HhGy64vevw==}
+    peerDependencies:
+      react: 18.2.0
     dependencies:
       react: 18.2.0
 
-  /@coze-arch/coze-design@0.0.6-alpha.101d0c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-2MBGiRaFQ9ZSNpnNmJSWhZGYDO67aLindJgdzC+vdI8iQZmm8SDa4R8cHsywYZiyM2aM9V6GUAxFVD8DhNT1tg==}
+  /@coze-arch/coze-design@0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-NS7rSPmTuFx+9XKm1eujh7CxOK7DSmD861rLZDDuXndTRrnub8yYlR6nbcLqjKwiZQrRgLr107vXnC51SxS9Qg==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@coze-arch/arco-icon': 0.0.6-alpha.101d0c
-      '@coze-arch/arco-illustration': 0.0.12-alpha.101d0c
-      '@coze-arch/semi-theme-hand01': 0.0.6-alpha.101d0c
+      '@coze-arch/arco-icon': 0.0.6-alpha.eec92c(react@18.2.0)
+      '@coze-arch/arco-illustration': 0.0.12-alpha.eec92c(react@18.2.0)
+      '@coze-arch/semi-theme-hand01': 0.0.6-alpha.eec92c
       '@douyinfe/semi-ui': 2.72.3(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       ahooks: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
       class-variance-authority: 0.7.1
@@ -25441,11 +25746,11 @@ packages:
       micromatch: 4.0.8
     dev: false
 
-  /@coze-arch/semi-theme-hand01@0.0.6-alpha.101d0c:
-    resolution: {integrity: sha512-2eBOCTKQ8IvCqGlvV0H3A34h7nzB/LCKsh7MZuKVAWxB5vjyxtclOmTdUuuDe9yN6r6G7sQR2ibml0gsfvTG/A==}
-
   /@coze-arch/semi-theme-hand01@0.0.6-alpha.346d77:
     resolution: {integrity: sha512-64YfAtHYVpssHXA4YOVu40CVUpZ+1JqESGA+esVI0lvFoNfdxF8WY5GkuIz5Xlj/73IKfgwIrxUHxM4EosAfMA==}
+
+  /@coze-arch/semi-theme-hand01@0.0.6-alpha.eec92c:
+    resolution: {integrity: sha512-mamZcgMbMHxr34Vp4IKqa0QESrW8OUfUJSze8tqefiUgIOvM0b1OsBvClQHCvkwByI60rENl1p6ff9FOhKyk7w==}
 
   /@coze-editor/code-language-json@0.1.0-alpha.dd871b(@codemirror/language@6.11.1)(@codemirror/state@6.5.2)(@codemirror/view@6.37.2)(@coze-editor/code-language-shared@0.1.0-alpha.dd871b):
     resolution: {integrity: sha512-wMg/4HMZNKcUFtGTBhZHVb2PyZzGWwIjF7jXpBkNc2y+lKyINblpMdWGhyaovI/JVHxFUTaUysSiwuGoI55Gug==}
@@ -26068,25 +26373,8 @@ packages:
       - '@lezer/common'
     dev: false
 
-  /@coze/api@1.1.0-beta.4(axios@1.10.0):
-    resolution: {integrity: sha512-PUDZSFuv0L4UgW8Hq5YY1mSAJx83uGGER5etmFX7E4lX457pyTZb+kPL3szDfS3Hx5gikqcU/gx3w9XkSVEcfw==}
-    peerDependencies:
-      axios: ^1.7.1
-    dependencies:
-      axios: 1.10.0(debug@4.3.3)
-      jsonwebtoken: 9.0.2
-      node-fetch: 2.7.0
-      reconnecting-websocket: 4.4.0
-      uuid: 10.0.0
-      ws: 8.18.2
-    transitivePeerDependencies:
-      - bufferutil
-      - encoding
-      - utf-8-validate
-    dev: false
-
-  /@coze/api@1.3.0(axios@1.10.0)(debug@4.3.3):
-    resolution: {integrity: sha512-kVaV4U83xXFax8yXxQSk1sUM9FdFYGB+ZzQ9eAn02/NwUOv/LpI28OxhYn7muGSJtlJ7TGyUa+deAAScSDnLIQ==}
+  /@coze/api@1.3.5(axios@1.10.0)(debug@4.3.3):
+    resolution: {integrity: sha512-/WA1KXMkUCgCKPdA7PHoSOZVlWCMGpsIqsmIcgW7fKGxLJZm7QEAERS7XX6qwflUN+oGXvKk6r3z4IdS+bdbyA==}
     peerDependencies:
       axios: ^1.7.1
     dependencies:
@@ -26104,45 +26392,6 @@ packages:
       - bufferutil
       - debug
       - encoding
-      - utf-8-validate
-    dev: false
-
-  /@coze/chat-sdk@0.1.11-beta.19(@types/react@18.2.37)(axios@1.10.0)(debug@4.3.3)(lodash-es@4.17.21)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-DRZ1yuWhYiiOZfbAiD9ifCVA7TiC8Wia4SfkJs5O8kCgbujF2nJrekEWUD6nzt9ivY8oT6Ve/eXfq/jK4CSq6g==}
-    requiresBuild: true
-    peerDependencies:
-      axios: ^1.7.1
-      lodash-es: ^4.17.21
-      react: 18.2.0
-      react-dom: 18.2.0
-    dependencies:
-      '@coze/api': 1.3.0(axios@1.10.0)(debug@4.3.3)
-      axios: 1.10.0(debug@4.3.3)
-      classnames: 2.5.1
-      lodash-es: 4.17.21
-      mdast: 3.0.0-alpha.6
-      mdast-util-from-markdown: 2.0.2
-      mdast-util-gfm-autolink-literal: 2.0.0
-      mdast-util-gfm-strikethrough: 2.0.0
-      mdast-util-gfm-table: 2.0.0
-      mdast-util-gfm-task-list-item: 2.0.0
-      mdast-util-radio-list-item: 2.1.0
-      micromark-extension-gfm-autolink-literal: 2.1.0
-      micromark-extension-gfm-strikethrough: 2.1.0
-      micromark-extension-gfm-table: 2.1.1
-      micromark-extension-gfm-task-list-item: 2.1.0
-      micromark-extension-misc-radio-list-item: 2.1.0
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      xss: 1.0.15
-      zustand: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
-    transitivePeerDependencies:
-      - '@types/react'
-      - bufferutil
-      - debug
-      - encoding
-      - immer
-      - supports-color
       - utf-8-validate
     dev: false
 
@@ -26456,6 +26705,25 @@ packages:
     resolution: {integrity: sha512-nzHqlTjS8tyFgfrlAVxCqV4P82JYoUw+bmVs5/05/65vLKLVo5KnDn6VGUfRzFcXJ68d4vMWv5qcrEG/E2aG+Q==}
     dependencies:
       jsonc-parser: 3.3.1
+
+  /@douyinfe/semi-rspack-plugin@2.61.0(patch_hash=jgvrbizgnsxhugflluipewtgrm)(sass@1.89.2)(webpack@5.91.0):
+    resolution: {integrity: sha512-OlE7vUMbJa87aTao8DW76aVoOb1vsr8S8pngReO9K2aqKJubF8/BwqwXmIzNb4MTHDkwMu2SizweJGLUw8K8Sw==}
+    peerDependencies:
+      webpack: ^5
+    dependencies:
+      '@babel/core': 7.27.4
+      css-loader: 4.3.0(webpack@5.91.0)
+      enhanced-resolve: 5.12.0
+      raw-loader: 4.0.2(webpack@5.91.0)
+      sass-loader: 10.5.2(sass@1.89.2)(webpack@5.91.0)
+      webpack: 5.91.0
+    transitivePeerDependencies:
+      - fibers
+      - node-sass
+      - sass
+      - supports-color
+    dev: true
+    patched: true
 
   /@douyinfe/semi-rspack-plugin@2.61.0(patch_hash=jgvrbizgnsxhugflluipewtgrm)(webpack@5.91.0):
     resolution: {integrity: sha512-OlE7vUMbJa87aTao8DW76aVoOb1vsr8S8pngReO9K2aqKJubF8/BwqwXmIzNb4MTHDkwMu2SizweJGLUw8K8Sw==}
@@ -28369,9 +28637,229 @@ packages:
     resolution: {integrity: sha512-JBxkERygn7Bv/GbN5Rv8Ul6LVknS+5Bp6RgDC/O8gEBU/yeH5Ui5C/OlWrTb6qct7LjjfT6Re2NxB0ln0yYybA==}
     engines: {node: '>=18.18'}
 
-  /@inquirer/figures@1.0.12:
-    resolution: {integrity: sha512-MJttijd8rMFcKJC8NYmprWr6hD3r9Gd9qUC0XwPNwoEPWSMVJwA2MlXxF+nhZZNMY+HXsWa+o7KY2emWYIn0jQ==}
+  /@inquirer/checkbox@4.2.2(@types/node@18.18.9):
+    resolution: {integrity: sha512-E+KExNurKcUJJdxmjglTl141EwxWyAHplvsYJQgSwXf8qiNWkTxTuCCqmhFEmbIXd4zLaGMfQFJ6WrZ7fSeV3g==}
     engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/figures': 1.0.13
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+      ansi-escapes: 4.3.2
+      yoctocolors-cjs: 2.1.2
+    dev: true
+
+  /@inquirer/confirm@5.1.16(@types/node@18.18.9):
+    resolution: {integrity: sha512-j1a5VstaK5KQy8Mu8cHmuQvN1Zc62TbLhjJxwHvKPPKEoowSF6h/0UdOpA9DNdWZ+9Inq73+puRq1df6OJ8Sag==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+    dev: true
+
+  /@inquirer/core@10.2.0(@types/node@18.18.9):
+    resolution: {integrity: sha512-NyDSjPqhSvpZEMZrLCYUquWNl+XC/moEcVFqS55IEYIYsY0a1cUCevSqk7ctOlnm/RaSBU5psFryNlxcmGrjaA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/figures': 1.0.13
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+      ansi-escapes: 4.3.2
+      cli-width: 4.1.0
+      mute-stream: 2.0.0
+      signal-exit: 4.1.0
+      wrap-ansi: 6.2.0
+      yoctocolors-cjs: 2.1.2
+    dev: true
+
+  /@inquirer/editor@4.2.18(@types/node@18.18.9):
+    resolution: {integrity: sha512-yeQN3AXjCm7+Hmq5L6Dm2wEDeBRdAZuyZ4I7tWSSanbxDzqM0KqzoDbKM7p4ebllAYdoQuPJS6N71/3L281i6w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/external-editor': 1.0.1(@types/node@18.18.9)
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+    dev: true
+
+  /@inquirer/expand@4.0.18(@types/node@18.18.9):
+    resolution: {integrity: sha512-xUjteYtavH7HwDMzq4Cn2X4Qsh5NozoDHCJTdoXg9HfZ4w3R6mxV1B9tL7DGJX2eq/zqtsFjhm0/RJIMGlh3ag==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+      yoctocolors-cjs: 2.1.2
+    dev: true
+
+  /@inquirer/external-editor@1.0.1(@types/node@18.18.9):
+    resolution: {integrity: sha512-Oau4yL24d2B5IL4ma4UpbQigkVhzPDXLoqy1ggK4gnHg/stmkffJE4oOXHXF3uz0UEpywG68KcyXsyYpA1Re/Q==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@types/node': 18.18.9
+      chardet: 2.1.0
+      iconv-lite: 0.6.3
+    dev: true
+
+  /@inquirer/figures@1.0.13:
+    resolution: {integrity: sha512-lGPVU3yO9ZNqA7vTYz26jny41lE7yoQansmqdMLBEfqaGsmdg7V3W9mK9Pvb5IL4EVZ9GnSDGMO/cJXud5dMaw==}
+    engines: {node: '>=18'}
+    dev: true
+
+  /@inquirer/input@4.2.2(@types/node@18.18.9):
+    resolution: {integrity: sha512-hqOvBZj/MhQCpHUuD3MVq18SSoDNHy7wEnQ8mtvs71K8OPZVXJinOzcvQna33dNYLYE4LkA9BlhAhK6MJcsVbw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+    dev: true
+
+  /@inquirer/number@3.0.18(@types/node@18.18.9):
+    resolution: {integrity: sha512-7exgBm52WXZRczsydCVftozFTrrwbG5ySE0GqUd2zLNSBXyIucs2Wnm7ZKLe/aUu6NUg9dg7Q80QIHCdZJiY4A==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+    dev: true
+
+  /@inquirer/password@4.0.18(@types/node@18.18.9):
+    resolution: {integrity: sha512-zXvzAGxPQTNk/SbT3carAD4Iqi6A2JS2qtcqQjsL22uvD+JfQzUrDEtPjLL7PLn8zlSNyPdY02IiQjzoL9TStA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+      ansi-escapes: 4.3.2
+    dev: true
+
+  /@inquirer/prompts@7.8.4(@types/node@18.18.9):
+    resolution: {integrity: sha512-MuxVZ1en1g5oGamXV3DWP89GEkdD54alcfhHd7InUW5BifAdKQEK9SLFa/5hlWbvuhMPlobF0WAx7Okq988Jxg==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/checkbox': 4.2.2(@types/node@18.18.9)
+      '@inquirer/confirm': 5.1.16(@types/node@18.18.9)
+      '@inquirer/editor': 4.2.18(@types/node@18.18.9)
+      '@inquirer/expand': 4.0.18(@types/node@18.18.9)
+      '@inquirer/input': 4.2.2(@types/node@18.18.9)
+      '@inquirer/number': 3.0.18(@types/node@18.18.9)
+      '@inquirer/password': 4.0.18(@types/node@18.18.9)
+      '@inquirer/rawlist': 4.1.6(@types/node@18.18.9)
+      '@inquirer/search': 3.1.1(@types/node@18.18.9)
+      '@inquirer/select': 4.3.2(@types/node@18.18.9)
+      '@types/node': 18.18.9
+    dev: true
+
+  /@inquirer/rawlist@4.1.6(@types/node@18.18.9):
+    resolution: {integrity: sha512-KOZqa3QNr3f0pMnufzL7K+nweFFCCBs6LCXZzXDrVGTyssjLeudn5ySktZYv1XiSqobyHRYYK0c6QsOxJEhXKA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+      yoctocolors-cjs: 2.1.2
+    dev: true
+
+  /@inquirer/search@3.1.1(@types/node@18.18.9):
+    resolution: {integrity: sha512-TkMUY+A2p2EYVY3GCTItYGvqT6LiLzHBnqsU1rJbrpXUijFfM6zvUx0R4civofVwFCmJZcKqOVwwWAjplKkhxA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/figures': 1.0.13
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+      yoctocolors-cjs: 2.1.2
+    dev: true
+
+  /@inquirer/select@4.3.2(@types/node@18.18.9):
+    resolution: {integrity: sha512-nwous24r31M+WyDEHV+qckXkepvihxhnyIaod2MG7eCE6G0Zm/HUF6jgN8GXgf4U7AU6SLseKdanY195cwvU6w==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@inquirer/core': 10.2.0(@types/node@18.18.9)
+      '@inquirer/figures': 1.0.13
+      '@inquirer/type': 3.0.8(@types/node@18.18.9)
+      '@types/node': 18.18.9
+      ansi-escapes: 4.3.2
+      yoctocolors-cjs: 2.1.2
+    dev: true
+
+  /@inquirer/type@3.0.8(@types/node@18.18.9):
+    resolution: {integrity: sha512-lg9Whz8onIHRthWaN1Q9EGLa/0LFJjyM8mEUbL1eTi6yMGvBf8gvyDLtxSXztQsxMvhxxNpJYrwa1YHdq+w4Jw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@types/node': 18.18.9
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+    dependencies:
+      '@types/node': 18.18.9
     dev: true
 
   /@isaacs/cliui@8.0.2:
@@ -29425,6 +29913,46 @@ packages:
       webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.17.19)
     dev: true
 
+  /@pmmmwh/react-refresh-webpack-plugin@0.5.10(react-refresh@0.14.0)(webpack-dev-server@4.13.1)(webpack@5.76.0):
+    resolution: {integrity: sha512-j0Ya0hCFZPd4x40qLzbhGsh9TMtdb+CJQiso+WxLOPNasohq9cc5SNUcwsZaRH6++Xh91Xkm/xHCkuIiIu0LUA==}
+    engines: {node: '>= 10.13'}
+    peerDependencies:
+      '@types/webpack': 4.x || 5.x
+      react-refresh: '>=0.10.0 <1.0.0'
+      sockjs-client: ^1.4.0
+      type-fest: 3.13.1
+      webpack: '>=4.43.0 <6.0.0'
+      webpack-dev-server: 3.x || 4.x
+      webpack-hot-middleware: 2.x
+      webpack-plugin-serve: 0.x || 1.x
+    peerDependenciesMeta:
+      '@types/webpack':
+        optional: true
+      sockjs-client:
+        optional: true
+      type-fest:
+        optional: true
+      webpack-dev-server:
+        optional: true
+      webpack-hot-middleware:
+        optional: true
+      webpack-plugin-serve:
+        optional: true
+    dependencies:
+      ansi-html-community: 0.0.8
+      common-path-prefix: 3.0.0
+      core-js-pure: 3.43.0
+      error-stack-parser: 2.1.4
+      find-up: 5.0.0
+      html-entities: 2.6.0
+      loader-utils: 2.0.4
+      react-refresh: 0.14.0
+      schema-utils: 3.3.0
+      source-map: 0.7.4
+      webpack: 5.76.0(@swc/core@1.12.1)(esbuild@0.17.19)
+      webpack-dev-server: 4.13.1(webpack@5.76.0)
+    dev: true
+
   /@pmmmwh/react-refresh-webpack-plugin@0.5.10(react-refresh@0.14.0)(webpack-hot-middleware@2.26.1)(webpack@5.91.0):
     resolution: {integrity: sha512-j0Ya0hCFZPd4x40qLzbhGsh9TMtdb+CJQiso+WxLOPNasohq9cc5SNUcwsZaRH6++Xh91Xkm/xHCkuIiIu0LUA==}
     engines: {node: '>= 10.13'}
@@ -29463,85 +29991,6 @@ packages:
       source-map: 0.7.4
       webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.17.19)
       webpack-hot-middleware: 2.26.1
-    dev: true
-
-  /@pmmmwh/react-refresh-webpack-plugin@0.5.10(react-refresh@0.17.0)(webpack-dev-server@4.13.1)(webpack@5.76.0):
-    resolution: {integrity: sha512-j0Ya0hCFZPd4x40qLzbhGsh9TMtdb+CJQiso+WxLOPNasohq9cc5SNUcwsZaRH6++Xh91Xkm/xHCkuIiIu0LUA==}
-    engines: {node: '>= 10.13'}
-    peerDependencies:
-      '@types/webpack': 4.x || 5.x
-      react-refresh: '>=0.10.0 <1.0.0'
-      sockjs-client: ^1.4.0
-      type-fest: 3.13.1
-      webpack: '>=4.43.0 <6.0.0'
-      webpack-dev-server: 3.x || 4.x
-      webpack-hot-middleware: 2.x
-      webpack-plugin-serve: 0.x || 1.x
-    peerDependenciesMeta:
-      '@types/webpack':
-        optional: true
-      sockjs-client:
-        optional: true
-      type-fest:
-        optional: true
-      webpack-dev-server:
-        optional: true
-      webpack-hot-middleware:
-        optional: true
-      webpack-plugin-serve:
-        optional: true
-    dependencies:
-      ansi-html-community: 0.0.8
-      common-path-prefix: 3.0.0
-      core-js-pure: 3.43.0
-      error-stack-parser: 2.1.4
-      find-up: 5.0.0
-      html-entities: 2.6.0
-      loader-utils: 2.0.4
-      react-refresh: 0.17.0
-      schema-utils: 3.3.0
-      source-map: 0.7.4
-      webpack: 5.76.0(@swc/core@1.12.1)(esbuild@0.17.19)
-      webpack-dev-server: 4.13.1(webpack@5.76.0)
-    dev: true
-
-  /@pmmmwh/react-refresh-webpack-plugin@0.5.10(react-refresh@0.17.0)(webpack@5.91.0):
-    resolution: {integrity: sha512-j0Ya0hCFZPd4x40qLzbhGsh9TMtdb+CJQiso+WxLOPNasohq9cc5SNUcwsZaRH6++Xh91Xkm/xHCkuIiIu0LUA==}
-    engines: {node: '>= 10.13'}
-    peerDependencies:
-      '@types/webpack': 4.x || 5.x
-      react-refresh: '>=0.10.0 <1.0.0'
-      sockjs-client: ^1.4.0
-      type-fest: 3.13.1
-      webpack: '>=4.43.0 <6.0.0'
-      webpack-dev-server: 3.x || 4.x
-      webpack-hot-middleware: 2.x
-      webpack-plugin-serve: 0.x || 1.x
-    peerDependenciesMeta:
-      '@types/webpack':
-        optional: true
-      sockjs-client:
-        optional: true
-      type-fest:
-        optional: true
-      webpack-dev-server:
-        optional: true
-      webpack-hot-middleware:
-        optional: true
-      webpack-plugin-serve:
-        optional: true
-    dependencies:
-      ansi-html-community: 0.0.8
-      common-path-prefix: 3.0.0
-      core-js-pure: 3.43.0
-      error-stack-parser: 2.1.4
-      find-up: 5.0.0
-      html-entities: 2.6.0
-      loader-utils: 2.0.4
-      react-refresh: 0.17.0
-      schema-utils: 3.3.0
-      source-map: 0.7.4
-      webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.17.19)
     dev: true
 
   /@polka/url@1.0.0-next.29:
@@ -31700,7 +32149,7 @@ packages:
       '@rspack/binding-win32-x64-msvc': 1.3.15
     dev: true
 
-  /@rspack/cli@0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.17.0):
+  /@rspack/cli@0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.14.0):
     resolution: {integrity: sha512-bP/DSyUA+qLVVx99cmyXlrCwyID9jmbMfsMwDrn0BmY3IoBFFquhw9/5K1QBBpwlWnjGtntqeZPyAmweZ2loKw==}
     hasBin: true
     peerDependencies:
@@ -31708,7 +32157,7 @@ packages:
     dependencies:
       '@discoveryjs/json-ext': 0.5.7
       '@rspack/core': 0.4.0
-      '@rspack/dev-server': 0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.17.0)
+      '@rspack/dev-server': 0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.14.0)
       colorette: 2.0.19
       exit-hook: 3.2.0
       interpret: 3.1.1
@@ -31732,6 +32181,32 @@ packages:
       - webpack-cli
       - webpack-hot-middleware
       - webpack-plugin-serve
+    dev: true
+
+  /@rspack/cli@0.6.0(@rspack/core@0.6.0)(debug@4.3.3)(webpack@5.91.0):
+    resolution: {integrity: sha512-AH71jp0dA3RutQtZmZLWrKvjWs4bgWFHM3oVwqNpN+zG/BeEkavK1Y0KYHmKwUXXUyeFbiMl5H286Kxrj7tHxg==}
+    hasBin: true
+    peerDependencies:
+      '@rspack/core': '>=0.4.0'
+    dependencies:
+      '@discoveryjs/json-ext': 0.5.7
+      '@rspack/core': 0.6.0
+      '@rspack/dev-server': 0.6.0(@rspack/core@0.6.0)(debug@4.3.3)(webpack@5.91.0)
+      colorette: 2.0.19
+      exit-hook: 3.2.0
+      interpret: 3.1.1
+      rechoir: 0.8.0
+      semver: 6.3.1
+      webpack-bundle-analyzer: 4.6.1
+      yargs: 17.6.2
+    transitivePeerDependencies:
+      - '@types/express'
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+      - webpack
+      - webpack-cli
     dev: true
 
   /@rspack/core@0.1.12(webpack-hot-middleware@2.26.1)(webpack@5.91.0):
@@ -31957,13 +32432,13 @@ packages:
       - webpack-plugin-serve
     dev: true
 
-  /@rspack/dev-server@0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.17.0):
+  /@rspack/dev-server@0.4.0(@rspack/core@0.4.0)(@swc/core@1.12.1)(esbuild@0.17.19)(react-refresh@0.14.0):
     resolution: {integrity: sha512-qi70BKcGspjlNpufF+AOf5MHbEGnumMtVTtWzdw8I4xDWr2AguesrOEgACHMJx/EZks9vtbSqepf4anYglvsng==}
     peerDependencies:
       '@rspack/core': '*'
     dependencies:
       '@rspack/core': 0.4.0
-      '@rspack/plugin-react-refresh': 0.4.0(react-refresh@0.17.0)(webpack-dev-server@4.13.1)(webpack@5.76.0)
+      '@rspack/plugin-react-refresh': 0.4.0(react-refresh@0.14.0)(webpack-dev-server@4.13.1)(webpack@5.76.0)
       chokidar: 3.5.3
       connect-history-api-fallback: 2.0.0
       express: 4.18.1
@@ -31989,6 +32464,30 @@ packages:
       - webpack-cli
       - webpack-hot-middleware
       - webpack-plugin-serve
+    dev: true
+
+  /@rspack/dev-server@0.6.0(@rspack/core@0.6.0)(debug@4.3.3)(webpack@5.91.0):
+    resolution: {integrity: sha512-D/Hd8mJX0Mq4XVfr4nfPk8E0398NHaHVRzJ1nriX0uf6LJdpbgc2qSUKuoNhK3wia6Wb055hJQyRZ/e1wBDf5Q==}
+    peerDependencies:
+      '@rspack/core': '*'
+    dependencies:
+      '@rspack/core': 0.6.0
+      chokidar: 3.5.3
+      connect-history-api-fallback: 2.0.0
+      express: 4.18.1
+      http-proxy-middleware: 2.0.6(@types/express@4.17.23)(debug@4.3.3)
+      mime-types: 2.1.35
+      webpack-dev-middleware: 6.0.2(webpack@5.91.0)
+      webpack-dev-server: 4.13.1(debug@4.3.3)(webpack@5.91.0)
+      ws: 8.8.1
+    transitivePeerDependencies:
+      - '@types/express'
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
+      - webpack
+      - webpack-cli
     dev: true
 
   /@rspack/lite-tapable@1.0.1:
@@ -32029,7 +32528,7 @@ packages:
       tapable: 2.2.1
     dev: true
 
-  /@rspack/plugin-react-refresh@0.4.0(react-refresh@0.17.0)(webpack-dev-server@4.13.1)(webpack@5.76.0):
+  /@rspack/plugin-react-refresh@0.4.0(react-refresh@0.14.0)(webpack-dev-server@4.13.1)(webpack@5.76.0):
     resolution: {integrity: sha512-yo2FXVj6P2HrBGIxBqqRJQzAdG6CrL0WFE+kQk/Uz+7Ct09nPvl7zRdHE1BUXHnSXIjrMJj4fRmd7hXsmtTHXQ==}
     peerDependencies:
       react-refresh: '>=0.10.0 <1.0.0'
@@ -32037,8 +32536,8 @@ packages:
       react-refresh:
         optional: true
     dependencies:
-      '@pmmmwh/react-refresh-webpack-plugin': 0.5.10(react-refresh@0.17.0)(webpack-dev-server@4.13.1)(webpack@5.76.0)
-      react-refresh: 0.17.0
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.10(react-refresh@0.14.0)(webpack-dev-server@4.13.1)(webpack@5.76.0)
+      react-refresh: 0.14.0
     transitivePeerDependencies:
       - '@types/webpack'
       - sockjs-client
@@ -32049,7 +32548,7 @@ packages:
       - webpack-plugin-serve
     dev: true
 
-  /@rspack/plugin-react-refresh@0.4.0(react-refresh@0.17.0)(webpack@5.91.0):
+  /@rspack/plugin-react-refresh@0.4.0(react-refresh@0.14.0)(webpack@5.91.0):
     resolution: {integrity: sha512-yo2FXVj6P2HrBGIxBqqRJQzAdG6CrL0WFE+kQk/Uz+7Ct09nPvl7zRdHE1BUXHnSXIjrMJj4fRmd7hXsmtTHXQ==}
     peerDependencies:
       react-refresh: '>=0.10.0 <1.0.0'
@@ -32057,8 +32556,8 @@ packages:
       react-refresh:
         optional: true
     dependencies:
-      '@pmmmwh/react-refresh-webpack-plugin': 0.5.10(react-refresh@0.17.0)(webpack@5.91.0)
-      react-refresh: 0.17.0
+      '@pmmmwh/react-refresh-webpack-plugin': 0.5.10(react-refresh@0.14.0)(webpack-hot-middleware@2.26.1)(webpack@5.91.0)
+      react-refresh: 0.14.0
     transitivePeerDependencies:
       - '@types/webpack'
       - sockjs-client
@@ -32069,13 +32568,15 @@ packages:
       - webpack-plugin-serve
     dev: true
 
-  /@rspack/plugin-react-refresh@0.6.0:
+  /@rspack/plugin-react-refresh@0.6.0(react-refresh@0.14.0):
     resolution: {integrity: sha512-a8iEsSHozQ5jwRb0LjxFbi1FC2rIuDo6z4TRaZtQsaGir1E+mO4z7yff3J2DA7jxH8bp4ecqLeUXBBoRTiGzlw==}
     peerDependencies:
       react-refresh: '>=0.10.0 <1.0.0'
     peerDependenciesMeta:
       react-refresh:
         optional: true
+    dependencies:
+      react-refresh: 0.14.0
     dev: true
 
   /@rspack/plugin-react-refresh@1.0.3(react-refresh@0.16.0):
@@ -34864,10 +35365,6 @@ packages:
     resolution: {integrity: sha512-frsJrz2t/CeGifcu/6uRo4b+SzAwT4NYCVPu1GN8IB9XTzrpPkGuV0tmh9mN+/L0PklAlsC3u5Fxt0ju00LXIw==}
     dev: true
 
-  /@types/fined@1.1.5:
-    resolution: {integrity: sha512-2N93vadEGDFhASTIRbizbl4bNqpMOId5zZfj6hHqYZfEzEfO9onnU4Im8xvzo8uudySDveDHBOOSlTWf38ErfQ==}
-    dev: true
-
   /@types/fs-extra@11.0.1:
     resolution: {integrity: sha512-MxObHvNl4A69ofaTRU8DFqvgzzv8s9yRtaPPm5gud9HDNvpB3GPQFvNuTWAI59B9huVGV5jXYJwbCsmBsOGYWA==}
     dependencies:
@@ -34954,13 +35451,6 @@ packages:
       '@types/node': 18.18.9
     dev: true
 
-  /@types/inquirer@9.0.8:
-    resolution: {integrity: sha512-CgPD5kFGWsb8HJ5K7rfWlifao87m4ph8uioU7OTncJevmE/VLIqAAjfQtko578JZg7/f69K4FgqYym3gNr7DeA==}
-    dependencies:
-      '@types/through': 0.0.33
-      rxjs: 7.8.2
-    dev: true
-
   /@types/is-hotkey@0.1.10:
     resolution: {integrity: sha512-RvC8KMw5BCac1NvRRyaHgMMEtBaZ6wh0pyPTBu7izn4Sj/AX9Y4aXU5c7rX8PnM/knsuUpC1IeoBkANtxBypsQ==}
     dev: false
@@ -34991,6 +35481,10 @@ packages:
   /@types/js-cookie@2.2.7:
     resolution: {integrity: sha512-aLkWa0C0vO5b4Sr798E26QgOkss68Un0bLjs7u9qxzPT5CG+8DuNTffWES58YzJs3hrVAOs1wonycqEBqNJubA==}
 
+  /@types/js-yaml@4.0.9:
+    resolution: {integrity: sha512-k4MGaQl5TGo/iipqb2UDG2UwjXziSWkh0uysQelTlJpX1qGlpUZYm8PnO4DxG1qBomtJUdYJ6qR6xdIah10JLg==}
+    dev: true
+
   /@types/json-bigint@1.0.4:
     resolution: {integrity: sha512-ydHooXLbOmxBbubnA7Eh+RpBzuaIiQjh8WGJYQB50JFGFrdxW7JzVlyEV7fAXw0T2sqJ1ysTneJbiyNLqZRAag==}
     dev: true
@@ -35014,13 +35508,6 @@ packages:
   /@types/katex@0.16.7:
     resolution: {integrity: sha512-HMwFiRujE5PjrgwHQ25+bsLJgowjGjm5Z8FVSf0N6PwgJrwxH0QxzHYDcKsTfV3wva0vzrpqMTJS2jXPr5BMEQ==}
     dev: false
-
-  /@types/liftoff@4.0.3:
-    resolution: {integrity: sha512-UgbL2kR5pLrWICvr8+fuSg0u43LY250q7ZMkC+XKC3E+rs/YBDEnQIzsnhU5dYsLlwMi3R75UvCL87pObP1sxw==}
-    dependencies:
-      '@types/fined': 1.1.5
-      '@types/node': 18.18.9
-    dev: true
 
   /@types/linkify-it@5.0.0:
     resolution: {integrity: sha512-sVDA58zAw4eWAffKOaQH5/5j3XeayukzDk+ewSsnv3p4yJEZHCCzMDiZM8e0OUrRvmpGZ85jf4yDHkHsgBNr9Q==}
@@ -35158,6 +35645,12 @@ packages:
 
   /@types/parse5@5.0.3:
     resolution: {integrity: sha512-kUNnecmtkunAoQ3CnjmMkzNU/gtxG8guhi+Fk2U/kOpIKjIMKnXGp4IJCgQJrXSgMsWYimYG4TGjz/UzbGEBTw==}
+    dev: true
+
+  /@types/postcss-js@4.0.4:
+    resolution: {integrity: sha512-j5+GMZVIPCJpRTwI/mO64mCzv7X+zAEq3JP0EV2lo/BrLWHAohEubUJimIAY23rH27+wKce0fXUYjAdBoqlaYw==}
+    dependencies:
+      postcss: 8.5.6
     dev: true
 
   /@types/pretty-hrtime@1.0.3:
@@ -35327,12 +35820,6 @@ packages:
     resolution: {integrity: sha512-D6QzACV9vNX3r8HQQNTOnpG+Bv1rko+yEA82wKs3O9CQ5+XW7HI7TED17/UE7+5dIxyxZIWTxKbsBeF6uKFCwA==}
     dependencies:
       tapable: 2.2.2
-    dev: true
-
-  /@types/through@0.0.33:
-    resolution: {integrity: sha512-HsJ+z3QuETzP3cswwtzt2vEIiHBk/dCcHGhbmG5X3ecnwFD/lPrMpliGXxSCg03L9AhrdwA4Oz/qfspkDW+xGQ==}
-    dependencies:
-      '@types/node': 18.18.9
     dev: true
 
   /@types/tmp@0.0.33:
@@ -36246,7 +36733,7 @@ packages:
       '@babel/plugin-transform-react-jsx-self': 7.27.1(@babel/core@7.27.4)
       '@babel/plugin-transform-react-jsx-source': 7.27.1(@babel/core@7.27.4)
       magic-string: 0.27.0
-      react-refresh: 0.14.2
+      react-refresh: 0.14.0
       vite: 4.5.14(@types/node@18.18.9)(less@3.13.1)
     transitivePeerDependencies:
       - supports-color
@@ -36326,7 +36813,7 @@ packages:
       '@vitest/spy': 3.0.9
       estree-walker: 3.0.3
       magic-string: 0.30.17
-      vite: 6.3.5(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
+      vite: 6.3.5(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
     dev: true
 
   /@vitest/pretty-format@3.0.9:
@@ -36829,14 +37316,6 @@ packages:
       indent-string: 4.0.0
     dev: true
 
-  /aggregate-error@4.0.1:
-    resolution: {integrity: sha512-0poP0T7el6Vq3rstR8Mn4V/IQrpBLO6POkUSrN7RhyY+GF/InCFShQzsQ39T25gkHhLgSLByyAz+Kjb+c2L98w==}
-    engines: {node: '>=12'}
-    dependencies:
-      clean-stack: 4.2.0
-      indent-string: 5.0.0
-    dev: true
-
   /agora-extension-ai-denoiser@1.1.0(agora-rtc-sdk-ng@4.23.2-1):
     resolution: {integrity: sha512-g4klzzz7IQblNt0c+gJ/DM7sa5oMZ/7GWE4c9aqs3snHRAo+CjDieT84iAc1KUhAiY84RrfhyFdtpvbbEoYBcA==}
     peerDependencies:
@@ -37023,6 +37502,7 @@ packages:
 
   /aproba@2.0.0:
     resolution: {integrity: sha512-lYe4Gx7QT+MKGbDsA+Z+he/Wtef0BiwDOlK/XkBrdfsh9J/jPPXbX0tE9x9cl27Tmu5gg3QUbUrQYa/y+KOHPQ==}
+    requiresBuild: true
 
   /are-we-there-yet@2.0.0:
     resolution: {integrity: sha512-Ci/qENmwHnsYo9xKIcUJN5LeDKdJ6R1Z1j9V/J5wyq8nh/mYPEpIKJbBZXtZjG04HiK7zV/p6Vs9952MrMeUIw==}
@@ -37096,11 +37576,6 @@ packages:
       call-bound: 1.0.4
       is-array-buffer: 3.0.5
 
-  /array-each@1.0.1:
-    resolution: {integrity: sha512-zHjL5SZa68hkKHBFBK6DJCTtr9sfTCPCaph/L7tMSLcTFgy+zX7E+6q5UArbtOtMBCtxdICpfTCspRse+ywyXA==}
-    engines: {node: '>=0.10.0'}
-    dev: true
-
   /array-find-index@1.0.2:
     resolution: {integrity: sha512-M1HQyIXcBGtVywBt8WVdim+lrNaK7VHp99Qt5pSNziXznKHViIBbXWtfRTpEFpF/c4FdfxNAsCCwPp5phBYJtw==}
     engines: {node: '>=0.10.0'}
@@ -37122,11 +37597,6 @@ packages:
       get-intrinsic: 1.3.0
       is-string: 1.1.1
       math-intrinsics: 1.1.0
-
-  /array-slice@1.1.0:
-    resolution: {integrity: sha512-B1qMD3RBP7O8o0H2KbrXDyB0IccejMF15+87Lvlor12ONPRHP6gTjXMNkt/d3ZuOGbAe66hFmaCfECI24Ufp6w==}
-    engines: {node: '>=0.10.0'}
-    dev: true
 
   /array-source@0.0.4:
     resolution: {integrity: sha512-frNdc+zBn80vipY+GdcJkLEbMWj3xmzArYApmUGxoiV8uAu/ygcs9icPdsGdA26h0MkHUMW6EN2piIvVx+M5Mw==}
@@ -38083,6 +38553,7 @@ packages:
       no-case: 3.0.4
       tslib: 2.8.1
       upper-case-first: 2.0.2
+    dev: false
 
   /caseless@0.12.0:
     resolution: {integrity: sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==}
@@ -38153,11 +38624,6 @@ packages:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  /chalk@5.4.1:
-    resolution: {integrity: sha512-zgVZuo2WcZgfUEmsn6eO3kINexW8RAE4maiQ8QNs8CtpPCSyMiYsULR3HQYkm3w8FIA3SberyMJMSldGsW+U3w==}
-    engines: {node: ^12.17.0 || ^14.13 || >=16.0.0}
-    dev: true
-
   /change-case@4.1.2:
     resolution: {integrity: sha512-bSxY2ws9OtviILG1EiY5K7NNxkqg/JnRnFxLtKQ96JaviiIxi7djMrSd0ECT9AC+lttClmYwKw53BWpOMblo7A==}
     dependencies:
@@ -38173,6 +38639,7 @@ packages:
       sentence-case: 3.0.4
       snake-case: 3.0.4
       tslib: 2.8.1
+    dev: false
 
   /character-entities-html4@1.1.4:
     resolution: {integrity: sha512-HRcDxZuZqMx3/a+qrzxdBKBPUpxWEq9xw2OPZ3a/174ihfrQKVsFhqtthBInFy1zZ9GgZyFXOatNujm8M+El3g==}
@@ -38198,8 +38665,8 @@ packages:
   /character-reference-invalid@2.0.1:
     resolution: {integrity: sha512-iBZ4F4wRbyORVsu0jPV7gXkOsGYjGHPmAyv+HiHG8gi5PtC9KI2j1+v8/tlibRvjoWX027ypmG/n0HtO5t7unw==}
 
-  /chardet@0.7.0:
-    resolution: {integrity: sha512-mT8iDcrh03qDGRRmoA2hmBJnxpllMR+0/0qlzjqZES6NdiWDcZkCNAk4rPFZ9Q85r27unkiNNg8ZOiwZXBHwcA==}
+  /chardet@2.1.0:
+    resolution: {integrity: sha512-bNFETTG/pM5ryzQ9Ad0lJOTa6HWD/YsScAR3EnCPZRPlQh77JocYktSHOUHelyhm8IARL+o4c4F1bP5KVOjiRA==}
     dev: true
 
   /charenc@0.0.2:
@@ -38276,6 +38743,7 @@ packages:
   /chownr@2.0.0:
     resolution: {integrity: sha512-bIomtDF5KGpdogkLd9VspvFzk9KfpyyGlS8YFVZl7TGPBHL5snIOnxeshwVgPteQ9b4Eydl+pVbIyE1DcvCWgQ==}
     engines: {node: '>=10'}
+    requiresBuild: true
 
   /chrome-trace-event@1.0.4:
     resolution: {integrity: sha512-rNjApaLzuwaOTjCiT8lSDdGN1APCiqkChLMJxJPWLunPAt5fy8xgU9/jNOchV84wfIxrA0lRQB7oCT8jrn/wrQ==}
@@ -38330,13 +38798,6 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /clean-stack@4.2.0:
-    resolution: {integrity: sha512-LYv6XPxoyODi36Dp976riBtSY27VmFo+MKqEU9QCCWyTrdEPDog+RWA7xQWHi6Vbp61j5c4cdzzX1NidnwtUWg==}
-    engines: {node: '>=12'}
-    dependencies:
-      escape-string-regexp: 5.0.0
-    dev: true
-
   /cli-cursor@1.0.2:
     resolution: {integrity: sha512-25tABq090YNKkF6JH7lcwO0zFJTRke4Jcq9iX2nr/Sz0Cjjv4gckmwlW6Ty/aoyFd6z3ysR2hMGC2GFugmBo6A==}
     engines: {node: '>=0.10.0'}
@@ -38349,13 +38810,6 @@ packages:
     engines: {node: '>=8'}
     dependencies:
       restore-cursor: 3.1.0
-
-  /cli-cursor@5.0.0:
-    resolution: {integrity: sha512-aCj4O5wKyszjMmDT4tZj93kxyydN/K5zPWSCe6/0AV/AA1pqe5ZBIw0a2ZfPQV7lL5/yb5HsUreJ6UFAF1tEQw==}
-    engines: {node: '>=18'}
-    dependencies:
-      restore-cursor: 5.1.0
-    dev: true
 
   /cli-spinners@2.9.2:
     resolution: {integrity: sha512-ywqV+5MmyL4E7ybXgKys4DugZbX0FC6LnwrhjuykIjnK9k8OQacQ7axGKnjDXWNhns0xot3bZI5h55H8yo9cJg==}
@@ -38481,6 +38935,7 @@ packages:
   /color-support@1.1.3:
     resolution: {integrity: sha512-qiBjkpbMLO/HL68y+lh4q0/O1MZFj2RX6X/KmMa3+gJD3z+WwI1ZzDHysvqHGS3mP6mznPckpXmw1nI9cJjyRg==}
     hasBin: true
+    requiresBuild: true
 
   /colord@2.9.3:
     resolution: {integrity: sha512-jeC1axXpnb0/2nn/Y1LPuLdgXBLH7aDcHu4KEKfqw3CUhX7ZpfBSlPKyqXE6btIgEzfWtrX3/tyBCaCvXvMkOw==}
@@ -38709,6 +39164,7 @@ packages:
       no-case: 3.0.4
       tslib: 2.8.1
       upper-case: 2.0.2
+    dev: false
 
   /content-disposition@0.5.4:
     resolution: {integrity: sha512-FveZTNuGw04cxlAiWbzi6zTAL/lhehaWbTtgluJh4/E95DqMwTmha3KZN1aAWA8cFIhHzMZUvLevkw5Rqk+tSQ==}
@@ -38786,7 +39242,6 @@ packages:
   /core-js@3.43.0:
     resolution: {integrity: sha512-N6wEbTTZSYOY2rYAn85CuvWWkCK6QweMn7/4Nr3w+gDBeBhk/x4EJeY6FPo4QzDoJZxVTv8U7CMvgWk6pOHHqA==}
     requiresBuild: true
-    dev: true
 
   /core-util-is@1.0.2:
     resolution: {integrity: sha512-3lqz5YjWTYnW6dlDa5TLaTCcShfar1e40rmcJVwCBJC6mWlFuj0eCHIElmG1g5kyuJ/GD+8Wn4FFCcz4gJPfaQ==}
@@ -39001,7 +39456,7 @@ packages:
       webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.17.19)
     dev: true
 
-  /css-loader@6.11.0(webpack@5.91.0):
+  /css-loader@6.11.0(@rspack/core@0.6.0)(webpack@5.91.0):
     resolution: {integrity: sha512-CTJ+AEQJjq5NzLga5pE39qdiSV56F8ywCIsqNIRF0r7BDgWsN25aazToqAFg7ZrtA/U016xudB3ffgweORxX7g==}
     engines: {node: '>= 12.13.0'}
     peerDependencies:
@@ -39013,6 +39468,7 @@ packages:
       webpack:
         optional: true
     dependencies:
+      '@rspack/core': 0.6.0
       icss-utils: 5.1.0(postcss@8.5.6)
       postcss: 8.5.6
       postcss-modules-extract-imports: 3.1.0(postcss@8.5.6)
@@ -39593,26 +40049,13 @@ packages:
       slash: 3.0.0
     dev: true
 
-  /del@7.1.0:
-    resolution: {integrity: sha512-v2KyNk7efxhlyHpjEvfyxaAihKKK0nWCuf6ZtqZcFFpQRG0bJ12Qsr0RpvsICMjAAZ8DOVCxrlqpxISlMHC4Kg==}
-    engines: {node: '>=14.16'}
-    dependencies:
-      globby: 13.2.2
-      graceful-fs: 4.2.11
-      is-glob: 4.0.3
-      is-path-cwd: 3.0.0
-      is-path-inside: 4.0.0
-      p-map: 5.5.0
-      rimraf: 3.0.2
-      slash: 4.0.0
-    dev: true
-
   /delayed-stream@1.0.0:
     resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
     engines: {node: '>=0.4.0'}
 
   /delegates@1.0.0:
     resolution: {integrity: sha512-bd2L678uiWATM6m5Z1VzNCErI3jiGzt6HGY8OVICs40JQq/HALfbyNJmp0UDakEY4pMMaN0Ly5om/B1VI/+xfQ==}
+    requiresBuild: true
 
   /depd@1.1.2:
     resolution: {integrity: sha512-7emPTl6Dpo6JRXOXjLRxck+FlLRX5847cLKEn00PLAgc3g2hTZZgr+e4c2v6QpSmLeFP3n5yUo7ft6avBK/5jQ==}
@@ -39642,11 +40085,6 @@ packages:
   /detect-browser@5.3.0:
     resolution: {integrity: sha512-53rsFbGdwMwlF7qvCt0ypLM5V5/Mbl0szB7GPN8y9NCcbknYOeVVXdrXEq+90IwAfrrzt6Hd+u2E2ntakICU8w==}
     dev: false
-
-  /detect-file@1.0.0:
-    resolution: {integrity: sha512-DtCOLG98P007x7wiiOmfI0fi3eIKyWiLTGJ2MDnVi/E04lWGbf+JzrRHMm0rgIIZJGtHpKpbVgLWHrv8xXpc3Q==}
-    engines: {node: '>=0.10.0'}
-    dev: true
 
   /detect-indent@6.1.0:
     resolution: {integrity: sha512-reYkTUJAZb9gUuZ2RvVCNhVHdg62RHnJ7WJl8ftMi4diZ6NWlciOzQN88pUhSELEwflJht4oQDv0F0BMlwaYtA==}
@@ -39928,8 +40366,19 @@ packages:
       is-obj: 2.0.0
     dev: true
 
+  /dotenv-defaults@5.0.2:
+    resolution: {integrity: sha512-y5z4NhblzwNk8XBIYVzjLcFkANK0rxbRDO6kGOfH9QrVYIGVEX52IqwSprKVsaLHM9pnNkCSxazZF/JPydDPvA==}
+    dependencies:
+      dotenv: 14.3.2
+    dev: true
+
   /dotenv-expand@10.0.0:
     resolution: {integrity: sha512-GopVGCpVS1UKH75VKHGuQFqS1Gusej0z4FyQkPdwjil2gNIv+LNsqBlboOzpJFZKVT95GkCyWJbBSdFEFUWI2A==}
+    engines: {node: '>=12'}
+    dev: true
+
+  /dotenv@14.3.2:
+    resolution: {integrity: sha512-vwEppIphpFdvaMCaHfCEv9IgwcxMljMw2TnAQBB4VWPvzXQLTb82jwmdOKzlEVUL3gNFT4l4TPKO+Bn+sqcrVQ==}
     engines: {node: '>=12'}
     dev: true
 
@@ -39999,10 +40448,6 @@ packages:
     resolution: {integrity: sha512-gYCwo7kh5S3IDyZPLZf6hSS0MnZT8QmJFqYvbqlDZSbwdZlY6QZWxJ4i/6UhITOJ4XzyI647Bm2MXKCLqnJ4nQ==}
     engines: {node: '>4.0'}
     dev: false
-
-  /emoji-regex@10.4.0:
-    resolution: {integrity: sha512-EC+0oUMY1Rqm4O6LLrgjtYDvcVYTy7chDnM4Q7030tP4Kwj3u/pR6gP9ygnp2CJMK5Gq+9Q2oqmrFJAz01DXjw==}
-    dev: true
 
   /emoji-regex@7.0.3:
     resolution: {integrity: sha512-CwBLREIQ7LvYFB0WyRvwhq5N5qPhc6PMjD6bYggFlI5YyDgl+0vxq5VHbMOFqLg7hfWzmu8T5Z1QofhmTIhItA==}
@@ -40455,6 +40900,17 @@ packages:
 
   /esbuild-plugin-alias@0.2.1:
     resolution: {integrity: sha512-jyfL/pwPqaFXyKnj8lP8iLk6Z0m099uXR45aSN8Av1XD4vhvQutxxPzgA2bTcAwQpa1zCXDcWOlhFgyP3GKqhQ==}
+    dev: true
+
+  /esbuild-register@3.6.0(esbuild@0.15.18):
+    resolution: {integrity: sha512-H2/S7Pm8a9CL1uhp9OvjwrBh5Pvx0H8qVOxNu8Wed9Y7qv56MPtq+GGM8RJpq6glYJn9Wspr8uw7l55uyinNeg==}
+    peerDependencies:
+      esbuild: '>=0.12 <1'
+    dependencies:
+      debug: 4.3.3(supports-color@5.5.0)
+      esbuild: 0.15.18
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /esbuild-register@3.6.0(esbuild@0.17.19):
@@ -41328,6 +41784,11 @@ packages:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
 
+  /eta@3.5.0:
+    resolution: {integrity: sha512-e3x3FBvGzeCIHhF+zhK8FZA2vC5uFn6b4HJjegUbIWrDb4mJ7JjTGMJY9VGIbRVpmSwHopNiaJibhjIr+HfLug==}
+    engines: {node: '>=6.0.0'}
+    dev: true
+
   /etag@1.8.1:
     resolution: {integrity: sha512-aIL5Fx7mawVa300al2BnEE4iNvo1qETxLrPI/o05L7z6go7fCw1J6EQmbK4FmJ2AS7kgVF/KEZWufBfdClMcPg==}
     engines: {node: '>= 0.6'}
@@ -41427,13 +41888,6 @@ packages:
     dependencies:
       fill-range: 2.2.4
     dev: false
-
-  /expand-tilde@2.0.2:
-    resolution: {integrity: sha512-A5EmesHW6rfnZ9ysHQjPdJRni0SRar0tjtG5MNtm9n5TUvsYU8oozprtRD4AqHxcZWWlVuAmQo2nWKfN9oyjTw==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      homedir-polyfill: 1.0.3
-    dev: true
 
   /expect-type@1.2.1:
     resolution: {integrity: sha512-/kP8CAwxzLVEeFrMm4kMmy4CCDlpipyA7MYLVrdJIkV0fYF0UaigQHRsxHiuY/GEea+bh4KSv3TIlgr+2UL6bw==}
@@ -41554,15 +42008,6 @@ packages:
 
   /extend@3.0.2:
     resolution: {integrity: sha512-fjquC59cD7CyW6urNXK0FBufkZcoiGG80wTuPujX590cB5Ttln20E2UB4S/WARVqhXffZl2LNgS+gQdPIIim/g==}
-
-  /external-editor@3.1.0:
-    resolution: {integrity: sha512-hMQ4CX1p1izmuLYyZqLMO/qGNw10wSv9QDCPfzXfyFrOaCSSoRfqE1Kf1s5an66J5JZC62NewG+mK49jOCtQew==}
-    engines: {node: '>=4'}
-    dependencies:
-      chardet: 0.7.0
-      iconv-lite: 0.4.24
-      tmp: 0.0.33
-    dev: true
 
   /extglob@0.3.2:
     resolution: {integrity: sha512-1FOj1LOwn42TMrruOHGt18HemVnbwAmAak7krWk+wa93KXxGbK+2jpezm+ytJYDaBX0/SPLZFHKM7m+tKobWGg==}
@@ -41964,38 +42409,12 @@ packages:
       path-exists: 5.0.0
     dev: true
 
-  /findup-sync@5.0.0:
-    resolution: {integrity: sha512-MzwXju70AuyflbgeOhzvQWAvvQdo1XL0A9bVvlXsYcFEBM87WR4OakL4OfZq+QRmr+duJubio+UtNQCPsVESzQ==}
-    engines: {node: '>= 10.13.0'}
-    dependencies:
-      detect-file: 1.0.0
-      is-glob: 4.0.3
-      micromatch: 4.0.8
-      resolve-dir: 1.0.1
-    dev: true
-
-  /fined@2.0.0:
-    resolution: {integrity: sha512-OFRzsL6ZMHz5s0JrsEr+TpdGNCtrVtnuG3x1yzGNiQHT0yaDnXAj8V/lWcpJVrnoDpcwXcASxAZYbuXda2Y82A==}
-    engines: {node: '>= 10.13.0'}
-    dependencies:
-      expand-tilde: 2.0.2
-      is-plain-object: 5.0.0
-      object.defaults: 1.1.0
-      object.pick: 1.3.0
-      parse-filepath: 1.0.2
-    dev: true
-
   /fix-dts-default-cjs-exports@1.0.1:
     resolution: {integrity: sha512-pVIECanWFC61Hzl2+oOCtoJ3F17kglZC/6N94eRWycFgBH35hHx0Li604ZIzhseh97mf2p0cv7vVrOZGoqhlEg==}
     dependencies:
       magic-string: 0.30.17
       mlly: 1.7.4
       rollup: 4.43.0
-    dev: true
-
-  /flagged-respawn@2.0.0:
-    resolution: {integrity: sha512-Gq/a6YCi8zexmGHMuJwahTGzXlAZAOsbCVKduWXC6TlLCjjFRlExMJc4GC2NYPYZ0r/brw9P7CpRgQmlPVeOoA==}
-    engines: {node: '>= 10.13.0'}
     dev: true
 
   /flat-cache@2.0.1:
@@ -42073,13 +42492,6 @@ packages:
     dependencies:
       for-in: 1.0.2
     dev: false
-
-  /for-own@1.0.0:
-    resolution: {integrity: sha512-0OABksIGrxKK8K4kynWkQ7y1zounQxP+CWnyclVwj81KW3vlLlGUx57DKGcP/LH216GzqnstnPocF16Nxs0Ycg==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      for-in: 1.0.2
-    dev: true
 
   /foreground-child@2.0.0:
     resolution: {integrity: sha512-dCIq9FpEcyQyXKCkyzmlPTFNgrCzPudOe+mhvJU5zAtlBnGVy2yKxtfsxK2tQBThwq225jcvBjpw1Gr40uzZCA==}
@@ -42244,6 +42656,7 @@ packages:
   /fs-minipass@2.1.0:
     resolution: {integrity: sha512-V/JgOLFCS+R6Vcq0slCuaeWEdNC3ouDlJMNIsacH2VtALiu9mV4LPrHc5cDl8k5aw6J8jwgWWpiTo5RYhmIzvg==}
     engines: {node: '>= 8'}
+    requiresBuild: true
     dependencies:
       minipass: 3.3.6
 
@@ -42349,11 +42762,6 @@ packages:
   /get-caller-file@2.0.5:
     resolution: {integrity: sha512-DyFP3BM/3YHTQOCUL/w0OZHR0lpKeGrxotcHWcqNEdnltqFwXVfhEBQ94eIo34AfQpo0rGki4cyIiftY06h2Fg==}
     engines: {node: 6.* || 8.* || >= 10.*}
-    dev: true
-
-  /get-east-asian-width@1.3.0:
-    resolution: {integrity: sha512-vpeMIQKxczTD/0s2CdEWHcb0eeJe6TFjxb+J5xgX7hScxqrGuyjmv4c1D4A/gelKfyox0gJJwIHF+fLjeaM8kQ==}
-    engines: {node: '>=18'}
     dev: true
 
   /get-func-name@2.0.2:
@@ -42587,31 +42995,11 @@ packages:
       once: 1.4.0
     dev: true
 
-  /global-modules@1.0.0:
-    resolution: {integrity: sha512-sKzpEkf11GpOFuw0Zzjzmt4B4UZwjOcG757PPvrfhxcLFbq0wpsgpOqxpxtxFiCG4DtG93M6XRVbF2oGdev7bg==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      global-prefix: 1.0.2
-      is-windows: 1.0.2
-      resolve-dir: 1.0.1
-    dev: true
-
   /global-modules@2.0.0:
     resolution: {integrity: sha512-NGbfmJBp9x8IxyJSd1P+otYK8vonoJactOogrVfFRIAEY1ukil8RSKDz2Yo7wh1oihl51l/r6W4epkeKJHqL8A==}
     engines: {node: '>=6'}
     dependencies:
       global-prefix: 3.0.0
-
-  /global-prefix@1.0.2:
-    resolution: {integrity: sha512-5lsx1NUDHtSjfg0eHlmYvZKv8/nVqX4ckFbM+FrGcQ+04KWcWFo9P5MxPZYSzUvyzmdTbI7Eix8Q4IbELDqzKg==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      expand-tilde: 2.0.2
-      homedir-polyfill: 1.0.3
-      ini: 1.3.8
-      is-windows: 1.0.2
-      which: 1.3.1
-    dev: true
 
   /global-prefix@3.0.0:
     resolution: {integrity: sha512-awConJSVCHVGND6x3tmMaKcQvwXLhjdkmomy2W+Goaui8YPgYgXJZewhg3fWC+DlfqqQuWg8AwqjGTD2nAPVWg==}
@@ -42658,17 +43046,6 @@ packages:
       ignore: 5.3.2
       merge2: 1.4.1
       slash: 3.0.0
-
-  /globby@13.2.2:
-    resolution: {integrity: sha512-Y1zNGV+pzQdh7H39l9zgB4PJqjRNqydvdYCDG4HFXM4XuvSaQQlEc91IU1yALL8gUTDomgBAfz3XJdmUS+oo0w==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      dir-glob: 3.0.1
-      fast-glob: 3.3.3
-      ignore: 5.3.2
-      merge2: 1.4.1
-      slash: 4.0.0
-    dev: true
 
   /globby@4.1.0:
     resolution: {integrity: sha512-JPDtMSr0bt25W64q792rvlrSwIaZwqUAhqdYKSr57Wh/xBcQ5JDWLM85ndn+Q1WdBQXLb9YGCl0QN/T0HpqU0A==}
@@ -42837,6 +43214,7 @@ packages:
 
   /has-unicode@2.0.1:
     resolution: {integrity: sha512-8Rf9Y83NBReMnx0gFzA8JImQACstCYWUplepDa9xprwwtmgEZUF0h/i5xSA625zB/I37EtrswSST6OXxwaaIJQ==}
+    requiresBuild: true
 
   /has-value@0.3.1:
     resolution: {integrity: sha512-gpG936j8/MzaeID5Yif+577c17TxaDmhuyVgSwtnL/q8UUTySg8Mecb+8Cf1otgLoD7DDH75axp86ER7LFsf3Q==}
@@ -43019,6 +43397,7 @@ packages:
     dependencies:
       capital-case: 1.0.4
       tslib: 2.8.1
+    dev: false
 
   /helpertypes@0.0.19:
     resolution: {integrity: sha512-J00e55zffgi3yVnUp0UdbMztNkr2PnizEkOe9URNohnrNhW5X0QpegkuLpOmFQInpi93Nb8MCjQRHAiCDF42NQ==}
@@ -43045,13 +43424,6 @@ packages:
     resolution: {integrity: sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==}
     dependencies:
       react-is: 16.13.1
-
-  /homedir-polyfill@1.0.3:
-    resolution: {integrity: sha512-eSmmWE5bZTK2Nou4g0AI3zZ9rswp7GRKoKXS1BLUkvPviOqs4YTN1djQIqrXy9k5gEtdLPy86JjRwsNM9tnDcA==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      parse-passwd: 1.0.0
-    dev: true
 
   /hosted-git-info@2.8.9:
     resolution: {integrity: sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==}
@@ -43230,7 +43602,7 @@ packages:
     dependencies:
       '@types/express': 4.17.23
       '@types/http-proxy': 1.17.16
-      http-proxy: 1.18.1
+      http-proxy: 1.18.1(debug@4.3.3)
       is-glob: 4.0.3
       is-plain-obj: 3.0.0
       micromatch: 4.0.8
@@ -43238,7 +43610,26 @@ packages:
       - debug
     dev: true
 
-  /http-proxy@1.18.1:
+  /http-proxy-middleware@2.0.6(@types/express@4.17.23)(debug@4.3.3):
+    resolution: {integrity: sha512-ya/UeJ6HVBYxrgYotAZo1KvPWlgB48kUJLDePFeneHsVujFaW5WNj2NgWCAE//B1Dl02BIfYlpNgBy8Kf8Rjmw==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      '@types/express': ^4.17.13
+    peerDependenciesMeta:
+      '@types/express':
+        optional: true
+    dependencies:
+      '@types/express': 4.17.23
+      '@types/http-proxy': 1.17.16
+      http-proxy: 1.18.1(debug@4.3.3)
+      is-glob: 4.0.3
+      is-plain-obj: 3.0.0
+      micromatch: 4.0.8
+    transitivePeerDependencies:
+      - debug
+    dev: true
+
+  /http-proxy@1.18.1(debug@4.3.3):
     resolution: {integrity: sha512-7mz/721AbnJwIVbnaSv1Cz3Am0ZLT/UBwkC92VlxhXv/k/BBQfM2fXElQNC27BVGr0uwUpplYPQM9LnaBMR5NQ==}
     engines: {node: '>=8.0.0'}
     dependencies:
@@ -43489,24 +43880,6 @@ packages:
     dependencies:
       css-in-js-utils: 2.0.1
 
-  /inquirer@9.3.7:
-    resolution: {integrity: sha512-LJKFHCSeIRq9hanN14IlOtPSTe3lNES7TYDTE2xxdAy1LS5rYphajK1qtwvj3YmQXvvk0U2Vbmcni8P9EIQW9w==}
-    engines: {node: '>=18'}
-    dependencies:
-      '@inquirer/figures': 1.0.12
-      ansi-escapes: 4.3.2
-      cli-width: 4.1.0
-      external-editor: 3.1.0
-      mute-stream: 1.0.0
-      ora: 5.4.1
-      run-async: 3.0.0
-      rxjs: 7.8.2
-      string-width: 4.2.3
-      strip-ansi: 6.0.1
-      wrap-ansi: 6.2.0
-      yoctocolors-cjs: 2.1.2
-    dev: true
-
   /internal-slot@1.1.0:
     resolution: {integrity: sha512-4gd7VpWNQNB4UKKCFFVcp1AVv+FMOgs9NKzjHKusc8jTMhd5eL1NqQqOpE0KzMds804/yHlglp3uxgluOqAPLw==}
     engines: {node: '>= 0.4'}
@@ -43577,14 +43950,6 @@ packages:
   /is-absolute-url@4.0.1:
     resolution: {integrity: sha512-/51/TKE88Lmm7Gc4/8btclNXWS+g50wXhYJq8HWIBAGUBnoAdRu1aXeh364t/O7wXDAcTJDP8PNuNKWUDWie+A==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dev: true
-
-  /is-absolute@1.0.0:
-    resolution: {integrity: sha512-dOWoqflvcydARa360Gvv18DZ/gRuHKi2NU/wU5X1ZFzdYfH29nkiNZsF3mp4OJ3H4yo9Mx8A/uAGNzpzPN3yBA==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-relative: 1.0.0
-      is-windows: 1.0.2
     dev: true
 
   /is-accessor-descriptor@1.0.1:
@@ -43857,11 +44222,6 @@ packages:
     resolution: {integrity: sha512-2HvIEKRoqS62guEC+qBjpvRubdX910WCMuJTZ+I9yvqKU2/12eSL549HMwtabb4oupdj2sMP50k+XJfB/8JE6w==}
     engines: {node: '>=8'}
 
-  /is-interactive@2.0.0:
-    resolution: {integrity: sha512-qP1vozQRI+BMOPcjFzrjXuQvdak2pHNUMZoeG2eRbiSqyvbEf/wQtEOTOX1guk6E3t36RkaqiSt8A/6YElNxLQ==}
-    engines: {node: '>=12'}
-    dev: true
-
   /is-lite@0.8.2:
     resolution: {integrity: sha512-JZfH47qTsslwaAsqbMI3Q6HNNjUuq6Cmzzww50TdP5Esb6e1y2sK2UAaZZuzfAzpoI2AkxoPQapZdlDuP6Vlsw==}
     dev: false
@@ -43929,19 +44289,9 @@ packages:
     engines: {node: '>=6'}
     dev: true
 
-  /is-path-cwd@3.0.0:
-    resolution: {integrity: sha512-kyiNFFLU0Ampr6SDZitD/DwUo4Zs1nSdnygUBqsu3LooL00Qvb5j+UnvApUn/TTj1J3OuE6BTdQ5rudKmU2ZaA==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dev: true
-
   /is-path-inside@3.0.3:
     resolution: {integrity: sha512-Fd4gABb+ycGAmKou8eMftCupSir5lRxqf4aD/vd0cD2qc4HL07OjCeuHMr8Ro4CoMaeCKDB0/ECBOVWjTwUvPQ==}
     engines: {node: '>=8'}
-    dev: true
-
-  /is-path-inside@4.0.0:
-    resolution: {integrity: sha512-lJJV/5dYS+RcL8uQdBDW9c9uWFLLBNRyFhnAKXw5tVqLlKZ4RMGZKv+YQ/IA3OhD+RpbJa1LLFM1FQPGyIXvOA==}
-    engines: {node: '>=12'}
     dev: true
 
   /is-plain-obj@1.1.0:
@@ -44005,13 +44355,6 @@ packages:
     engines: {node: '>=0.10.0'}
     dev: true
 
-  /is-relative@1.0.0:
-    resolution: {integrity: sha512-Kw/ReK0iqwKeu0MITLFuj0jbPAmEiOsIwyIXvvbfa6QfmN9pkD1M+8pdk7Rl/dTKbH34/XBFMbgD4iMJhLQbGA==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      is-unc-path: 1.0.0
-    dev: true
-
   /is-set@2.0.3:
     resolution: {integrity: sha512-iPAjerrse27/ygGLxw+EBR9agv9Y6uLeYVJMu+QNCoouJ1/1ri0mGrcWpfCqFZuzzx3WjtwxG098X+n4OuRkPg==}
     engines: {node: '>= 0.4'}
@@ -44062,26 +44405,9 @@ packages:
     resolution: {integrity: sha512-cyA56iCMHAh5CdzjJIa4aohJyeO1YbwLi3Jc35MmRU6poroFjIGZzUzupGiRPOjgHg9TLu43xbpwXk523fMxKA==}
     dev: false
 
-  /is-unc-path@1.0.0:
-    resolution: {integrity: sha512-mrGpVd0fs7WWLfVsStvgF6iEJnbjDFZh9/emhRDcGWTduTfNHd9CHeUwH3gYIjdbwo4On6hunkztwOaAw0yllQ==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      unc-path-regex: 0.1.2
-    dev: true
-
   /is-unicode-supported@0.1.0:
     resolution: {integrity: sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==}
     engines: {node: '>=10'}
-
-  /is-unicode-supported@1.3.0:
-    resolution: {integrity: sha512-43r2mRvz+8JRIKnWJ+3j8JtjRKZ6GmjzfaE/qiBJnikNnYv/6bagRJ1kUhNk8R5EX/GkobD+r+sfxCPJsiKBLQ==}
-    engines: {node: '>=12'}
-    dev: true
-
-  /is-unicode-supported@2.1.0:
-    resolution: {integrity: sha512-mE00Gnza5EEB3Ds0HfMyllZzbBrmLOX3vfWoj9A9PEnTfratQ/BcaJOuMhnkhjXvb2+FkY3VuHqtAGpTPmglFQ==}
-    engines: {node: '>=18'}
-    dev: true
 
   /is-valid-domain@0.1.6:
     resolution: {integrity: sha512-ZKtq737eFkZr71At8NxOFcP9O1K89gW3DkdrGMpp1upr/ueWjj+Weh4l9AI4rN0Gt8W2M1w7jrG2b/Yv83Ljpg==}
@@ -44136,11 +44462,6 @@ packages:
 
   /isarray@2.0.5:
     resolution: {integrity: sha512-xHjhDr3cNBK0BzdUJSPXZntQUx/mwMS5Rw4A7lPJ90XGAO6ISP/ePDNuo0vhqOZU+UD5JoodwCAAoZQd3FeAKw==}
-
-  /isbinaryfile@5.0.4:
-    resolution: {integrity: sha512-YKBKVkKhty7s8rxddb40oOkuP0NbaeXrQvLin6QMHL7Ypiy2RW9LwOVrVgZRyOrhQlayMd9t+D8yDy8MKFTSDQ==}
-    engines: {node: '>= 18.0.0'}
-    dev: true
 
   /isbot@3.7.1:
     resolution: {integrity: sha512-JfqOaY3O1lcWt2nc+D6Mq231CNpwZrBboLa59Go0J8hjGH+gY/Sy0CA/YLUSIScINmAVwTdJZIsOTk4PfBtRuw==}
@@ -44905,20 +45226,6 @@ packages:
       immediate: 3.0.6
     dev: false
 
-  /liftoff@4.0.0:
-    resolution: {integrity: sha512-rMGwYF8q7g2XhG2ulBmmJgWv25qBsqRbDn5gH0+wnuyeFt7QBJlHJmtg5qEdn4pN6WVAUMgXnIxytMFRX9c1aA==}
-    engines: {node: '>=10.13.0'}
-    dependencies:
-      extend: 3.0.2
-      findup-sync: 5.0.0
-      fined: 2.0.0
-      flagged-respawn: 2.0.0
-      is-plain-object: 5.0.0
-      object.map: 1.0.1
-      rechoir: 0.8.0
-      resolve: 1.22.10
-    dev: true
-
   /lilconfig@2.1.0:
     resolution: {integrity: sha512-utWOt/GHzuUxnLKxB6dk81RoOeoNeHgbrXiuGk4yyF5qlRz+iIVWu56E2fqGHFrXz0QNUhLB/8nKqvRH66JKGQ==}
     engines: {node: '>=10'}
@@ -45051,6 +45358,7 @@ packages:
   /lodash.get@4.4.2:
     resolution: {integrity: sha512-z+Uw/vLuy6gQe8cfaFWD7p0wVv8fJl3mbzXh33RS+0oW2wvUqiRXiQ69gLWSLpgB5/6sU+r6BlQR0MBILadqTQ==}
     deprecated: This package is deprecated. Use the optional chaining (?.) operator instead.
+    dev: false
 
   /lodash.includes@4.3.0:
     resolution: {integrity: sha512-W3Bx6mdkRTGtlJISOvVD/lbqjTlPPUDTMnlXZFnVwi9NKJ6tiAk6LVdlhZMm17VZisqhKcgzpO5Wz91PCt5b0w==}
@@ -45152,14 +45460,6 @@ packages:
     dependencies:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
-
-  /log-symbols@6.0.0:
-    resolution: {integrity: sha512-i24m8rpwhmPIS4zscNzK6MSEhk0DUWa/8iYQWxhffV8jkI4Phvs3F+quL5xvS0gdQR0FyTCMMH33Y78dDTzzIw==}
-    engines: {node: '>=18'}
-    dependencies:
-      chalk: 5.4.1
-      is-unicode-supported: 1.3.0
-    dev: true
 
   /log-update@1.0.2:
     resolution: {integrity: sha512-4vSow8gbiGnwdDNrpy1dyNaXWKSCIPop0EHdE8GrnngHoJujM3QhvHUN/igsYCgPoHo7pFOezlJ61Hlln0KHyA==}
@@ -45286,13 +45586,6 @@ packages:
   /make-event-props@1.6.2:
     resolution: {integrity: sha512-iDwf7mA03WPiR8QxvcVHmVWEPfMY1RZXerDVNCRYW7dUr2ppH3J58Rwb39/WG39yTZdRSxr3x+2v22tvI0VEvA==}
     dev: false
-
-  /make-iterator@1.0.1:
-    resolution: {integrity: sha512-pxiuXh0iVEq7VM7KMIhs5gxsfxCux2URptUQaXo4iZZJxBAzTPOLE2BumO5dbfVYq/hBJFBR/a1mFDmOx5AGmw==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      kind-of: 6.0.3
-    dev: true
 
   /makeerror@1.0.12:
     resolution: {integrity: sha512-JmqCvUhmt43madlpFzG4BQzG2Z3m6tvQDNKdClZnO3VbIudJYmxsT0FNJMeiB2+JTSlTQTSbU8QdesVmwJcmLg==}
@@ -45664,18 +45957,6 @@ packages:
     dependencies:
       '@types/mdast': 4.0.3
       unist-util-is: 6.0.0
-
-  /mdast-util-radio-list-item@2.1.0:
-    resolution: {integrity: sha512-2lDVPrOpu/SNgt3oPuEiI5qARq/0jhvJzRshQmX4qc7EMMV0lHcZcGVN6TU2Nu0XMO4mTCojqF/EvqbhgvWH/g==}
-    dependencies:
-      '@types/mdast': 4.0.3
-      devlop: 1.1.0
-      mdast-util-from-markdown: 2.0.2
-      mdast-util-to-markdown: 2.1.2
-      micromark-extension-misc-radio-list-item: 2.1.0
-    transitivePeerDependencies:
-      - supports-color
-    dev: false
 
   /mdast-util-to-hast@10.0.1:
     resolution: {integrity: sha512-BW3LM9SEMnjf4HXXVApZMt8gLQWVNXc3jryK0nJu/rOXPOnlkUjmdkDlmxMirpbU9ILncGFIwLH/ubnWBbcdgA==}
@@ -46105,16 +46386,6 @@ packages:
       micromark-util-combine-extensions: 2.0.1
       micromark-util-types: 2.0.2
 
-  /micromark-extension-misc-radio-list-item@2.1.0:
-    resolution: {integrity: sha512-FtO7tbi3iGe1VfSqnTNzu80ajIklbWoMULyT7zn0jrZXiPN0uR0viQJ0fa77YBS4PBzSyG3G7xpJ0DuOCwx35A==}
-    dependencies:
-      devlop: 1.1.0
-      micromark-factory-space: 2.0.1
-      micromark-util-character: 2.1.1
-      micromark-util-symbol: 2.0.1
-      micromark-util-types: 2.0.2
-    dev: false
-
   /micromark-factory-destination@1.1.0:
     resolution: {integrity: sha512-XaNDROBgx9SgSChd69pjiGKbV+nfHGDPVYFs5dOoDd7ZnMAE+Cuu91BCpsY8RT2NP9vo/B8pds2VQNCLiu0zhg==}
     dependencies:
@@ -46483,11 +46754,6 @@ packages:
     resolution: {integrity: sha512-OqbOk5oEQeAZ8WXWydlu9HJjz9WVdEIvamMCcXmuqUYjTknH/sqsWvhQ3vgwKFRR1HpjvNBKQ37nbJgYzGqGcg==}
     engines: {node: '>=6'}
 
-  /mimic-function@5.0.1:
-    resolution: {integrity: sha512-VP79XUPxV2CigYP3jWwAUFSku2aKqBH7uTAapFWCBqutsbmDo96KY5o8uh6U+/YSIn5OxJnXp73beVkpqMIGhA==}
-    engines: {node: '>=18'}
-    dev: true
-
   /mimic-response@2.1.0:
     resolution: {integrity: sha512-wXqjST+SLt7R009ySCglWBCFpjUygmCIfD790/kVbiGmUgfYGuB14PiTd5DwVxSV4NcYHjzMkoj5LjQZwTQLEA==}
     engines: {node: '>=8'}
@@ -46562,12 +46828,14 @@ packages:
   /minipass@3.3.6:
     resolution: {integrity: sha512-DxiNidxSEK+tHG6zOIklvNOwm3hvCrbUrdtzY74U6HKTJxvIDfOUL5W5P2Ghd3DTkhhKPYGqeNUIh5qcM4YBfw==}
     engines: {node: '>=8'}
+    requiresBuild: true
     dependencies:
       yallist: 4.0.0
 
   /minipass@5.0.0:
     resolution: {integrity: sha512-3FnjYuehv9k6ovOEbyOswadCDPX1piCfhV8ncmYtHOjuPwylVWsghTLo7rabjC3Rx5xD4HDx8Wm1xnMF7S5qFQ==}
     engines: {node: '>=8'}
+    requiresBuild: true
 
   /minipass@7.1.2:
     resolution: {integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw==}
@@ -46576,6 +46844,7 @@ packages:
   /minizlib@2.1.2:
     resolution: {integrity: sha512-bAxsR8BVfj60DWXHE3u30oHzfl4G7khkSuPW+qvpd7jFRHm7dLxOjUk1EHACJ/hxLY8phGJ0YhYHZo7jil7Qdg==}
     engines: {node: '>= 8'}
+    requiresBuild: true
     dependencies:
       minipass: 3.3.6
       yallist: 4.0.0
@@ -46610,15 +46879,10 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
+    requiresBuild: true
 
   /mkdirp@2.1.6:
     resolution: {integrity: sha512-+hEnITedc8LAtIP9u3HJDFIdcLV2vXP33sqLLIzkv1Db1zO/1OxbvYf0Y1OC/S/Qo5dxHXepofhmxL02PsKe+A==}
-    engines: {node: '>=10'}
-    hasBin: true
-    dev: true
-
-  /mkdirp@3.0.1:
-    resolution: {integrity: sha512-+NsyUUAZDmo6YVHzL/stxSu3t9YS1iljliy3BSDrXJ/dkn1KYdmtZODGGjLcc9XLgVVpH4KshHB8XmZgMhaBXg==}
     engines: {node: '>=10'}
     hasBin: true
     dev: true
@@ -46670,9 +46934,9 @@ packages:
       thunky: 1.1.0
     dev: true
 
-  /mute-stream@1.0.0:
-    resolution: {integrity: sha512-avsJQhyd+680gKXyG/sQc0nXaC6rBkPOfyHYcFb9+hdkqQkR9bdnkJ0AMZhke0oesPqIO+mFFJ+IdBc7mst4IA==}
-    engines: {node: ^14.17.0 || ^16.13.0 || >=18.0.0}
+  /mute-stream@2.0.0:
+    resolution: {integrity: sha512-WWdIxpyjEn+FhQJQQv9aQAYlHoNVdzIzUySNV1gHUPDSdZJ3yZn7pAAbQcV7B56Mvu881q9FZV+0Vx2xC44VWA==}
+    engines: {node: ^18.17.0 || >=20.5.0}
     dev: true
 
   /mz@2.7.0:
@@ -46838,25 +47102,6 @@ packages:
 
   /node-int64@0.4.0:
     resolution: {integrity: sha512-O5lz91xSOeoXP6DulyHfllpq+Eg00MWitZIbtPfoSEvqIHdl5gfcY6hYzDWnj0qD5tz52PI08u9qUvSVeUBeHw==}
-    dev: true
-
-  /node-plop@0.32.0:
-    resolution: {integrity: sha512-lKFSRSRuDHhwDKMUobdsvaWCbbDRbV3jMUSMiajQSQux1aNUevAZVxUHc2JERI//W8ABPRbi3ebYuSuIzkNIpQ==}
-    engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
-    dependencies:
-      '@types/inquirer': 9.0.8
-      change-case: 4.1.2
-      del: 7.1.0
-      globby: 13.2.2
-      handlebars: 4.7.8
-      inquirer: 9.3.7
-      isbinaryfile: 5.0.4
-      lodash.get: 4.4.2
-      lower-case: 2.0.2
-      mkdirp: 3.0.1
-      resolve: 1.22.10
-      title-case: 3.0.3
-      upper-case: 2.0.2
     dev: true
 
   /node-releases@2.0.19:
@@ -47035,16 +47280,6 @@ packages:
       has-symbols: 1.1.0
       object-keys: 1.1.1
 
-  /object.defaults@1.1.0:
-    resolution: {integrity: sha512-c/K0mw/F11k4dEUBMW8naXUuBuhxRCfG7W+yFy8EcijU/rSmazOUd1XAEEe6bC0OuXY4HUKjTJv7xbxIMqdxrA==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      array-each: 1.0.1
-      array-slice: 1.1.0
-      for-own: 1.0.0
-      isobject: 3.0.1
-    dev: true
-
   /object.entries@1.1.9:
     resolution: {integrity: sha512-8u/hfXFRBD1O0hPUjioLhoWFHRmt6tKA4/vZPyckBr18l1KE9uHrFaFaUi8MDRTpi4uak2goyPTSNJLXX2k2Hw==}
     engines: {node: '>= 0.4'}
@@ -47079,14 +47314,6 @@ packages:
       es-abstract: 1.24.0
       es-object-atoms: 1.1.1
     dev: false
-
-  /object.map@1.0.1:
-    resolution: {integrity: sha512-3+mAJu2PLfnSVGHwIWubpOFLscJANBKuB/6A4CxBstc4aqwQY0FWcsppuy4jU5GSB95yES5JHSI+33AWuS4k6w==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      for-own: 1.0.0
-      make-iterator: 1.0.1
-    dev: true
 
   /object.omit@2.0.1:
     resolution: {integrity: sha512-UiAM5mhmIuKLsOvrL+B0U2d1hXHF3bFYWIuH1LMpuV2EJEHG1Ntz06PgLEHjm6VFd87NpH8rastvPoyv6UW2fA==}
@@ -47158,13 +47385,6 @@ packages:
     dependencies:
       mimic-fn: 2.1.0
 
-  /onetime@7.0.0:
-    resolution: {integrity: sha512-VXJjc87FScF88uafS3JllDgvAm+c/Slfz06lorj2uAY34rlUu0Nt+v8wreiImcrgAjjIHp1rXpTDlLOGw29WwQ==}
-    engines: {node: '>=18'}
-    dependencies:
-      mimic-function: 5.0.1
-    dev: true
-
   /oniguruma-parser@0.12.1:
     resolution: {integrity: sha512-8Unqkvk1RYc6yq2WBYRj4hdnsAxVze8i7iPfQr8e4uSP3tRv0rpZcbGUDvxfQQcdwHt/e9PrMvGCsa8OqG9X3w==}
     dev: false
@@ -47219,21 +47439,6 @@ packages:
       log-symbols: 4.1.0
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
-
-  /ora@8.2.0:
-    resolution: {integrity: sha512-weP+BZ8MVNnlCm8c0Qdc1WSWq4Qn7I+9CJGm7Qali6g44e/PUzbjNqJX5NJ9ljlNMosfJvg1fKEGILklK9cwnw==}
-    engines: {node: '>=18'}
-    dependencies:
-      chalk: 5.4.1
-      cli-cursor: 5.0.0
-      cli-spinners: 2.9.2
-      is-interactive: 2.0.0
-      is-unicode-supported: 2.1.0
-      log-symbols: 6.0.0
-      stdin-discarder: 0.2.2
-      string-width: 7.2.0
-      strip-ansi: 7.1.0
-    dev: true
 
   /orderedmap@2.1.1:
     resolution: {integrity: sha512-TvAWxi0nDe1j/rtMcWcIj94+Ffe6n7zhow33h40SKxmsmozs6dz/e+EajymfoFcHd7sxNn8yHM8839uixMOV6g==}
@@ -47330,13 +47535,6 @@ packages:
     engines: {node: '>=10'}
     dependencies:
       aggregate-error: 3.1.0
-    dev: true
-
-  /p-map@5.5.0:
-    resolution: {integrity: sha512-VFqfGDHlx87K66yZrNdI4YGtD70IRyd+zSvgks6mzHPRNkoKy+9EKP4SFC77/vTTQYmRmti7dvqC+m5jBrBAcg==}
-    engines: {node: '>=12'}
-    dependencies:
-      aggregate-error: 4.0.1
     dev: true
 
   /p-queue@6.6.2:
@@ -47437,15 +47635,6 @@ packages:
       is-decimal: 2.0.1
       is-hexadecimal: 2.0.1
 
-  /parse-filepath@1.0.2:
-    resolution: {integrity: sha512-FwdRXKCohSVeXqwtYonZTXtbGJKrn+HNyWDYVcp5yuJlesTwNH4rsmRZ+GrKAPJ5bLpRxESMeS+Rl0VCHRvB2Q==}
-    engines: {node: '>=0.8'}
-    dependencies:
-      is-absolute: 1.0.0
-      map-cache: 0.2.2
-      path-root: 0.1.1
-    dev: true
-
   /parse-glob@3.0.4:
     resolution: {integrity: sha512-FC5TeK0AwXzq3tUBFtH74naWkPQCEWs4K+xMxWZBlKDWu0bVHXGZa+KKqxKidd7xwhdZ19ZNuF2uO1M/r196HA==}
     engines: {node: '>=0.10.0'}
@@ -47480,11 +47669,6 @@ packages:
   /parse-node-version@1.0.1:
     resolution: {integrity: sha512-3YHlOa/JgH6Mnpr05jP9eDG254US9ek25LyIxZlDItp2iJtwyaXQb57lBYLdT3MowkUFYEV2XXNAYIPlESvJlA==}
     engines: {node: '>= 0.10'}
-    dev: true
-
-  /parse-passwd@1.0.0:
-    resolution: {integrity: sha512-1Y1A//QUXEZK7YKz+rD9WydcE1+EuPr6ZBgKecAB8tmoW6UFv0NREVJe1p+jRxtThkcbbKkfwIbWJe/IeE6m2Q==}
-    engines: {node: '>=0.10.0'}
     dev: true
 
   /parse-svg-path@0.1.2:
@@ -47536,6 +47720,7 @@ packages:
     dependencies:
       dot-case: 3.0.4
       tslib: 2.8.1
+    dev: false
 
   /path-data-parser@0.1.0:
     resolution: {integrity: sha512-NOnmBpt5Y2RWbuv0LMzsayp3lVylAHLPUTut412ZA3l+C4uw4ZVkQbjShYCQ8TCpUMdPapr4YjUqLYD6v68j+w==}
@@ -47574,18 +47759,6 @@ packages:
 
   /path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
-
-  /path-root-regex@0.1.2:
-    resolution: {integrity: sha512-4GlJ6rZDhQZFE0DPVKh0e9jmZ5egZfxTkp7bcRDuPlJXbAwhxcl2dINPUAsjLdejqaLsCeg8axcLjIbvBjN4pQ==}
-    engines: {node: '>=0.10.0'}
-    dev: true
-
-  /path-root@0.1.1:
-    resolution: {integrity: sha512-QLcPegTHF11axjfojBIoDygmS2E3Lf+8+jI6wOVmNVenrKSo3mFdSGiIgdSHenczw3wPtlVMQaFVwGmM7BJdtg==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      path-root-regex: 0.1.2
-    dev: true
 
   /path-scurry@1.11.1:
     resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
@@ -47790,21 +47963,6 @@ packages:
       confbox: 0.1.8
       mlly: 1.7.4
       pathe: 2.0.3
-    dev: true
-
-  /plop@4.0.1:
-    resolution: {integrity: sha512-5n8QU93kvL/ObOzBcPAB1siVFtAH1TZM6TntJ3JK5kXT0jIgnQV+j+uaOWWFJlg1cNkzLYm8klgASF65K36q9w==}
-    engines: {node: '>=18'}
-    hasBin: true
-    dependencies:
-      '@types/liftoff': 4.0.3
-      chalk: 5.4.1
-      interpret: 3.1.1
-      liftoff: 4.0.0
-      minimist: 1.2.8
-      node-plop: 0.32.0
-      ora: 8.2.0
-      v8flags: 4.0.1
     dev: true
 
   /plur@2.1.2:
@@ -49187,6 +49345,17 @@ packages:
       react: 18.2.0
     dev: false
 
+  /react-device-detect@2.2.3(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-buYY3qrCnQVlIFHrC5UcUoAj7iANs/+srdkwsnNjI7anr3Tt7UY6MqNxtMLlr0tMBied0O49UZVK8XKs3ZIiPw==}
+    peerDependencies:
+      react: 18.2.0
+      react-dom: 18.2.0
+    dependencies:
+      react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      ua-parser-js: 1.0.40
+    dev: false
+
   /react-dnd-html5-backend@14.1.0:
     resolution: {integrity: sha512-6ONeqEC3XKVf4eVmMTe0oPds+c5B9Foyj8p/ZKLb7kL2qh9COYxiBHv3szd6gztqi/efkmriywLUVlPotqoJyw==}
     dependencies:
@@ -49600,11 +49769,6 @@ packages:
 
   /react-refresh@0.14.0:
     resolution: {integrity: sha512-wViHqhAd8OHeLS/IRMJjTSDHF3U9eWi62F/MledQGPdJGDhodXJ9PBLNGr6WWL7qlH12Mt3TyTpbS+hGXMjCzQ==}
-    engines: {node: '>=0.10.0'}
-    dev: true
-
-  /react-refresh@0.14.2:
-    resolution: {integrity: sha512-jCvmsr+1IUSMUyzOkRcvnVbX3ZYC6g9TDrDbFuFmRDq7PD4yaGbLKNQL6k2jnArV8hjYxh7hVhAZB6s9HDGpZA==}
     engines: {node: '>=0.10.0'}
     dev: true
 
@@ -50447,14 +50611,6 @@ packages:
   /resize-observer-polyfill@1.5.1:
     resolution: {integrity: sha512-LwZrotdHOo12nQuZlHEmtuXdqGoOD0OhaxopaNFxWzInpEgaLWoVuAMbTzixuosCx2nEG58ngzW3vxdWoxIgdg==}
 
-  /resolve-dir@1.0.1:
-    resolution: {integrity: sha512-R7uiTjECzvOsWSfdM0QKFNBVFcK27aHOUwdvK53BcW8zqnGdYp0Fbj82cy54+2A4P2tFM22J5kRfe1R+lM/1yg==}
-    engines: {node: '>=0.10.0'}
-    dependencies:
-      expand-tilde: 2.0.2
-      global-modules: 1.0.0
-    dev: true
-
   /resolve-from@3.0.0:
     resolution: {integrity: sha512-GnlH6vxLymXJNMBo7XP1fJIzBFbdYt49CuTwmB/6N53t+kMPRMFKz783LlQ4tv28XoQfMWinAJX6WCGf2IlaIw==}
     engines: {node: '>=4'}
@@ -50523,14 +50679,6 @@ packages:
     dependencies:
       onetime: 5.1.2
       signal-exit: 3.0.7
-
-  /restore-cursor@5.1.0:
-    resolution: {integrity: sha512-oMA2dcrw6u0YfxJQXm342bFKX/E4sG9rbTzO9ptUcR/e8A33cHuvStiYOwH7fszkZlZ1z/ta9AAoPk2F4qIOHA==}
-    engines: {node: '>=18'}
-    dependencies:
-      onetime: 7.0.0
-      signal-exit: 4.1.0
-    dev: true
 
   /ret@0.1.15:
     resolution: {integrity: sha512-TTlYpa+OL+vMMNG24xSlQGEJ3B/RzEfUlLct7b5G/ytav+wPrplCpVMFuwzXbkecJrb6IYo1iFb0S9v37754mg==}
@@ -50730,9 +50878,13 @@ packages:
     resolution: {integrity: sha512-8fnO9sQfJ4wxg1rCoden42V9A1TloS8HfgvSXZg8lZjgP74iM+PnlV8Sj4+9ouRP8juWx5qkO/+GFjTKAf2s0Q==}
     dev: true
 
-  /run-async@3.0.0:
-    resolution: {integrity: sha512-540WwVDOMxA6dN6We19EcT9sc3hkXPw5mzRNGM3FkdN/vtE9NFvj5lFAPNwUDmJjXidm3v7TC1cTE7t17Ulm1Q==}
-    engines: {node: '>=0.12.0'}
+  /rspack-plugin-dotenv@0.0.3(@rspack/core@0.6.0):
+    resolution: {integrity: sha512-6LpyPw3Yyg7zHVOKqM5WGvw0ESp/j7w1tb1IrUAOkT48LUf9vbvS5Z5OUgy27kq2O+CY4oTtoHdD+8ZvnXKsCw==}
+    peerDependencies:
+      '@rspack/core': ^0.3.10
+    dependencies:
+      '@rspack/core': 0.6.0
+      dotenv-defaults: 5.0.2
     dev: true
 
   /run-parallel@1.2.0:
@@ -51011,6 +51163,33 @@ packages:
       webpack: 5.91.0
     dev: false
 
+  /sass-loader@14.2.1(@rspack/core@0.6.0)(sass@1.89.2)(webpack@5.91.0):
+    resolution: {integrity: sha512-G0VcnMYU18a4N7VoNDegg2OuMjYtxnqzQWARVWCIVSZwJeiL9kg8QMsuIZOplsJgTzZLF6jGxI3AClj8I9nRdQ==}
+    engines: {node: '>= 18.12.0'}
+    peerDependencies:
+      '@rspack/core': 0.x || 1.x
+      node-sass: ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
+      sass: ^1.3.0
+      sass-embedded: '*'
+      webpack: ^5.0.0
+    peerDependenciesMeta:
+      '@rspack/core':
+        optional: true
+      node-sass:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      webpack:
+        optional: true
+    dependencies:
+      '@rspack/core': 0.6.0
+      neo-async: 2.6.2
+      sass: 1.89.2
+      webpack: 5.91.0
+    dev: true
+
   /sass@1.89.2:
     resolution: {integrity: sha512-xCmtksBKd/jdJ9Bt9p7nPKiuqrlBMBuuGkQlkhZjjQk3Ty48lv93k5Dq6OPkKt4XwxDJ7tvlfrTa1MPA9bf+QA==}
     engines: {node: '>=14.0.0'}
@@ -51188,6 +51367,7 @@ packages:
       no-case: 3.0.4
       tslib: 2.8.1
       upper-case-first: 2.0.2
+    dev: false
 
   /serialize-javascript@6.0.2:
     resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
@@ -51468,11 +51648,6 @@ packages:
   /slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
-
-  /slash@4.0.0:
-    resolution: {integrity: sha512-3dOsAHXXUkQTpOYcoAxLIorMTp4gIQr5IW3iVb7A7lFIp0VHhnynm9izx6TssdrIcVIESAlVjtnO2K8bg+Coew==}
-    engines: {node: '>=12'}
-    dev: true
 
   /slate-history@0.100.0(slate@0.101.5):
     resolution: {integrity: sha512-x5rUuWLNtH97hs9PrFovGgt3Qc5zkTm/5mcUB+0NR/TK923eLax4HsL6xACLHMs245nI6aJElyM1y6hN0y5W/Q==}
@@ -51835,11 +52010,6 @@ packages:
     resolution: {integrity: sha512-UGvjygr6F6tpH7o2qyqR6QYpwraIjKSdtzyBdyytFOHmPZY917kwdwLG0RbOjWOnKmnm3PeHjaoLLMie7kPLQw==}
     dev: true
 
-  /stdin-discarder@0.2.2:
-    resolution: {integrity: sha512-UhDfHmA92YAlNnCfhmq0VeNL5bDbiZGg7sZ2IvPsXubGkiNa9EC+tUTsjBRsYUAz87btI6/1wf4XoVvQ3uRnmQ==}
-    engines: {node: '>=18'}
-    dev: true
-
   /stop-iteration-iterator@1.1.0:
     resolution: {integrity: sha512-eLoXW/DHyl62zxY4SCaIgnRhuMr6ri4juEYARS8E6sCEqzKpOiE521Ucofdx+KnDZl5xmvGYaaKCk5FEOxJCoQ==}
     engines: {node: '>= 0.4'}
@@ -52144,15 +52314,6 @@ packages:
       eastasianwidth: 0.2.0
       emoji-regex: 9.2.2
       strip-ansi: 7.1.0
-
-  /string-width@7.2.0:
-    resolution: {integrity: sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==}
-    engines: {node: '>=18'}
-    dependencies:
-      emoji-regex: 10.4.0
-      get-east-asian-width: 1.3.0
-      strip-ansi: 7.1.0
-    dev: true
 
   /string.prototype.includes@2.0.1:
     resolution: {integrity: sha512-o7+c9bW6zpAdJHTtujeePODAhkuicdAryFsfVKwA+wGw89wJ4GTY484WTucM9hLtDEOpOvI+aHnzqnC5lHp4Rg==}
@@ -52967,6 +53128,31 @@ packages:
       webpack: 5.91.0(@swc/core@1.12.1)
     dev: true
 
+  /terser-webpack-plugin@5.3.14(esbuild@0.15.18)(webpack@5.91.0):
+    resolution: {integrity: sha512-vkZjpUjb6OMS7dhV+tILUW6BhpDR7P2L/aQSAv+Uwk+m8KATX9EccViHTJR2qDtACKPIYndLGCyl3FMo+r2LMw==}
+    engines: {node: '>= 10.13.0'}
+    peerDependencies:
+      '@swc/core': '*'
+      esbuild: '*'
+      uglify-js: '*'
+      webpack: ^5.1.0
+    peerDependenciesMeta:
+      '@swc/core':
+        optional: true
+      esbuild:
+        optional: true
+      uglify-js:
+        optional: true
+    dependencies:
+      '@jridgewell/trace-mapping': 0.3.25
+      esbuild: 0.15.18
+      jest-worker: 27.5.1
+      schema-utils: 4.3.2
+      serialize-javascript: 6.0.2
+      terser: 5.43.0
+      webpack: 5.91.0(esbuild@0.15.18)
+    dev: true
+
   /terser-webpack-plugin@5.3.14(esbuild@0.18.20)(webpack@5.91.0):
     resolution: {integrity: sha512-vkZjpUjb6OMS7dhV+tILUW6BhpDR7P2L/aQSAv+Uwk+m8KATX9EccViHTJR2qDtACKPIYndLGCyl3FMo+r2LMw==}
     engines: {node: '>= 10.13.0'}
@@ -53160,12 +53346,6 @@ packages:
     dependencies:
       '@popperjs/core': 2.11.8
     dev: false
-
-  /title-case@3.0.3:
-    resolution: {integrity: sha512-e1zGYRvbffpcHIrnuqT0Dh+gEJtDaxDSoG4JAIpq4oDFyooziLBIiYQv0GBT4FUAnUop5uZ1hiIAj7oAF6sOCA==}
-    dependencies:
-      tslib: 2.8.1
-    dev: true
 
   /tldts-core@6.1.86:
     resolution: {integrity: sha512-Je6p7pkk+KMzMv2XXKmAE3McmolOQFdxkKw0R8EYNr7sELW46JqnNeTX8ybPiQgvg1ymCoF8LXs5fzFaZvJPTA==}
@@ -53723,11 +53903,6 @@ packages:
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
 
-  /unc-path-regex@0.1.2:
-    resolution: {integrity: sha512-eXL4nmJT7oCpkZsHZUOJo8hcX3GbsiDOa0Qu9F646fi8dT3XuSVopVqAcEiVzSKKH7UoDti23wNX3qGFxcW5Qg==}
-    engines: {node: '>=0.10.0'}
-    dev: true
-
   /undici-types@5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
 
@@ -54072,11 +54247,13 @@ packages:
     resolution: {integrity: sha512-514ppYHBaKwfJRK/pNC6c/OxfGa0obSnAl106u97Ed0I625Nin96KAjttZF6ZL3e1XLtphxnqrOi9iWgm+u+bg==}
     dependencies:
       tslib: 2.8.1
+    dev: false
 
   /upper-case@2.0.2:
     resolution: {integrity: sha512-KgdgDGJt2TpuwBUIjgG6lzw2GWFRCW9Qkfkiv0DxqHHLYJHmtmdUIKcZd8rHgFSjopVTlw6ggzCm1b8MFQwikg==}
     dependencies:
       tslib: 2.8.1
+    dev: false
 
   /uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
@@ -54300,11 +54477,6 @@ packages:
       convert-source-map: 2.0.0
     dev: true
 
-  /v8flags@4.0.1:
-    resolution: {integrity: sha512-fcRLaS4H/hrZk9hYwbdRM35D0U8IYMfEClhXxCivOojl+yTRAZH3Zy2sSy6qVCiGbV9YAtPssP6jaChqC9vPCg==}
-    engines: {node: '>= 10.13.0'}
-    dev: true
-
   /validate-npm-package-license@3.0.4:
     resolution: {integrity: sha512-DpKm2Ui/xN7/HQKCtpZxoRWBhZ9Z0kqtygG8XCgNQ8ZlDnxuQmWhj566j8fN4Cu3/JmbhsDo7fcAJq4s9h27Ew==}
     dependencies:
@@ -54459,6 +54631,31 @@ packages:
       - yaml
     dev: true
 
+  /vite-node@3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2):
+    resolution: {integrity: sha512-w3Gdx7jDcuT9cNn9jExXgOyKmf5UOTb6WMHz8LGAm54eS1Elf5OuBhCxl6zJxGhEeIkgsE1WbHuoL0mj/UXqXg==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    dependencies:
+      cac: 6.7.14
+      debug: 4.3.3(supports-color@5.5.0)
+      es-module-lexer: 1.7.0
+      pathe: 2.0.3
+      vite: 6.3.5(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
+    transitivePeerDependencies:
+      - '@types/node'
+      - jiti
+      - less
+      - lightningcss
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+    dev: true
+
   /vite-node@3.0.9(@types/node@18.18.9)(sass-embedded@1.89.2):
     resolution: {integrity: sha512-w3Gdx7jDcuT9cNn9jExXgOyKmf5UOTb6WMHz8LGAm54eS1Elf5OuBhCxl6zJxGhEeIkgsE1WbHuoL0mj/UXqXg==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
@@ -54494,31 +54691,6 @@ packages:
       es-module-lexer: 1.7.0
       pathe: 2.0.3
       vite: 6.3.5(@types/node@18.18.9)(tsx@4.20.3)
-    transitivePeerDependencies:
-      - '@types/node'
-      - jiti
-      - less
-      - lightningcss
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - tsx
-      - yaml
-    dev: true
-
-  /vite-node@3.0.9(less@4.3.0):
-    resolution: {integrity: sha512-w3Gdx7jDcuT9cNn9jExXgOyKmf5UOTb6WMHz8LGAm54eS1Elf5OuBhCxl6zJxGhEeIkgsE1WbHuoL0mj/UXqXg==}
-    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
-    hasBin: true
-    dependencies:
-      cac: 6.7.14
-      debug: 4.3.3(supports-color@5.5.0)
-      es-module-lexer: 1.7.0
-      pathe: 2.0.3
-      vite: 6.3.5(less@4.3.0)
     transitivePeerDependencies:
       - '@types/node'
       - jiti
@@ -54705,6 +54877,59 @@ packages:
       fsevents: 2.3.3
     dev: true
 
+  /vite@6.3.5(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2):
+    resolution: {integrity: sha512-cZn6NDFE7wdTpINgs++ZJ4N49W2vRp8LCKrn3Ob1kYNtOo21vfDoaV5GzBfLU4MovSAB8uNRm4jgzVQZ+mBzPQ==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': 18.18.9
+      jiti: '>=1.21.0'
+      less: '*'
+      lightningcss: ^1.21.0
+      sass: '*'
+      sass-embedded: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.16.0
+      tsx: ^4.8.1
+      yaml: ^2.4.2
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      jiti:
+        optional: true
+      less:
+        optional: true
+      lightningcss:
+        optional: true
+      sass:
+        optional: true
+      sass-embedded:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+      tsx:
+        optional: true
+      yaml:
+        optional: true
+    dependencies:
+      '@types/node': 18.18.9
+      esbuild: 0.25.5
+      fdir: 6.4.6(picomatch@4.0.2)
+      less: 4.3.0
+      picomatch: 4.0.2
+      postcss: 8.5.6
+      rollup: 4.43.0
+      sass: 1.89.2
+      tinyglobby: 0.2.14
+    optionalDependencies:
+      fsevents: 2.3.3
+    dev: true
+
   /vite@6.3.5(@types/node@18.18.9)(sass-embedded@1.89.2):
     resolution: {integrity: sha512-cZn6NDFE7wdTpINgs++ZJ4N49W2vRp8LCKrn3Ob1kYNtOo21vfDoaV5GzBfLU4MovSAB8uNRm4jgzVQZ+mBzPQ==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
@@ -54809,57 +55034,6 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vite@6.3.5(less@4.3.0):
-    resolution: {integrity: sha512-cZn6NDFE7wdTpINgs++ZJ4N49W2vRp8LCKrn3Ob1kYNtOo21vfDoaV5GzBfLU4MovSAB8uNRm4jgzVQZ+mBzPQ==}
-    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
-    hasBin: true
-    peerDependencies:
-      '@types/node': 18.18.9
-      jiti: '>=1.21.0'
-      less: '*'
-      lightningcss: ^1.21.0
-      sass: '*'
-      sass-embedded: '*'
-      stylus: '*'
-      sugarss: '*'
-      terser: ^5.16.0
-      tsx: ^4.8.1
-      yaml: ^2.4.2
-    peerDependenciesMeta:
-      '@types/node':
-        optional: true
-      jiti:
-        optional: true
-      less:
-        optional: true
-      lightningcss:
-        optional: true
-      sass:
-        optional: true
-      sass-embedded:
-        optional: true
-      stylus:
-        optional: true
-      sugarss:
-        optional: true
-      terser:
-        optional: true
-      tsx:
-        optional: true
-      yaml:
-        optional: true
-    dependencies:
-      esbuild: 0.25.5
-      fdir: 6.4.6(picomatch@4.0.2)
-      less: 4.3.0
-      picomatch: 4.0.2
-      postcss: 8.5.6
-      rollup: 4.43.0
-      tinyglobby: 0.2.14
-    optionalDependencies:
-      fsevents: 2.3.3
-    dev: true
-
   /vitest@3.0.9(@types/node@18.18.9)(happy-dom@12.10.3):
     resolution: {integrity: sha512-BbcFDqNyBlfSpATmTtXOAOj71RNKDDvjBM/uPfnxxVGrG+FSH2RQIwgeEngTaTkuU/h0ScFvf+tRcKfYXzBybQ==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
@@ -54907,8 +55081,8 @@ packages:
       tinyexec: 0.3.2
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 6.3.5(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
-      vite-node: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
+      vite: 6.3.5(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
+      vite-node: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - jiti
@@ -54972,8 +55146,8 @@ packages:
       tinyexec: 0.3.2
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 6.3.5(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
-      vite-node: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
+      vite: 6.3.5(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
+      vite-node: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - jiti
@@ -55103,6 +55277,70 @@ packages:
       tinyrainbow: 2.0.0
       vite: 6.3.5(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
       vite-node: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
+      why-is-node-running: 2.3.0
+    transitivePeerDependencies:
+      - jiti
+      - less
+      - lightningcss
+      - msw
+      - sass
+      - sass-embedded
+      - stylus
+      - sugarss
+      - supports-color
+      - terser
+      - tsx
+      - yaml
+    dev: true
+
+  /vitest@3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2):
+    resolution: {integrity: sha512-BbcFDqNyBlfSpATmTtXOAOj71RNKDDvjBM/uPfnxxVGrG+FSH2RQIwgeEngTaTkuU/h0ScFvf+tRcKfYXzBybQ==}
+    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
+    hasBin: true
+    peerDependencies:
+      '@edge-runtime/vm': '*'
+      '@types/debug': ^4.1.12
+      '@types/node': 18.18.9
+      '@vitest/browser': 3.0.9
+      '@vitest/ui': 3.0.9
+      happy-dom: '*'
+      jsdom: '*'
+    peerDependenciesMeta:
+      '@edge-runtime/vm':
+        optional: true
+      '@types/debug':
+        optional: true
+      '@types/node':
+        optional: true
+      '@vitest/browser':
+        optional: true
+      '@vitest/ui':
+        optional: true
+      happy-dom:
+        optional: true
+      jsdom:
+        optional: true
+    dependencies:
+      '@types/node': 18.18.9
+      '@vitest/expect': 3.0.9
+      '@vitest/mocker': 3.0.9(vite@6.3.5)
+      '@vitest/pretty-format': 3.2.4
+      '@vitest/runner': 3.0.9
+      '@vitest/snapshot': 3.0.9
+      '@vitest/spy': 3.0.9
+      '@vitest/utils': 3.0.9
+      chai: 5.2.0
+      debug: 4.3.3(supports-color@5.5.0)
+      expect-type: 1.2.1
+      magic-string: 0.30.17
+      pathe: 2.0.3
+      std-env: 3.9.0
+      tinybench: 2.9.0
+      tinyexec: 0.3.2
+      tinypool: 1.1.1
+      tinyrainbow: 2.0.0
+      vite: 6.3.5(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
+      vite-node: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - jiti
@@ -55293,71 +55531,8 @@ packages:
       tinyexec: 0.3.2
       tinypool: 1.1.1
       tinyrainbow: 2.0.0
-      vite: 6.3.5(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
-      vite-node: 3.0.9(@types/node@18.18.9)(less@3.13.1)(yaml@2.8.0)
-      why-is-node-running: 2.3.0
-    transitivePeerDependencies:
-      - jiti
-      - less
-      - lightningcss
-      - msw
-      - sass
-      - sass-embedded
-      - stylus
-      - sugarss
-      - supports-color
-      - terser
-      - tsx
-      - yaml
-    dev: true
-
-  /vitest@3.0.9(less@4.3.0):
-    resolution: {integrity: sha512-BbcFDqNyBlfSpATmTtXOAOj71RNKDDvjBM/uPfnxxVGrG+FSH2RQIwgeEngTaTkuU/h0ScFvf+tRcKfYXzBybQ==}
-    engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
-    hasBin: true
-    peerDependencies:
-      '@edge-runtime/vm': '*'
-      '@types/debug': ^4.1.12
-      '@types/node': 18.18.9
-      '@vitest/browser': 3.0.9
-      '@vitest/ui': 3.0.9
-      happy-dom: '*'
-      jsdom: '*'
-    peerDependenciesMeta:
-      '@edge-runtime/vm':
-        optional: true
-      '@types/debug':
-        optional: true
-      '@types/node':
-        optional: true
-      '@vitest/browser':
-        optional: true
-      '@vitest/ui':
-        optional: true
-      happy-dom:
-        optional: true
-      jsdom:
-        optional: true
-    dependencies:
-      '@vitest/expect': 3.0.9
-      '@vitest/mocker': 3.0.9(vite@6.3.5)
-      '@vitest/pretty-format': 3.2.4
-      '@vitest/runner': 3.0.9
-      '@vitest/snapshot': 3.0.9
-      '@vitest/spy': 3.0.9
-      '@vitest/utils': 3.0.9
-      chai: 5.2.0
-      debug: 4.3.3(supports-color@5.5.0)
-      expect-type: 1.2.1
-      magic-string: 0.30.17
-      pathe: 2.0.3
-      std-env: 3.9.0
-      tinybench: 2.9.0
-      tinyexec: 0.3.2
-      tinypool: 1.1.1
-      tinyrainbow: 2.0.0
-      vite: 6.3.5(less@4.3.0)
-      vite-node: 3.0.9(less@4.3.0)
+      vite: 6.3.5(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
+      vite-node: 3.0.9(@types/node@18.18.9)(less@4.3.0)(sass@1.89.2)
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - jiti
@@ -55536,12 +55711,26 @@ packages:
     peerDependencies:
       webpack: ^4.0.0 || ^5.0.0
     dependencies:
-      colorette: 2.0.19
+      colorette: 2.0.20
       memfs: 3.5.3
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.3.2
       webpack: 5.76.0(@swc/core@1.12.1)(esbuild@0.17.19)
+    dev: true
+
+  /webpack-dev-middleware@5.3.4(webpack@5.91.0):
+    resolution: {integrity: sha512-BVdTqhhs+0IfoeAf7EoH5WE+exCmqGerHfDM0IL096Px60Tq2Mn9MAbnaGUe6HiMa41KMCYF19gyzZmBcq/o4Q==}
+    engines: {node: '>= 12.13.0'}
+    peerDependencies:
+      webpack: ^4.0.0 || ^5.0.0
+    dependencies:
+      colorette: 2.0.20
+      memfs: 3.5.3
+      mime-types: 2.1.35
+      range-parser: 1.2.1
+      schema-utils: 4.3.2
+      webpack: 5.91.0
     dev: true
 
   /webpack-dev-middleware@6.0.2(webpack@5.76.0):
@@ -55553,7 +55742,7 @@ packages:
       webpack:
         optional: true
     dependencies:
-      colorette: 2.0.19
+      colorette: 2.0.20
       memfs: 3.5.3
       mime-types: 2.1.35
       range-parser: 1.2.1
@@ -55570,12 +55759,12 @@ packages:
       webpack:
         optional: true
     dependencies:
-      colorette: 2.0.19
+      colorette: 2.0.20
       memfs: 3.5.3
       mime-types: 2.1.35
       range-parser: 1.2.1
       schema-utils: 4.3.2
-      webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.17.19)
+      webpack: 5.91.0
     dev: true
 
   /webpack-dev-middleware@6.1.3(webpack@5.91.0):
@@ -55593,6 +55782,57 @@ packages:
       range-parser: 1.2.1
       schema-utils: 4.3.2
       webpack: 5.91.0(@swc/core@1.12.1)(esbuild@0.17.19)
+    dev: true
+
+  /webpack-dev-server@4.13.1(debug@4.3.3)(webpack@5.91.0):
+    resolution: {integrity: sha512-5tWg00bnWbYgkN+pd5yISQKDejRBYGEw15RaEEslH+zdbNDxxaZvEAO2WulaSaFKb5n3YG8JXsGaDsut1D0xdA==}
+    engines: {node: '>= 12.13.0'}
+    hasBin: true
+    peerDependencies:
+      webpack: ^4.37.0 || ^5.0.0
+      webpack-cli: '*'
+    peerDependenciesMeta:
+      webpack:
+        optional: true
+      webpack-cli:
+        optional: true
+    dependencies:
+      '@types/bonjour': 3.5.13
+      '@types/connect-history-api-fallback': 1.5.4
+      '@types/express': 4.17.23
+      '@types/serve-index': 1.9.4
+      '@types/serve-static': 1.15.8
+      '@types/sockjs': 0.3.36
+      '@types/ws': 8.18.1
+      ansi-html-community: 0.0.8
+      bonjour-service: 1.3.0
+      chokidar: 3.6.0
+      colorette: 2.0.20
+      compression: 1.8.0
+      connect-history-api-fallback: 2.0.0
+      default-gateway: 6.0.3
+      express: 4.21.2
+      graceful-fs: 4.2.11
+      html-entities: 2.6.0
+      http-proxy-middleware: 2.0.6(@types/express@4.17.23)(debug@4.3.3)
+      ipaddr.js: 2.2.0
+      launch-editor: 2.10.0
+      open: 8.4.2
+      p-retry: 4.6.2
+      rimraf: 3.0.2
+      schema-utils: 4.3.2
+      selfsigned: 2.4.1
+      serve-index: 1.9.1
+      sockjs: 0.3.24
+      spdy: 4.0.2
+      webpack: 5.91.0
+      webpack-dev-middleware: 5.3.4(webpack@5.91.0)
+      ws: 8.18.2
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - supports-color
+      - utf-8-validate
     dev: true
 
   /webpack-dev-server@4.13.1(webpack@5.76.0):
@@ -55618,7 +55858,7 @@ packages:
       ansi-html-community: 0.0.8
       bonjour-service: 1.3.0
       chokidar: 3.6.0
-      colorette: 2.0.19
+      colorette: 2.0.20
       compression: 1.8.0
       connect-history-api-fallback: 2.0.0
       default-gateway: 6.0.3
@@ -55870,6 +56110,46 @@ packages:
       - uglify-js
     dev: true
 
+  /webpack@5.91.0(esbuild@0.15.18):
+    resolution: {integrity: sha512-rzVwlLeBWHJbmgTC/8TvAcu5vpJNII+MelQpylD4jNERPwpBJOE2lEcko1zJX3QJeLjTTAnQxn/OJ8bjDzVQaw==}
+    engines: {node: '>=10.13.0'}
+    hasBin: true
+    peerDependencies:
+      webpack-cli: '*'
+    peerDependenciesMeta:
+      webpack-cli:
+        optional: true
+    dependencies:
+      '@types/eslint-scope': 3.7.7
+      '@types/estree': 1.0.8
+      '@webassemblyjs/ast': 1.14.1
+      '@webassemblyjs/wasm-edit': 1.14.1
+      '@webassemblyjs/wasm-parser': 1.14.1
+      acorn: 8.15.0
+      acorn-import-assertions: 1.9.0(acorn@8.15.0)
+      browserslist: 4.25.0
+      chrome-trace-event: 1.0.4
+      enhanced-resolve: 5.18.1
+      es-module-lexer: 1.7.0
+      eslint-scope: 5.1.1
+      events: 3.3.0
+      glob-to-regexp: 0.4.1
+      graceful-fs: 4.2.11
+      json-parse-even-better-errors: 2.3.1
+      loader-runner: 4.3.0
+      mime-types: 2.1.35
+      neo-async: 2.6.2
+      schema-utils: 3.3.0
+      tapable: 2.2.2
+      terser-webpack-plugin: 5.3.14(esbuild@0.15.18)(webpack@5.91.0)
+      watchpack: 2.4.4
+      webpack-sources: 3.3.2
+    transitivePeerDependencies:
+      - '@swc/core'
+      - esbuild
+      - uglify-js
+    dev: true
+
   /webpack@5.91.0(esbuild@0.18.20):
     resolution: {integrity: sha512-rzVwlLeBWHJbmgTC/8TvAcu5vpJNII+MelQpylD4jNERPwpBJOE2lEcko1zJX3QJeLjTTAnQxn/OJ8bjDzVQaw==}
     engines: {node: '>=10.13.0'}
@@ -56070,6 +56350,7 @@ packages:
 
   /wide-align@1.1.5:
     resolution: {integrity: sha512-eDMORYaPNZ4sQIuuYPDHdQvf4gyCF9rEEV/yPxGfwPkRodwEgiMUUXTx/dex+Me0wxx53S+NgUHaP7y3MGlDmg==}
+    requiresBuild: true
     dependencies:
       string-width: 4.2.3
 

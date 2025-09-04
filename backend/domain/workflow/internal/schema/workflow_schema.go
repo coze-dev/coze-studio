@@ -22,8 +22,6 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/cloudwego/eino/compose"
-
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
@@ -308,43 +306,4 @@ func (w *WorkflowSchema) doRequireStreaming() bool {
 	}
 
 	return false
-}
-
-func (w *WorkflowSchema) FanInMergeConfigs() map[string]compose.FanInMergeConfig {
-	// what we need to do is to see if the workflow requires streaming, if not, then no fan-in merge configs needed
-	// then we find those nodes that have 'transform' or 'collect' as streaming paradigm,
-	// and see if each of those nodes has multiple data predecessors, if so, it's a fan-in node.
-	// then, look up the NodeTypeMeta's ExecutableMeta info and see if it requires fan-in stream merge.
-	if !w.requireStreaming {
-		return nil
-	}
-
-	fanInNodes := make(map[vo.NodeKey]bool)
-	for _, node := range w.Nodes {
-		if node.StreamConfigs != nil && node.StreamConfigs.RequireStreamingInput {
-			var predecessor *vo.NodeKey
-			for _, source := range node.InputSources {
-				if source.Source.Ref != nil && len(source.Source.Ref.FromNodeKey) > 0 {
-					if predecessor != nil {
-						fanInNodes[node.Key] = true
-						break
-					}
-					predecessor = &source.Source.Ref.FromNodeKey
-				}
-			}
-		}
-	}
-
-	fanInConfigs := make(map[string]compose.FanInMergeConfig)
-	for nodeKey := range fanInNodes {
-		if m := entity.NodeMetaByNodeType(w.GetNode(nodeKey).Type); m != nil {
-			if m.StreamSourceEOFAware {
-				fanInConfigs[string(nodeKey)] = compose.FanInMergeConfig{
-					StreamMergeWithSourceEOF: true,
-				}
-			}
-		}
-	}
-
-	return fanInConfigs
 }

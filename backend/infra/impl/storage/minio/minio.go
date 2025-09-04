@@ -21,25 +21,19 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net/url"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/proxy"
-	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type minioClient struct {
-	host            string
 	client          *minio.Client
 	accessKeyID     string
 	secretAccessKey string
@@ -47,11 +41,12 @@ type minioClient struct {
 	endpoint        string
 }
 
-func NewStorageImagex(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (imagex.ImageX, error) {
+func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (storage.Storage, error) {
 	m, err := getMinioClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
 	if err != nil {
 		return nil, err
 	}
+
 	return m, nil
 }
 
@@ -76,14 +71,8 @@ func getMinioClient(_ context.Context, endpoint, accessKeyID, secretAccessKey, b
 	if err != nil {
 		return nil, fmt.Errorf("init minio client failed %v", err)
 	}
-	return m, nil
-}
 
-func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (storage.Storage, error) {
-	m, err := getMinioClient(ctx, endpoint, accessKeyID, secretAccessKey, bucketName, useSSL)
-	if err != nil {
-		return nil, err
-	}
+	// m.test()
 	return m, nil
 }
 
@@ -109,35 +98,64 @@ func (m *minioClient) test() {
 	ctx := context.Background()
 	objectName := fmt.Sprintf("test-file-%d.txt", rand.Int())
 
-	err := m.PutObject(ctx, objectName, []byte("hello content"), storage.WithContentType("text/plain"))
+	err := m.PutObject(ctx, objectName, []byte("hello content"),
+		storage.WithContentType("text/plain"), storage.WithTagging(map[string]string{
+			"uid":             "7543149965070155780",
+			"conversation_id": "7543149965070155781",
+			"type":            "user",
+		}))
 	if err != nil {
-		log.Fatalf("upload file failed: %v", err)
+		logs.CtxErrorf(ctx, "upload file failed: %v", err)
 	}
-	log.Printf("upload file success")
+
+	f, err := m.HeadObject(ctx, objectName, true)
+	if err != nil {
+		logs.CtxErrorf(ctx, "head object failed: %v", err)
+	}
+	if f != nil {
+		logs.CtxInfof(ctx, "head object success, f: %v, tagging: %v", *f, f.Tagging)
+	}
+
+	f, err = m.HeadObject(ctx, "not_exit.txt", true)
+	logs.CtxInfof(context.Background(), "HeadObject not exit success, f: %v, err: %v", f, err)
+
+	logs.CtxInfof(ctx, "upload file success")
+
+	files, err := m.ListAllObjects(ctx, "test-file-", true)
+	if err != nil {
+		logs.CtxErrorf(ctx, "list objects failed: %v", err)
+	}
+
+	logs.CtxInfof(ctx, "list objects success, files.len: %v", len(files))
 
 	url, err := m.GetObjectUrl(ctx, objectName)
 	if err != nil {
-		log.Fatalf("get file url failed: %v", err)
+		logs.CtxErrorf(ctx, "get file url failed: %v", err)
 	}
 
-	log.Printf("get file url success, url: %s", url)
+	logs.CtxInfof(ctx, "get file url success, url: %s", url)
 
 	content, err := m.GetObject(ctx, objectName)
 	if err != nil {
-		log.Fatalf("download file failed: %v", err)
+		logs.CtxErrorf(ctx, "download file failed: %v", err)
 	}
 
-	log.Printf("download file success, content: %s", string(content))
+	logs.CtxInfof(ctx, "download file success, content: %s", string(content))
 
 	err = m.DeleteObject(ctx, objectName)
 	if err != nil {
-		log.Fatalf("delete object failed: %v", err)
+		logs.CtxErrorf(ctx, "delete object failed: %v", err)
 	}
 
-	log.Printf("delete object success")
+	logs.CtxInfof(ctx, "delete object success")
 }
 
 func (m *minioClient) PutObject(ctx context.Context, objectKey string, content []byte, opts ...storage.PutOptFn) error {
+	opts = append(opts, storage.WithObjectSize(int64(len(content))))
+	return m.PutObjectWithReader(ctx, objectKey, bytes.NewReader(content), opts...)
+}
+
+func (m *minioClient) PutObjectWithReader(ctx context.Context, objectKey string, content io.Reader, opts ...storage.PutOptFn) error {
 	option := storage.PutOption{}
 	for _, opt := range opts {
 		opt(&option)
@@ -164,8 +182,12 @@ func (m *minioClient) PutObject(ctx context.Context, objectKey string, content [
 		minioOpts.Expires = *option.Expires
 	}
 
+	if option.Tagging != nil {
+		minioOpts.UserTags = option.Tagging
+	}
+
 	_, err := m.client.PutObject(ctx, m.bucketName, objectKey,
-		bytes.NewReader(content), int64(len(content)), minioOpts)
+		content, option.ObjectSize, minioOpts)
 	if err != nil {
 		return fmt.Errorf("PutObject failed: %v", err)
 	}
@@ -218,47 +240,81 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	return presignedURL.String(), nil
 }
 
-func (m *minioClient) GetUploadHost(ctx context.Context) string {
-	currentHost, ok := ctxcache.Get[string](ctx, consts.HostKeyInCtx)
-	if !ok {
-		return ""
+func (m *minioClient) ListObjectsPaginated(ctx context.Context, input *storage.ListObjectsPaginatedInput) (*storage.ListObjectsPaginatedOutput, error) {
+	if input == nil {
+		return nil, fmt.Errorf("input cannot be nil")
 	}
-	return currentHost + consts.ApplyUploadActionURI
-}
-
-func (m *minioClient) GetServerID() string {
-	return ""
-}
-
-func (m *minioClient) GetUploadAuth(ctx context.Context, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	scheme := strings.ToLower(os.Getenv(consts.StorageUploadHTTPScheme))
-	if scheme == "" {
-		scheme = "http"
+	if input.PageSize <= 0 {
+		return nil, fmt.Errorf("page size must be positive")
 	}
-	return &imagex.SecurityToken{
-		AccessKeyID:     "",
-		SecretAccessKey: "",
-		SessionToken:    "",
-		ExpiredTime:     time.Now().Add(time.Hour).Format("2006-01-02 15:04:05"),
-		CurrentTime:     time.Now().Format("2006-01-02 15:04:05"),
-		HostScheme:      scheme,
-	}, nil
-}
 
-func (m *minioClient) GetResourceURL(ctx context.Context, uri string, opts ...imagex.GetResourceOpt) (*imagex.ResourceURL, error) {
-	url, err := m.GetObjectUrl(ctx, uri)
+	files, err := m.ListAllObjects(ctx, input.Prefix, input.WithTagging)
 	if err != nil {
 		return nil, err
 	}
-	return &imagex.ResourceURL{
-		URL: url,
+
+	return &storage.ListObjectsPaginatedOutput{
+		Files:       files,
+		IsTruncated: false,
+		Cursor:      "",
 	}, nil
 }
 
-func (m *minioClient) Upload(ctx context.Context, data []byte, opts ...imagex.UploadAuthOpt) (*imagex.UploadResult, error) {
-	return nil, nil
+func (m *minioClient) ListAllObjects(ctx context.Context, prefix string, withTagging bool) ([]*storage.FileInfo, error) {
+	opts := minio.ListObjectsOptions{
+		Prefix:       prefix,
+		Recursive:    true,
+		WithMetadata: withTagging,
+	}
+
+	objectCh := m.client.ListObjects(ctx, m.bucketName, opts)
+
+	var files []*storage.FileInfo
+	for object := range objectCh {
+		if object.Err != nil {
+			return nil, object.Err
+		}
+
+		files = append(files, &storage.FileInfo{
+			Key:          object.Key,
+			LastModified: object.LastModified,
+			ETag:         object.ETag,
+			Size:         object.Size,
+			Tagging:      object.UserTags,
+		})
+
+		logs.CtxDebugf(ctx, "key = %s, lastModified = %s, eTag = %s, size = %d, tagging = %v",
+			object.Key, object.LastModified, object.ETag, object.Size, object.UserTags)
+	}
+
+	return files, nil
 }
 
-func (m *minioClient) GetUploadAuthWithExpire(ctx context.Context, expire time.Duration, opt ...imagex.UploadAuthOpt) (*imagex.SecurityToken, error) {
-	return nil, nil
+func (m *minioClient) HeadObject(ctx context.Context, objectKey string, withTagging bool) (*storage.FileInfo, error) {
+	stat, err := m.client.StatObject(ctx, m.bucketName, objectKey, minio.StatObjectOptions{})
+	if err != nil {
+		if minio.ToErrorResponse(err).Code == "NoSuchKey" {
+			return nil, nil
+		}
+
+		return nil, fmt.Errorf("HeadObject failed for key %s: %w", objectKey, err)
+	}
+
+	f := &storage.FileInfo{
+		Key:          objectKey,
+		LastModified: stat.LastModified,
+		ETag:         stat.ETag,
+		Size:         stat.Size,
+	}
+
+	if withTagging {
+		tags, err := m.client.GetObjectTagging(ctx, m.bucketName, objectKey, minio.GetObjectTaggingOptions{})
+		if err != nil {
+			return nil, err
+		}
+
+		f.Tagging = tags.ToMap()
+	}
+
+	return f, nil
 }

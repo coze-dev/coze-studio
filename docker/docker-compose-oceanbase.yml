@@ -1,0 +1,380 @@
+name: coze-studio
+# Environment file will be specified via --env-file parameter
+
+services:
+  mysql:
+    image: mysql:8.4.5
+    container_name: coze-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-opencoze}
+      MYSQL_USER: ${MYSQL_USER:-coze}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-coze123}
+    # ports:
+    #   - '3306'
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./volumes/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'mysqladmin',
+          'ping',
+          '-h',
+          'localhost',
+          '-u$${MYSQL_USER}',
+          '-p$${MYSQL_PASSWORD}',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - coze-network
+
+  redis:
+    image: bitnami/redis:8.0
+    container_name: coze-redis
+    restart: always
+    user: root
+    privileged: true
+    environment:
+      - REDIS_AOF_ENABLED=${REDIS_AOF_ENABLED:-no}
+      - REDIS_PORT_NUMBER=${REDIS_PORT_NUMBER:-6379}
+      - REDIS_IO_THREADS=${REDIS_IO_THREADS:-4}
+      - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
+    # ports:
+    #   - '6379'
+    volumes:
+      - ./data/bitnami/redis:/bitnami/redis/data:rw,Z
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/redis/setup.sh
+        # Set proper permissions for data directories
+        chown -R redis:redis /bitnami/redis/data
+        chmod g+s /bitnami/redis/data
+
+        exec /opt/bitnami/scripts/redis/entrypoint.sh /opt/bitnami/scripts/redis/run.sh
+      "
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - coze-network
+  elasticsearch:
+    image: bitnami/elasticsearch:8.18.0
+    container_name: coze-elasticsearch
+    restart: always
+    user: root
+    privileged: true
+    environment:
+      - TEST=1
+      # Add Java certificate trust configuration
+      # - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
+    # ports:
+    #   - '9200'
+    volumes:
+      - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
+      - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
+      - ./volumes/elasticsearch/analysis-smartcn.zip:/opt/bitnami/elasticsearch/analysis-smartcn.zip:rw,Z
+      - ./volumes/elasticsearch/setup_es.sh:/setup_es.sh
+      - ./volumes/elasticsearch/es_index_schema:/es_index_schema
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'curl -f http://localhost:9200 && [ -f /tmp/es_plugins_ready ] && [ -f /tmp/es_init_complete ]',
+        ]
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - coze-network
+    # Install smartcn analyzer plugin and initialize ES
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/elasticsearch/setup.sh
+        # Set proper permissions for data directories
+        chown -R elasticsearch:elasticsearch /bitnami/elasticsearch/data
+        chmod g+s /bitnami/elasticsearch/data
+
+        # Create plugin directory
+        mkdir -p /bitnami/elasticsearch/plugins;
+
+        # Unzip plugin to plugin directory and set correct permissions
+        echo 'Installing smartcn plugin...';
+        if [ ! -d /opt/bitnami/elasticsearch/plugins/analysis-smartcn ]; then
+
+          # Download plugin package locally
+          echo 'Copying smartcn plugin...';
+          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip
+
+          elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
+          if [[ "$$?" != "0" ]]; then
+            echo 'Plugin installation failed, exiting operation';
+            rm -rf /opt/bitnami/elasticsearch/plugins/analysis-smartcn
+            exit 1;
+          fi;
+          rm -f /tmp/analysis-smartcn.zip;
+        fi;
+
+        # Create marker file indicating plugin installation success
+        touch /tmp/es_plugins_ready;
+        echo 'Plugin installation successful, marker file created';
+
+        # Start initialization script in background
+        (
+          echo 'Waiting for Elasticsearch to be ready...'
+          until curl -s -f http://localhost:9200/_cat/health >/dev/null 2>&1; do
+            echo 'Elasticsearch not ready, waiting...'
+            sleep 2
+          done
+          echo 'Elasticsearch is ready!'
+
+          # Run ES initialization script
+          echo 'Running Elasticsearch initialization...'
+          sed 's/\r$$//' /setup_es.sh > /setup_es_fixed.sh
+          chmod +x /setup_es_fixed.sh
+          /setup_es_fixed.sh --index-dir /es_index_schema
+          # Create marker file indicating initialization completion
+          touch /tmp/es_init_complete
+          echo 'Elasticsearch initialization completed successfully!'
+        ) &
+
+        # Start Elasticsearch
+        exec /opt/bitnami/scripts/elasticsearch/entrypoint.sh /opt/bitnami/scripts/elasticsearch/run.sh
+        echo -e "⏳ Adjusting Elasticsearch disk watermark settings..."
+      "
+
+  minio:
+    image: minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1
+    container_name: coze-minio
+    user: root
+    privileged: true
+    restart: always
+    # ports:
+    #   - '9000'
+    #   - '9001'
+    volumes:
+      - ./data/minio:/data
+      - ./volumes/minio/default_icon/:/default_icon
+      - ./volumes/minio/official_plugin_icon/:/official_plugin_icon
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      MINIO_DEFAULT_BUCKETS: ${STORAGE_BUCKET:-opencoze},${MINIO_DEFAULT_BUCKETS:-oceanbase}
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        # Run initialization in background
+        (
+          # Wait for MinIO to be ready
+          until (/usr/bin/mc alias set localminio http://localhost:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}) do
+            echo "Waiting for MinIO to be ready..."
+            sleep 1
+          done
+
+          # Create bucket and copy files
+          /usr/bin/mc mb --ignore-existing localminio/$${STORAGE_BUCKET}
+          /usr/bin/mc cp --recursive /default_icon/ localminio/$${STORAGE_BUCKET}/default_icon/
+          /usr/bin/mc cp --recursive /official_plugin_icon/ localminio/$${STORAGE_BUCKET}/official_plugin_icon/
+
+          echo "MinIO initialization complete."
+        ) &
+
+        # Start minio server in foreground
+        exec minio server /data --console-address ":9001"
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          '/usr/bin/mc alias set health_check http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && /usr/bin/mc ready health_check',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - coze-network
+
+  etcd:
+    image: bitnami/etcd:3.5
+    container_name: coze-etcd
+    user: root
+    restart: always
+    privileged: true
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ALLOW_NONE_AUTHENTICATION=yes
+    # ports:
+    #   - '2379'
+    #   - '2380'
+    volumes:
+      - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
+      - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
+    command: >
+      bash -c "
+        /opt/bitnami/scripts/etcd/setup.sh
+        # Set proper permissions for data and config directories
+        chown -R etcd:etcd /bitnami/etcd
+        chmod g+s /bitnami/etcd
+
+        exec /opt/bitnami/scripts/etcd/entrypoint.sh /opt/bitnami/scripts/etcd/run.sh
+      "
+    healthcheck:
+      test: ['CMD', 'etcdctl', 'endpoint', 'health']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    networks:
+      - coze-network
+
+  # OceanBase for vector storage
+  oceanbase:
+    image: oceanbase/oceanbase-ce:latest
+    container_name: coze-oceanbase
+    restart: always
+    environment:
+      MODE: SLIM
+      OB_DATAFILE_SIZE: 1G
+      OB_SYS_PASSWORD: ${OCEANBASE_PASSWORD:-coze123}
+      OB_TENANT_PASSWORD: ${OCEANBASE_PASSWORD:-coze123}
+    ports:
+      - '2881:2881'
+    volumes:
+      - ./data/oceanbase/ob:/root/ob
+      - ./data/oceanbase/cluster:/root/.obd/cluster
+    deploy:
+      resources:
+        limits:
+          memory: 4G
+        reservations:
+          memory: 2G
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'obclient -h127.0.0.1 -P2881 -uroot@test -pcoze123 -e "SELECT 1;"',
+        ]
+      interval: 10s
+      retries: 30
+      start_period: 30s
+      timeout: 10s
+    networks:
+      - coze-network
+  nsqlookupd:
+    image: nsqio/nsq:v1.2.1
+    container_name: coze-nsqlookupd
+    command: /nsqlookupd
+    restart: always
+    # ports:
+    #   - '4160'
+    #   - '4161'
+    networks:
+      - coze-network
+    healthcheck:
+      test: ['CMD-SHELL', 'nsqlookupd --version']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+
+  nsqd:
+    image: nsqio/nsq:v1.2.1
+    container_name: coze-nsqd
+    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160 --broadcast-address=nsqd
+    restart: always
+    # ports:
+    #   - '4150'
+    #   - '4151'
+    depends_on:
+      nsqlookupd:
+        condition: service_healthy
+    networks:
+      - coze-network
+    healthcheck:
+      test: ['CMD-SHELL', '/nsqd --version']
+      interval: 5s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+
+  nsqadmin:
+    image: nsqio/nsq:v1.2.1
+    container_name: coze-nsqadmin
+    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
+    restart: always
+    # ports:
+    #   - '4171'
+    depends_on:
+      nsqlookupd:
+        condition: service_healthy
+    networks:
+      - coze-network
+
+  coze-server:
+    # build:
+    #   context: ../
+    #   dockerfile: backend/Dockerfile
+    image: cozedev/coze-studio-server:latest
+    restart: always
+    container_name: coze-server
+    # environment:
+    #   LISTEN_ADDR: 0.0.0.0:8888
+    networks:
+      - coze-network
+    # ports:
+    #   - '8888'
+    #   - '8889'
+    volumes:
+      - .env:/app/.env
+      - ../backend/conf:/app/resources/conf
+      # - ../backend/static:/app/resources/static
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      minio:
+        condition: service_healthy
+      oceanbase:
+        condition: service_healthy
+    command: ['/app/opencoze']
+
+  coze-web:
+    # build:
+    #   context: ..
+    #   dockerfile: frontend/Dockerfile
+    image: cozedev/coze-studio-web:latest
+    container_name: coze-web
+    restart: always
+    ports:
+      - "${WEB_LISTEN_ADDR:-8888}:80"
+      # - "443:443"  # SSL port (uncomment if using SSL)
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro  # Main nginx config
+      - ./nginx/conf.d/default.conf:/etc/nginx/conf.d/default.conf:ro  # Proxy config
+      # - ./nginx/ssl:/etc/nginx/ssl:ro  # SSL certificates (uncomment if using SSL)
+    depends_on:
+      - coze-server
+    networks:
+      - coze-network
+
+networks:
+  coze-network:
+    driver: bridge

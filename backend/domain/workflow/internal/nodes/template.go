@@ -374,13 +374,9 @@ func (tp TemplatePart) TypeInfo(types map[string]*vo.TypeInfo) *vo.TypeInfo {
 	return currentType
 }
 
-func Render(ctx context.Context, tpl string, input map[string]any, sources map[string]*schema.SourceInfo, opts ...RenderOption) (string, error) {
+func Render(_ context.Context, tpl string, input map[string]any,
+	sources map[string]*schema.SourceInfo, opts ...RenderOption) (string, error) {
 	mi, err := sonic.Marshal(input)
-	if err != nil {
-		return "", err
-	}
-
-	resolvedSources, err := ResolveStreamSources(ctx, sources)
 	if err != nil {
 		return "", err
 	}
@@ -410,7 +406,7 @@ func Render(ctx context.Context, tpl string, input map[string]any, sources map[s
 			}
 		}
 
-		skipped, invalid := part.Skipped(resolvedSources)
+		skipped, invalid := part.Skipped(sources)
 		if skipped {
 			continue
 		}

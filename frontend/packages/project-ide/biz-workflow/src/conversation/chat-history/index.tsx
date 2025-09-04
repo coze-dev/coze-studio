@@ -17,12 +17,12 @@
 import React, { Suspense, lazy, useMemo } from 'react';
 
 import { userStoreService } from '@coze-studio/user-store';
+import type { IProject } from '@coze-studio/open-chat';
+import { useIDEGlobalStore } from '@coze-project-ide/framework';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozIllusAdd } from '@coze-arch/coze-design/illustrations';
 import { EmptyState } from '@coze-arch/coze-design';
 import { CreateEnv } from '@coze-arch/bot-api/workflow_api';
-import type { IProject } from '@coze-studio/open-chat';
-import { useIDEGlobalStore } from '@coze-project-ide/framework';
 
 import { DISABLED_CONVERSATION } from '../constants';
 import { useSkeleton } from './use-skeleton';
@@ -81,8 +81,8 @@ export const ChatHistory: React.FC<ChatHistoryProps> = ({
 
   const chatUserInfo = {
     id: userInfo?.user_id_str || '',
-    name: userInfo?.name || '',
-    avatar: userInfo?.avatar_url || '',
+    nickname: userInfo?.name || '',
+    url: userInfo?.avatar_url || '',
   };
 
   if (

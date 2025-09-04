@@ -140,7 +140,7 @@ func GetApiMessageList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := application.OpenapiMessageApplicationService.GetApiMessageList(ctx, &req)
+	resp, err := application.OpenapiMessageSVC.GetApiMessageList(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return

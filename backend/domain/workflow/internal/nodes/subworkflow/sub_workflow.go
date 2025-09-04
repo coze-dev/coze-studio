@@ -90,14 +90,7 @@ func (s *SubWorkflow) Invoke(ctx context.Context, in map[string]any, opts ...nod
 			SubWorkflowInterruptInfo: interruptInfo,
 		}
 
-		err = compose.ProcessState(ctx, func(ctx context.Context, setter nodes.InterruptEventStore) error {
-			return setter.SetInterruptEvent(nodeKey, iEvent)
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, compose.InterruptAndRerun
+		return nil, compose.NewInterruptAndRerunErr(iEvent)
 	}
 	return out, nil
 }
@@ -121,14 +114,7 @@ func (s *SubWorkflow) Stream(ctx context.Context, in map[string]any, opts ...nod
 			SubWorkflowInterruptInfo: interruptInfo,
 		}
 
-		err = compose.ProcessState(ctx, func(ctx context.Context, setter nodes.InterruptEventStore) error {
-			return setter.SetInterruptEvent(nodeKey, iEvent)
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, compose.InterruptAndRerun
+		return nil, compose.NewInterruptAndRerunErr(iEvent)
 	}
 
 	return out, nil

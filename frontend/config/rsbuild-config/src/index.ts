@@ -21,9 +21,9 @@ import { pluginSass } from '@rsbuild/plugin-sass';
 import { pluginReact } from '@rsbuild/plugin-react';
 import { pluginLess } from '@rsbuild/plugin-less';
 import { type RsbuildConfig, mergeRsbuildConfig } from '@rsbuild/core';
+import { SemiRspackPlugin } from '@douyinfe/semi-rspack-plugin';
 import { PkgRootWebpackPlugin } from '@coze-arch/pkg-root-webpack-plugin';
 import { GLOBAL_ENVS } from '@coze-arch/bot-env';
-import { SemiRspackPlugin } from '@douyinfe/semi-rspack-plugin';
 
 const getDefine = () => {
   const define = {};

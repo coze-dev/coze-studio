@@ -44,7 +44,8 @@ type selectorBranch struct {
 	Name       string               `json:"name"`
 }
 
-func (s *Selector) ToCallbackInput(_ context.Context, in map[string]any) (map[string]any, error) {
+func (s *Selector) ToCallbackInput(_ context.Context, in map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
 	count := len(s.clauses)
 
 	output := make([]*selectorBranch, count)
@@ -186,5 +187,5 @@ func (s *Selector) ToCallbackInput(_ context.Context, in map[string]any) (map[st
 		}
 	}
 
-	return map[string]any{"branches": output}, nil
+	return &nodes.StructuredCallbackInput{Input: map[string]any{"branches": output}}, nil
 }

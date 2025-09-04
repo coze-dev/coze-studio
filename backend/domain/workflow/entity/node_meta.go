@@ -77,13 +77,12 @@ type Category struct {
 }
 
 type ExecutableMeta struct {
-	IsComposite          bool  `json:"is_composite,omitempty"`
-	DefaultTimeoutMS     int64 `json:"default_timeout_ms,omitempty"` // default timeout in milliseconds, 0 means no timeout
-	PreFillZero          bool  `json:"pre_fill_zero,omitempty"`
-	PostFillNil          bool  `json:"post_fill_nil,omitempty"`
-	MayUseChatModel      bool  `json:"may_use_chat_model,omitempty"`
-	InputSourceAware     bool  `json:"input_source_aware,omitempty"`      // whether this node needs to know the runtime status of its input sources
-	StreamSourceEOFAware bool  `json:"needs_stream_source_eof,omitempty"` // whether this node needs to be aware stream sources' SourceEOF error
+	IsComposite      bool  `json:"is_composite,omitempty"`
+	DefaultTimeoutMS int64 `json:"default_timeout_ms,omitempty"` // default timeout in milliseconds, 0 means no timeout
+	PreFillZero      bool  `json:"pre_fill_zero,omitempty"`
+	PostFillNil      bool  `json:"post_fill_nil,omitempty"`
+	MayUseChatModel  bool  `json:"may_use_chat_model,omitempty"`
+	InputSourceAware bool  `json:"input_source_aware,omitempty"` // whether this node needs to know the runtime status of its input sources
 
 	// IncrementalOutput indicates that the node's output is intended for progressive, user-facing streaming.
 	// This distinguishes nodes that actually stream text to the user (e.g., 'Exit', 'Output')
@@ -95,7 +94,36 @@ type ExecutableMeta struct {
 	// UseCtxCache indicates that the node would require a newly initialized ctx cache for each invocation.
 	// example use cases:
 	// - write warnings to the ctx cache during Invoke, and read from the ctx within Callback output converter
-	UseCtxCache bool `json:"use_ctx_cache"`
+	UseCtxCache bool `json:"use_ctx_cache,omitempty"`
+
+	// PersistInputOnInterrupt indicates that the workflow execution should persist this node's input
+	// on interrupt, and restore the input on resume.
+	// example use cases:
+	// - NodeTypeQuestionAnswer stores input in checkpoint,
+	//   so during resume it could access info such as user-defined extra prompt.
+	// - NodeTypeBatch stores input in checkpoint,
+	//   so during resume it could access the input arrays.
+	PersistInputOnInterrupt bool `json:"persist_input_on_interrupt,omitempty"`
+
+	// BlockEndStream indicates the node will block end stream until all stream chunks are received.
+	// If not set and the node's output is stream, control will transfer to successor as
+	// soon as the end stream itself is created.
+	BlockEndStream bool `json:"block_end_stream,omitempty"`
+
+	// UseDatabase indicates the node REQUIRES a DataBase to work,
+	// and MUST have the non-empty config value of vo.Node.Data.Inputs.DatabaseInfoList in Canvas.
+	// Coze-Studio will copy/move the specified Database when copying/moving workflows.
+	UseDatabase bool `json:"use_database,omitempty"`
+
+	// UseKnowledge indicates the node REQUIRES a Knowledge dataset to work,
+	// and MUST have non-empty config value of vo.Node.Data.Inputs.DatasetParam[0].
+	// Coze-Studio will copy/move the specified Knowledge Dataset when copying/moving workflows.
+	UseKnowledge bool `json:"use_knowledge,omitempty"`
+
+	// UsePlugin indicates the node REQUIRES a Plugin to work,
+	// and MUST have non-empty config value of vo.Node.Data.Inputs.PluginAPIParam.
+	// Coze-Studio will copy/move the specified Plugin when copying/moving workflows.
+	UsePlugin bool `json:"use_plugin,omitempty"`
 }
 
 type PluginNodeMeta struct {
@@ -144,8 +172,11 @@ const (
 	NodeTypeCodeRunner                 NodeType = "CodeRunner"
 	NodeTypePlugin                     NodeType = "Plugin"
 	NodeTypeCreateConversation         NodeType = "CreateConversation"
+	NodeTypeConversationList           NodeType = "ConversationList"
 	NodeTypeMessageList                NodeType = "MessageList"
-	NodeTypeClearMessage               NodeType = "ClearMessage"
+	NodeTypeCreateMessage              NodeType = "CreateMessage"
+	NodeTypeEditMessage                NodeType = "EditMessage"
+	NodeTypeDeleteMessage              NodeType = "DeleteMessage"
 	NodeTypeLambda                     NodeType = "Lambda"
 	NodeTypeLLM                        NodeType = "LLM"
 	NodeTypeSelector                   NodeType = "Selector"
@@ -153,6 +184,10 @@ const (
 	NodeTypeSubWorkflow                NodeType = "SubWorkflow"
 	NodeTypeJsonSerialization          NodeType = "JsonSerialization"
 	NodeTypeJsonDeserialization        NodeType = "JsonDeserialization"
+	NodeTypeConversationUpdate         NodeType = "ConversationUpdate"
+	NodeTypeConversationDelete         NodeType = "ConversationDelete"
+	NodeTypeClearConversationHistory   NodeType = "ClearConversationHistory"
+	NodeTypeConversationHistory        NodeType = "ConversationHistory"
 	NodeTypeComment                    NodeType = "Comment"
 )
 
@@ -249,10 +284,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero:          true,
-			InputSourceAware:     true,
-			StreamSourceEOFAware: true,
-			IncrementalOutput:    true,
+			PreFillZero:       true,
+			InputSourceAware:  true,
+			IncrementalOutput: true,
 		},
 		EnUSName:        "End",
 		EnUSDescription: "The final node of the workflow, used to return the result information after the workflow runs.",
@@ -272,6 +306,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 			PostFillNil:      true,
 			InputSourceAware: true,
 			MayUseChatModel:  true,
+			UseCtxCache:      true,
 		},
 		EnUSName:        "LLM",
 		EnUSDescription: "Invoke the large language model, generate responses using variables and prompt words.",
@@ -289,6 +324,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
+			UsePlugin:   true,
 		},
 		EnUSName:        "Plugin",
 		EnUSDescription: "Used to access external real-time data and perform operations",
@@ -322,8 +358,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
+			PreFillZero:  true,
+			PostFillNil:  true,
+			UseCtxCache:  true,
+			UseKnowledge: true,
 		},
 		EnUSName:        "Knowledge retrieval",
 		EnUSDescription: "In the selected knowledge, the best matching information is recalled based on the input variable and returned as an Array.",
@@ -343,23 +381,25 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		EnUSDescription: "Connect multiple downstream branches. Only the corresponding branch will be executed if the set conditions are met. If none are met, only the 'else' branch will be executed.",
 	},
 	NodeTypeSubWorkflow: {
-		ID:              9,
-		Key:             NodeTypeSubWorkflow,
-		DisplayKey:      "SubWorkflow",
-		Name:            "工作流",
-		Category:        "",
-		Desc:            "集成已发布工作流，可以执行嵌套子任务",
-		Color:           "#00B83E",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
-		SupportBatch:    true,
-		ExecutableMeta:  ExecutableMeta{},
+		ID:           9,
+		Key:          NodeTypeSubWorkflow,
+		DisplayKey:   "SubWorkflow",
+		Name:         "工作流",
+		Category:     "",
+		Desc:         "集成已发布工作流，可以执行嵌套子任务",
+		Color:        "#00B83E",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+		SupportBatch: true,
+		ExecutableMeta: ExecutableMeta{
+			BlockEndStream: true,
+		},
 		EnUSName:        "Workflow",
 		EnUSDescription: "Add published workflows to execute subtasks",
 	},
 	NodeTypeDatabaseCustomSQL: {
 		ID:           12,
 		Key:          NodeTypeDatabaseCustomSQL,
-		DisplayKey:   "End",
+		DisplayKey:   "Database",
 		Name:         "SQL自定义",
 		Category:     "database",
 		Desc:         "基于用户自定义的 SQL 完成对数据库的增删改查操作",
@@ -369,6 +409,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "SQL Customization",
 		EnUSDescription: "Complete the operations of adding, deleting, modifying and querying the database based on user-defined SQL",
@@ -384,10 +425,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Output-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero:          true,
-			InputSourceAware:     true,
-			StreamSourceEOFAware: true,
-			IncrementalOutput:    true,
+			PreFillZero:       true,
+			InputSourceAware:  true,
+			IncrementalOutput: true,
+			BlockEndStream:    true,
 		},
 		EnUSName:        "Output",
 		EnUSDescription: "The node is renamed from \"message\" to \"output\", Supports message output in the intermediate process and streaming and non-streaming methods",
@@ -420,9 +461,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero:     true,
-			PostFillNil:     true,
-			MayUseChatModel: true,
+			PreFillZero:             true,
+			PostFillNil:             true,
+			MayUseChatModel:         true,
+			PersistInputOnInterrupt: true,
 		},
 		EnUSName:        "Question",
 		EnUSDescription: "Support asking questions to the user in the middle of the conversation, with both preset options and open-ended questions",
@@ -466,9 +508,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			IsComposite: true,
-			PreFillZero: true,
-			PostFillNil: true,
+			IsComposite:             true,
+			PreFillZero:             true,
+			PostFillNil:             true,
+			PersistInputOnInterrupt: true,
 		},
 		EnUSName:        "Loop",
 		EnUSDescription: "Used to repeatedly execute a series of tasks by setting the number of iterations and logic",
@@ -487,6 +530,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 			PreFillZero:     true,
 			PostFillNil:     true,
 			MayUseChatModel: true,
+			UseCtxCache:     true,
 		},
 		EnUSName:        "Intent recognition",
 		EnUSDescription: "Used for recognizing the intent in user input and matching it with preset intent options.",
@@ -502,8 +546,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
+			PreFillZero:  true,
+			PostFillNil:  true,
+			UseKnowledge: true,
 		},
 		EnUSName:        "Knowledge writing",
 		EnUSDescription: "The write node can add a knowledge base of type text. Only one knowledge base can be added.",
@@ -519,9 +564,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			IsComposite: true,
-			PreFillZero: true,
-			PostFillNil: true,
+			IsComposite:             true,
+			PreFillZero:             true,
+			PostFillNil:             true,
+			PersistInputOnInterrupt: true,
 		},
 		EnUSName:        "Batch",
 		EnUSDescription: "By setting the number of batch runs and logic, run the tasks in the batch body.",
@@ -577,9 +623,10 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PostFillNil:      true,
-			InputSourceAware: true,
-			UseCtxCache:      true,
+			PostFillNil:       true,
+			InputSourceAware:  true,
+			UseCtxCache:       true,
+			IncrementalOutput: true,
 		},
 		EnUSName:        "Variable Merge",
 		EnUSDescription: "Aggregate the outputs of multiple branches.",
@@ -593,7 +640,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-List.jpeg",
 		SupportBatch: false,
-		Disabled:     true,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
@@ -601,16 +647,15 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		EnUSName:        "Query message list",
 		EnUSDescription: "Used to query the message list",
 	},
-	NodeTypeClearMessage: {
+	NodeTypeClearConversationHistory: {
 		ID:           38,
-		Key:          NodeTypeClearMessage,
-		Name:         "清除上下文",
-		Category:     "conversation_history",
+		Key:          NodeTypeClearConversationHistory,
+		Name:         "清空会话历史",
+		Category:     "conversation_history", // Mapped from cate_list
 		Desc:         "用于清空会话历史，清空后LLM看到的会话历史为空",
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Delete.jpeg",
-		SupportBatch: false,
-		Disabled:     true,
+		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
@@ -627,7 +672,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Color:        "#F2B600",
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
 		SupportBatch: false,
-		Disabled:     true,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
 			PostFillNil: true,
@@ -661,6 +705,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Update Data",
 		EnUSDescription: "Modify the existing data records in the table, and the user specifies the update conditions and contents to update the data",
@@ -677,6 +722,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Query Data",
 		EnUSDescription: "Query data from the table, and the user can define query conditions, select columns, etc., and output the data that meets the conditions",
@@ -693,6 +739,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Delete Data",
 		EnUSDescription: "Delete data records from the table, and the user specifies the deletion conditions to delete the records that meet the conditions",
@@ -726,9 +773,122 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
+			UseDatabase: true,
 		},
 		EnUSName:        "Add Data",
 		EnUSDescription: "Add new data records to the table, and insert them into the database after the user enters the data content",
+	},
+	NodeTypeConversationUpdate: {
+		ID:           51,
+		Name:         "修改会话",
+		Key:          NodeTypeConversationUpdate,
+		Category:     "conversation_management",
+		Desc:         "用于修改会话的名字",
+		Color:        "#F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-编辑会话.jpg",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Edit Conversation",
+		EnUSDescription: "Used to modify the name of a conversation.",
+	},
+
+	NodeTypeConversationDelete: {
+		ID:           52,
+		Name:         "删除会话",
+		Key:          NodeTypeConversationDelete,
+		Category:     "conversation_management",
+		Desc:         "用于删除会话",
+		Color:        "#F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除会话.jpg",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Delete Conversation",
+		EnUSDescription: "Used to delete a conversation.",
+	},
+	NodeTypeConversationList: {
+		ID:           53,
+		Name:         "查询会话列表",
+		Key:          NodeTypeConversationList,
+		Category:     "conversation_management",
+		Desc:         "用于查询所有会话，包含静态会话、动态会话",
+		Color:        "#F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-查询会话.jpg",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			PostFillNil: true,
+		},
+		EnUSName:        "Query Conversation List",
+		EnUSDescription: "Used to query all conversations, including static conversations and dynamic conversations",
+	},
+	NodeTypeConversationHistory: {
+		ID:           54,
+		Name:         "查询会话历史",
+		Key:          NodeTypeConversationHistory,
+		Category:     "conversation_history", // Mapped from cate_list
+		Desc:         "用于查询会话历史，返回LLM可见的会话消息",
+		Color:        "#F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-查询会话历史.jpg",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Query Conversation History",
+		EnUSDescription: "Used to query conversation history, returns conversation messages visible to the LLM",
+	},
+	NodeTypeCreateMessage: {
+		ID:           55,
+		Name:         "创建消息",
+		Key:          NodeTypeCreateMessage,
+		Category:     "message",
+		Desc:         "用于创建消息",
+		Color:        "#F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-创建消息.jpg",
+		SupportBatch: false, // supportBatch: 1
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Create message",
+		EnUSDescription: "Used to create messages",
+	},
+	NodeTypeEditMessage: {
+		ID:           56,
+		Name:         "修改消息",
+		Key:          NodeTypeEditMessage,
+		Category:     "message",
+		Desc:         "用于修改消息",
+		Color:        "#F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-修改消息.jpg",
+		SupportBatch: false, // supportBatch: 1
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Edit message",
+		EnUSDescription: "Used to edit messages",
+	},
+	NodeTypeDeleteMessage: {
+		ID:           57,
+		Name:         "删除消息",
+		Key:          NodeTypeDeleteMessage,
+		Category:     "message",
+		Desc:         "用于删除消息",
+		Color:        "#F2B600",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除消息.jpg",
+		SupportBatch: false, // supportBatch: 1
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Delete message",
+		EnUSDescription: "Used to delete messages",
 	},
 	NodeTypeJsonSerialization: {
 		// ID is the unique identifier of this node type. Used in various front-end APIs.
@@ -804,8 +964,9 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icons-dataset-delete.png",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
-			PreFillZero: true,
-			PostFillNil: true,
+			PreFillZero:  true,
+			PostFillNil:  true,
+			UseKnowledge: true,
 		},
 		EnUSName:        "Knowledge delete",
 		EnUSDescription: "The delete node can delete a document in knowledge base.",

@@ -19,24 +19,37 @@ package knowledge
 import (
 	"context"
 	"errors"
+	"maps"
 
 	"github.com/spf13/cast"
 
+	einoSchema "github.com/cloudwego/eino/schema"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 const outputList = "outputList"
 
+type contextKey string
+
+const chatHistoryKey contextKey = "chatHistory"
+
 type RetrieveConfig struct {
-	KnowledgeIDs      []int64
-	RetrievalStrategy *knowledge.RetrievalStrategy
+	KnowledgeIDs       []int64
+	RetrievalStrategy  *knowledge.RetrievalStrategy
+	ChatHistorySetting *vo.ChatHistorySetting
 }
 
 func (r *RetrieveConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*schema.NodeSchema, error) {
@@ -59,6 +72,10 @@ func (r *RetrieveConfig) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOp
 		knowledgeIDs = append(knowledgeIDs, k)
 	}
 	r.KnowledgeIDs = knowledgeIDs
+
+	if inputs.ChatHistorySetting != nil {
+		r.ChatHistorySetting = inputs.ChatHistorySetting
+	}
 
 	retrievalStrategy := &knowledge.RetrievalStrategy{}
 
@@ -154,14 +171,27 @@ func (r *RetrieveConfig) Build(_ context.Context, _ *schema.NodeSchema, _ ...sch
 	}
 
 	return &Retrieve{
-		knowledgeIDs:      r.KnowledgeIDs,
-		retrievalStrategy: r.RetrievalStrategy,
+		knowledgeIDs:       r.KnowledgeIDs,
+		retrievalStrategy:  r.RetrievalStrategy,
+		ChatHistorySetting: r.ChatHistorySetting,
 	}, nil
 }
 
+func (c *RetrieveConfig) ChatHistoryEnabled() bool {
+	return c.ChatHistorySetting != nil && c.ChatHistorySetting.EnableChatHistory
+}
+
+func (c *RetrieveConfig) ChatHistoryRounds() int64 {
+	if c.ChatHistorySetting == nil {
+		return 0
+	}
+	return c.ChatHistorySetting.ChatHistoryRound
+}
+
 type Retrieve struct {
-	knowledgeIDs      []int64
-	retrievalStrategy *knowledge.RetrievalStrategy
+	knowledgeIDs       []int64
+	retrievalStrategy  *knowledge.RetrievalStrategy
+	ChatHistorySetting *vo.ChatHistorySetting
 }
 
 func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[string]any, error) {
@@ -173,6 +203,7 @@ func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[strin
 	req := &knowledge.RetrieveRequest{
 		Query:        query,
 		KnowledgeIDs: kr.knowledgeIDs,
+		ChatHistory:  kr.GetChatHistoryOrNil(ctx, kr.ChatHistorySetting),
 		Strategy:     kr.retrievalStrategy,
 	}
 
@@ -189,4 +220,91 @@ func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[strin
 	})
 
 	return result, nil
+}
+
+func (kr *Retrieve) GetChatHistoryOrNil(ctx context.Context, ChatHistorySetting *vo.ChatHistorySetting) []*einoSchema.Message {
+	if ChatHistorySetting == nil || !ChatHistorySetting.EnableChatHistory {
+		return nil
+	}
+
+	exeCtx := execute.GetExeCtx(ctx)
+	if exeCtx == nil {
+		logs.CtxWarnf(ctx, "execute context is nil, skipping chat history")
+		return nil
+	}
+	if exeCtx.ExeCfg.WorkflowMode != workflow.WorkflowMode_ChatFlow {
+		return nil
+	}
+
+	historyMessages, ok := ctxcache.Get[[]*einoSchema.Message](ctx, chatHistoryKey)
+
+	if !ok || len(historyMessages) == 0 {
+		logs.CtxWarnf(ctx, "conversation history is empty")
+		return nil
+	}
+	return historyMessages
+}
+
+func (kr *Retrieve) ToCallbackInput(ctx context.Context, in map[string]any) (
+	*nodes.StructuredCallbackInput, error) {
+	if kr.ChatHistorySetting == nil || !kr.ChatHistorySetting.EnableChatHistory {
+		return &nodes.StructuredCallbackInput{Input: in}, nil
+	}
+
+	var messages []*crossmessage.WfMessage
+	var scMessages []*einoSchema.Message
+	var sectionID *int64
+	execCtx := execute.GetExeCtx(ctx)
+	if execCtx != nil {
+		messages = execCtx.ExeCfg.ConversationHistory
+		scMessages = execCtx.ExeCfg.ConversationHistorySchemaMessages
+		sectionID = execCtx.ExeCfg.SectionID
+	}
+
+	ret := map[string]any{
+		"chatHistory": []any{},
+	}
+	maps.Copy(ret, in)
+
+	if len(messages) == 0 {
+		return &nodes.StructuredCallbackInput{Input: ret}, nil
+	}
+
+	if sectionID != nil && messages[0].SectionID != *sectionID {
+		return &nodes.StructuredCallbackInput{Input: ret}, nil
+	}
+
+	maxRounds := int(kr.ChatHistorySetting.ChatHistoryRound)
+	if execCtx != nil && execCtx.ExeCfg.MaxHistoryRounds != nil {
+		maxRounds = min(int(*execCtx.ExeCfg.MaxHistoryRounds), maxRounds)
+	}
+
+	count := 0
+	startIdx := 0
+	for i := len(messages) - 1; i >= 0; i-- {
+		if messages[i].Role == einoSchema.User {
+			count++
+		}
+		if count >= maxRounds {
+			startIdx = i
+			break
+		}
+	}
+
+	var historyMessages []any
+	for _, msg := range messages[startIdx:] {
+		content, err := nodes.ConvertMessageToString(ctx, msg)
+		if err != nil {
+			logs.CtxWarnf(ctx, "failed to convert message to string: %v", err)
+			continue
+		}
+		historyMessages = append(historyMessages, map[string]any{
+			"role":    string(msg.Role),
+			"content": content,
+		})
+	}
+	ctxcache.Store(ctx, chatHistoryKey, scMessages[startIdx:])
+
+	ret["chatHistory"] = historyMessages
+	return &nodes.StructuredCallbackInput{Input: ret}, nil
 }

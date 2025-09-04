@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 export { CODE_NODE_REGISTRY } from './code';
 export { COMMENT_NODE_REGISTRY } from './comment';
 export { DATABASE_NODE_REGISTRY } from './database/database-base';
@@ -48,4 +47,3 @@ export { PLUGIN_NODE_REGISTRY } from './plugin';
 export { SUB_WORKFLOW_NODE_REGISTRY } from './sub-workflow';
 export { VARIABLE_NODE_REGISTRY } from './variable';
 export { JSON_STRINGIFY_NODE_REGISTRY } from './json-stringify';
-// The cli script inserts the identifier (registry), do not modify/delete this line comment

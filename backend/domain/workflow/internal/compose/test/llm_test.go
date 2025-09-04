@@ -34,6 +34,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
+
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
@@ -98,6 +101,14 @@ func TestLLM(t *testing.T) {
 
 		ctx := ctxcache.Init(context.Background())
 
+		defer mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
+			RootCtx: execute.RootCtx{
+				ExeCfg: workflowModel.ExecuteConfig{
+					WorkflowMode: 0,
+				},
+			},
+			NodeCtx: &execute.NodeCtx{},
+		}).Build().UnPatch()
 		t.Run("plain text output, non-streaming mode", func(t *testing.T) {
 			if openaiModel == nil {
 				defer func() {
@@ -641,13 +652,13 @@ func TestLLM(t *testing.T) {
 							assert.NoError(t, e)
 						}
 
-						s, ok := chunk.(map[string]any)
+						s, ok := chunk.(*nodes.StructuredCallbackOutput)
 						assert.True(t, ok)
 
-						out := s["output"].(string)
+						out := s.Output["output"].(string)
 						if out != nodes.KeyIsFinished {
-							fmt.Print(s["output"])
-							fullOutput += s["output"].(string)
+							fmt.Print(s.Output["output"])
+							fullOutput += s.Output["output"].(string)
 						}
 					}
 

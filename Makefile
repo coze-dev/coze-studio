@@ -9,9 +9,12 @@ DUMP_DB_SCRIPT := $(SCRIPTS_DIR)/setup/db_migrate_dump.sh
 SETUP_DOCKER_SCRIPT := $(SCRIPTS_DIR)/setup/docker.sh
 SETUP_PYTHON_SCRIPT := $(SCRIPTS_DIR)/setup/python.sh
 COMPOSE_FILE := docker/docker-compose-debug.yml
+OCEANBASE_COMPOSE_FILE := docker/docker-compose-oceanbase.yml
+OCEANBASE_DEBUG_COMPOSE_FILE := docker/docker-compose-oceanbase_debug.yml
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
 ENV_FILE := ./docker/.env.debug
+OCEANBASE_ENV_FILE := ./docker/.env.debug
 STATIC_DIR := ./bin/resources/static
 ES_INDEX_SCHEMA := ./docker/volumes/elasticsearch/es_index_schema
 ES_SETUP_SCRIPT := ./docker/volumes/elasticsearch/setup_es.sh
@@ -35,6 +38,7 @@ server: env
 	fi
 	@echo "Building and run server..."
 	@APP_ENV=debug bash $(BUILD_SERVER_SCRIPT) -start
+
 
 build_server:
 	@echo "Building server..."
@@ -100,6 +104,23 @@ setup_es_index:
 	@. $(ENV_FILE); \
 	bash $(ES_SETUP_SCRIPT) --index-dir $(ES_INDEX_SCHEMA) --docker-host false --es-address "$$ES_ADDR"
 
+oceanbase_env:
+	@bash scripts/setup/oceanbase_env.sh debug
+
+oceanbase_debug: oceanbase_env oceanbase_middleware_debug python oceanbase_server_debug
+
+oceanbase_middleware_debug:
+	@echo "Starting OceanBase debug middleware..."
+	@docker compose -f $(OCEANBASE_DEBUG_COMPOSE_FILE) --env-file $(ENV_FILE) --profile middleware up -d --wait
+
+oceanbase_server_debug:
+	@if [ ! -d "$(STATIC_DIR)" ]; then \
+		echo "Static directory '$(STATIC_DIR)' not found, building frontend..."; \
+		$(MAKE) fe; \
+	fi
+	@echo "Building and run OceanBase debug server..."
+	@APP_ENV=debug bash $(BUILD_SERVER_SCRIPT) -start
+
 help:
 	@echo "Usage: make [target]"
 	@echo ""
@@ -116,8 +137,14 @@ help:
 	@echo "  middleware       - Setup middlewares docker environment, but exclude the server app."
 	@echo "  web              - Setup web docker environment, include middlewares docker."
 	@echo "  down             - Stop the docker containers."
+	@echo "  down_web         - Stop the web docker containers."
 	@echo "  clean            - Stop the docker containers and clean volumes."
 	@echo "  python           - Setup python environment."
 	@echo "  atlas-hash       - Rehash atlas migration files."
 	@echo "  setup_es_index   - Setup elasticsearch index."
+	@echo ""
+	@echo "OceanBase Commands:"
+	@echo "  oceanbase_env    - Setup OceanBase environment file (like 'env')."
+	@echo "  oceanbase_debug  - Start OceanBase debug environment (like 'debug')."
+	@echo ""
 	@echo "  help             - Show this help message."

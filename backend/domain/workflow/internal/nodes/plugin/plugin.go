@@ -24,6 +24,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -111,7 +112,7 @@ type Plugin struct {
 }
 
 func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map[string]any, err error) {
-	var exeCfg model.ExecuteConfig
+	var exeCfg workflowModel.ExecuteConfig
 	if ctxExeCfg := execute.GetExeCtx(ctx); ctxExeCfg != nil {
 		exeCfg = ctxExeCfg.ExeCfg
 	}

@@ -1,0 +1,578 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 26.950000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2880,
+          "y": 13.950000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "batch",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "125743",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            },
+            {
+              "name": "loop",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "122230",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "122230",
+      "type": "21",
+      "meta": {
+        "position": {
+          "x": 941.8355065195586,
+          "y": -65.71715145436308
+        },
+        "canvasPosition": {
+          "x": 560,
+          "y": 319.9
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "循环",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
+          "description": "用于通过设定循环次数和逻辑，重复执行一系列任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "循环"
+        },
+        "inputs": {
+          "loopType": "array",
+          "loopCount": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "10"
+            }
+          },
+          "variableParameters": [
+            {
+              "name": "m",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "literal",
+                  "content": "123",
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[\"1\",\"2\"]",
+                  "rawMeta": {
+                    "type": 99
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "list",
+              "schema": {
+                "type": "string"
+              },
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "164858",
+                  "name": "url"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "109387",
+          "type": "45",
+          "meta": {
+            "position": {
+              "x": 180,
+              "y": 0
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "HTTP 请求",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
+              "description": "用于发送API请求，从接口返回数据",
+              "mainColor": "#3071F2",
+              "subTitle": "HTTP 请求"
+            },
+            "inputParameters": [],
+            "inputs": {
+              "apiInfo": {
+                "method": "GET",
+                "url": "http://echo.apifox.com/anything?a={{block_output_122230.input}}&m={{block_output_122230.m}}"
+              },
+              "body": {
+                "bodyType": "JSON",
+                "bodyData": {
+                  "binary": {
+                    "fileURL": {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "",
+                          "name": ""
+                        }
+                      }
+                    }
+                  },
+                  "json": "{\n  \"index\": {{block_output_122230.index}},\n  \"value\": \"{{block_output_122230.input}}\"\n}"
+                }
+              },
+              "headers": [],
+              "params": [],
+              "auth": {
+                "authType": "BEARER_AUTH",
+                "authData": {
+                  "customData": {
+                    "addTo": "header"
+                  }
+                },
+                "authOpen": false
+              },
+              "setting": {
+                "timeout": 120,
+                "retryTimes": 3
+              },
+              "settingOnError": {}
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "body"
+              },
+              {
+                "type": "integer",
+                "name": "statusCode"
+              },
+              {
+                "type": "string",
+                "name": "headers"
+              }
+            ],
+            "settingOnError": {}
+          }
+        },
+        {
+          "id": "164858",
+          "type": "5",
+          "meta": {
+            "position": {
+              "x": 640,
+              "y": 12
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "代码_1",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+              "description": "编写代码，处理输入变量来生成返回值",
+              "mainColor": "#00B2B2",
+              "subTitle": "代码"
+            },
+            "inputs": {
+              "inputParameters": [
+                {
+                  "name": "input",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "109387",
+                        "name": "body"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "code": "import json\nasync def main(args: Args) -> Output:\n    params = args.params\n    input_string = params['input']\n    return json.loads(input_string)",
+              "language": 3,
+              "settingOnError": {
+                "processType": 1,
+                "timeoutMs": 60000,
+                "retryTimes": 0
+              }
+            },
+            "outputs": [
+              {
+                "type": "object",
+                "name": "args",
+                "schema": []
+              },
+              {
+                "type": "string",
+                "name": "url"
+              }
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "122230",
+          "targetNodeID": "109387",
+          "sourcePortID": "loop-function-inline-output"
+        },
+        {
+          "sourceNodeID": "109387",
+          "targetNodeID": "164858"
+        },
+        {
+          "sourceNodeID": "164858",
+          "targetNodeID": "122230",
+          "targetPortID": "loop-function-inline-input"
+        }
+      ]
+    },
+    {
+      "id": "125743",
+      "type": "28",
+      "meta": {
+        "position": {
+          "x": 2090,
+          "y": 13
+        },
+        "canvasPosition": {
+          "x": 1680,
+          "y": 306.9
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "批处理",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
+          "description": "通过设定批量运行次数和逻辑，运行批处理体内的任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "批处理"
+        },
+        "inputs": {
+          "concurrentSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "10"
+            }
+          },
+          "batchSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "100"
+            }
+          },
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[\"1\",\"2\"]",
+                  "rawMeta": {
+                    "type": 99
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "list",
+              "schema": {
+                "type": "string"
+              },
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "182572",
+                  "name": "url"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "191311",
+          "type": "45",
+          "meta": {
+            "position": {
+              "x": 180,
+              "y": 0
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "HTTP 请求_1",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
+              "description": "用于发送API请求，从接口返回数据",
+              "mainColor": "#3071F2",
+              "subTitle": "HTTP 请求"
+            },
+            "inputParameters": [],
+            "inputs": {
+              "apiInfo": {
+                "method": "GET",
+                "url": "http://echo.apifox.com/anything?cc={{block_output_125743.input}}&aa={{global_variable_app[\"app\"]}}"
+              },
+              "body": {
+                "bodyType": "JSON",
+                "bodyData": {
+                  "binary": {
+                    "fileURL": {
+                      "type": "string",
+                      "value": {
+                        "type": "ref",
+                        "content": {
+                          "source": "block-output",
+                          "blockID": "",
+                          "name": ""
+                        }
+                      }
+                    }
+                  },
+                  "json": "{\n  \"value\": {{block_output_125743.index}}\n}"
+                }
+              },
+              "headers": [],
+              "params": [],
+              "auth": {
+                "authType": "BEARER_AUTH",
+                "authData": {
+                  "customData": {
+                    "addTo": "header"
+                  }
+                },
+                "authOpen": false
+              },
+              "setting": {
+                "timeout": 120,
+                "retryTimes": 3
+              },
+              "settingOnError": {}
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "body"
+              },
+              {
+                "type": "integer",
+                "name": "statusCode"
+              },
+              {
+                "type": "string",
+                "name": "headers"
+              }
+            ],
+            "settingOnError": {}
+          }
+        },
+        {
+          "id": "182572",
+          "type": "5",
+          "meta": {
+            "position": {
+              "x": 640,
+              "y": 12
+            }
+          },
+          "data": {
+            "nodeMeta": {
+              "title": "代码_3",
+              "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+              "description": "编写代码，处理输入变量来生成返回值",
+              "mainColor": "#00B2B2",
+              "subTitle": "代码"
+            },
+            "inputs": {
+              "inputParameters": [
+                {
+                  "name": "input",
+                  "input": {
+                    "type": "string",
+                    "value": {
+                      "type": "ref",
+                      "content": {
+                        "source": "block-output",
+                        "blockID": "191311",
+                        "name": "body"
+                      },
+                      "rawMeta": {
+                        "type": 1
+                      }
+                    }
+                  }
+                }
+              ],
+              "code": "import json\nasync def main(args: Args) -> Output:\n    params = args.params\n    input_string = params['input']\n    return json.loads(input_string)",
+              "language": 3,
+              "settingOnError": {
+                "processType": 1,
+                "timeoutMs": 60000,
+                "retryTimes": 0
+              }
+            },
+            "outputs": [
+              {
+                "type": "string",
+                "name": "url"
+              }
+            ]
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "125743",
+          "targetNodeID": "191311",
+          "sourcePortID": "batch-function-inline-output"
+        },
+        {
+          "sourceNodeID": "191311",
+          "targetNodeID": "182572"
+        },
+        {
+          "sourceNodeID": "182572",
+          "targetNodeID": "125743",
+          "targetPortID": "batch-function-inline-input"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "122230"
+    },
+    {
+      "sourceNodeID": "125743",
+      "targetNodeID": "900001",
+      "sourcePortID": "batch-output"
+    },
+    {
+      "sourceNodeID": "122230",
+      "targetNodeID": "125743",
+      "sourcePortID": "loop-output"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

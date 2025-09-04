@@ -39,7 +39,7 @@ func TestChunkCustom(t *testing.T) {
 			TrimURLAndEmail: true,
 		}
 
-		slices, err := chunkCustom(ctx, text, &parser.Config{ChunkingStrategy: cs})
+		slices, err := ChunkCustom(ctx, text, &parser.Config{ChunkingStrategy: cs})
 
 		assert.NoError(t, err)
 		assert.Len(t, slices, 10)

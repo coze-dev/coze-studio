@@ -18,6 +18,7 @@ package message
 
 import (
 	"context"
+	"sort"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
@@ -51,9 +52,9 @@ func (m *messageImpl) Create(ctx context.Context, msg *entity.Message) (*entity.
 
 func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
 	resp := &entity.ListResult{}
-
+	req.MessageType = []*message.MessageType{ptr.Of(message.MessageTypeQuestion)}
 	// get message with query
-	messageList, hasMore, err := m.MessageRepo.List(ctx, req.ConversationID, req.Limit, req.Cursor, req.Direction, ptr.Of(message.MessageTypeQuestion))
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req)
 	if err != nil {
 		return resp, err
 	}
@@ -62,8 +63,11 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 	resp.HasMore = hasMore
 
 	if len(messageList) > 0 {
-		resp.PrevCursor = messageList[len(messageList)-1].CreatedAt
-		resp.NextCursor = messageList[0].CreatedAt
+		sort.Slice(messageList, func(i, j int) bool {
+			return messageList[i].CreatedAt > messageList[j].CreatedAt
+		})
+		resp.PrevCursor = messageList[len(messageList)-1].ID
+		resp.NextCursor = messageList[0].ID
 
 		var runIDs []int64
 		for _, m := range messageList {
@@ -82,6 +86,23 @@ func (m *messageImpl) List(ctx context.Context, req *entity.ListMeta) (*entity.L
 	return resp, nil
 }
 
+func (m *messageImpl) ListWithoutPair(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
+	resp := &entity.ListResult{}
+	messageList, hasMore, err := m.MessageRepo.List(ctx, req)
+	if err != nil {
+		return resp, err
+	}
+	resp.Direction = req.Direction
+	resp.HasMore = hasMore
+	resp.Messages = messageList
+	if len(messageList) > 0 {
+		resp.PrevCursor = messageList[0].ID
+		resp.NextCursor = messageList[len(messageList)-1].ID
+	}
+
+	return resp, nil
+}
+
 func (m *messageImpl) GetByRunIDs(ctx context.Context, conversationID int64, runIDs []int64) ([]*entity.Message, error) {
 	return m.MessageRepo.GetByRunIDs(ctx, runIDs, "ASC")
 }
@@ -96,7 +117,7 @@ func (m *messageImpl) Edit(ctx context.Context, req *entity.Message) (*entity.Me
 }
 
 func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error {
-	return m.MessageRepo.Delete(ctx, req.MessageIDs, req.RunIDs)
+	return m.MessageRepo.Delete(ctx, req)
 }
 
 func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, error) {

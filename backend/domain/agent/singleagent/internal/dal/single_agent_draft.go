@@ -22,7 +22,9 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/query"
@@ -102,11 +104,23 @@ func (sa *SingleAgentDraftDAO) MGet(ctx context.Context, agentIDs []int64) ([]*e
 	return dos, nil
 }
 
+func (sa *SingleAgentDraftDAO) Save(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
+	po := sa.singleAgentDraftDo2Po(agentInfo)
+	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
+
+	err = singleAgentDAOModel.WithContext(ctx).Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Save(po)
+	if err != nil {
+		return errorx.WrapByCode(err, errno.ErrAgentUpdateCode)
+	}
+
+	return nil
+}
+
 func (sa *SingleAgentDraftDAO) Update(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
 	po := sa.singleAgentDraftDo2Po(agentInfo)
 	singleAgentDAOModel := sa.dbQuery.SingleAgentDraft
 
-	_, err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Updates(po)
+	err = singleAgentDAOModel.Where(singleAgentDAOModel.AgentID.Eq(agentInfo.AgentID)).Save(po)
 	if err != nil {
 		return errorx.WrapByCode(err, errno.ErrAgentUpdateCode)
 	}
@@ -144,6 +158,8 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 			BackgroundImageInfoList: po.BackgroundImageInfoList,
 			Database:                po.DatabaseConfig,
 			ShortcutCommand:         po.ShortcutCommand,
+			BotMode:                 bot_common.BotMode(po.BotMode),
+			LayoutInfo:              po.LayoutInfo,
 		},
 	}
 }
@@ -171,5 +187,7 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *mo
 		BackgroundImageInfoList: do.BackgroundImageInfoList,
 		DatabaseConfig:          do.Database,
 		ShortcutCommand:         do.ShortcutCommand,
+		BotMode:                 int32(do.BotMode),
+		LayoutInfo:              do.LayoutInfo,
 	}
 }

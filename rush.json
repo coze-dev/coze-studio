@@ -1003,6 +1003,11 @@
       "tags": ["level-3"]
     },
     {
+      "packageName": "@coze-studio/chat-app-sdk",
+      "projectFolder": "frontend/packages/studio/open-platform/chat-app-sdk",
+      "tags": ["level-3"]
+    },
+    {
       "packageName": "@coze-studio/open-env-adapter",
       "projectFolder": "frontend/packages/studio/open-platform/open-env-adapter",
       "tags": ["level-3"]

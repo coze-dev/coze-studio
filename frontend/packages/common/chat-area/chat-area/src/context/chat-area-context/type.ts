@@ -106,6 +106,7 @@ export const allIgnorableMessageTypes = [
 export interface ChatAreaConfigs {
   ignoreMessageConfigList: IgnoreMessageType[];
   showFunctionCallDetail: boolean;
+  isShowFunctionCallBox: boolean;
   // Whether to group user messages (merge avatars)
   groupUserMessage: boolean;
   uploadPlugin: typeof UploadPlugin;

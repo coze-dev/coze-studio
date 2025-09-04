@@ -1,0 +1,2 @@
+export { <%= it.CONSTANT_NAME_PLACE_HOLDER %>_NODE_REGISTRY } from './node-registry';
+export { <%= it.PASCAL_NAME_PLACE_HOLDER %>Content } from './node-content';

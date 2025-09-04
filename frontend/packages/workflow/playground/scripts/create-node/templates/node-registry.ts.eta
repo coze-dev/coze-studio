@@ -1,0 +1,25 @@
+import {
+  DEFAULT_NODE_META_PATH,
+  DEFAULT_OUTPUTS_PATH,
+} from '@coze-workflow/nodes';
+import {
+  StandardNodeType,
+  type WorkflowNodeRegistry,
+} from '@coze-workflow/base';
+
+import { <%= it.CONSTANT_NAME_PLACE_HOLDER %>_FORM_META } from './form-meta';
+import { INPUT_PATH } from './constants';
+import { test, type NodeTestMeta } from './node-test';
+
+export const <%= it.CONSTANT_NAME_PLACE_HOLDER %>_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
+  type: StandardNodeType.<%= it.PASCAL_NAME_PLACE_HOLDER %>,
+  meta: {
+    nodeDTOType: StandardNodeType.<%= it.PASCAL_NAME_PLACE_HOLDER %>,
+    size: { width: 360, height: 130.7 },
+    nodeMetaPath: DEFAULT_NODE_META_PATH,
+    outputsPath: DEFAULT_OUTPUTS_PATH,
+    inputParametersPath: INPUT_PATH,
+    test,
+  },
+  formMeta: <%= it.CONSTANT_NAME_PLACE_HOLDER %>_FORM_META,
+};

@@ -16,19 +16,22 @@
 
 package entity
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+import (
+	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+)
 
 type Message = message.Message
 
 type ListMeta struct {
-	ConversationID int64               `json:"conversation_id"`
-	RunID          []*int64            `json:"run_id"`
-	UserID         string              `json:"user_id"`
-	AgentID        int64               `json:"agent_id"`
-	OrderBy        *string             `json:"order_by"`
-	Limit          int                 `json:"limit"`
-	Cursor         int64               `json:"cursor"`    // message id
-	Direction      ScrollPageDirection `json:"direction"` //  "prev" "Next"
+	ConversationID int64                  `json:"conversation_id"`
+	RunID          []*int64               `json:"run_id"`
+	UserID         string                 `json:"user_id"`
+	AgentID        int64                  `json:"agent_id"`
+	OrderBy        *string                `json:"order_by"`
+	Limit          int                    `json:"limit"`
+	Cursor         int64                  `json:"cursor"`    // message id
+	Direction      ScrollPageDirection    `json:"direction"` //  "prev" "Next"
+	MessageType    []*message.MessageType `json:"message_type"`
 }
 
 type ListResult struct {
@@ -45,8 +48,9 @@ type GetByRunIDsRequest struct {
 }
 
 type DeleteMeta struct {
-	MessageIDs []int64 `json:"message_ids"`
-	RunIDs     []int64 `json:"run_ids"`
+	ConversationID *int64  `json:"conversation_id"`
+	MessageIDs     []int64 `json:"message_ids"`
+	RunIDs         []int64 `json:"run_ids"`
 }
 
 type BrokenMeta struct {

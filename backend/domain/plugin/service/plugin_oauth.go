@@ -43,6 +43,7 @@ import (
 var (
 	initOnce           = sync.Once{}
 	lastActiveInterval = 15 * 24 * time.Hour
+	failedCache        = sync.Map{}
 )
 
 func (p *pluginServiceImpl) processOAuthAccessToken(ctx context.Context) {
@@ -123,58 +124,67 @@ func (p *pluginServiceImpl) refreshToken(ctx context.Context, info *entity.Autho
 
 	source := config.TokenSource(ctx, token)
 
-	var (
-		err      error
-		newToken *oauth2.Token
-	)
-
-	for i := 0; i < 3; i++ {
-		newToken, err = source.Token()
-		if err == nil {
-			token = newToken
-			break
-		}
-		<-time.After(time.Second)
-	}
+	token, err := source.Token()
 	if err != nil {
-		logs.CtxInfof(ctx, "refreshToken failed, recordID=%d, err=%v", info.RecordID, err)
-		err = p.oauthRepo.BatchDeleteAuthorizationCodeByIDs(ctx, []int64{info.RecordID})
-		if err != nil {
-			logs.CtxErrorf(ctx, "BatchDeleteAuthorizationCodeByIDs failed, recordID=%d, err=%v", info.RecordID, err)
-		}
+		logs.CtxWarnf(ctx, "refreshToken failed, recordID=%d, err=%v", info.RecordID, err)
+		p.refreshTokenFailedHandler(ctx, info.RecordID, err)
 		return
 	}
 
-	for i := 0; i < 3; i++ {
-		var expiredAtMS int64
-		if !token.Expiry.IsZero() && token.Expiry.After(time.Now()) {
-			expiredAtMS = token.Expiry.UnixMilli()
-		}
-
-		err = p.oauthRepo.UpsertAuthorizationCode(ctx, &entity.AuthorizationCodeInfo{
-			Meta: &entity.AuthorizationCodeMeta{
-				UserID:   info.Meta.UserID,
-				PluginID: info.Meta.PluginID,
-				IsDraft:  info.Meta.IsDraft,
-			},
-			Config:               info.Config,
-			AccessToken:          token.AccessToken,
-			RefreshToken:         token.RefreshToken,
-			TokenExpiredAtMS:     expiredAtMS,
-			NextTokenRefreshAtMS: ptr.Of(getNextTokenRefreshAtMS(expiredAtMS)),
-		})
-		if err == nil {
-			break
-		}
-		<-time.After(time.Second)
+	var expiredAtMS int64
+	if !token.Expiry.IsZero() && token.Expiry.After(time.Now()) {
+		expiredAtMS = token.Expiry.UnixMilli()
 	}
+
+	err = p.oauthRepo.UpsertAuthorizationCode(ctx, &entity.AuthorizationCodeInfo{
+		Meta: &entity.AuthorizationCodeMeta{
+			UserID:   info.Meta.UserID,
+			PluginID: info.Meta.PluginID,
+			IsDraft:  info.Meta.IsDraft,
+		},
+		Config:               info.Config,
+		AccessToken:          token.AccessToken,
+		RefreshToken:         token.RefreshToken,
+		TokenExpiredAtMS:     expiredAtMS,
+		NextTokenRefreshAtMS: ptr.Of(getNextTokenRefreshAtMS(expiredAtMS)),
+	})
 	if err != nil {
 		logs.CtxInfof(ctx, "UpsertAuthorizationCode failed, recordID=%d, err=%v", info.RecordID, err)
-		err = p.oauthRepo.BatchDeleteAuthorizationCodeByIDs(ctx, []int64{info.RecordID})
-		if err != nil {
-			logs.CtxErrorf(ctx, "BatchDeleteAuthorizationCodeByIDs failed, recordID=%d, err=%v", info.RecordID, err)
-		}
+		p.refreshTokenFailedHandler(ctx, info.RecordID, err)
+		return
 	}
+}
+
+func (p *pluginServiceImpl) refreshTokenFailedHandler(ctx context.Context, recordID int64, err error) {
+	if err == nil {
+		return
+	}
+
+	const maxFailedTimes = 5
+
+	failedTimes, ok := failedCache.Load(recordID)
+	if !ok {
+		failedCache.Store(recordID, 1)
+		return
+	}
+
+	failedTimes_ := failedTimes.(int) + 1
+	failedCache.Store(recordID, failedTimes_)
+
+	if failedTimes_ < maxFailedTimes {
+		return
+	}
+
+	logs.CtxErrorf(ctx, "refreshToken exceeds max failed times, recordID=%d, err=%v", recordID, err)
+
+	failedCache.Delete(recordID)
+
+	err_ := p.oauthRepo.BatchDeleteAuthorizationCodeByIDs(ctx, []int64{recordID})
+	if err_ != nil {
+		logs.CtxErrorf(ctx, "BatchDeleteAuthorizationCodeByIDs failed, recordID=%d, err=%v", recordID, err_)
+	}
+
+	return
 }
 
 func (p *pluginServiceImpl) GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (accessToken string, err error) {

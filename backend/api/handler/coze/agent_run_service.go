@@ -24,6 +24,7 @@ import (
 	"github.com/hertz-contrib/sse"
 
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/cloudwego/hertz/pkg/protocol/consts"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 
@@ -122,4 +123,24 @@ func checkParamsV3(_ context.Context, ar *run.ChatV3Request) error {
 		return errorx.New(errno.ErrConversationInvalidParamCode, errorx.KV("msg", "bot id is required"))
 	}
 	return nil
+}
+
+// CancelChatApi .
+// @router /v3/chat/cancel [POST]
+func CancelChatApi(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req run.CancelChatApiRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := conversation.ConversationOpenAPISVC.CancelRun(ctx, &req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
 }

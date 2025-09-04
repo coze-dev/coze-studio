@@ -27,7 +27,7 @@ import (
 	contract "github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
 )
 
-func parseText(config *contract.Config) parseFn {
+func ParseText(config *contract.Config) ParseFn {
 	return func(ctx context.Context, reader io.Reader, opts ...parser.Option) (docs []*schema.Document, err error) {
 		content, err := io.ReadAll(reader)
 		if err != nil {
@@ -36,9 +36,9 @@ func parseText(config *contract.Config) parseFn {
 
 		switch config.ChunkingStrategy.ChunkType {
 		case contract.ChunkTypeCustom, contract.ChunkTypeDefault:
-			docs, err = chunkCustom(ctx, string(content), config, opts...)
+			docs, err = ChunkCustom(ctx, string(content), config, opts...)
 		default:
-			return nil, fmt.Errorf("[parseText] chunk type not support, type=%d", config.ChunkingStrategy.ChunkType)
+			return nil, fmt.Errorf("[ParseText] chunk type not support, type=%d", config.ChunkingStrategy.ChunkType)
 		}
 		if err != nil {
 			return nil, err

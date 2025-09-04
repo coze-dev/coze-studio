@@ -1,0 +1,125 @@
+name: Backend Tests
+
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'docker/atlas/**'
+      - '.github/workflows/ci@backend.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+      - 'docker/atlas/**'
+      - '.github/workflows/ci@backend.yml'
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+
+env:
+  DEFAULT_GO_VERSION: "1.24"
+
+jobs:
+  backend-unit-test:
+    name: backend-unit-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    env:
+      COVERAGE_FILE: coverage.out
+      BREAKDOWN_FILE: main.breakdown
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      # - name: Shutdown Ubuntu MySQL
+      #   run: service mysql stop
+
+      - name: Set Up MySQL
+        uses: mirromutth/mysql-action@v1.1
+        with:
+          host port: 3306
+          container port: 3306
+          character set server: 'utf8mb4'
+          collation server: 'utf8mb4_general_ci'
+          mysql version: '8.4.5'
+          mysql database: 'opencoze'
+          mysql root password: 'root'
+
+      - name: Verify MySQL Startup
+        run: |
+          echo "Waiting for MySQL to be ready..."
+          for i in {1..60}; do
+            if cat /proc/net/tcp | grep 0CEA; then
+              echo "MySQL port 3306 is listening!"
+              break
+            fi
+            echo "Waiting for MySQL port... ($i/60)"
+            sleep 1
+          done
+          echo "Final verification: MySQL port 3306 is accessible"
+
+      - name: Install MySQL Client
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Initialize Database
+        uses: nick-fields/retry@v3
+        with:
+          timeout_minutes: 10
+          max_attempts: 20
+          command: mysql -h 127.0.0.1 -P 3306 -u root -proot opencoze < docker/volumes/mysql/schema.sql
+
+      - name: Run Go Test
+        run: |
+          modules=`find . -name "go.mod" -exec dirname {} \;`
+          echo $modules
+          list=""
+          coverpkg=""
+          if [[ ! -f "go.work" ]];then go work init;fi
+          for module in $modules; do go work use $module; list=$module"/... "$list; coverpkg=$module"/...,"$coverpkg; done
+          go work sync
+          go test -race -v -coverprofile=${{ env.COVERAGE_FILE }} -gcflags="all=-l -N" -coverpkg=$coverpkg $list
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          name: coze-studio-backend
+          env_vars: GOLANG,Coze-Studio,BACKEND
+          fail_ci_if_error: 'false'
+          files: ${{ env.COVERAGE_FILE }}
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Shutdown MySQL
+        if: always()
+        continue-on-error: true
+        run: docker rm -f $(docker ps -q --filter "ancestor=mysql:8.4.5")
+  benchmark-test:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      repository-projects: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.DEFAULT_GO_VERSION }}
+
+      - name: Run Go Benchmark
+        run: |
+          modules=`find . -name "go.mod" -exec dirname {} \;`
+          echo $modules
+          list=""
+          coverpkg=""
+          if [[ ! -f "go.work" ]];then go work init;fi
+          for module in $modules; do go work use $module; list=$module"/... "$list; coverpkg=$module"/...,"$coverpkg; done
+          go work sync
+          go test -race -v -bench=. -benchmem -run=none -gcflags="all=-l -N" $list

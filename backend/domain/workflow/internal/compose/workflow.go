@@ -148,11 +148,6 @@ func NewWorkflow(ctx context.Context, sc *schema.WorkflowSchema, opts ...Workflo
 		compileOpts = append(compileOpts, compose.WithGraphName(strconv.FormatInt(wfOpts.wfID, 10)))
 	}
 
-	fanInConfigs := sc.FanInMergeConfigs()
-	if len(fanInConfigs) > 0 {
-		compileOpts = append(compileOpts, compose.WithFanInMergeConfig(fanInConfigs))
-	}
-
 	r, err := wf.Compile(ctx, compileOpts...)
 	if err != nil {
 		return nil, err
@@ -238,7 +233,7 @@ func (w *Workflow) addNodeInternal(ctx context.Context, ns *schema.NodeSchema, i
 		innerWorkflow = inner.inner
 	}
 
-	ins, err := New(ctx, ns, innerWorkflow, w.schema, deps)
+	ins, err := New(ctx, ns, innerWorkflow, w.schema, deps, w.requireCheckpoint)
 	if err != nil {
 		return nil, err
 	}

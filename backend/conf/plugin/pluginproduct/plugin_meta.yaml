@@ -355,7 +355,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"im:message im:message.group_msg","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"im:message im:message.group_msg offline_access","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_message.png
     api:
       type: openapi
@@ -437,7 +437,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"bitable:app wiki:wiki","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"bitable:app wiki:wiki offline_access","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_base.png
     api:
       type: openapi
@@ -549,7 +549,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"drive:drive","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"drive:drive offline_access","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_sheet.png
     api:
       type: openapi
@@ -637,7 +637,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"task:task:write","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"task:task:write offline_access","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_task.png
     api:
       type: openapi
@@ -711,7 +711,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"drive:drive","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"drive:drive offline_access","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_docx.png
     api:
       type: openapi
@@ -775,7 +775,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"wiki:wiki","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"wiki:wiki offline_access","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_wiki.png
     api:
       type: openapi
@@ -807,7 +807,7 @@
       type: oauth
       sub_type: authorization_code
       # client_id and client_secret apply to https://open.larkoffice.com/app
-      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"calendar:calendar calendar:calendar:read","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
+      payload: '{"client_id":"","client_secret":"","client_url":"https://accounts.feishu.cn/open-apis/authen/v1/authorize","scope":"calendar:calendar calendar:calendar:read offline_access","authorization_url":"https://open.larkoffice.com/open-apis/authen/v2/oauth/token","authorization_content_type":"application/json"}'
     logo_url: official_plugin_icon/plugin_lark_calendar.png
     api:
       type: openapi

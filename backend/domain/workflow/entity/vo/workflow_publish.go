@@ -21,4 +21,5 @@ type ReleaseWorkflowConfig struct {
 	PluginIDs []int64
 
 	ConnectorIDs []int64
+	WorkflowIDs  []int64
 }

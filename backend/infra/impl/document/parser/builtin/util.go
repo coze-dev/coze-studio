@@ -61,7 +61,7 @@ func getExtension(uri string) string {
 	return ""
 }
 
-func getCreatorIDFromExtraMeta(extraMeta map[string]any) int64 {
+func GetCreatorIDFromExtraMeta(extraMeta map[string]any) int64 {
 	if extraMeta == nil {
 		return 0
 	}
