@@ -44,7 +44,7 @@ func newES7() (Client, error) {
 	esPassword := os.Getenv("ES_PASSWORD")
 
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{esAddr},
+		Addresses: strings.Split(esAddr, ","),
 		Username:  esUsername,
 		Password:  esPassword,
 	})

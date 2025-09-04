@@ -55,7 +55,7 @@ func newES8() (Client, error) {
 	esUsername := os.Getenv("ES_USERNAME")
 	esPassword := os.Getenv("ES_PASSWORD")
 	esClient, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-		Addresses: []string{esAddr},
+		Addresses: strings.Split(esAddr, ","),
 		Username:  esUsername,
 		Password:  esPassword,
 	})
