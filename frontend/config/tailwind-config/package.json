@@ -1,6 +1,7 @@
 {
   "name": "@coze-arch/tailwind-config",
   "version": "0.0.1",
+  "type": "module",
   "author": "huangjian@bytedance.com",
   "maintainers": [],
   "exports": {

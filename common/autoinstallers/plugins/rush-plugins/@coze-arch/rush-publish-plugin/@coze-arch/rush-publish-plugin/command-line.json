@@ -34,7 +34,7 @@
       "required": false
     },
     {
-      "parameterKind": "string",
+      "parameterKind": "stringList",
       "shortName": "-t",
       "longName": "--to",
       "description": "Publish specified packages and their downstream dependencies",
@@ -43,7 +43,7 @@
       "required": false
     },
     {
-      "parameterKind": "string",
+      "parameterKind": "stringList",
       "shortName": "-f",
       "longName": "--from",
       "description": "Publish specified packages and their upstream/downstream dependencies",
@@ -52,7 +52,7 @@
       "required": false
     },
     {
-      "parameterKind": "string",
+      "parameterKind": "stringList",
       "shortName": "-o",
       "longName": "--only",
       "description": "Only publish specified packages",
@@ -134,6 +134,14 @@
       "longName": "--commit",
       "shortName": "-c",
       "description": "Git commit hash",
+      "associatedCommands": ["release"]
+    },
+    {
+      "parameterKind": "string",
+      "argumentName": "REGISTRY",
+      "longName": "--registry",
+      "shortName": "-r",
+      "description": "Registry",
       "associatedCommands": ["release"]
     }
   ]

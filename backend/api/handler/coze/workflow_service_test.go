@@ -3115,12 +3115,13 @@ func TestLLMWithSkills(t *testing.T) {
 						assert.Equal(t, "你是一个旅游推荐专家，通过用户提出的问题，推荐用户具体城市的旅游景点", message.Content)
 					}
 					if message.Role == schema.User {
-						assert.Contains(t, message.Content, "天安门广场 ‌：中国政治文化中心，见证了近现代重大历史事件‌", "八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉")
+						assert.Contains(t, message.Content, "天安门广场 ‌：中国政治文化中心，见证了近现代重大历史事件‌")
+						assert.Contains(t, message.Content, "八达岭长城 ‌：明代长城的精华段，被誉为\"不到长城非好汉\"")
 					}
 				}
 				return &schema.Message{
 					Role:    schema.Assistant,
-					Content: `八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉‌`,
+					Content: `八达岭长城 ‌：明代长城的精华段，被誉为"不到长城非好汉‌`,
 				}, nil
 			}
 			return nil, fmt.Errorf("unexpected index: %d", index)
@@ -3137,7 +3138,7 @@ func TestLLMWithSkills(t *testing.T) {
 		// r.knowledge.EXPECT().Retrieve(gomock.Any(), gomock.Any()).Return(&knowledge.RetrieveResponse{
 		// 	RetrieveSlices: []*knowledge.RetrieveSlice{
 		// 		{Slice: &knowledge.Slice{DocumentID: 1, Output: "天安门广场 ‌：中国政治文化中心，见证了近现代重大历史事件‌"}, Score: 0.9},
-		// 		{Slice: &knowledge.Slice{DocumentID: 2, Output: "八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉"}, Score: 0.8},
+		// 		{Slice: &knowledge.Slice{DocumentID: 2, Output: "八达岭长城 ‌：明代长城的精华段，被誉为"不到长城非好汉"}, Score: 0.8},
 		// 	},
 		// }, nil).AnyTimes()
 
@@ -3148,7 +3149,7 @@ func TestLLMWithSkills(t *testing.T) {
 		// 	})
 		// 	e := r.getProcess(id, exeID)
 		// 	e.assertSuccess()
-		// 	assert.Equal(t, `{"output":"八达岭长城 ‌：明代长城的精华段，被誉为“不到长城非好汉‌"}`, e.output)
+		// 	assert.Equal(t, `{"output":"八达岭长城 ‌：明代长城的精华段，被誉为"不到长城非好汉‌"}`, e.output)
 		// })
 	})
 }
