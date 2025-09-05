@@ -930,14 +930,23 @@ func (m *mysqlService) buildWhereClause(condition *rdb.ComplexCondition) (string
 	if condition == nil {
 		return "", nil, nil
 	}
-
 	if condition.Operator == "" {
 		condition.Operator = entity2.AND
 	}
+	if len(condition.NestedConditions) > 0 {
+		return m.buildNestedConditions(condition)
+	} else if len(condition.Conditions) > 0 {
+		whereClauseString, values, err := m.buildWhereCondition(condition)
+		return " WHERE " + whereClauseString, values, err
+	} else {
+		return "", nil, fmt.Errorf("empty condition: no nested or direct conditions found")
+	}
 
+}
+
+func (m *mysqlService) buildWhereCondition(condition *rdb.ComplexCondition) (string, []interface{}, error) {
 	var whereClause strings.Builder
 	values := make([]interface{}, 0)
-
 	for i, cond := range condition.Conditions {
 		if i > 0 {
 			whereClause.WriteString(fmt.Sprintf(" %s ", condition.Operator))
@@ -971,25 +980,35 @@ func (m *mysqlService) buildWhereClause(condition *rdb.ComplexCondition) (string
 			values = append(values, cond.Value)
 		}
 	}
-
-	if len(condition.NestedConditions) > 0 {
-		whereClause.WriteString(" AND (")
-		for i, nested := range condition.NestedConditions {
-			if i > 0 {
-				whereClause.WriteString(fmt.Sprintf(" %s ", nested.Operator))
-			}
-			nestedClause, nestedValues, err := m.buildWhereClause(nested)
-			if err != nil {
-				return "", nil, err
-			}
-			whereClause.WriteString(nestedClause)
-			values = append(values, nestedValues...)
-		}
-		whereClause.WriteString(")")
+	if whereClause.Len() > 0 {
+		return whereClause.String(), values, nil
 	}
+	return "", values, nil
+}
+
+func (m *mysqlService) buildNestedConditions(condition *rdb.ComplexCondition) (string, []interface{}, error) {
+	var whereClause strings.Builder
+	values := make([]interface{}, 0)
+
+	whereClause.WriteString(" WHERE (")
+	for i, nested := range condition.NestedConditions {
+		if i > 0 {
+			whereClause.WriteString(fmt.Sprintf(" %s ", nested.Operator))
+		}
+		nestedClause, nestedValues, err := m.buildWhereCondition(nested)
+		if err != nil {
+			return "", nil, err
+		}
+		whereClause.WriteString(nestedClause)
+		if i < len(condition.NestedConditions)-1 {
+			whereClause.WriteString(" " + string(condition.Operator))
+		}
+		values = append(values, nestedValues...)
+	}
+	whereClause.WriteString(")")
 
 	if whereClause.Len() > 0 {
-		return " WHERE " + whereClause.String(), values, nil
+		return whereClause.String(), values, nil
 	}
 	return "", values, nil
 }

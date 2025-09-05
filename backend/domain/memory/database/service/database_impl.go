@@ -1209,32 +1209,10 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 		selectReq.Fields = fields
 	}
 
-	var complexCond *rdb.ComplexCondition
-	var err error
-	if req.Condition != nil {
-		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
-		if err != nil {
-			return nil, fmt.Errorf("convert condition failed: %v", err)
-		}
+	complexCond, err := generateComplexCond(ctx, req, tableInfo.RwMode, fieldNameToPhysical)
+	if err != nil {
+		return nil, err
 	}
-
-	// add rw mode
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != "" {
-		cond := &rdb.Condition{
-			Field:    database.DefaultUidColName,
-			Operator: entity3.OperatorEqual,
-			Value:    req.UserID,
-		}
-
-		if complexCond == nil {
-			complexCond = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
-			}
-		} else {
-			complexCond.Conditions = append(complexCond.Conditions, cond)
-		}
-	}
-
 	if complexCond != nil {
 		selectReq.Where = complexCond
 	}
@@ -1376,27 +1354,10 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 		}
 	}
 
-	condParams := req.SQLParams[index:]
-	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, condParams)
+	req.SQLParams = req.SQLParams[index:]
+	complexCond, err := generateComplexCond(ctx, req, tableInfo.RwMode, fieldNameToPhysical)
 	if err != nil {
-		return -1, fmt.Errorf("convert condition failed: %v", err)
-	}
-
-	// add rw mode
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != "" {
-		cond := &rdb.Condition{
-			Field:    database.DefaultUidColName,
-			Operator: entity3.OperatorEqual,
-			Value:    req.UserID,
-		}
-
-		if complexCond == nil {
-			complexCond = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
-			}
-		} else {
-			complexCond.Conditions = append(complexCond.Conditions, cond)
-		}
+		return -1, err
 	}
 
 	updateResp, err := d.rdb.UpdateData(ctx, &rdb.UpdateDataRequest{
@@ -1417,26 +1378,9 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 		return -1, fmt.Errorf("missing delete condition")
 	}
 
-	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
+	complexCond, err := generateComplexCond(ctx, req, tableInfo.RwMode, fieldNameToPhysical)
 	if err != nil {
-		return -1, fmt.Errorf("convert condition failed: %v", err)
-	}
-
-	// add rw mode
-	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && req.UserID != "" {
-		cond := &rdb.Condition{
-			Field:    database.DefaultUidColName,
-			Operator: entity3.OperatorEqual,
-			Value:    req.UserID,
-		}
-
-		if complexCond == nil {
-			complexCond = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
-			}
-		} else {
-			complexCond.Conditions = append(complexCond.Conditions, cond)
-		}
+		return -1, err
 	}
 
 	deleteResp, err := d.rdb.DeleteData(ctx, &rdb.DeleteDataRequest{
@@ -1538,13 +1482,6 @@ func convertCondition(ctx context.Context, cond *database.ComplexCondition, fiel
 		}
 		result.Conditions = conditions
 	}
-	// if cond.NestedConditions != nil {
-	//	nested, err := convertCondition(cond.NestedConditions, fieldMap, params)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-	//	result.NestedConditions = []*rdb.ComplexCondition{nested}
-	// }
 
 	return result, nil
 }
@@ -2203,4 +2140,51 @@ func (d databaseService) GetAllDatabaseByAppID(ctx context.Context, req *GetAllD
 	return &GetAllDatabaseByAppIDResponse{
 		Databases: onlineDBs,
 	}, nil
+}
+
+func generateComplexCond(ctx context.Context, req *ExecuteSQLRequest, mode table.BotTableRWMode, fieldNameToPhysical map[string]string) (*rdb.ComplexCondition, error) {
+	var (
+		err            error
+		complexCond    *rdb.ComplexCondition
+		extraCondition *rdb.ComplexCondition
+	)
+	if req.Condition != nil {
+		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
+		if err != nil {
+			return nil, fmt.Errorf("convert condition failed: %v", err)
+		}
+	}
+
+	if mode == table.BotTableRWMode_LimitedReadWrite && req.UserID != "" {
+		cond := &rdb.Condition{
+			Field:    database.DefaultUidColName,
+			Operator: entity3.OperatorEqual,
+			Value:    req.UserID,
+		}
+		extraCondition = &rdb.ComplexCondition{
+			Conditions: []*rdb.Condition{cond},
+		}
+	}
+
+	if complexCond != nil && extraCondition != nil {
+		return &rdb.ComplexCondition{
+			NestedConditions: []*rdb.ComplexCondition{
+				complexCond,
+				extraCondition,
+			},
+			Operator: entity3.AND,
+		}, nil
+
+	}
+
+	if complexCond != nil {
+		return complexCond, nil
+	}
+
+	if extraCondition != nil {
+		return extraCondition, nil
+	}
+
+	return nil, nil
+
 }
