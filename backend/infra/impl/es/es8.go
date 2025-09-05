@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esutil"
@@ -55,7 +56,7 @@ func newES8() (Client, error) {
 	esUsername := os.Getenv("ES_USERNAME")
 	esPassword := os.Getenv("ES_PASSWORD")
 	esClient, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-		Addresses: []string{esAddr},
+		Addresses: strings.Split(esAddr, ","),
 		Username:  esUsername,
 		Password:  esPassword,
 	})
@@ -238,6 +239,10 @@ func (c *es8Client) CreateIndex(ctx context.Context, index string, properties ma
 	if _, err := create.NewCreateFunc(c.esClient)(index).Request(&create.Request{
 		Mappings: &types.TypeMapping{
 			Properties: propertiesMap,
+		},
+		Settings: &types.IndexSettings{
+			NumberOfShards:   os.Getenv("ES_NUMBER_Of_SHARDS"),
+			NumberOfReplicas: os.Getenv("ES_NUMBER_Of_REPLICAS"),
 		},
 	}).Do(ctx); err != nil {
 		return err

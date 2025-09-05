@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
@@ -44,7 +45,7 @@ func newES7() (Client, error) {
 	esPassword := os.Getenv("ES_PASSWORD")
 
 	esClient, err := elasticsearch.NewClient(elasticsearch.Config{
-		Addresses: []string{esAddr},
+		Addresses: strings.Split(esAddr, ","),
 		Username:  esUsername,
 		Password:  esPassword,
 	})
@@ -119,6 +120,10 @@ func (c *es7Client) CreateIndex(ctx context.Context, index string, properties ma
 	mapping := map[string]any{
 		"mappings": map[string]any{
 			"properties": properties,
+		},
+		"settings": map[string]any{
+			"number_of_shards":   os.Getenv("ES_NUMBER_Of_SHARDS"),
+			"number_of_replicas": os.Getenv("ES_NUMBER_Of_REPLICAS"),
 		},
 	}
 
