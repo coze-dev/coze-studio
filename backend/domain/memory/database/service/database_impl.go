@@ -1208,8 +1208,10 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 		}
 		selectReq.Fields = fields
 	}
-
-	var complexCond *rdb.ComplexCondition
+	var (
+		complexCond    *rdb.ComplexCondition
+		extraCondition *rdb.ComplexCondition
+	)
 	var err error
 	if req.Condition != nil {
 		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
@@ -1225,16 +1227,12 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
-
-		if complexCond == nil {
-			complexCond = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
-			}
-		} else {
-			complexCond.Conditions = append(complexCond.Conditions, cond)
+		extraCondition = &rdb.ComplexCondition{
+			Conditions: []*rdb.Condition{cond},
 		}
 	}
 
+	complexCond = finallyComplexCond(complexCond, extraCondition)
 	if complexCond != nil {
 		selectReq.Where = complexCond
 	}
@@ -1377,9 +1375,16 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 	}
 
 	condParams := req.SQLParams[index:]
-	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, condParams)
-	if err != nil {
-		return -1, fmt.Errorf("convert condition failed: %v", err)
+	var (
+		complexCond    *rdb.ComplexCondition
+		extraCondition *rdb.ComplexCondition
+	)
+	var err error
+	if req.Condition != nil {
+		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, condParams)
+		if err != nil {
+			return -1, fmt.Errorf("convert condition failed: %v", err)
+		}
 	}
 
 	// add rw mode
@@ -1389,16 +1394,12 @@ func (d databaseService) executeUpdateSQL(ctx context.Context, req *ExecuteSQLRe
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
-
-		if complexCond == nil {
-			complexCond = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
-			}
-		} else {
-			complexCond.Conditions = append(complexCond.Conditions, cond)
+		extraCondition = &rdb.ComplexCondition{
+			Conditions: []*rdb.Condition{cond},
 		}
 	}
 
+	complexCond = finallyComplexCond(complexCond, extraCondition)
 	updateResp, err := d.rdb.UpdateData(ctx, &rdb.UpdateDataRequest{
 		TableName: physicalTableName,
 		Data:      updateData,
@@ -1417,9 +1418,16 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 		return -1, fmt.Errorf("missing delete condition")
 	}
 
-	complexCond, err := convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
-	if err != nil {
-		return -1, fmt.Errorf("convert condition failed: %v", err)
+	var (
+		complexCond    *rdb.ComplexCondition
+		extraCondition *rdb.ComplexCondition
+	)
+	var err error
+	if req.Condition != nil {
+		complexCond, err = convertCondition(ctx, req.Condition, fieldNameToPhysical, req.SQLParams)
+		if err != nil {
+			return -1, fmt.Errorf("convert condition failed: %v", err)
+		}
 	}
 
 	// add rw mode
@@ -1429,15 +1437,12 @@ func (d databaseService) executeDeleteSQL(ctx context.Context, req *ExecuteSQLRe
 			Operator: entity3.OperatorEqual,
 			Value:    req.UserID,
 		}
-
-		if complexCond == nil {
-			complexCond = &rdb.ComplexCondition{
-				Conditions: []*rdb.Condition{cond},
-			}
-		} else {
-			complexCond.Conditions = append(complexCond.Conditions, cond)
+		extraCondition = &rdb.ComplexCondition{
+			Conditions: []*rdb.Condition{cond},
 		}
 	}
+
+	complexCond = finallyComplexCond(complexCond, extraCondition)
 
 	deleteResp, err := d.rdb.DeleteData(ctx, &rdb.DeleteDataRequest{
 		TableName: physicalTableName,
@@ -2203,4 +2208,27 @@ func (d databaseService) GetAllDatabaseByAppID(ctx context.Context, req *GetAllD
 	return &GetAllDatabaseByAppIDResponse{
 		Databases: onlineDBs,
 	}, nil
+}
+
+func finallyComplexCond(complexCond *rdb.ComplexCondition, extraCondition *rdb.ComplexCondition) *rdb.ComplexCondition {
+	if complexCond != nil && extraCondition != nil {
+		return &rdb.ComplexCondition{
+			NestedConditions: []*rdb.ComplexCondition{
+				complexCond,
+				extraCondition,
+			},
+			Operator: entity3.AND,
+		}
+
+	}
+
+	if complexCond != nil {
+		return complexCond
+	}
+
+	if extraCondition != nil {
+		return extraCondition
+	}
+
+	return nil
 }

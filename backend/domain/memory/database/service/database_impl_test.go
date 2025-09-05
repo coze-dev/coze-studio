@@ -634,6 +634,52 @@ func TestExecuteSQLWithOperations(t *testing.T) {
 	assert.NotNil(t, selectINResp)
 	assert.True(t, len(selectINResp.Records) == 2)
 
+	executeSelectWithOrOperationReq := &ExecuteSQLRequest{
+		DatabaseID:      resp.Database.ID,
+		TableType:       table.TableType_OnlineTable,
+		OperateType:     database.OperateType_Select,
+		SelectFieldList: selectFields,
+		Limit:           &limit,
+		UserID:          "1001",
+		SpaceID:         1,
+		OrderByList: []database.OrderBy{
+			{
+				Field:     "id_custom",
+				Direction: table.SortDirection_Desc,
+			},
+		},
+		SQLParams: []*database.SQLParamVal{
+			{
+				Value: ptr.Of("Alice"),
+			},
+			{
+				Value: ptr.Of("100"),
+			},
+		},
+		Condition: &database.ComplexCondition{
+			Conditions: []*database.Condition{
+				{
+					Left:      "name",
+					Operation: database.Operation_EQUAL,
+					Right:     "?",
+				},
+				{
+					Left:      "score",
+					Operation: database.Operation_EQUAL,
+					Right:     "?",
+				},
+			},
+			Logic: database.Logic_Or,
+		},
+	}
+
+	selectWithOrOperationResp, err := dbService.ExecuteSQL(context.Background(), executeSelectWithOrOperationReq)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, selectWithOrOperationResp)
+	assert.Equal(t, string(selectWithOrOperationResp.Records[0]["name"].([]uint8)), "Alice")
+	assert.True(t, len(selectWithOrOperationResp.Records) == 1)
+
 	updateRows := []*database.UpsertRow{
 		{
 			Records: []*database.Record{
