@@ -51,7 +51,6 @@ type es8BulkIndexer struct {
 
 type es8Types struct{}
 
-
 func newES8() (Client, error) {
 	esAddr := os.Getenv("ES_ADDR")
 	esUsername := os.Getenv("ES_USERNAME")
@@ -240,6 +239,10 @@ func (c *es8Client) CreateIndex(ctx context.Context, index string, properties ma
 	if _, err := create.NewCreateFunc(c.esClient)(index).Request(&create.Request{
 		Mappings: &types.TypeMapping{
 			Properties: propertiesMap,
+		},
+		Settings: &types.IndexSettings{
+			NumberOfShards:   os.Getenv("ES_NUMBER_Of_SHARDS"),
+			NumberOfReplicas: os.Getenv("ES_NUMBER_Of_REPLICAS"),
 		},
 	}).Do(ctx); err != nil {
 		return err

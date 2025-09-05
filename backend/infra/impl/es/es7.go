@@ -121,6 +121,10 @@ func (c *es7Client) CreateIndex(ctx context.Context, index string, properties ma
 		"mappings": map[string]any{
 			"properties": properties,
 		},
+		"settings": map[string]any{
+			"number_of_shards":   os.Getenv("ES_NUMBER_Of_SHARDS"),
+			"number_of_replicas": os.Getenv("ES_NUMBER_Of_REPLICAS"),
+		},
 	}
 
 	body, err := json.Marshal(mapping)
