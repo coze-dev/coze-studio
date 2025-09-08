@@ -123,8 +123,8 @@ func (c *es7Client) CreateIndex(ctx context.Context, index string, properties ma
 			"properties": properties,
 		},
 		"settings": map[string]any{
-			"number_of_shards":   parsex.GetEnvDefaultStringSetting("ES_NUMBER_Of_SHARDS", "1"),
-			"number_of_replicas": parsex.GetEnvDefaultStringSetting("ES_NUMBER_Of_REPLICAS", "1"),
+			"number_of_shards":   parsex.GetEnvDefaultIntSetting("ES_NUMBER_OF_SHARDS", "1"),
+			"number_of_replicas": parsex.GetEnvDefaultIntSetting("ES_NUMBER_OF_REPLICAS", "1"),
 		},
 	}
 

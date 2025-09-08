@@ -36,8 +36,8 @@ func ParseClusterEndpoints(address string) ([]string, error) {
 	return validEndpoints, nil
 }
 
-// GetEnvDefaultStringSetting 获取环境变量的值，如果不存在或无效则返回默认值
-func GetEnvDefaultStringSetting(envVar, defaultValue string) string {
+// GetEnvDefaultIntSetting 获取环境变量的值，如果不存在或无效则返回默认值
+func GetEnvDefaultIntSetting(envVar, defaultValue string) string {
 	value := os.Getenv(envVar)
 	if value == "" {
 		return defaultValue
