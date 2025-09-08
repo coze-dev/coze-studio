@@ -18,9 +18,8 @@ package es
 
 import (
 	"fmt"
-	"os"
-
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
+	"os"
 )
 
 type (

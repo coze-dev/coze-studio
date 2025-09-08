@@ -19,9 +19,7 @@ package es
 import (
 	"context"
 	"fmt"
-	"os"
-	"strings"
-
+	"github.com/coze-dev/coze-studio/backend/pkg/parsex"
 	"github.com/elastic/go-elasticsearch/v8"
 	"github.com/elastic/go-elasticsearch/v8/esutil"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/core/search"
@@ -32,6 +30,7 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/operator"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/textquerytype"
+	"os"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -52,11 +51,14 @@ type es8BulkIndexer struct {
 type es8Types struct{}
 
 func newES8() (Client, error) {
-	esAddr := os.Getenv("ES_ADDR")
+	addresses, err := parsex.ParseClusterEndpoints(os.Getenv("ES_ADDR"))
+	if err != nil {
+		return nil, err
+	}
 	esUsername := os.Getenv("ES_USERNAME")
 	esPassword := os.Getenv("ES_PASSWORD")
 	esClient, err := elasticsearch.NewTypedClient(elasticsearch.Config{
-		Addresses: strings.Split(esAddr, ","),
+		Addresses: addresses,
 		Username:  esUsername,
 		Password:  esPassword,
 	})
@@ -241,8 +243,8 @@ func (c *es8Client) CreateIndex(ctx context.Context, index string, properties ma
 			Properties: propertiesMap,
 		},
 		Settings: &types.IndexSettings{
-			NumberOfShards:   os.Getenv("ES_NUMBER_Of_SHARDS"),
-			NumberOfReplicas: os.Getenv("ES_NUMBER_Of_REPLICAS"),
+			NumberOfShards:   parsex.GetEnvDefaultStringSetting("ES_NUMBER_Of_SHARDS", "1"),
+			NumberOfReplicas: parsex.GetEnvDefaultStringSetting("ES_NUMBER_Of_REPLICAS", "1"),
 		},
 	}).Do(ctx); err != nil {
 		return err
