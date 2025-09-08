@@ -86,6 +86,9 @@ func (i *impl) SyncExecute(ctx context.Context, config workflowModel.ExecuteConf
 		return nil, "", fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
+	config.InputFileFields = slices.ToMap(workflowSC.GetAllNodesInputFileFields(ctx), func(e *workflowModel.FileInfo) (string, *workflowModel.FileInfo) {
+		return e.FileURL, e
+	})
 	var wfOpts []compose.WorkflowOption
 	wfOpts = append(wfOpts, compose.WithIDAsName(wfEntity.ID))
 	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
@@ -102,6 +105,8 @@ func (i *impl) SyncExecute(ctx context.Context, config workflowModel.ExecuteConf
 	}
 
 	var cOpts []nodes.ConvertOption
+	inputFileFields := make(map[string]*workflowModel.FileInfo)
+	cOpts = append(cOpts, nodes.WithCollectFileFields(inputFileFields), nodes.WithNotNeedTrimQueryFileName(true))
 	if config.InputFailFast {
 		cOpts = append(cOpts, nodes.FailFast())
 	}
@@ -111,6 +116,10 @@ func (i *impl) SyncExecute(ctx context.Context, config workflowModel.ExecuteConf
 		return nil, "", err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+	}
+
+	for k, v := range inputFileFields {
+		config.InputFileFields[k] = v
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -233,6 +242,10 @@ func (i *impl) AsyncExecute(ctx context.Context, config workflowModel.ExecuteCon
 		return 0, fmt.Errorf("failed to convert canvas to workflow schema: %w", err)
 	}
 
+	config.InputFileFields = slices.ToMap(workflowSC.GetAllNodesInputFileFields(ctx), func(e *workflowModel.FileInfo) (string, *workflowModel.FileInfo) {
+		return e.FileURL, e
+	})
+
 	var wfOpts []compose.WorkflowOption
 	wfOpts = append(wfOpts, compose.WithIDAsName(wfEntity.ID))
 	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
@@ -251,6 +264,8 @@ func (i *impl) AsyncExecute(ctx context.Context, config workflowModel.ExecuteCon
 	config.CommitID = wfEntity.CommitID
 
 	var cOpts []nodes.ConvertOption
+	inputFileFields := make(map[string]*workflowModel.FileInfo)
+	cOpts = append(cOpts, nodes.WithCollectFileFields(inputFileFields), nodes.WithNotNeedTrimQueryFileName(true))
 	if config.InputFailFast {
 		cOpts = append(cOpts, nodes.FailFast())
 	}
@@ -260,6 +275,10 @@ func (i *impl) AsyncExecute(ctx context.Context, config workflowModel.ExecuteCon
 		return 0, err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+	}
+
+	for k, v := range inputFileFields {
+		config.InputFileFields[k] = v
 	}
 
 	inStr, err := sonic.MarshalString(input)
@@ -368,12 +387,14 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 	if config.WorkflowMode == workflowapimodel.WorkflowMode_ChatFlow {
 		historyRounds = workflowSC.HistoryRounds()
 	}
-
 	if historyRounds > 0 {
 		if err = i.handleHistory(ctx, &config, input, historyRounds, true); err != nil {
 			return 0, err
 		}
 	}
+	config.InputFileFields = slices.ToMap(workflowSC.GetAllNodesInputFileFields(ctx), func(e *workflowModel.FileInfo) (string, *workflowModel.FileInfo) {
+		return e.FileURL, e
+	})
 
 	wf, err := compose.NewWorkflowFromNode(ctx, workflowSC, vo.NodeKey(nodeID), einoCompose.WithGraphName(fmt.Sprintf("%d", wfEntity.ID)))
 	if err != nil {
@@ -381,6 +402,8 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 	}
 
 	var cOpts []nodes.ConvertOption
+	inputFileFields := make(map[string]*workflowModel.FileInfo)
+	cOpts = append(cOpts, nodes.WithCollectFileFields(inputFileFields), nodes.WithNotNeedTrimQueryFileName(true))
 	if config.InputFailFast {
 		cOpts = append(cOpts, nodes.FailFast())
 	}
@@ -390,6 +413,9 @@ func (i *impl) AsyncExecuteNode(ctx context.Context, nodeID string, config workf
 		return 0, err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+	}
+	for k, v := range inputFileFields {
+		config.InputFileFields[k] = v
 	}
 
 	if wfEntity.AppID != nil && config.AppID == nil {
@@ -471,7 +497,12 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 		}
 	}
 
+	config.InputFileFields = slices.ToMap(workflowSC.GetAllNodesInputFileFields(ctx), func(e *workflowModel.FileInfo) (string, *workflowModel.FileInfo) {
+		return e.FileURL, e
+	})
+
 	var wfOpts []compose.WorkflowOption
+
 	wfOpts = append(wfOpts, compose.WithIDAsName(wfEntity.ID))
 	if s := execute.GetStaticConfig(); s != nil && s.MaxNodeCountPerWorkflow > 0 {
 		wfOpts = append(wfOpts, compose.WithMaxNodeCount(s.MaxNodeCountPerWorkflow))
@@ -489,6 +520,8 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 	config.CommitID = wfEntity.CommitID
 
 	var cOpts []nodes.ConvertOption
+	inputFileFields := make(map[string]*workflowModel.FileInfo)
+	cOpts = append(cOpts, nodes.WithCollectFileFields(inputFileFields), nodes.WithNotNeedTrimQueryFileName(true))
 	if config.InputFailFast {
 		cOpts = append(cOpts, nodes.FailFast())
 	}
@@ -498,6 +531,9 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 		return nil, err
 	} else if ws != nil {
 		logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+	}
+	for k, v := range inputFileFields {
+		config.InputFileFields[k] = v
 	}
 
 	inStr, err := sonic.MarshalString(input)

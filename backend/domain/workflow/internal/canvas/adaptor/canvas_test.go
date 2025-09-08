@@ -731,6 +731,20 @@ func TestKnowledgeDeleter(t *testing.T) {
 			UserID: 123,
 		})
 
+		defer mockey.Mock(execute.GetExeCtx).Return(&execute.Context{
+			RootCtx: execute.RootCtx{
+				ExeCfg: workflowModel.ExecuteConfig{
+					InputFileFields: map[string]*workflowModel.FileInfo{
+						"https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/5264fa1295da4a6483cd236b1316c454.pdf~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1782379180&x-signature=mlaXPIk9VJjOXu87xGaRmNRg9%2BA%3D": &workflowModel.FileInfo{
+							FileName:      "1706.03762v7.pdf",
+							FileURL:       "https://p26-bot-workflow-sign.byteimg.com/tos-cn-i-mdko3gqilj/5264fa1295da4a6483cd236b1316c454.pdf~tplv-mdko3gqilj-image.image?rk3s=81d4c505&x-expires=1782379180&x-signature=mlaXPIk9VJjOXu87xGaRmNRg9%2BA%3D",
+							FileExtension: ".pdf",
+						},
+					},
+				},
+			},
+		}).Build().UnPatch()
+
 		workflowSC, err := CanvasToWorkflowSchema(ctx, c)
 		assert.NoError(t, err)
 

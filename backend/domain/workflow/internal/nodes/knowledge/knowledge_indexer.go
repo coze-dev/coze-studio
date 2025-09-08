@@ -20,8 +20,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
 	"path/filepath"
+
+	"net/url"
 	"strings"
 
 	"github.com/spf13/cast"
@@ -31,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
@@ -125,7 +127,7 @@ func (k *Indexer) Invoke(ctx context.Context, input map[string]any) (map[string]
 		return nil, errors.New("knowledge is required")
 	}
 
-	fileName, ext, err := parseToFileNameAndFileExtension(fileURL)
+	fileName, ext, err := parseToFileNameAndFileExtension(ctx, fileURL)
 
 	if err != nil {
 		return nil, err
@@ -153,23 +155,25 @@ func (k *Indexer) Invoke(ctx context.Context, input map[string]any) (map[string]
 	return result, nil
 }
 
-func parseToFileNameAndFileExtension(fileURL string) (string, parser.FileExtension, error) {
-
-	u, err := url.Parse(fileURL)
-	if err != nil {
-		return "", "", err
+func parseToFileNameAndFileExtension(ctx context.Context, fileURL string) (string, parser.FileExtension, error) {
+	inputFileFields := execute.GetExeCtx(ctx).ExeCfg.InputFileFields
+	fileInfo, ok := inputFileFields[fileURL]
+	if !ok {
+		u, err := url.Parse(fileURL)
+		if err != nil {
+			return "", "", err
+		}
+		fileExt := filepath.Ext(strings.ToLower(strings.TrimPrefix(u.Path, ".")))
+		ext, support := parser.ValidateFileExtension(fileExt)
+		if !support {
+			return "", "", fmt.Errorf("unsupported file type: %s", fileExt)
+		}
+		return u.Path, ext, nil
 	}
-
-	fileName := u.Query().Get("x-wf-file_name")
-	if len(fileName) == 0 {
-		return "", "", errors.New("file name is required")
-	}
-
-	fileExt := strings.ToLower(strings.TrimPrefix(filepath.Ext(fileName), "."))
-
-	ext, support := parser.ValidateFileExtension(fileExt)
+	ext, support := parser.ValidateFileExtension(strings.ToLower(strings.TrimPrefix(fileInfo.FileExtension, ".")))
 	if !support {
-		return "", "", fmt.Errorf("unsupported file type: %s", fileExt)
+		return "", "", fmt.Errorf("unsupported file type: %s", fileInfo.FileExtension)
 	}
-	return fileName, ext, nil
+	return fileInfo.FileName, ext, nil
+
 }

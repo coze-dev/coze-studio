@@ -85,6 +85,7 @@ func init() {
 	_ = compose.RegisterSerializableType[*vo.TypeInfo]("type_info")
 	_ = compose.RegisterSerializableType[vo.DataType]("data_type")
 	_ = compose.RegisterSerializableType[vo.FileSubType]("file_sub_type")
+	_ = compose.RegisterSerializableType[*workflowModel.FileInfo]("file_info")
 }
 
 func (s *State) GetNodeCtx(key vo.NodeKey) (*execute.Context, bool, error) {

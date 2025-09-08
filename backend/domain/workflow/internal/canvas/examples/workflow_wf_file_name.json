@@ -1,0 +1,344 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 26.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "assistType": 6,
+            "name": "f",
+            "required": false
+          },
+          {
+            "type": "list",
+            "name": "fs",
+            "schema": {
+              "type": "string",
+              "assistType": 2
+            },
+            "required": true
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2020,
+          "y": 13.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string",
+                  "assistType": 2
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "100001",
+                    "name": "fs"
+                  },
+                  "rawMeta": {
+                    "type": 104
+                  }
+                }
+              }
+            },
+            {
+              "name": "filename",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "129362",
+                    "name": "fileName"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "191034",
+      "type": "5",
+      "meta": {
+        "position": {
+          "x": 1532.6813186813188,
+          "y": -19.285714285714285
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "代码",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+          "description": "编写代码，处理输入变量来生成返回值",
+          "mainColor": "#00B2B2",
+          "subTitle": "代码"
+        },
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "129362",
+                    "name": "fileName"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "code": "# 在这里，您可以通过 'args'  获取节点中的输入变量，并通过 'ret' 输出结果\n# 'args' 已经被正确地注入到环境中\n# 下面是一个示例，首先获取节点的全部输入参数params，其次获取其中参数名为'input'的值：\n# params = args.params; \n# input = params['input'];\n# 下面是一个示例，输出一个包含多种数据类型的 'ret' 对象：\n# ret: Output =  { \"name\": '小明', \"hobbies\": [\"看书\", \"旅游\"] };\n\nasync def main(args: Args) -> Output:\n    params = args.params\n    # 构建输出对象\n    ret: Output = {\n        \"key0\": params['input'] + params['input'], # 拼接两次入参 input 的值\n        \"key1\": [\"hello\", \"world\"],  # 输出一个数组\n        \"key2\": { # 输出一个Object \n            \"key21\": \"hi\"\n        },\n    }\n    return ret",
+          "language": 3,
+          "settingOnError": {
+            "processType": 1,
+            "timeoutMs": 60000,
+            "retryTimes": 0
+          }
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "key0"
+          },
+          {
+            "type": "list",
+            "name": "key1",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "type": "object",
+            "name": "key2",
+            "schema": [
+              {
+                "type": "string",
+                "name": "key21"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "129362",
+      "type": "27",
+      "meta": {
+        "position": {
+          "x": 640,
+          "y": 0
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "知识库写入",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
+          "description": "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
+          "mainColor": "#FF811A",
+          "subTitle": "知识库写入"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "documentId"
+          },
+          {
+            "type": "string",
+            "name": "fileName"
+          },
+          {
+            "type": "string",
+            "name": "fileUrl"
+          }
+        ],
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "knowledge",
+              "input": {
+                "type": "string",
+                "assistType": 1,
+                "value": {
+                  "type": "literal",
+                  "content": "http://coze.fanlv.fun:8889/opencoze/tos-cn-i-v4nquku3lp/f34d246d-7179-4f0d-856d-5d4c135ffee5.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250910%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250910T074330Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2208774d8ffc6f116c3f9851a184d851fbcb745ff78cd001359a873f19f6dad4&x-wf-file_name=%E5%8C%97%E4%BA%AC%E6%97%85%E6%B8%B8%E6%99%AF%E7%82%B9.txt",
+                  "rawMeta": {
+                    "fileName": "北京旅游景点.txt",
+                    "type": 8
+                  }
+                }
+              }
+            }
+          ],
+          "datasetParam": [
+            {
+              "name": "datasetList",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "literal",
+                  "content": ["7548363002819379200"]
+                }
+              }
+            }
+          ],
+          "strategyParam": {
+            "parsingStrategy": {
+              "parsingType": "fast"
+            },
+            "chunkStrategy": {
+              "chunkType": "default"
+            },
+            "indexStrategy": {}
+          }
+        }
+      }
+    },
+    {
+      "id": "164528",
+      "type": "27",
+      "meta": {
+        "position": {
+          "x": 1100,
+          "y": 0
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "知识库写入_1",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
+          "description": "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
+          "mainColor": "#FF811A",
+          "subTitle": "知识库写入"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "documentId"
+          },
+          {
+            "type": "string",
+            "name": "fileName"
+          },
+          {
+            "type": "string",
+            "name": "fileUrl"
+          }
+        ],
+        "inputs": {
+          "inputParameters": [
+            {
+              "name": "knowledge",
+              "input": {
+                "type": "string",
+                "assistType": 1,
+                "value": {
+                  "type": "literal",
+                  "content": "http://coze.fanlv.fun:8889/opencoze/tos-cn-i-v4nquku3lp/b84062e4-d79e-4b3d-bf42-eaab754250df.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250910%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250910T075358Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=346934ac110db0153afc1759c372e856afc9c5298c8c72e1210bba0c979f84cb&x-wf-file_name=%E5%8C%97%E4%BA%AC%E6%97%85%E6%B8%B8%E6%99%AF%E7%82%B9.txt",
+                  "rawMeta": {
+                    "fileName": "北京旅游景点.txt",
+                    "type": 8
+                  }
+                }
+              }
+            }
+          ],
+          "datasetParam": [
+            {
+              "name": "datasetList",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "literal",
+                  "content": ["7548363002819379200"]
+                }
+              }
+            }
+          ],
+          "strategyParam": {
+            "parsingStrategy": {
+              "parsingType": "fast"
+            },
+            "chunkStrategy": {
+              "chunkType": "default"
+            },
+            "indexStrategy": {}
+          }
+        }
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "129362"
+    },
+    {
+      "sourceNodeID": "191034",
+      "targetNodeID": "900001"
+    },
+    {
+      "sourceNodeID": "164528",
+      "targetNodeID": "191034"
+    },
+    {
+      "sourceNodeID": "129362",
+      "targetNodeID": "164528"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}

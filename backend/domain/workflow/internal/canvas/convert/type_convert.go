@@ -18,6 +18,7 @@ package convert
 
 import (
 	"fmt"
+
 	"strconv"
 	"strings"
 
@@ -25,6 +26,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -180,7 +182,10 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 	if value == nil {
 		return nil, fmt.Errorf("input %v has no value, type= %s", path, b.Type)
 	}
-
+	var fileExtra *vo.FileExtra
+	isFileAssistType := func(assistType vo.AssistType) bool {
+		return assistType >= vo.AssistTypeDefault && assistType <= vo.AssistTypeVoice
+	}
 	switch value.Type {
 	case vo.BlockInputValueTypeObjectRef:
 		sc := b.Schema
@@ -214,7 +219,6 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 		if content == nil {
 			return nil, fmt.Errorf("input %v is literal but has no value, type= %s", path, b.Type)
 		}
-
 		switch b.Type {
 		case vo.VariableTypeObject:
 			m := make(map[string]any)
@@ -223,11 +227,43 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 			}
 			content = m
 		case vo.VariableTypeList:
-			l := make([]any, 0)
-			if err = sonic.UnmarshalString(content.(string), &l); err != nil {
-				return nil, err
+			switch content.(type) {
+			case string:
+				if _, ok := content.(string); ok {
+					l := make([]any, 0)
+					if err = sonic.UnmarshalString(content.(string), &l); err != nil {
+						return nil, err
+					}
+					content = l
+				}
+			case []string:
+				content = content.([]string)
+			case []any:
+				content = content.([]any)
+			default:
+				return nil, fmt.Errorf("unsupported variable type fot list: %s", b.Type)
 			}
-			content = l
+			eleSchema, err := vo.ParseVariable(b.Schema)
+			if err != nil {
+				return nil, fmt.Errorf("can not parse schema from %v", b.Schema)
+			}
+
+			if isFileAssistType(eleSchema.AssistType) {
+				rawMeta, ok := b.Value.RawMeta.(map[string]any)
+				if ok {
+					filenames, ok := rawMeta["fileName"].([]any)
+					if !ok {
+						return nil, fmt.Errorf("can not get filename from %v", rawMeta)
+					}
+					fileExtra = &vo.FileExtra{
+						FileNames: make([]string, 0, len(filenames)),
+					}
+					for _, filename := range filenames {
+						fileExtra.FileNames = append(fileExtra.FileNames, filename.(string))
+					}
+				}
+
+			}
 		case vo.VariableTypeInteger:
 			switch content.(type) {
 			case string:
@@ -268,13 +304,27 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 			default:
 				return nil, fmt.Errorf("unsupported variable type for boolean: %s", b.Type)
 			}
+		case vo.VariableTypeString:
+			if isFileAssistType(b.AssistType) {
+				rawMeta, ok := b.Value.RawMeta.(map[string]any)
+				if ok {
+					filename, ok := rawMeta["fileName"].(string)
+					if !ok {
+						return nil, fmt.Errorf("can not get filename from %v", rawMeta)
+					}
+					fileExtra = &vo.FileExtra{
+						FileName: ptr.Of(filename),
+					}
+				}
+			}
 		default:
 		}
 		return []*vo.FieldInfo{
 			{
 				Path: path,
 				Source: vo.FieldSource{
-					Val: content,
+					Val:       content,
+					FileExtra: fileExtra,
 				},
 			},
 		}, nil
@@ -466,8 +516,8 @@ func SetInputsForNodeSchema(n *vo.Node, ns *schema.NodeSchema) error {
 		if err != nil {
 			return err
 		}
-
 		ns.AddInputSource(sources...)
+
 	}
 
 	return nil

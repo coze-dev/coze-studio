@@ -20,6 +20,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"net/url"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -127,9 +130,23 @@ func ConvertInputs(ctx context.Context, in map[string]any, tInfo map[string]*vo.
 }
 
 type convertOptions struct {
-	skipUnknownFields bool
-	failFast          bool
-	skipRequireCheck  bool
+	skipUnknownFields        bool
+	failFast                 bool
+	skipRequireCheck         bool
+	collectFileFields        map[string]*workflowModel.FileInfo
+	notNeedTrimQueryFileName bool
+}
+
+func WithCollectFileFields(fs map[string]*workflowModel.FileInfo) ConvertOption {
+	return func(o *convertOptions) {
+		o.collectFileFields = fs
+	}
+}
+
+func WithNotNeedTrimQueryFileName(b bool) ConvertOption {
+	return func(o *convertOptions) {
+		o.notNeedTrimQueryFileName = b
+	}
 }
 
 type ConvertOption func(*convertOptions)
@@ -161,6 +178,23 @@ func Convert(ctx context.Context, in any, path string, t *vo.TypeInfo, opts ...C
 	return convert(ctx, in, path, t, options)
 }
 
+func adaptorFileURL(in string) (string, *workflowModel.FileInfo, error) {
+	u, err := url.Parse(in)
+	if err != nil {
+		return "", nil, err
+	}
+	query := u.Query()
+	fileName := query.Get("x-wf-file_name")
+	fileInfo := &workflowModel.FileInfo{
+		FileName:      fileName,
+		FileExtension: filepath.Ext(fileName),
+	}
+	query.Del("x-wf-file_name")
+	u.RawQuery = query.Encode()
+	fileInfo.FileURL = u.String()
+	return u.String(), fileInfo, nil
+}
+
 func convert(ctx context.Context, in any, path string, t *vo.TypeInfo, options *convertOptions) (
 	any, *ConversionWarnings, error) {
 	if in == nil { // nil is valid for ALL types
@@ -168,8 +202,28 @@ func convert(ctx context.Context, in any, path string, t *vo.TypeInfo, options *
 	}
 
 	switch t.Type {
-	case vo.DataTypeString, vo.DataTypeFile, vo.DataTypeTime:
+	case vo.DataTypeString, vo.DataTypeTime:
 		return convertToString(ctx, in, path, options)
+	case vo.DataTypeFile:
+		ret, warns, err := convertToString(ctx, in, path, options)
+		if err != nil {
+			return nil, nil, err
+		}
+		if warns != nil {
+			return ret, warns, nil
+		}
+
+		fileURL, fileInfo, err := adaptorFileURL(ret.(string))
+		if err != nil {
+			return nil, nil, err
+		}
+		if options.collectFileFields != nil {
+			options.collectFileFields[fileInfo.FileURL] = fileInfo
+		}
+		if options.notNeedTrimQueryFileName {
+			return ret, nil, nil
+		}
+		return fileURL, nil, nil
 	case vo.DataTypeInteger:
 		return convertToInt64(ctx, in, path, options)
 	case vo.DataTypeNumber:

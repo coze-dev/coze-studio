@@ -2495,7 +2495,7 @@ func TestStartNodeDefaultValues(t *testing.T) {
 			result, _ := r.openapiSyncRun(idStr, input)
 			assert.Equal(t, result, map[string]any{
 				"ts":    "2025-07-09 21:43:34",
-				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image",
 				"str":   "str",
 				"object": map[string]any{
 					"a": "1",
@@ -2519,7 +2519,7 @@ func TestStartNodeDefaultValues(t *testing.T) {
 			result, _ := r.openapiSyncRun(idStr, input)
 			assert.Equal(t, result, map[string]any{
 				"ts":    "2025-07-09 21:43:34",
-				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image",
 				"str":   "str",
 				"object": map[string]any{
 					"a": "1",
@@ -2544,7 +2544,7 @@ func TestStartNodeDefaultValues(t *testing.T) {
 			result, _ := r.openapiSyncRun(idStr, input)
 			assert.Equal(t, result, map[string]any{
 				"ts":    "2025-07-09 21:43:34",
-				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image?x-wf-file_name=20250317-154742.jpeg",
+				"files": "http://imagex.fanlv.fun/tos-cn-i-1heqlfnr21/e81acc11277f421390770618e24e01ce.jpeg~tplv-1heqlfnr21-image.image",
 				"str":   "value",
 				"object": map[string]any{
 					"a": "1",
@@ -6028,6 +6028,49 @@ func TestConversationHistoryNodes(t *testing.T) {
 		assert.Equal(t, true, outputMap["isSuccess"])
 		assert.Equal(t, []any{}, outputMap["history_list"])
 	})
+}
+
+func TestWorkflowRunWithFiles(t *testing.T) {
+	mockey.PatchConvey("workflow run with files", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		r.knowledge.EXPECT().Store(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, document *knowledge.CreateDocumentRequest) (*knowledge.CreateDocumentResponse, error) {
+
+			assert.Equal(t, "北京旅游景点.txt", document.FileName)
+			return &knowledge.CreateDocumentResponse{
+				DocumentID: 1,
+				FileURL:    document.FileURL,
+				FileName:   document.FileName,
+			}, nil
+		}).AnyTimes()
+
+		runner := mockcode.NewMockRunner(r.ctrl)
+		runner.EXPECT().Run(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, request *coderunner.RunRequest) (*coderunner.RunResponse, error) {
+
+			return &coderunner.RunResponse{
+				Result: request.Params,
+			}, nil
+		}).AnyTimes()
+
+		mockey.Mock(code.GetCodeRunner).Return(runner).Build()
+
+		idStr := r.load("workflow_wf_file_name.json")
+		r.publish(idStr, "v0.1.1", true)
+		m, execID := r.openapiSyncRun(idStr, map[string]string{
+			"f":  "http://coze.fanlv.fun:8889/opencoze/tos-cn-i-v4nquku3lp/27b01dd5-b0f5-4dbd-a075-a48c14162d23.txt?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250910%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250910T074412Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=2f3051a0645c9ed260f7cb6c93954147ceb347a61366c9f70b98d43c299a7732&x-wf-file_name=%E5%8C%97%E4%BA%AC%E6%97%85%E6%B8%B8%E6%99%AF%E7%82%B9.txt",
+			"fs": "[\"http://coze.fanlv.fun:8889/opencoze/tos-cn-i-v4nquku3lp/85056c12-ea40-4588-a2a2-5eab56b94e4c.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250910%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250910T074404Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=59f3a7b6774a33de127e42878e4821635ce74e1fc29237ba03b13d67a068fedf&x-wf-file_name=%E5%BE%AE%E4%BF%A1%E5%9B%BE%E7%89%87_2025-07-02_154139_105.jpg\",\"http://coze.fanlv.fun:8889/opencoze/tos-cn-i-v4nquku3lp/5ec9856d-0db0-44a1-9b82-43628221a928.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250910%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250910T074410Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=3887b0583084b0294b91e93e307c61ce3b910531d0e33a08e7c7d57de24c71ec&x-wf-file_name=20250317-154742.jpeg\"]",
+		})
+		assert.NotNil(t, execID)
+
+		assert.Equal(t, m["output"], []any{
+			"http://coze.fanlv.fun:8889/opencoze/tos-cn-i-v4nquku3lp/85056c12-ea40-4588-a2a2-5eab56b94e4c.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250910%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250910T074404Z&X-Amz-Expires=604800&X-Amz-Signature=59f3a7b6774a33de127e42878e4821635ce74e1fc29237ba03b13d67a068fedf&X-Amz-SignedHeaders=host",
+			"http://coze.fanlv.fun:8889/opencoze/tos-cn-i-v4nquku3lp/5ec9856d-0db0-44a1-9b82-43628221a928.jpeg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250910%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250910T074410Z&X-Amz-Expires=604800&X-Amz-Signature=3887b0583084b0294b91e93e307c61ce3b910531d0e33a08e7c7d57de24c71ec&X-Amz-SignedHeaders=host"})
+		assert.Equal(t, m["filename"], "北京旅游景点.txt")
+		fmt.Println(m, execID)
+
+	})
+
 }
 
 func TestChatFlowRun(t *testing.T) {

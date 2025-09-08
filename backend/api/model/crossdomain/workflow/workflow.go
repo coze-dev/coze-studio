@@ -56,6 +56,7 @@ type ExecuteConfig struct {
 	ConversationHistorySchemaMessages []*schema.Message
 	SectionID                         *int64
 	MaxHistoryRounds                  *int32
+	InputFileFields                   map[string]*FileInfo
 }
 
 type ExecuteMode string
@@ -91,3 +92,9 @@ const (
 	BizTypeAgent    BizType = "agent"
 	BizTypeWorkflow BizType = "workflow"
 )
+
+type FileInfo struct {
+	FileURL       string `json:"file_url"`
+	FileName      string `json:"file_name"`
+	FileExtension string `json:"file_extension"`
+}
