@@ -1322,10 +1322,10 @@ func mergeBatchModeNodes(parent, inner *workflow.NodeResult) *workflow.NodeResul
 type StreamRunEventType string
 
 const (
-	DoneEvent      StreamRunEventType = "done"
-	MessageEvent   StreamRunEventType = "message"
-	ErrEvent       StreamRunEventType = "error"
-	InterruptEvent StreamRunEventType = "interrupt"
+	DoneEvent      StreamRunEventType = "Done"
+	MessageEvent   StreamRunEventType = "Message"
+	ErrEvent       StreamRunEventType = "Error"
+	InterruptEvent StreamRunEventType = "Interrupt"
 )
 
 func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *workflow.OpenAPIStreamRunFlowResponse, err error) {
