@@ -25,6 +25,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/signal"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
@@ -54,31 +55,31 @@ func NewProducer(serviceURL, topic, group string) (eventbus.Producer, error) {
 	}
 
 	// Create Pulsar client
-	fmt.Printf("[DEBUG] Creating Pulsar client with URL: %s\n", serviceURL)
+	logs.Debugf("Creating Pulsar client with URL: %s", serviceURL)
 	if jwtToken := os.Getenv(consts.PulsarJWTToken); jwtToken != "" {
-		fmt.Printf("[DEBUG] Using JWT authentication, token length: %d\n", len(jwtToken))
+		logs.Debugf("Using JWT authentication, token length: %d", len(jwtToken))
 	} else {
-		fmt.Printf("[DEBUG] No JWT token provided\n")
+		logs.Debugf("No JWT token provided")
 	}
 
 	client, err := pulsar.NewClient(clientOptions)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create pulsar client with URL %s: %w", serviceURL, err)
 	}
-	fmt.Printf("[DEBUG] Pulsar client created successfully\n")
+	logs.Debugf("Pulsar client created successfully")
 
 	// Create producer
-	fmt.Printf("[DEBUG] Creating producer for topic: %s, group: %s\n", topic, group)
+	logs.Debugf("Creating producer for topic: %s, group: %s", topic, group)
 	producer, err := client.CreateProducer(pulsar.ProducerOptions{
 		Topic: topic,
 		Name:  fmt.Sprintf("%s-producer", group),
 	})
 	if err != nil {
-		fmt.Printf("[DEBUG] Failed to create producer: %v\n", err)
+		logs.Errorf("Failed to create producer: %v", err)
 		client.Close()
 		return nil, fmt.Errorf("create pulsar producer failed: %w", err)
 	}
-	fmt.Printf("[DEBUG] Producer created successfully\n")
+	logs.Debugf("Producer created successfully")
 
 	impl := &producerImpl{
 		topic:    topic,

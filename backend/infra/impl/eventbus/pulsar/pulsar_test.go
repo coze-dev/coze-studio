@@ -62,7 +62,7 @@ func TestProducer(t *testing.T) {
 		Payload: []byte("hello"),
 	})
 	assert.NoError(t, err)
-	fmt.Println(msgID)
+	t.Logf("Message sent with ID: %v", msgID)
 }
 
 func TestConsumer(t *testing.T) {
@@ -117,7 +117,7 @@ func TestConsumer(t *testing.T) {
 			t.Errorf("Failed to receive message: %v", err)
 			return
 		}
-		fmt.Println(string(msg.Payload()))
+		t.Logf("Received message: %s", string(msg.Payload()))
 		consumer.Ack(msg)
 	}()
 
