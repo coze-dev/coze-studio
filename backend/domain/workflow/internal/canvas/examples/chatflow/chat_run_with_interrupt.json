@@ -1,0 +1,275 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 79.2
+        }
+      },
+      "data": {
+        "outputs": [
+          {
+            "type": "string",
+            "name": "USER_INPUT",
+            "required": false
+          },
+          {
+            "type": "string",
+            "name": "CONVERSATION_NAME",
+            "required": false,
+            "description": "本次请求绑定的会话，会自动写入消息、会从该会话读对话历史。",
+            "defaultValue": "dhl"
+          }
+        ],
+        "nodeMeta": {
+          "title": "开始",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "subTitle": ""
+        },
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 2020,
+          "y": 66.2
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "结束",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "subTitle": ""
+        },
+        "inputs": {
+          "terminatePlan": "useAnswerContent",
+          "streamingOutput": true,
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "string",
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "142077",
+                    "name": "optionContent"
+                  },
+                  "rawMeta": {
+                    "type": 1
+                  }
+                }
+              }
+            }
+          ],
+          "content": {
+            "type": "string",
+            "value": {
+              "type": "literal",
+              "content": "{{output}}"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "190196",
+      "type": "30",
+      "meta": {
+        "position": {
+          "x": 640,
+          "y": 78.5
+        }
+      },
+      "data": {
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": true
+          }
+        ],
+        "nodeMeta": {
+          "title": "输入",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Input-v2.jpg",
+          "description": "支持中间过程的信息输入",
+          "mainColor": "#5C62FF",
+          "subTitle": "输入"
+        },
+        "inputs": {
+          "outputSchema": "[{\"type\":\"string\",\"name\":\"input\",\"required\":true}]"
+        }
+      }
+    },
+    {
+      "id": "133775",
+      "type": "18",
+      "meta": {
+        "position": {
+          "x": 1100,
+          "y": 39
+        }
+      },
+      "data": {
+        "inputs": {
+          "llmParam": {
+            "modelType": 1001,
+            "modelName": "Doubao-Seed-1.6",
+            "generationDiversity": "balance",
+            "temperature": 0.8,
+            "maxTokens": 4096,
+            "topP": 0.7,
+            "responseFormat": 2,
+            "systemPrompt": ""
+          },
+          "inputParameters": [],
+          "extra_output": false,
+          "answer_type": "text",
+          "option_type": "static",
+          "dynamic_option": {
+            "type": "string",
+            "value": {
+              "type": "ref",
+              "content": {
+                "source": "block-output",
+                "blockID": "",
+                "name": ""
+              }
+            }
+          },
+          "question": "你好",
+          "options": [
+            {
+              "name": ""
+            },
+            {
+              "name": ""
+            }
+          ],
+          "limit": 3
+        },
+        "nodeMeta": {
+          "title": "问答",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
+          "description": "支持中间向用户提问问题,支持预置选项提问和开放式问题提问两种方式",
+          "mainColor": "#3071F2",
+          "subTitle": "问答"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "USER_RESPONSE",
+            "required": true,
+            "description": "用户本轮对话输入内容"
+          }
+        ]
+      }
+    },
+    {
+      "id": "142077",
+      "type": "18",
+      "meta": {
+        "position": {
+          "x": 1560,
+          "y": 0
+        }
+      },
+      "data": {
+        "inputs": {
+          "llmParam": {
+            "modelType": 1001,
+            "modelName": "Doubao-Seed-1.6",
+            "generationDiversity": "balance",
+            "temperature": 0.8,
+            "maxTokens": 4096,
+            "topP": 0.7,
+            "responseFormat": 2,
+            "systemPrompt": ""
+          },
+          "inputParameters": [],
+          "extra_output": false,
+          "answer_type": "option",
+          "option_type": "static",
+          "dynamic_option": {
+            "type": "string",
+            "value": {
+              "type": "ref",
+              "content": {
+                "source": "block-output",
+                "blockID": "",
+                "name": ""
+              }
+            }
+          },
+          "question": "请选择",
+          "options": [
+            {
+              "name": "A"
+            },
+            {
+              "name": "B"
+            }
+          ],
+          "limit": 3
+        },
+        "nodeMeta": {
+          "title": "问答_1",
+          "icon": "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
+          "description": "支持中间向用户提问问题,支持预置选项提问和开放式问题提问两种方式",
+          "mainColor": "#3071F2",
+          "subTitle": "问答"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "optionId",
+            "required": false
+          },
+          {
+            "type": "string",
+            "name": "optionContent",
+            "required": false
+          }
+        ]
+      }
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "190196"
+    },
+    {
+      "sourceNodeID": "142077",
+      "targetNodeID": "900001",
+      "sourcePortID": "branch_0"
+    },
+    {
+      "sourceNodeID": "142077",
+      "targetNodeID": "900001",
+      "sourcePortID": "branch_1"
+    },
+    {
+      "sourceNodeID": "142077",
+      "targetNodeID": "900001",
+      "sourcePortID": "default"
+    },
+    {
+      "sourceNodeID": "190196",
+      "targetNodeID": "133775"
+    },
+    {
+      "sourceNodeID": "133775",
+      "targetNodeID": "142077"
+    }
+  ]
+}

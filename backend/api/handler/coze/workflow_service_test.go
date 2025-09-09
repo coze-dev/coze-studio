@@ -6179,5 +6179,73 @@ func TestChatFlowRun(t *testing.T) {
 			})
 			assert.NoError(t, err)
 		})
+
+		t.Run("chat flow run with interrupt nodes ", func(t *testing.T) {
+			// 生成一个携带 input, 问答文本 问答选项的三个中断节点 做测试
+			id := r.load("chatflow/chat_run_with_interrupt.json", withMode(workflow.WorkflowMode_ChatFlow))
+			r.publish(id, "v0.0.1", true)
+			sseReader := r.openapiChatFlowRun(id, ptr.Of(cIDStr), ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, msg)
+
+			err := sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+				if e.ID == "3" {
+					assert.Equal(t, e.Type, "conversation.message.completed")
+					assert.Contains(t, string(e.Data), "7383997384420262000")
+				}
+				return nil
+			})
+			assert.NoError(t, err)
+
+			sseReader = r.openapiChatFlowRun(id, ptr.Of(cIDStr), ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, []*workflow.EnterMessage{
+				{Role: string(schema.User), Content: "input:1", ContentType: "text"},
+			})
+
+			err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+				if e.ID == "4" {
+					assert.Equal(t, e.Type, "conversation.message.completed")
+					assert.Contains(t, string(e.Data), "你好")
+				}
+				return nil
+			})
+			assert.NoError(t, err)
+
+			sseReader = r.openapiChatFlowRun(id, ptr.Of(cIDStr), ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, []*workflow.EnterMessage{
+				{Role: string(schema.User), Content: "hello", ContentType: "text"},
+			})
+
+			err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				if e.ID == "3" {
+					assert.Equal(t, e.Type, "conversation.message.completed")
+					assert.Contains(t, string(e.Data), "question_card_data", "请选择")
+				}
+				return nil
+			})
+			assert.NoError(t, err)
+
+			sseReader = r.openapiChatFlowRun(id, ptr.Of(cIDStr), ptr.Of(appIDStr), nil, map[string]any{
+				vo.ConversationNameKey: "Default",
+			}, []*workflow.EnterMessage{
+				{Role: string(schema.User), Content: "A", ContentType: "text"},
+			})
+			err = sseReader.ForEach(t.Context(), func(e *sse.Event) error {
+				t.Logf("sse id: %s, type: %s, data: %s", e.ID, e.Type, string(e.Data))
+
+				if e.ID == "4" {
+					assert.Equal(t, e.Type, "conversation.message.completed")
+					assert.Contains(t, string(e.Data), "answer", "A")
+				}
+				return nil
+			})
+			assert.NoError(t, err)
+
+		})
+
 	})
 }
