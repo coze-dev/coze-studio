@@ -1,5 +1,23 @@
+import { useState } from 'react';
+import BotStatisticFilter, { getDateRangeByDays } from './filter';
+import BotStatisticChartList from './chartList';
+
+const dateRangeDays = '1';
+const defaultDateRange = getDateRangeByDays(Number(dateRangeDays));
+
 export const BotStatistic: React.FC = () => {
-  return <div className="flex-1 bg-white">123</div>;
+  const [dateRange, setDateRange] = useState(defaultDateRange);
+
+  return (
+    <div className="flex-1 bg-white">
+      <BotStatisticFilter
+        defaultDateRangeDays={dateRangeDays}
+        onDateChange={setDateRange}
+        onRefresh={() => console.log('refresh', dateRange)}
+      />
+      <BotStatisticChartList />
+    </div>
+  );
 };
 
 export default BotStatistic;
