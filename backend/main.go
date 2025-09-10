@@ -22,10 +22,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
-	"net/http"
-	"net/http/httputil"
-	"net/url"
 	"os"
 	"runtime/debug"
 	"strings"
@@ -41,7 +37,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
@@ -60,7 +55,6 @@ func main() {
 		panic("InitializeInfra failed, err=" + err.Error())
 	}
 
-	asyncStartMinioProxyServer(ctx)
 	startHttpServer()
 }
 
@@ -159,57 +153,4 @@ func setLogLevel() {
 func setCrashOutput() {
 	crashFile, _ := os.Create("crash.log")
 	debug.SetCrashOutput(crashFile, debug.CrashOptions{})
-}
-
-// TODO: remove me later
-func asyncStartMinioProxyServer(ctx context.Context) {
-	storageType := getEnv(consts.StorageType, "minio")
-	proxyURL := getEnv(consts.MinIOAPIHost, "http://localhost:9000")
-
-	if storageType == "tos" {
-		proxyURL = getEnv(consts.TOSBucketEndpoint, "https://opencoze.tos-cn-beijing.volces.com")
-	}
-
-	if storageType == "s3" {
-		proxyURL = getEnv(consts.S3BucketEndpoint, "")
-	}
-
-	minioProxyEndpoint := getEnv(consts.MinIOProxyEndpoint, "")
-	if len(minioProxyEndpoint) == 0 {
-		return
-	}
-
-	safego.Go(ctx, func() {
-		target, err := url.Parse(proxyURL)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		proxy := httputil.NewSingleHostReverseProxy(target)
-		originDirector := proxy.Director
-		proxy.Director = func(req *http.Request) {
-			q := req.URL.Query()
-			q.Del("x-wf-file_name")
-			req.URL.RawQuery = q.Encode()
-
-			originDirector(req)
-			req.Host = req.URL.Host
-		}
-		useSSL := getEnv(consts.UseSSL, "0")
-		if useSSL == "1" {
-			logs.Infof("Minio proxy server is listening on %s with SSL", minioProxyEndpoint)
-			err := http.ListenAndServeTLS(minioProxyEndpoint,
-				getEnv(consts.SSLCertFile, ""),
-				getEnv(consts.SSLKeyFile, ""), proxy)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else {
-			logs.Infof("Minio proxy server is listening on %s", minioProxyEndpoint)
-			err := http.ListenAndServe(minioProxyEndpoint, proxy)
-			if err != nil {
-				log.Fatal(err)
-			}
-		}
-	})
 }

@@ -68,10 +68,10 @@ type ListObjectsPaginatedOutput struct {
 }
 
 type FileInfo struct {
-	Key          string
-	LastModified time.Time
-	ETag         string
-	Size         int64
-	URL          string
-	Tagging      map[string]string
+	Key          string            `json:"key"`
+	LastModified time.Time         `json:"last_modified"`
+	ETag         string            `json:"etag"`
+	Size         int64             `json:"size"`
+	URL          string            `json:"url"`
+	Tagging      map[string]string `json:"tagging"`
 }

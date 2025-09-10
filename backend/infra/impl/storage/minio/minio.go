@@ -30,7 +30,6 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/fileutil"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage/internal/proxy"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -230,12 +229,6 @@ func (m *minioClient) GetObjectUrl(ctx context.Context, objectKey string, opts .
 	presignedURL, err := m.client.PresignedGetObject(ctx, m.bucketName, objectKey, time.Duration(option.Expire)*time.Second, reqParams)
 	if err != nil {
 		return "", fmt.Errorf("GetObjectUrl failed: %v", err)
-	}
-
-	// logs.CtxDebugf(ctx, "[GetObjectUrl] origin presignedURL.String = %s", presignedURL.String())
-	ok, proxyURL := proxy.CheckIfNeedReplaceHost(ctx, presignedURL.String())
-	if ok {
-		return proxyURL, nil
 	}
 
 	return presignedURL.String(), nil
