@@ -53,7 +53,7 @@ type NodeTypeMeta struct {
 	Category        string `json:"category"`
 	Color           string `json:"color"`
 	Desc            string `json:"desc"`
-	IconURL         string `json:"icon_url"`
+	IconURI         string `json:"icon_uri"`
 	SupportBatch    bool   `json:"support_batch"`
 	Disabled        bool   `json:"disabled,omitempty"`
 	EnUSName        string `json:"en_us_name,omitempty"`
@@ -265,7 +265,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "input&output",
 		Desc:         "工作流的起始节点，用于设定启动工作流需要的信息",
 		Color:        "#5C62FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Start-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-start.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PostFillNil: true,
@@ -281,7 +281,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "input&output",
 		Desc:         "工作流的最终节点，用于返回工作流运行后的结果信息",
 		Color:        "#5C62FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-End-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-end.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:       true,
@@ -299,7 +299,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "",
 		Desc:         "调用大语言模型,使用变量和提示词生成回复",
 		Color:        "#5C62FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LLM-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-llm.jpg",
 		SupportBatch: true,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:      true,
@@ -319,7 +319,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "",
 		Desc:         "通过添加工具访问实时数据和执行外部操作",
 		Color:        "#CA61FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Plugin-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-plugin.jpg",
 		SupportBatch: true,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -337,7 +337,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "logic",
 		Desc:         "编写代码，处理输入变量来生成返回值",
 		Color:        "#00B2B2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Code-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-code.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -355,7 +355,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "data",
 		Desc:         "在选定的知识中,根据输入变量召回最匹配的信息,并以列表形式返回",
 		Color:        "#FF811A",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeQuery-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-knowledge-query.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:  true,
@@ -374,7 +374,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:        "logic",
 		Desc:            "连接多个下游分支，若设定的条件成立则仅运行对应的分支，若均不成立则只运行“否则”分支",
 		Color:           "#00B2B2",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Condition-v2.jpg",
+		IconURI:         "default_icon/workflow_icon/icon-condition.jpg",
 		SupportBatch:    false,
 		ExecutableMeta:  ExecutableMeta{},
 		EnUSName:        "Condition",
@@ -388,7 +388,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "",
 		Desc:         "集成已发布工作流，可以执行嵌套子任务",
 		Color:        "#00B83E",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Workflow-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-workflow.jpg",
 		SupportBatch: true,
 		ExecutableMeta: ExecutableMeta{
 			BlockEndStream: true,
@@ -404,7 +404,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "database",
 		Desc:         "基于用户自定义的 SQL 完成对数据库的增删改查操作",
 		Color:        "#FF811A",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Database-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-database.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -422,7 +422,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "input&output",
 		Desc:         "节点从“消息”更名为“输出”，支持中间过程的消息输出，支持流式和非流式两种方式",
 		Color:        "#5C62FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Output-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-output.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:       true,
@@ -441,7 +441,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "utilities",
 		Desc:         "用于处理多个字符串类型变量的格式",
 		Color:        "#3071F2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-StrConcat-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-text.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:      true,
@@ -458,7 +458,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "utilities",
 		Desc:         "支持中间向用户提问问题,支持预置选项提问和开放式问题提问两种方式",
 		Color:        "#3071F2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Direct-Question-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-question.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:             true,
@@ -477,7 +477,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:        "logic",
 		Desc:            "用于立即终止当前所在的循环，跳出循环体",
 		Color:           "#00B2B2",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Break-v2.jpg",
+		IconURI:         "default_icon/workflow_icon/icon-break.jpg",
 		SupportBatch:    false,
 		ExecutableMeta:  ExecutableMeta{},
 		EnUSName:        "Break",
@@ -491,7 +491,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:        "logic",
 		Desc:            "用于重置循环变量的值，使其下次循环使用重置后的值",
 		Color:           "#00B2B2",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-LoopSetVariable-v2.jpg",
+		IconURI:         "default_icon/workflow_icon/icon-loop-set-variable.jpg",
 		SupportBatch:    false,
 		ExecutableMeta:  ExecutableMeta{},
 		EnUSName:        "Set Variable",
@@ -505,7 +505,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "logic",
 		Desc:         "用于通过设定循环次数和逻辑，重复执行一系列任务",
 		Color:        "#00B2B2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Loop-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-loop.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			IsComposite:             true,
@@ -524,7 +524,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "logic",
 		Desc:         "用于用户输入的意图识别，并将其与预设意图选项进行匹配。",
 		Color:        "#00B2B2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Intent-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-intent.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:     true,
@@ -543,7 +543,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "data",
 		Desc:         "写入节点可以添加 文本类型 的知识库，仅可以添加一个知识库",
 		Color:        "#FF811A",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-KnowledgeWriting-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-knowledge-write.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:  true,
@@ -561,7 +561,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "logic",
 		Desc:         "通过设定批量运行次数和逻辑，运行批处理体内的任务",
 		Color:        "#00B2B2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Batch-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-batch.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			IsComposite:             true,
@@ -580,7 +580,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:        "logic",
 		Desc:            "用于终止当前循环，执行下次循环",
 		Color:           "#00B2B2",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Continue-v2.jpg",
+		IconURI:         "default_icon/workflow_icon/icon-continue.jpg",
 		SupportBatch:    false,
 		ExecutableMeta:  ExecutableMeta{},
 		EnUSName:        "Continue",
@@ -594,7 +594,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "input&output",
 		Desc:         "支持中间过程的信息输入",
 		Color:        "#5C62FF",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Input-v2.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-input.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PostFillNil: true,
@@ -609,7 +609,6 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "",             // Not found in cate_list
 		Desc:         "comment_desc", // Placeholder from JSON
 		Color:        "",
-		IconURL:      "comment_icon", // Placeholder from JSON
 		SupportBatch: false,          // supportBatch: 1
 		EnUSName:     "Comment",
 	},
@@ -620,7 +619,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "logic",
 		Desc:         "对多个分支的输出进行聚合处理",
 		Color:        "#00B2B2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/VariableMerge-icon.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-variable-merge.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PostFillNil:       true,
@@ -638,7 +637,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "message",
 		Desc:         "用于查询消息列表",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-List.jpeg",
+		IconURI:      "default_icon/workflow_icon/icon-query-message-list.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -654,7 +653,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "conversation_history", // Mapped from cate_list
 		Desc:         "用于清空会话历史，清空后LLM看到的会话历史为空",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Delete.jpeg",
+		IconURI:      "default_icon/workflow_icon/icon-clear-context.jpg",
 		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -670,7 +669,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "conversation_management",
 		Desc:         "用于创建会话",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Conversation-Create.jpeg",
+		IconURI:      "default_icon/workflow_icon/icon-create-conversation.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -687,7 +686,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:        "data",
 		Desc:            "用于给支持写入的变量赋值，包括应用变量、用户变量",
 		Color:           "#FF811A",
-		IconURL:         "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/Variable.jpg",
+		IconURI:         "default_icon/workflow_icon/icon-variable-assign.jpg",
 		SupportBatch:    false,
 		ExecutableMeta:  ExecutableMeta{},
 		EnUSName:        "Variable assign",
@@ -701,7 +700,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "database",
 		Desc:         "修改表中已存在的数据记录，用户指定更新条件和内容来更新数据",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-update.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-database-update.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -718,7 +717,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "database",
 		Desc:         "从表获取数据，用户可定义查询条件、选择列等，输出符合条件的数据",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icaon-database-select.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-database-query.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -735,7 +734,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "database",
 		Desc:         "从表中删除数据记录，用户指定删除条件来删除符合条件的记录",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-delete.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-database-delete.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -752,7 +751,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "utilities",
 		Desc:         "用于发送API请求，从接口返回数据",
 		Color:        "#3071F2",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-HTTP.png",
+		IconURI:      "default_icon/workflow_icon/icon-http.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -769,7 +768,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "database",
 		Desc:         "向表添加新数据记录，用户输入数据内容后插入数据库",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-database-insert.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-database-create.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -785,7 +784,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "conversation_management",
 		Desc:         "用于修改会话的名字",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-编辑会话.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-update-conversation.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -802,7 +801,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "conversation_management",
 		Desc:         "用于删除会话",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除会话.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-delete-conversation.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -818,7 +817,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "conversation_management",
 		Desc:         "用于查询所有会话，包含静态会话、动态会话",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-查询会话.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-query-conversation-list.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PostFillNil: true,
@@ -833,7 +832,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "conversation_history", // Mapped from cate_list
 		Desc:         "用于查询会话历史，返回LLM可见的会话消息",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-查询会话历史.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-query-conversation-history.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -849,7 +848,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "message",
 		Desc:         "用于创建消息",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-创建消息.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-create-message.jpg",
 		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -865,7 +864,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "message",
 		Desc:         "用于修改消息",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-修改消息.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-update-message.jpg",
 		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -881,7 +880,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "message",
 		Desc:         "用于删除消息",
 		Color:        "#F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-删除消息.jpg",
+		IconURI:      "default_icon/workflow_icon/icon-delete-message.jpg",
 		SupportBatch: false, // supportBatch: 1
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -917,7 +916,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Color: "F2B600",
 
 		// IconURL is the URL of the icon displayed on Canvas.
-		IconURL: "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-to_json.png",
+		IconURI: "default_icon/workflow_icon/icon-json-stringify.jpg",
 
 		// SupportBatch indicates whether this node can set batch mode.
 		// NOTE: ultimately it's frontend that decides which node can enable batch mode.
@@ -943,7 +942,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "utilities",
 		Desc:         "用于将JSON字符串解析为变量",
 		Color:        "F2B600",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-from_json.png",
+		IconURI:      "default_icon/workflow_icon/icon-json-parser.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero: true,
@@ -961,7 +960,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "data",
 		Desc:         "用于删除知识库中的文档",
 		Color:        "#FF811A",
-		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icons-dataset-delete.png",
+		IconURI:      "default_icon/workflow_icon/icon-knowledge-delete.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PreFillZero:  true,

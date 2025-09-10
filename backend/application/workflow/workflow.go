@@ -23,10 +23,12 @@ import (
 	"runtime/debug"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cloudwego/eino/schema"
 	xmaps "golang.org/x/exp/maps"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
@@ -75,10 +77,54 @@ type ApplicationService struct {
 	IDGenerator idgen.IDGenerator
 }
 
-var SVC = &ApplicationService{}
+var (
+	SVC                = &ApplicationService{}
+	nodeIconURLCache   = make(map[string]string)
+	nodeIconURLCacheMu sync.Mutex
+)
 
 func GetWorkflowDomainSVC() domainWorkflow.Service {
 	return SVC.DomainSVC
+}
+
+func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
+	category2NodeMetaList, _, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, nil)
+	if err != nil {
+		logs.Errorf("failed to list node meta for icon url cache: %v", err)
+		return err
+	}
+
+	eg, gCtx := errgroup.WithContext(ctx)
+	for _, nodeMetaList := range category2NodeMetaList {
+		for _, nodeMeta := range nodeMetaList {
+			eg.Go(func() error {
+				if len(nodeMeta.IconURI) == 0 {
+					// For custom nodes, if IconURI is not set, there will be no icon.
+					logs.Warnf("node '%s' has an empty IconURI, it will have no icon", nodeMeta.Name)
+					return nil
+				}
+				url, err := w.TosClient.GetObjectUrl(gCtx, nodeMeta.IconURI)
+				if err != nil {
+					logs.Warnf("failed to get object url for node %s: %v", nodeMeta.Name, err)
+					return err
+				}
+				nodeTypeStr := entity.IDStrToNodeType(strconv.FormatInt(nodeMeta.ID, 10))
+				if len(nodeTypeStr) > 0 {
+					nodeIconURLCacheMu.Lock()
+					nodeIconURLCache[string(nodeTypeStr)] = url
+					nodeIconURLCacheMu.Unlock()
+				}
+				return nil
+			})
+		}
+	}
+
+	if err := eg.Wait(); err != nil {
+		return err
+	}
+
+	logs.Infof("node icon url cache initialized with %d entries", len(nodeIconURLCache))
+	return nil
 }
 
 func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workflow.NodeTemplateListRequest) (
@@ -119,19 +165,22 @@ func (w *ApplicationService) GetNodeTemplateList(ctx context.Context, req *workf
 			Name: category,
 		}
 		for _, nodeMeta := range nodeMetaList {
+			nodeID := fmt.Sprintf("%d", nodeMeta.ID)
+			nodeType := entity.IDStrToNodeType(nodeID)
+			url := nodeIconURLCache[string(nodeType)]
 			tpl := &workflow.NodeTemplate{
-				ID:           fmt.Sprintf("%d", nodeMeta.ID),
+				ID:           nodeID,
 				Type:         workflow.NodeTemplateType(nodeMeta.ID),
 				Name:         ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSName, nodeMeta.Name),
 				Desc:         ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSDescription, nodeMeta.Desc),
-				IconURL:      nodeMeta.IconURL,
+				IconURL:      url,
 				SupportBatch: ternary.IFElse(nodeMeta.SupportBatch, workflow.SupportBatch_SUPPORT, workflow.SupportBatch_NOT_SUPPORT),
-				NodeType:     fmt.Sprintf("%d", nodeMeta.ID),
+				NodeType:     nodeID,
 				Color:        nodeMeta.Color,
 			}
 
 			resp.Data.TemplateList = append(resp.Data.TemplateList, tpl)
-			categoryMap[category].NodeTypeList = append(categoryMap[category].NodeTypeList, fmt.Sprintf("%d", nodeMeta.ID))
+			categoryMap[category].NodeTypeList = append(categoryMap[category].NodeTypeList, nodeID)
 		}
 	}
 
@@ -750,11 +799,13 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 			}
 		}
 
+		iconURL := nodeIconURLCache[string(ie.NodeType)]
+
 		resp.Data.NodeEvents = append(resp.Data.NodeEvents, &workflow.NodeEvent{
 			ID:           strconv.FormatInt(ie.ID, 10),
 			NodeID:       string(ie.NodeKey),
 			NodeTitle:    ie.NodeTitle,
-			NodeIcon:     ie.NodeIcon,
+			NodeIcon:     iconURL,
 			Data:         ie.InterruptData,
 			Type:         ie.EventType,
 			SchemaNodeID: string(ie.NodeKey),

@@ -140,7 +140,7 @@ func (i *InputReceiver) Invoke(ctx context.Context, _ map[string]any) (map[strin
 			NodeKey:       i.nodeKey,
 			NodeType:      entity.NodeTypeInputReceiver,
 			NodeTitle:     i.nodeMeta.Name,
-			NodeIcon:      i.nodeMeta.IconURL,
+			NodeIcon:      i.nodeMeta.IconURI,
 			InterruptData: i.interruptData,
 			EventType:     entity.InterruptEventInput,
 		})

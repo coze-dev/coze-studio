@@ -19,7 +19,7 @@ services:
       - ./data/mysql:/var/lib/mysql
       - ./volumes/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
       - ./atlas/opencoze_latest_schema.hcl:/opencoze_latest_schema.hcl:ro
-    entrypoint:  
+    entrypoint:
       - bash
       - -c
       - |
@@ -42,7 +42,7 @@ services:
             sleep 2
           fi
         done
-  
+
         echo 'MySQL is ready, installing Atlas CLI...'
 
         if ! command -v atlas >/dev/null 2>&1; then
@@ -52,7 +52,7 @@ services:
         else
           echo 'Atlas CLI already installed'
         fi
-        
+
         if [ -f '/opencoze_latest_schema.hcl' ]; then
           echo 'Running Atlas migrations...'
           ATLAS_URL="mysql://$${MYSQL_USER}:$${MYSQL_PASSWORD}@localhost:3306/$${MYSQL_DATABASE}"
@@ -161,7 +161,7 @@ services:
 
           # Download plugin package locally
           echo 'Copying smartcn plugin...';
-          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip 
+          cp /opt/bitnami/elasticsearch/analysis-smartcn.zip /tmp/analysis-smartcn.zip
 
           elasticsearch-plugin install file:///tmp/analysis-smartcn.zip
           if [[ "$$?" != "0" ]]; then

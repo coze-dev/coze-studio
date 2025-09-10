@@ -343,14 +343,14 @@ const (
 你是一个参数提取 agent，你的工作是从用户的回答中提取出多个字段的值，每个字段遵循以下规则
 # 字段说明
 %s
-## 输出要求 
-- 严格以 json 格式返回答案。  
-- 严格确保答案采用有效的 JSON 格式。  
-- 按照字段说明提取出字段的值，将已经提取到的字段放在 fields 字段 
-- 对于未提取到的<必填字段>生成一个新的追问问题question   
-- 确保在追问问题中只包含所有未提取的<必填字段>   
-- 不要重复问之前问过的问题   
-- 问题的语种请和用户的输入保持一致，如英文、中文等 
+## 输出要求
+- 严格以 json 格式返回答案。
+- 严格确保答案采用有效的 JSON 格式。
+- 按照字段说明提取出字段的值，将已经提取到的字段放在 fields 字段
+- 对于未提取到的<必填字段>生成一个新的追问问题question
+- 确保在追问问题中只包含所有未提取的<必填字段>
+- 不要重复问之前问过的问题
+- 问题的语种请和用户的输入保持一致，如英文、中文等
 - 输出按照下面结构体格式返回，包含提取到的字段或者追问的问题
 - 不要回复和提取无关的问题
 type Output struct {
@@ -359,7 +359,7 @@ question string // Follow-up question for the next round
 }`
 	extractUserPromptSuffix = `
 - 严格以 json 格式返回答案。
-- 严格确保答案采用有效的 JSON 格式。 
+- 严格确保答案采用有效的 JSON 格式。
 - - 必填字段没有获取全则继续追问
 - 必填字段: %s
 %s
@@ -728,7 +728,7 @@ func (q *QuestionAnswer) interrupt(ctx context.Context, newQuestion string, choi
 		NodeKey:       q.nodeKey,
 		NodeType:      entity.NodeTypeQuestionAnswer,
 		NodeTitle:     q.nodeMeta.Name,
-		NodeIcon:      q.nodeMeta.IconURL,
+		NodeIcon:      q.nodeMeta.IconURI,
 		InterruptData: interruptData,
 		EventType:     entity.InterruptEventQuestion,
 	}

@@ -1115,7 +1115,7 @@ func (l *LLM) handleInterrupt(ctx context.Context, err error, resumingEvent *ent
 		NodeKey:   c.NodeKey,
 		NodeType:  entity.NodeTypeLLM,
 		NodeTitle: c.NodeName,
-		NodeIcon:  entity.NodeMetaByNodeType(entity.NodeTypeLLM).IconURL,
+		NodeIcon:  entity.NodeMetaByNodeType(entity.NodeTypeLLM).IconURI,
 		EventType: entity.InterruptEventLLM,
 	}
 
