@@ -36,12 +36,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
-// DocumentMemoryService 接口定义，避免循环依赖
-type DocumentMemoryService interface {
-	AddMemory(ctx context.Context, userID string, connectorID int64, content string) error
-	SearchMemory(ctx context.Context, userID string, connectorID int64, query string) ([]string, error)
-}
-
 type Config struct {
 	Agent                   *entity.SingleAgent
 	UserID                  string
@@ -49,7 +43,6 @@ type Config struct {
 	ModelMgr                modelmgr.Manager
 	ModelFactory            chatmodel.Factory
 	CPStore                 compose.CheckPointStore
-	DocumentMemoryService   DocumentMemoryService // 文档记忆服务
 	Embedder                embedding.Embedder
 }
 
@@ -70,19 +63,11 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	persona := conf.Agent.Prompt.GetPrompt()
 
 	avConf := &variableConf{
-		Agent:                 conf.Agent,
-		UserID:                conf.UserID,
-		ConnectorID:           conf.Identity.ConnectorID,
-		DocumentMemoryService: conf.DocumentMemoryService,
-		Embedder:              conf.Embedder,
+		Agent:       conf.Agent,
+		UserID:      conf.UserID,
+		ConnectorID: conf.Identity.ConnectorID,
+		Embedder:    conf.Embedder,
 	}
-	// 🔥 禁用直接变量注入，只使用智能工具调用方式
-	// 这样可以避免上下文污染，提高性能，支持更多记忆
-	// avs, err := loadAgentVariables(ctx, avConf)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	promptVars := &promptVariables{
 		Agent: conf.Agent,
 		avs:   nil, // 不再直接注入变量

@@ -42,7 +42,6 @@ type variableConf struct {
 	Agent                 *entity.SingleAgent
 	UserID                string
 	ConnectorID           int64
-	DocumentMemoryService DocumentMemoryService // 文档记忆服务接口
 	Embedder              embedding.Embedder
 }
 
@@ -76,7 +75,6 @@ func newAgentVariableTools(ctx context.Context, v *variableConf) ([]tool.Invokab
 		UserID:                v.UserID,
 		ConnectorID:           v.ConnectorID,
 		avs:                   make(map[string]string), // 初始化缓存
-		documentMemoryService: v.DocumentMemoryService,
 		embedder:              v.Embedder,
 	}
 
@@ -239,75 +237,6 @@ func newAgentVariableTools(ctx context.Context, v *variableConf) ([]tool.Invokab
 	}
 	tools = append(tools, searchTool)
 
-	// 🔥 新增：文档记忆工具
-	if a.documentMemoryService != nil {
-		// addDocumentMemory 工具
-		addDocDesc := `
-## 📝 Document Memory Storage Tool
-
-### When to Use:
-1. When user shares personal information, experiences, or context that should be remembered
-2. When user expresses preferences, likes, dislikes, or personal details
-3. When user mentions important life events, goals, or background information
-4. When user wants their information to be remembered for future conversations
-
-### How It Works:
-- Stores information as complete text documents, not key-value pairs
-- Maintains semantic searchable personal memory for the user
-- Can store long-form content with rich context and relationships
-- Automatically enabled if user expresses desire to be remembered
-
-### Usage Examples:
-- "我叫张三，今年25岁，住在北京，喜欢编程和旅游" → Store complete personal profile
-- "我对红色过敏，不能穿红色衣服" → Store important health/preference information
-- "我最近在学习Python，希望成为一名数据科学家" → Store learning goals and aspirations
-- "我的生日是3月15日，最喜欢的菜是宫保鸡丁" → Store personal details
-
-### Benefits:
-- Rich contextual memory that maintains relationships between information
-- Semantic search to find relevant context during conversations
-- Natural language storage that preserves user's original expression
-- Global memory that works across different conversations and agents`
-
-		addDocTool, err := utils.InferTool("addDocumentMemory", addDocDesc, a.AddDocumentMemory)
-		if err != nil {
-			return nil, err
-		}
-		tools = append(tools, addDocTool)
-
-		// searchDocumentMemory 工具
-		searchDocDesc := `
-## 🔍 Document Memory Search Tool
-
-### When to Use:
-1. When you need to recall user's personal information or context
-2. When user asks about previously shared information
-3. When user wants to know what you remember about them
-4. When providing personalized responses based on user's background
-
-### How It Works:
-- Searches through user's complete memory document using semantic similarity
-- Returns relevant context with surrounding information (10 lines above/below hits)
-- Finds information even if query doesn't match exact words used originally
-
-### Usage Examples:
-- Search "favorite color" to find color preferences
-- Search "work" to find job-related information
-- Search "family" to find family-related context
-- Search "health" to find health-related preferences or conditions
-
-### Benefits:
-- Contextual search that understands semantic meaning
-- Returns surrounding context for better understanding
-- Works with natural language queries
-- Maintains user privacy by only accessing their own memory`
-
-		searchDocTool, err := utils.InferTool("searchDocumentMemory", searchDocDesc, a.SearchDocumentMemory)
-		if err != nil {
-			return nil, err
-		}
-		tools = append(tools, searchDocTool)
-	}
 
 	// deleteKeywordMemory 工具 - 删除记忆
 	deleteDesc := `
@@ -349,7 +278,6 @@ type avTool struct {
 	UserID                string
 	ConnectorID           int64
 	avs                   map[string]string      // 变量缓存
-	documentMemoryService DocumentMemoryService // 文档记忆服务接口
 	embedder              embedding.Embedder
 }
 
@@ -1135,80 +1063,4 @@ func (a *avTool) loadAllStoredMemories(ctx context.Context) (map[string]string, 
 	}
 
 	return allMemories, nil
-}
-
-// 🔥 文档记忆工具方法
-
-// AddMemoryRequest 添加文档记忆请求
-type AddMemoryRequest struct {
-	Content string `json:"content" jsonschema:"required,description=the complete text content to store in document memory"`
-}
-
-// AddDocumentMemory 添加文档记忆
-func (a *avTool) AddDocumentMemory(ctx context.Context, req *AddMemoryRequest) (string, error) {
-	logs.CtxInfof(ctx, "🧠 AddDocumentMemory: called with content length=%d", len(req.Content))
-
-	if a.documentMemoryService == nil {
-		logs.CtxWarnf(ctx, "Document memory service not available")
-		return "文档记忆服务不可用", nil
-	}
-
-	if req == nil || strings.TrimSpace(req.Content) == "" {
-		logs.CtxWarnf(ctx, "AddDocumentMemory: empty content provided")
-		return "内容为空，无法存储", nil
-	}
-
-	// 调用文档记忆服务
-	err := a.documentMemoryService.AddMemory(ctx, a.UserID, a.ConnectorID, strings.TrimSpace(req.Content))
-	if err != nil {
-		logs.CtxErrorf(ctx, "AddDocumentMemory failed: %v", err)
-		return fmt.Sprintf("存储失败：%v", err), nil
-	}
-
-	logs.CtxInfof(ctx, "🧠 AddDocumentMemory: successfully stored memory")
-	return "已成功存储到您的记忆文档中", nil
-}
-
-// SearchMemoryRequest 搜索文档记忆请求
-type SearchDocumentMemoryRequest struct {
-	Query string `json:"query" jsonschema:"required,description=search query to find relevant information in user's memory document"`
-}
-
-// SearchDocumentMemory 搜索文档记忆
-func (a *avTool) SearchDocumentMemory(ctx context.Context, req *SearchDocumentMemoryRequest) (string, error) {
-	logs.CtxInfof(ctx, "🧠 SearchDocumentMemory: called with query=%s", req.Query)
-
-	if a.documentMemoryService == nil {
-		logs.CtxWarnf(ctx, "Document memory service not available")
-		return "文档记忆服务不可用", nil
-	}
-
-	if req == nil || strings.TrimSpace(req.Query) == "" {
-		logs.CtxWarnf(ctx, "SearchDocumentMemory: empty query provided")
-		return "搜索关键词为空", nil
-	}
-
-	// 执行搜索
-	results, err := a.documentMemoryService.SearchMemory(ctx, a.UserID, a.ConnectorID, strings.TrimSpace(req.Query))
-	if err != nil {
-		logs.CtxErrorf(ctx, "SearchDocumentMemory failed: %v", err)
-		return fmt.Sprintf("搜索失败：%v", err), nil
-	}
-
-	if len(results) == 0 {
-		logs.CtxInfof(ctx, "🧠 SearchDocumentMemory: no results found")
-		return "未找到相关记忆信息", nil
-	}
-
-	// 构建搜索结果
-	var resultText strings.Builder
-	resultText.WriteString(fmt.Sprintf("找到 %d 个相关记忆片段：\n\n", len(results)))
-
-	for i, result := range results {
-		resultText.WriteString(fmt.Sprintf("【记忆片段 %d】\n", i+1))
-		resultText.WriteString(fmt.Sprintf("%s\n\n", result))
-	}
-
-	logs.CtxInfof(ctx, "🧠 SearchDocumentMemory: returned %d results", len(results))
-	return resultText.String(), nil
 }

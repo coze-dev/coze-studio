@@ -55,9 +55,6 @@ type Components struct {
 	CounterRepo      repository.CounterRepository
 
 	CPStore compose.CheckPointStore
-
-	// 文档记忆服务
-	DocumentMemoryService agentflow.DocumentMemoryService
 	Embedder              embedding.Embedder
 }
 
@@ -116,7 +113,6 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 		ModelMgr:                s.ModelMgr,
 		ModelFactory:            s.ModelFactory,
 		CPStore:                 s.CPStore,
-		DocumentMemoryService:   s.DocumentMemoryService,
 		Embedder:                s.Embedder,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)

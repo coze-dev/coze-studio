@@ -29,9 +29,6 @@ import (
 	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	"github.com/coze-dev/coze-studio/backend/domain/memory/documentmemory/adapter"
-	documentrepo "github.com/coze-dev/coze-studio/backend/domain/memory/documentmemory/repository/impl"
-	documentservice "github.com/coze-dev/coze-studio/backend/domain/memory/documentmemory/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
@@ -75,10 +72,6 @@ type ServiceComponents struct {
 }
 
 func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
-	// 初始化文档记忆服务
-	documentMemoryRepo := documentrepo.NewDocumentMemoryRepository(c.DB)
-	documentMemoryService := documentservice.NewDocumentMemoryService(documentMemoryRepo)
-	documentMemoryAdapter := adapter.NewAgentflowAdapter(documentMemoryService)
 
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
@@ -88,7 +81,6 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 		CPStore:          c.CPStore,
 		ModelFactory:     chatmodel.NewDefaultFactory(),
 		ModelMgr:         c.ModelMgr,
-		DocumentMemoryService: documentMemoryAdapter,
 		Embedder:         c.Embedder,
 	}
 
