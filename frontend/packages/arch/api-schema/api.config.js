@@ -25,6 +25,7 @@ const config = [
       passport: './idl/passport/passport.thrift', // Entry service name and path
       explore:
         './idl/flow/marketplace/flow_marketplace_product/public_api.thrift',
+      ynet_workflow: './idl/ynet_workflow/ynet_workflow.thrift', // 工作流版本管理API
     },
     commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // custom profile
     output: './src', // Product location

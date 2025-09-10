@@ -62,17 +62,16 @@ const WorkFlowHeader: React.FC = () => {
         {/* will support soon */}
         {IS_OPEN_SOURCE ? null : <ReferenceButton workflowId={workflowId} />}
 
-        {IS_OPEN_SOURCE ? null : (
-          <>
-            {!readonly && <CreditButton />}
+        {/* 临时启用版本历史功能 */}
+        <>
+          {!readonly && <CreditButton />}
 
-            <HistoryButton />
+          <HistoryButton />
 
-            <CollaboratorsButton />
+          <CollaboratorsButton />
 
-            <SubmitButton />
-          </>
-        )}
+          <SubmitButton />
+        </>
 
         <PublishButton />
 

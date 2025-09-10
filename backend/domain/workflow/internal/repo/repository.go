@@ -752,6 +752,137 @@ func (r *RepositoryImpl) GetVersion(ctx context.Context, id int64, version strin
 	}, nil
 }
 
+func (r *RepositoryImpl) GetVersionByCommitID(ctx context.Context, workflowID int64, commitID string) (_ *vo.VersionInfo, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
+	wfVersion, err := r.query.WorkflowVersion.WithContext(ctx).
+		Where(r.query.WorkflowVersion.WorkflowID.Eq(workflowID), r.query.WorkflowVersion.CommitID.Eq(commitID)).
+		First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("workflow version commit_id %s not found for workflow %d: %w", commitID, workflowID, err), errorx.KV("workflowID", strconv.FormatInt(workflowID, 10)), errorx.KV("commitID", commitID))
+		}
+		return nil, fmt.Errorf("failed to get workflow version commit_id %s for workflow %d: %w", commitID, workflowID, err)
+	}
+
+	return &vo.VersionInfo{
+		VersionMeta: &vo.VersionMeta{
+			Version:            wfVersion.Version,
+			VersionDescription: wfVersion.VersionDescription,
+			VersionCreatedAt:   time.UnixMilli(wfVersion.CreatedAt),
+			VersionCreatorID:   wfVersion.CreatorID,
+		},
+		CanvasInfo: vo.CanvasInfo{
+			Canvas:          wfVersion.Canvas,
+			InputParamsStr:  wfVersion.InputParams,
+			OutputParamsStr: wfVersion.OutputParams,
+		},
+		CommitID: wfVersion.CommitID,
+	}, nil
+}
+
+func (r *RepositoryImpl) GetVersionList(ctx context.Context, workflowID int64, limit int) (_ []*vo.VersionInfo, err error) {
+	defer func() {
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrDatabaseError, err)
+		}
+	}()
+
+	if limit <= 0 {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("limit must be greater than 0"))
+	}
+
+	// 使用原生 SQL 查询，JOIN user 表获取用户信息
+	type VersionWithUser struct {
+		// workflow_version 表字段
+		ID                 int64  `gorm:"column:id"`
+		WorkflowID         int64  `gorm:"column:workflow_id"`
+		Version            string `gorm:"column:version"`
+		VersionDescription string `gorm:"column:version_description"`
+		Canvas             string `gorm:"column:canvas"`
+		InputParams        string `gorm:"column:input_params"`
+		OutputParams       string `gorm:"column:output_params"`
+		CreatorID          int64  `gorm:"column:creator_id"`
+		CreatedAt          int64  `gorm:"column:created_at"`
+		CommitID           string `gorm:"column:commit_id"`
+		
+		// user 表字段
+		UserName    string `gorm:"column:user_name"`
+		UserIconURI string `gorm:"column:user_icon_uri"`
+	}
+
+	var results []VersionWithUser
+	
+	// 获取底层的 gorm.DB 实例
+	db := r.query.WorkflowVersion.UnderlyingDB()
+	
+	err = db.WithContext(ctx).Raw(`
+		SELECT 
+			wv.id,
+			wv.workflow_id,
+			wv.version,
+			wv.version_description,
+			wv.canvas,
+			wv.input_params,
+			wv.output_params,
+			wv.creator_id,
+			wv.created_at,
+			wv.commit_id,
+			COALESCE(u.name, '') as user_name,
+			COALESCE(u.icon_uri, '') as user_icon_uri
+		FROM workflow_version wv
+		LEFT JOIN user u ON wv.creator_id = u.id AND u.deleted_at IS NULL
+		WHERE wv.workflow_id = ? AND wv.deleted_at IS NULL
+		ORDER BY wv.created_at DESC
+		LIMIT ?
+	`, workflowID, limit).Scan(&results).Error
+	
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*vo.VersionInfo, 0, len(results))
+	for _, row := range results {
+		// 处理用户头像URL
+		var creatorIconURL string
+		if row.UserIconURI != "" {
+			// 生成MinIO预签名URL
+			if url, err := r.tos.GetObjectUrl(ctx, row.UserIconURI); err == nil {
+				creatorIconURL = url
+			} else {
+				// 如果生成URL失败，记录日志但不影响主流程
+				logs.CtxWarnf(ctx, "Failed to generate icon URL for user icon_uri %s: %v", row.UserIconURI, err)
+				creatorIconURL = row.UserIconURI // 使用原始路径作为fallback
+			}
+		}
+
+		versionInfo := &vo.VersionInfo{
+			VersionMeta: &vo.VersionMeta{
+				Version:            row.Version,
+				VersionDescription: row.VersionDescription,
+				VersionCreatedAt:   time.UnixMilli(row.CreatedAt),
+				VersionCreatorID:   row.CreatorID,
+				// 添加用户信息
+				CreatorName:    row.UserName,
+				CreatorIconURI: creatorIconURL, // 使用生成的预签名URL
+			},
+			CanvasInfo: vo.CanvasInfo{
+				Canvas:          row.Canvas,
+				InputParamsStr:  row.InputParams,
+				OutputParamsStr: row.OutputParams,
+			},
+			CommitID: row.CommitID,
+		}
+		result = append(result, versionInfo)
+	}
+
+	return result, nil
+}
+
 func (r *RepositoryImpl) GetVersionListByConnectorAndWorkflowID(ctx context.Context, connectorID, workflowID int64, limit int) (_ []string, err error) {
 	if limit <= 0 {
 		return nil, vo.WrapError(errno.ErrInvalidParameter, errors.New("limit must be greater than 0"))

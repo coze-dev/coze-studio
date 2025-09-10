@@ -28,9 +28,10 @@ import { useHistoryDrawer } from './components/history-drawer';
 const WorkflowHistory = () => {
   const globalState = useGlobalState();
   const { info } = globalState;
-  const vcsPermission = info.vcsData?.can_edit;
+  // const vcsPermission = info.vcsData?.can_edit;
   // 1. Collaboration mode 2. Collaboration mode permissions
-  const showHistory = vcsPermission;
+  // 临时启用：开源版本也显示历史按钮
+  const showHistory = true; // 原本是: vcsPermission
 
   const { node: historyDrawer, show: showHistoryDrawer } = useHistoryDrawer({
     spaceId: globalState.spaceId,
