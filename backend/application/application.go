@@ -123,7 +123,7 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return fmt.Errorf("Init - initBasicServices failed, err: %v", err)
 	}
-	
+
 	// 设置全局统计服务
 	globalStatisticsApp = basicServices.statisticsApp
 
@@ -333,6 +333,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		VariablesDomainSVC:   p.memorySVC.VariablesDomainSVC,
 		ShortcutCMDDomainSVC: p.shortcutSVC.ShortCutDomainSVC,
 		CPStore:              checkpoint.NewRedisStore(p.infra.CacheCli),
+		Embedder:             p.basicServices.infra.Embedder,
 	}
 }
 

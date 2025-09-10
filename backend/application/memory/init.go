@@ -20,6 +20,9 @@ import (
 	"gorm.io/gorm"
 
 	database "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
+	documentmemory "github.com/coze-dev/coze-studio/backend/domain/memory/documentmemory/entity"
+	documentrepo "github.com/coze-dev/coze-studio/backend/domain/memory/documentmemory/repository/impl"
+	documentservice "github.com/coze-dev/coze-studio/backend/domain/memory/documentmemory/service"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/repository"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
@@ -31,9 +34,10 @@ import (
 )
 
 type MemoryApplicationServices struct {
-	VariablesDomainSVC variables.Variables
-	DatabaseDomainSVC  database.Database
-	RDBDomainSVC       rdb.RDB
+	VariablesDomainSVC      variables.Variables
+	DatabaseDomainSVC       database.Database
+	RDBDomainSVC            rdb.RDB
+	DocumentMemoryDomainSVC documentmemory.DocumentMemoryService
 }
 
 type ServiceComponents struct {
@@ -50,14 +54,19 @@ func InitService(c *ServiceComponents) *MemoryApplicationServices {
 	variablesDomainSVC := variables.NewService(repo)
 	rdbSVC := rdbService.NewService(c.DB, c.IDGen)
 	databaseDomainSVC := database.NewService(rdbSVC, c.DB, c.IDGen, c.TosClient, c.CacheCli)
+	
+	// 初始化文档记忆服务
+	documentRepo := documentrepo.NewDocumentMemoryRepository(c.DB)
+	documentMemoryDomainSVC := documentservice.NewDocumentMemoryService(documentRepo)
 
 	VariableApplicationSVC.DomainSVC = variablesDomainSVC
 	DatabaseApplicationSVC.DomainSVC = databaseDomainSVC
 	DatabaseApplicationSVC.eventbus = c.ResourceDomainNotifier
 
 	return &MemoryApplicationServices{
-		VariablesDomainSVC: variablesDomainSVC,
-		DatabaseDomainSVC:  databaseDomainSVC,
-		RDBDomainSVC:       rdbSVC,
+		VariablesDomainSVC:      variablesDomainSVC,
+		DatabaseDomainSVC:       databaseDomainSVC,
+		RDBDomainSVC:            rdbSVC,
+		DocumentMemoryDomainSVC: documentMemoryDomainSVC,
 	}
 }

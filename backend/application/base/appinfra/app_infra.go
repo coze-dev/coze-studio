@@ -81,6 +81,7 @@ type AppDependencies struct {
 	OCR                   ocr.OCR
 	ParserManager         parser.Manager
 	SearchStoreManagers   []searchstore.Manager
+	Embedder              embedding.Embedder
 }
 
 func Init(ctx context.Context) (*AppDependencies, error) {
@@ -140,12 +141,13 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 
 	deps.ParserManager = initParserManager(deps.TOSClient, deps.OCR, imageAnnotationModel)
 
-	deps.SearchStoreManagers, err = initSearchStoreManagers(ctx, deps.ESClient)
+	emb, err := getEmbedding(ctx)
 	if err != nil {
-		return nil, err
+		logs.CtxWarnf(ctx, "init embedding failed, err=%v", err)
 	}
+	deps.Embedder = emb
 
-	deps.SearchStoreManagers, err = initSearchStoreManagers(ctx, deps.ESClient)
+	deps.SearchStoreManagers, err = initSearchStoreManagers(ctx, deps.ESClient, emb)
 	if err != nil {
 		return nil, err
 	}
@@ -153,16 +155,19 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	return deps, nil
 }
 
-func initSearchStoreManagers(ctx context.Context, es es.Client) ([]searchstore.Manager, error) {
+func initSearchStoreManagers(ctx context.Context, es es.Client, emb embedding.Embedder) ([]searchstore.Manager, error) {
 	// es full text search
 	esSearchstoreManager := elasticsearch.NewManager(&elasticsearch.ManagerConfig{Client: es})
 
 	// vector search
-	mgr, err := getVectorStore(ctx)
+	mgr, err := getVectorStore(ctx, emb)
 	if err != nil {
 		return nil, fmt.Errorf("init vector store failed, err=%w", err)
 	}
 
+	if mgr == nil {
+		return []searchstore.Manager{esSearchstoreManager}, nil
+	}
 	return []searchstore.Manager{esSearchstoreManager, mgr}, nil
 }
 
@@ -286,7 +291,7 @@ func initParserManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationMode
 	return parserManager
 }
 
-func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
+func getVectorStore(ctx context.Context, emb embedding.Embedder) (searchstore.Manager, error) {
 	vsType := os.Getenv("VECTOR_STORE_TYPE")
 
 	switch vsType {
@@ -306,9 +311,8 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 			return nil, fmt.Errorf("init milvus client failed, err=%w", err)
 		}
 
-		emb, err := getEmbedding(ctx)
-		if err != nil {
-			return nil, fmt.Errorf("init milvus embedding failed, err=%w", err)
+		if emb == nil {
+			return nil, fmt.Errorf("embedding not configured for milvus")
 		}
 
 		mgr, err := milvus.NewManager(&milvus.ManagerConfig{
@@ -358,15 +362,14 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 				BuiltinEmbedding:   nil,
 			}
 		} else {
-			builtinEmbedding, err := getEmbedding(ctx)
-			if err != nil {
-				return nil, fmt.Errorf("builtint embedding init failed, err=%w", err)
+			if emb == nil {
+				return nil, fmt.Errorf("builtint embedding not configured for vikingdb")
 			}
 
 			embConfig = &vikingdb.VikingEmbeddingConfig{
 				UseVikingEmbedding: false,
 				EnableHybrid:       false,
-				BuiltinEmbedding:   builtinEmbedding,
+				BuiltinEmbedding:   emb,
 			}
 		}
 
@@ -383,7 +386,8 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 		return mgr, nil
 
 	default:
-		return nil, fmt.Errorf("unexpected vector store type, type=%s", vsType)
+		logs.CtxWarnf(ctx, "vector store not configured, VECTOR_STORE_TYPE=%s", vsType)
+		return nil, nil
 	}
 }
 

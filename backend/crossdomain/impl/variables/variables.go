@@ -78,3 +78,8 @@ func (s *impl) GetProjectVariablesMeta(ctx context.Context, projectID string, ve
 func (s *impl) GetAgentVariableMeta(ctx context.Context, agentID int64, version string) (*entity.VariablesMeta, error) {
 	return s.DomainSVC.GetAgentVariableMeta(ctx, agentID, version)
 }
+
+func (s *impl) DeleteVariableInstance(ctx context.Context, e *model.UserVariableMeta, keyword string) error {
+	m := entity.NewUserVariableMeta(e)
+	return s.DomainSVC.DeleteVariableInstance(ctx, m, []string{keyword})
+}

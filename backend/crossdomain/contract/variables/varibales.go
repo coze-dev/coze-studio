@@ -33,6 +33,7 @@ type Variables interface {
 	GetVariableChannelInstance(ctx context.Context, e *variables.UserVariableMeta, keywords []string, varChannel *project_memory.VariableChannel) ([]*kvmemory.KVItem, error)
 	GetProjectVariablesMeta(ctx context.Context, projectID, version string) (*entity.VariablesMeta, error)
 	GetAgentVariableMeta(ctx context.Context, agentID int64, version string) (*entity.VariablesMeta, error)
+	DeleteVariableInstance(ctx context.Context, e *variables.UserVariableMeta, keyword string) error
 }
 
 var defaultSVC Variables

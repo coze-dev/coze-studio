@@ -32,6 +32,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/agentflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/repository"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/jsoncache"
@@ -54,6 +55,10 @@ type Components struct {
 	CounterRepo      repository.CounterRepository
 
 	CPStore compose.CheckPointStore
+
+	// 文档记忆服务
+	DocumentMemoryService agentflow.DocumentMemoryService
+	Embedder              embedding.Embedder
 }
 
 func NewService(c *Components) SingleAgent {
@@ -105,12 +110,14 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	}
 
 	conf := &agentflow.Config{
-		Agent:        ae,
-		UserID:       req.UserID,
-		Identity:     req.Identity,
-		ModelMgr:     s.ModelMgr,
-		ModelFactory: s.ModelFactory,
-		CPStore:      s.CPStore,
+		Agent:                   ae,
+		UserID:                  req.UserID,
+		Identity:                req.Identity,
+		ModelMgr:                s.ModelMgr,
+		ModelFactory:            s.ModelFactory,
+		CPStore:                 s.CPStore,
+		DocumentMemoryService:   s.DocumentMemoryService,
+		Embedder:                s.Embedder,
 	}
 	rn, err := agentflow.BuildAgent(ctx, conf)
 	if err != nil {

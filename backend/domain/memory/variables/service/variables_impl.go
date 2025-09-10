@@ -28,7 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -313,23 +313,55 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 		metaKey2Variable[variable.Keyword] = variable
 	}
 
+	// 添加调试日志
+	fmt.Printf("🔥 GetVariableChannelInstance: metaKeys=%v\n", metaKeys)
+	logs.CtxInfof(ctx, "🔥 GetVariableChannelInstance: metaKeys=%v", metaKeys)
+
 	kvInstances, err := v.Repo.GetVariableInstances(ctx, e, keywords)
 	if err != nil {
 		return nil, err
 	}
 
-	varBothInMetaAndInstance := map[string]*entity.VariableInstance{}
+	// 添加调试日志
+	fmt.Printf("🔥 GetVariableChannelInstance: found %d kvInstances from DB\n", len(kvInstances))
+	for _, v := range kvInstances {
+		fmt.Printf("🔥 GetVariableChannelInstance: kvInstance keyword=%s, content=%s\n", v.Keyword, v.Content)
+	}
+
+	// 🔥 修复：支持动态创建的变量
+	// 将实例分为两类：在Meta中的和不在Meta中的（动态变量）
+	varBothInMetaAndInstance := map[string]*entity.VariableInstance{}  // 既在Meta中又在实例中
+	dynamicVariableInstances := map[string]*entity.VariableInstance{}  // 只在实例中的动态变量
+
 	for _, v := range kvInstances {
 		if _, ok := metaKey2Variable[v.Keyword]; ok {
 			varBothInMetaAndInstance[v.Keyword] = v
+			fmt.Printf("🔥 GetVariableChannelInstance: keyword=%s EXISTS in meta, INCLUDED in varBothInMetaAndInstance\n", v.Keyword)
+		} else {
+			dynamicVariableInstances[v.Keyword] = v
+			fmt.Printf("🔥 GetVariableChannelInstance: keyword=%s NOT in meta, INCLUDED in dynamicVariableInstances\n", v.Keyword)
 		}
 	}
 
-	newKeywords := ternary.IFElse(len(keywords) > 0, keywords, metaKeys)
+	// 构建要处理的关键词列表
+	var newKeywords []string
+	if len(keywords) > 0 {
+		// 如果指定了关键词，使用指定的关键词
+		newKeywords = keywords
+	} else {
+		// 如果没有指定关键词，返回所有：Meta中的 + 动态的
+		newKeywords = metaKeys
+		for keyword := range dynamicVariableInstances {
+			newKeywords = append(newKeywords, keyword)
+		}
+	}
+
+	fmt.Printf("🔥 GetVariableChannelInstance: processing keywords=%v\n", newKeywords)
 
 	resMemory := make([]*kvmemory.KVItem, 0, len(newKeywords))
 	for _, v := range newKeywords {
 		if vv, ok := varBothInMetaAndInstance[v]; ok {
+			// 在Meta中定义的变量（预定义变量）
 			meta := metaKey2Variable[v]
 			resMemory = append(resMemory, &kvmemory.KVItem{
 				Keyword:        vv.Keyword,
@@ -340,6 +372,19 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 				IsSystem:       meta.IsSystem(),
 				PromptDisabled: meta.PromptDisabled,
 			})
+			fmt.Printf("🔥 GetVariableChannelInstance: Added predefined variable: %s=%s\n", vv.Keyword, vv.Content)
+		} else if vv, ok := dynamicVariableInstances[v]; ok {
+			// 动态创建的变量（不在Meta中定义）
+			resMemory = append(resMemory, &kvmemory.KVItem{
+				Keyword:        vv.Keyword,
+				Value:          vv.Content,
+				CreateTime:     vv.CreatedAt / 1000,
+				UpdateTime:     vv.UpdatedAt / 1000,
+				Schema:         "", // 动态变量没有Schema
+				IsSystem:       false, // 动态变量不是系统变量
+				PromptDisabled: false, // 动态变量默认不禁用提示
+			})
+			fmt.Printf("🔥 GetVariableChannelInstance: Added dynamic variable: %s=%s\n", vv.Keyword, vv.Content)
 		} else if vv, ok := metaKey2Variable[v]; ok { // only in meta
 			now := time.Now()
 			resMemory = append(resMemory, &kvmemory.KVItem{
@@ -358,6 +403,12 @@ func (v *variablesImpl) GetVariableChannelInstance(ctx context.Context, e *entit
 
 	res := v.mergeKVItem(resMemory, sysKVItems)
 	res = v.sortKVItem(res, meta)
+
+	// 添加最终结果日志
+	fmt.Printf("🔥 GetVariableChannelInstance: final result count=%d\n", len(res))
+	for _, item := range res {
+		fmt.Printf("🔥 GetVariableChannelInstance: final result item: %s=%s\n", item.Keyword, item.Value)
+	}
 
 	return res, nil
 }
@@ -504,7 +555,14 @@ func (v *variablesImpl) SetVariableInstance(ctx context.Context, e *entity.UserV
 		return nil, err
 	}
 
-	return needUpdateKeywords, nil
+	// 合并更新的关键词和新插入的关键词
+	allUpdatedKeywords := make([]string, 0, len(needUpdateKeywords)+len(needIndexKVs))
+	allUpdatedKeywords = append(allUpdatedKeywords, needUpdateKeywords...)
+	for _, kv := range needIndexKVs {
+		allUpdatedKeywords = append(allUpdatedKeywords, kv.Keyword)
+	}
+
+	return allUpdatedKeywords, nil
 }
 
 func (v *variablesImpl) filterKVItem(items []*kvmemory.KVItem, meta *entity.VariablesMeta) []*kvmemory.KVItem {
@@ -515,8 +573,18 @@ func (v *variablesImpl) filterKVItem(items []*kvmemory.KVItem, meta *entity.Vari
 
 	res := make([]*kvmemory.KVItem, 0, len(items))
 	for _, v := range items {
+		// Skip system variables (like sys_uuid)
+		if v.Keyword == "sys_uuid" {
+			continue
+		}
+		
 		vv, ok := metaKey2Variable[v.Keyword]
 		if ok && vv.Channel != project_memory.VariableChannel_System {
+			// 已定义的非系统变量，允许通过
+			res = append(res, v)
+		} else if !ok {
+			// 未定义的变量，也允许通过（智能记忆功能）
+			// 这样用户可以动态创建新的记忆变量
 			res = append(res, v)
 		}
 	}

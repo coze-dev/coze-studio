@@ -291,14 +291,19 @@ func (v *VariableApplicationService) DeleteVariableInstance(ctx context.Context,
 
 	bizType := ternary.IFElse(req.BotID == 0, project_memory.VariableConnector_Project, project_memory.VariableConnector_Bot)
 	bizID := ternary.IFElse(req.BotID == 0, req.ProjectID, fmt.Sprintf("%d", req.BotID))
+	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
+	connectorUID := ternary.IFElse(req.UserID == 0, *uid, req.UserID)
 
 	e := entity.NewUserVariableMeta(&model.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
 		Version:      "",
-		ConnectorID:  req.GetConnectorID(),
-		ConnectorUID: fmt.Sprintf("%d", *uid),
+		ConnectorID:  connectId,
+		ConnectorUID: fmt.Sprintf("%d", connectorUID),
 	})
+
+	logs.CtxInfof(ctx, "DeleteVariableInstance: bizType=%d, bizID=%s, version=%s, connectorID=%d, connectorUID=%s, keywords=%v",
+		e.BizType, e.BizID, e.Version, e.ConnectorID, e.ConnectorUID, req.Keywords)
 
 	err := v.DomainSVC.DeleteVariableInstance(ctx, e, req.Keywords)
 	if err != nil {

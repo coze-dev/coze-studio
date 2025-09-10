@@ -18,6 +18,7 @@ package dal
 
 import (
 	"context"
+	"fmt"
 
 	"gorm.io/gen"
 	"gorm.io/gorm"
@@ -117,9 +118,20 @@ func (v *VariablesDAO) GetVariableInstances(ctx context.Context, do *entity.User
 		condWhere = append(condWhere, table.Keyword.In(keywords...))
 	}
 
+	// 添加调试日志
+	fmt.Printf("DEBUG: GetVariableInstances query conditions: BizType=%d, BizID=%s, Version=%s, ConnectorUID=%s, ConnectorID=%s, keywords=%v\n",
+		int32(do.BizType), do.BizID, do.Version, do.ConnectorUID, do.ConnectorID, keywords)
+
 	res, err := table.WithContext(ctx).Where(condWhere...).Find()
 	if err != nil {
+		fmt.Printf("ERROR: GetVariableInstances query failed: %v\n", err)
 		return nil, errorx.WrapByCode(err, errno.ErrMemoryGetVariableInstanceCode)
+	}
+
+	fmt.Printf("DEBUG: GetVariableInstances found %d records\n", len(res))
+	for _, record := range res {
+		fmt.Printf("DEBUG: GetVariableInstances record: ID=%d, BizType=%d, BizID=%s, ConnectorUID=%s, ConnectorID=%s, Keyword=%s, Content=%s\n",
+			record.ID, record.BizType, record.BizID, record.ConnectorUID, record.ConnectorID, record.Keyword, record.Content)
 	}
 
 	dos := make([]*entity.VariableInstance, 0, len(res))
@@ -175,6 +187,7 @@ func (m *VariablesDAO) UpdateVariableInstance(ctx context.Context, KVs []*entity
 			Where(
 				table.ID.Eq(p.ID),
 			).
+			Select(table.Content, table.UpdatedAt).
 			Updates(p)
 		if err != nil {
 			return errorx.WrapByCode(err, errno.ErrMemoryUpdateVariableInstanceCode)
@@ -201,12 +214,18 @@ func (m *VariablesDAO) InsertVariableInstance(ctx context.Context, KVs []*entity
 		p := m.variableInstanceToPO(v)
 		p.ID = ids[i]
 		pos = append(pos, p)
+		// 添加调试日志
+		fmt.Printf("DEBUG: InsertVariableInstance preparing to insert: ID=%d, BizType=%d, BizID=%s, ConnectorUID=%s, ConnectorID=%s, Keyword=%s, Content=%s\n",
+			p.ID, p.BizType, p.BizID, p.ConnectorUID, p.ConnectorID, p.Keyword, p.Content)
 	}
 
+	fmt.Printf("DEBUG: InsertVariableInstance about to call CreateInBatches with %d records\n", len(pos))
 	err = table.WithContext(ctx).CreateInBatches(pos, 10)
 	if err != nil {
+		fmt.Printf("ERROR: InsertVariableInstance CreateInBatches failed: %v\n", err)
 		return errorx.WrapByCode(err, errno.ErrMemoryInsertVariableInstanceCode)
 	}
 
+	fmt.Printf("DEBUG: InsertVariableInstance CreateInBatches completed successfully\n")
 	return nil
 }
