@@ -375,7 +375,7 @@ func (t *s3Client) HeadObject(ctx context.Context, objectKey string, opts ...sto
 	if err != nil {
 		var nsk *types.NotFound
 		if errors.As(err, &nsk) {
-			return nil, nil
+			return nil, storage.ErrObjectNotFound
 		}
 		return nil, err
 	}

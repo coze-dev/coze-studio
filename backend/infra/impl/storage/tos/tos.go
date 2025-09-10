@@ -383,7 +383,7 @@ func (t *tosClient) HeadObject(ctx context.Context, objectKey string, opts ...st
 	if err != nil {
 		if serverErr, ok := err.(*tos.TosServerError); ok {
 			if serverErr.StatusCode == http.StatusNotFound {
-				return nil, nil
+				return nil, storage.ErrObjectNotFound
 			}
 		}
 		return nil, err

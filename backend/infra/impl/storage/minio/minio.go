@@ -310,7 +310,7 @@ func (m *minioClient) HeadObject(ctx context.Context, objectKey string, opts ...
 	stat, err := m.client.StatObject(ctx, m.bucketName, objectKey, minio.StatObjectOptions{})
 	if err != nil {
 		if minio.ToErrorResponse(err).Code == "NoSuchKey" {
-			return nil, nil
+			return nil, storage.ErrObjectNotFound
 		}
 
 		return nil, fmt.Errorf("HeadObject failed for key %s: %w", objectKey, err)
