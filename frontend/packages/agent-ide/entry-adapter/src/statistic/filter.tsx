@@ -72,7 +72,6 @@ export const BotStatisticFilter: React.FC = ({
           <DatePicker
             type="dateRange"
             density="compact"
-            style={{ width: 260 }}
             disabledDate={disabledDate}
             onChange={([start, end]) => {
               onDateChange?.([start.getTime(), end.getTime()]);

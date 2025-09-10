@@ -1,6 +1,9 @@
 import BotStatisticChartItem from './chartItem';
 
-export const BotStatisticChartList: React.FC = () => {
+export const BotStatisticChartList: React.FC = (props: {
+  updateTimestamp: number;
+  dateRange: [number, number];
+}) => {
   const chartListData = [
     {
       title: '全部消息数 (次)',
@@ -38,7 +41,7 @@ export const BotStatisticChartList: React.FC = () => {
       }}
     >
       {chartListData.map(item => (
-        <BotStatisticChartItem key={item.title} {...item} />
+        <BotStatisticChartItem key={item.title} {...item} {...props} />
       ))}
     </div>
   );

@@ -1,46 +1,63 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
-import { Tooltip } from '@coze-arch/bot-semi';
+import { Tooltip, Spin } from '@coze-arch/bot-semi';
 import { Line } from '@antv/g2plot';
 
 export const BotStatisticChartItem: React.FC = ({
   title = '',
   description = '',
+  updateTimestamp,
+  dateRange,
 }: {
   title: string;
   description: string;
+  updateTimestamp: number;
+  dateRange: [number, number];
 }) => {
+  const [loading, setLoading] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
+  const lineChart = useRef<Line | null>(null);
 
   useEffect(() => {
     const dom = chartRef.current;
     if (dom) {
-      fetch(
-        'https://gw.alipayobjects.com/os/bmw-prod/55424a73-7cb8-4f79-b60d-3ab627ac5698.json',
-      )
-        .then(res => res.json())
-        .then(data => {
-          const line = new Line(dom, {
-            data,
-            xField: 'year',
-            yField: 'value',
-            seriesField: 'category',
-            xAxis: {
-              type: 'time',
-            },
-            yAxis: {
-              label: {
-                // 数值格式化为千分位
-                formatter: v =>
-                  `${v}`.replace(/\d{1,3}(?=(\d{3})+$)/g, s => `${s},`),
-              },
-            },
-          });
-
-          line.render();
-        });
+      const line = new Line(dom, {
+        data: [],
+        xField: 'year',
+        yField: 'value',
+        seriesField: 'category',
+        xAxis: {
+          type: 'time',
+        },
+        yAxis: {
+          label: {
+            formatter: v =>
+              `${v}`.replace(/\d{1,3}(?=(\d{3})+$)/g, s => `${s},`),
+          },
+        },
+      });
+      lineChart.current = line;
+      line.render();
     }
   }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    fetch(
+      'https://gw.alipayobjects.com/os/bmw-prod/55424a73-7cb8-4f79-b60d-3ab627ac5698.json',
+    )
+      .then(res => res.json())
+      .then(data => {
+        console.log('data', updateTimestamp, dateRange);
+        const line = lineChart.current;
+        if (line) {
+          line.changeData(data);
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [updateTimestamp, dateRange]);
 
   return (
     <div className="bg-white min-h-[220px] border border-solid border-gray-200 rounded-[8px] p-[24px]">
@@ -50,7 +67,9 @@ export const BotStatisticChartItem: React.FC = ({
           <IconCozInfoCircle className="w-[14px] h-[14px] block text-gray-400" />
         </Tooltip>
       </div>
-      <div className="w-full h-[218px]" ref={chartRef} />
+      <Spin spinning={loading}>
+        <div className="w-full h-[218px]" ref={chartRef} />
+      </Spin>
     </div>
   );
 };
