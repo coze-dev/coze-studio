@@ -15,3 +15,4 @@
  */
 
 export { BotEditorWithContext as BotEditor } from './editor/agent-editor';
+export { BotStatistic } from './statistic';

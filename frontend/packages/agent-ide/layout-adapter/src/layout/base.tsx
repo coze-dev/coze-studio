@@ -15,8 +15,12 @@
  */
 
 import { type ReactNode, type PropsWithChildren } from 'react';
+import cls from 'classnames';
 
 import { I18n } from '@coze-arch/i18n';
+import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useShallow } from 'zustand/react/shallow';
 import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
 import BotEditorLayout, {
   type BotEditorLayoutProps,
@@ -36,6 +40,34 @@ export interface LayoutAdapterProps {
 export const BotEditorInitLayoutAdapter: React.FC<
   PropsWithChildren<BotEditorLayoutProps & LayoutAdapterProps>
 > = ({ children, headerExtra, pageName, ...layoutProps }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const tabPath = location.pathname.split('/').pop();
+
+  const tabOptions = [
+    {
+      label: I18n.t('bot_build_title'),
+      value: 'arrange',
+    },
+    {
+      label: I18n.t('analytic_query_summary_title'),
+      value: 'statistic',
+    },
+  ];
+
+  const { botId, spaceId } = useBotInfoStore(
+    useShallow(s => ({
+      description: s.description,
+      botId: s.botId,
+      botInfo: s,
+      spaceId: s.space_id,
+    })),
+  );
+
+  const switchRoute = (path: String) => {
+    navigate(`/space/${spaceId}/bot/${botId}/${path}`, { replace: true });
+  };
+
   useInitAgent();
 
   const isPreview = usePageRuntimeStore(state => state.isPreview);
@@ -49,7 +81,27 @@ export const BotEditorInitLayoutAdapter: React.FC<
           pageName={pageName}
           isEditLocked={isPreview}
           addonAfter={
-            <HeaderAddonAfter pageName={pageName} isEditLocked={isEditLocked} />
+            tabPath === 'statistic' ? null : (
+              <HeaderAddonAfter
+                pageName={pageName}
+                isEditLocked={isEditLocked}
+              />
+            )
+          }
+          addonCenter={
+            <div className="flex items-center gap-4 cursor-pointer">
+              {tabOptions.map(item => (
+                <div
+                  key={item.value}
+                  className={cls('font-bold', {
+                    'coz-fg-plus': tabPath === item.value,
+                  })}
+                  onClick={() => switchRoute(item.value)}
+                >
+                  {item.label}
+                </div>
+              ))}
+            </div>
           }
           modeOptionList={modeOptionList}
           deployButton={

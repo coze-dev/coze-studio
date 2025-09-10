@@ -45,6 +45,7 @@ import s from './index.module.less';
 export interface BotHeaderProps {
   pageName?: string;
   isEditLocked?: boolean;
+  addonCenter?: ReactNode;
   addonAfter?: ReactNode;
   modeOptionList: ModeSelectProps['optionList'];
   deployButton: ReactNode;
@@ -106,7 +107,10 @@ export const BotHeader: React.FC<BotHeaderProps> = props => {
 
   return (
     <>
-      <div className={cx(s.header, 'coz-bg-primary')}>
+      <div
+        className={cx(s.header, 'coz-bg-primary')}
+        style={{ gridTemplateColumns: '40% 20% 40%', display: 'grid' }}
+      >
         {/* page title */}
         <Helmet>
           <title>
@@ -134,11 +138,13 @@ export const BotHeader: React.FC<BotHeaderProps> = props => {
             <ModeSelect optionList={props.modeOptionList} />
           )}
         </div>
-
+        <div className="flex items-center justify-center">
+          {props.addonCenter}
+        </div>
         {/* 2. Middle bot menu area - offline */}
 
         {/* 3. Right bot state area */}
-        {props.addonAfter}
+        <div className="flex items-center justify-end">{props.addonAfter}</div>
         {updateBotModal}
       </div>
     </>

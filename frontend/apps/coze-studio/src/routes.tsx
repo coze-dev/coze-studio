@@ -70,6 +70,12 @@ const AgentIDE = lazy(() =>
   })),
 );
 
+const BotStatistic = lazy(() =>
+  import('@coze-agent-ide/entry-adapter').then(res => ({
+    default: res.BotStatistic,
+  })),
+);
+
 const IDELayout = lazy(() =>
   import('@coze-project-ide/main').then(exps => ({
     default: exps.IDELayout,
@@ -123,261 +129,274 @@ const FalconMcpDetail = lazy(() => import('./pages/falconmcpDetail'));
 
 const FalconCard = lazy(() => import('./pages/falconcard'));
 
-export const router: ReturnType<typeof createBrowserRouter> = createBrowserRouter([
-  {
-    path: '/open/docs/*',
-    Component: DocsRedirect,
-    loader: () => ({
-      hasSider: false,
-      requireAuth: false,
-    }),
-  },
-  {
-    path: '/docs/*',
-    Component: DocsRedirect,
-    loader: () => ({
-      hasSider: false,
-      requireAuth: false,
-    }),
-  },
-  {
-    path: '/',
-    Component: Layout,
-    errorElement: <GlobalError />,
-    children: [
-      {
-        index: true,
-        element: <Navigate to="/space" replace />,
-      },
-      exploreRouter,
-      templateRouter,
-      {
-        path: 'sign',
-        Component: LoginPage,
-        errorElement: <GlobalError />,
-        loader: () => ({
-          hasSider: false,
-          requireAuth: false,
-        }),
-      },
-      {
-        path: 'space',
-        Component: SpaceLayout,
-        loader: () => ({
-          hasSider: true,
-          requireAuth: true,
-          subMenu,
-          menuKey: BaseEnum.Space,
-        }),
-        children: [
-          {
-            path: ':space_id',
-            Component: SpaceIdLayout,
-            children: [
-              {
-                index: true,
-                element: <Navigate to="develop" replace />,
-              },
-              {
-                path: 'develop',
-                Component: Develop,
-                loader: () => ({
-                  subMenuKey: SpaceSubModuleEnum.DEVELOP,
-                }),
-              },
-              {
-                path: 'agent/*',
-                element: <MicroAppWrapper appName="agent" />,
-              },
-              {
-                path: 'mcp',
-                Component: FalconMcp,
-                loader: () => ({
-                  subMenuKey: SpaceSubModuleEnum.MCP,
-                }),
-              },
-              {
-                path: 'mcp-detail/:page_type',
-                Component: FalconMcpDetail,
-                loader: () => ({
-                  subMenuKey: SpaceSubModuleEnum.MCP,
-                }),
-              },
-              {
-                path: 'card',
-                Component: FalconCard,
-                loader: () => ({
-                  subMenuKey: SpaceSubModuleEnum.CARD,
-                }),
-              },
-              {
-                path: 'project-ide/:project_id/publish',
-                loader: () => ({
-                  hasSider: false,
-                }),
-                Component: IDEPublish,
-              },
-              {
-                path: 'project-ide/:project_id/*',
-                Component: IDELayout,
-                loader: () => ({
-                  hasSider: false,
-                }),
-              },
-              {
-                path: 'library/:source_type',
-                Component: Library,
-                loader: request => ({
-                  subMenuKey: `${SpaceSubModuleEnum.LIBRARY}/${
-                    request.params.source_type
-                  }`,
-                }),
-              },
-              {
-                path: 'members',
-                Component: Members,
-                loader: () => ({
-                  subMenuKey: SpaceSubModuleEnum.MEMBERS,
-                }),
-              },
-              {
-                path: 'models',
-                children: [
-                  {
-                    index: true,
-                    Component: SpaceModelConfig,
-                  },
-                  {
-                    path: 'add',
-                    lazy: async () => {
-                      const module = await import('./pages/space-model-config/AddModelPage');
-                      return { Component: module.default };
+export const router: ReturnType<typeof createBrowserRouter> =
+  createBrowserRouter([
+    {
+      path: '/open/docs/*',
+      Component: DocsRedirect,
+      loader: () => ({
+        hasSider: false,
+        requireAuth: false,
+      }),
+    },
+    {
+      path: '/docs/*',
+      Component: DocsRedirect,
+      loader: () => ({
+        hasSider: false,
+        requireAuth: false,
+      }),
+    },
+    {
+      path: '/',
+      Component: Layout,
+      errorElement: <GlobalError />,
+      children: [
+        {
+          index: true,
+          element: <Navigate to="/space" replace />,
+        },
+        exploreRouter,
+        templateRouter,
+        {
+          path: 'sign',
+          Component: LoginPage,
+          errorElement: <GlobalError />,
+          loader: () => ({
+            hasSider: false,
+            requireAuth: false,
+          }),
+        },
+        {
+          path: 'space',
+          Component: SpaceLayout,
+          loader: () => ({
+            hasSider: true,
+            requireAuth: true,
+            subMenu,
+            menuKey: BaseEnum.Space,
+          }),
+          children: [
+            {
+              path: ':space_id',
+              Component: SpaceIdLayout,
+              children: [
+                {
+                  index: true,
+                  element: <Navigate to="develop" replace />,
+                },
+                {
+                  path: 'develop',
+                  Component: Develop,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.DEVELOP,
+                  }),
+                },
+                {
+                  path: 'agent/*',
+                  element: <MicroAppWrapper appName="agent" />,
+                },
+                {
+                  path: 'mcp',
+                  Component: FalconMcp,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.MCP,
+                  }),
+                },
+                {
+                  path: 'mcp-detail/:page_type',
+                  Component: FalconMcpDetail,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.MCP,
+                  }),
+                },
+                {
+                  path: 'card',
+                  Component: FalconCard,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.CARD,
+                  }),
+                },
+                {
+                  path: 'project-ide/:project_id/publish',
+                  loader: () => ({
+                    hasSider: false,
+                  }),
+                  Component: IDEPublish,
+                },
+                {
+                  path: 'project-ide/:project_id/*',
+                  Component: IDELayout,
+                  loader: () => ({
+                    hasSider: false,
+                  }),
+                },
+                {
+                  path: 'library/:source_type',
+                  Component: Library,
+                  loader: request => ({
+                    subMenuKey: `${SpaceSubModuleEnum.LIBRARY}/${
+                      request.params.source_type
+                    }`,
+                  }),
+                },
+                {
+                  path: 'members',
+                  Component: Members,
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.MEMBERS,
+                  }),
+                },
+                {
+                  path: 'models',
+                  children: [
+                    {
+                      index: true,
+                      Component: SpaceModelConfig,
                     },
-                  },
-                  {
-                    path: 'edit/:model_id',
-                    lazy: async () => {
-                      const module = await import('./pages/space-model-config/EditModelPage');
-                      return { Component: module.default };
+                    {
+                      path: 'add',
+                      lazy: async () => {
+                        const module = await import(
+                          './pages/space-model-config/AddModelPage'
+                        );
+                        return { Component: module.default };
+                      },
                     },
-                  },
-                ],
-                loader: () => ({
-                  subMenuKey: SpaceSubModuleEnum.MODELS,
-                }),
-              },
-              {
-                path: 'project-ide/:project_id/*',
-                Component: IDELayout,
-                loader: () => ({
-                  hasSider: false,
-                }),
-              },
-              {
-                path: 'knowledge',
-                children: [
-                  {
-                    path: ':dataset_id',
-                    element: <KnowledgePreview />,
-                  },
-                  {
-                    path: ':dataset_id/upload',
-                    element: <KnowledgeUpload />,
-                  },
-                ],
-                loader: () => ({
-                  pageModeByQuery: true,
-                }),
-              },
-              {
-                path: 'database',
-                children: [
-                  {
-                    path: ':table_id',
-                    element: <DatabaseDetail />,
-                  },
-                ],
-                loader: () => ({
-                  showMobileTips: true,
-                  pageModeByQuery: true,
-                }),
-              },
-              {
-                path: 'bot/:bot_id',
-                Component: AgentIDELayout,
-                children: [
-                  {
-                    index: true,
-                    Component: AgentIDE,
-                  },
-                  {
-                    path: 'publish',
-                    children: [
-                      {
-                        index: true,
-                        Component: AgentPublishPage,
-                        loader: () => ({
-                          hasSider: false,
-                          requireBotEditorInit: false,
-                          pageName: 'publish',
-                        }),
+                    {
+                      path: 'edit/:model_id',
+                      lazy: async () => {
+                        const module = await import(
+                          './pages/space-model-config/EditModelPage'
+                        );
+                        return { Component: module.default };
                       },
-                    ],
-                  },
-                ],
-                loader: () => ({
-                  hasSider: false,
-                  showMobileTips: true,
-                  requireBotEditorInit: true,
-                  pageName: 'bot',
-                }),
-              },
-              {
-                path: 'plugin/:plugin_id',
-                Component: PluginPageLayout,
-                children: [
-                  {
-                    index: true,
-                    Component: PluginPage,
-                  },
-                  {
-                    path: 'tool/:tool_id',
-                    children: [
-                      {
-                        index: true,
-                        Component: PluginToolPage,
-                      },
-                      {
-                        path: 'plugin-mock-set',
-                        Component: PluginMocksetPage,
-                        children: [
-                          {
-                            path: ':mock_set_id',
-                            children: [
-                              {
-                                index: true,
-                                Component: PluginMocksetDetailPage,
-                              },
-                            ],
-                          },
-                        ],
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
-        ],
-      },
-      {
-        path: 'work_flow',
-        Component: WorkflowPage,
-        loader: () => ({
-          hasSider: false,
-          requireAuth: true,
-        }),
-      },
-    ],
-  },
-]);
+                    },
+                  ],
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.MODELS,
+                  }),
+                },
+                {
+                  path: 'project-ide/:project_id/*',
+                  Component: IDELayout,
+                  loader: () => ({
+                    hasSider: false,
+                  }),
+                },
+                {
+                  path: 'knowledge',
+                  children: [
+                    {
+                      path: ':dataset_id',
+                      element: <KnowledgePreview />,
+                    },
+                    {
+                      path: ':dataset_id/upload',
+                      element: <KnowledgeUpload />,
+                    },
+                  ],
+                  loader: () => ({
+                    pageModeByQuery: true,
+                  }),
+                },
+                {
+                  path: 'database',
+                  children: [
+                    {
+                      path: ':table_id',
+                      element: <DatabaseDetail />,
+                    },
+                  ],
+                  loader: () => ({
+                    showMobileTips: true,
+                    pageModeByQuery: true,
+                  }),
+                },
+                {
+                  path: 'bot/:bot_id',
+                  Component: AgentIDELayout,
+                  children: [
+                    {
+                      index: true,
+                      element: <Navigate to="arrange" replace />,
+                    },
+                    {
+                      path: 'arrange',
+                      Component: AgentIDE,
+                    },
+                    {
+                      path: 'statistic',
+                      Component: BotStatistic,
+                    },
+                    {
+                      path: 'publish',
+                      children: [
+                        {
+                          index: true,
+                          Component: AgentPublishPage,
+                          loader: () => ({
+                            hasSider: false,
+                            requireBotEditorInit: false,
+                            pageName: 'publish',
+                          }),
+                        },
+                      ],
+                    },
+                  ],
+                  loader: () => ({
+                    hasSider: false,
+                    showMobileTips: true,
+                    requireBotEditorInit: true,
+                    pageName: 'bot',
+                  }),
+                },
+                {
+                  path: 'plugin/:plugin_id',
+                  Component: PluginPageLayout,
+                  children: [
+                    {
+                      index: true,
+                      Component: PluginPage,
+                    },
+                    {
+                      path: 'tool/:tool_id',
+                      children: [
+                        {
+                          index: true,
+                          Component: PluginToolPage,
+                        },
+                        {
+                          path: 'plugin-mock-set',
+                          Component: PluginMocksetPage,
+                          children: [
+                            {
+                              path: ':mock_set_id',
+                              children: [
+                                {
+                                  index: true,
+                                  Component: PluginMocksetDetailPage,
+                                },
+                              ],
+                            },
+                          ],
+                        },
+                      ],
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        {
+          path: 'work_flow',
+          Component: WorkflowPage,
+          loader: () => ({
+            hasSider: false,
+            requireAuth: true,
+          }),
+        },
+      ],
+    },
+  ]);
