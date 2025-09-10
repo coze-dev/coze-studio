@@ -30,7 +30,7 @@ export const BotStatisticChartList: React.FC = () => {
   ];
   return (
     <div
-      className="px-[24px] pb-[32px]"
+      className="w-full border-box pb-[32px]"
       style={{
         display: 'grid',
         gridTemplateColumns: 'repeat(3, 1fr)',

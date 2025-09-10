@@ -15,7 +15,6 @@ export const BotStatisticChartItem: React.FC = ({
   useEffect(() => {
     const dom = chartRef.current;
     if (dom) {
-      console.log('获取到的DOM节点:', dom);
       fetch(
         'https://gw.alipayobjects.com/os/bmw-prod/55424a73-7cb8-4f79-b60d-3ab627ac5698.json',
       )

@@ -9,7 +9,7 @@ export const BotStatistic: React.FC = () => {
   const [dateRange, setDateRange] = useState(defaultDateRange);
 
   return (
-    <div className="flex-1 bg-white">
+    <div className="flex-1 bg-white overflow-auto px-[24px]">
       <BotStatisticFilter
         defaultDateRangeDays={dateRangeDays}
         onDateChange={setDateRange}

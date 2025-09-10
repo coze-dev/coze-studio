@@ -15,7 +15,7 @@ export const BotStatisticFilter: React.FC = ({
   onDateChange,
   onRefresh,
 }: {
-  defaultDateRangeDays?: string | number;
+  defaultDateRangeDays?: string;
   onDateChange: (dateRange: number[]) => void;
   onRefresh: () => void;
 }) => {
@@ -27,7 +27,7 @@ export const BotStatisticFilter: React.FC = ({
   };
 
   return (
-    <div className="flex items-center justify-between px-[24px] pt-[24px] pb-[20px]">
+    <div className="flex items-center justify-between pt-[24px] pb-[20px]">
       <div className="flex items-center gap-4">
         <RadioGroup
           buttonSize="middle"
