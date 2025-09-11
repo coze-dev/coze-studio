@@ -36,7 +36,41 @@ export enum ErrorCodes {
   COZE_TOKEN_INSUFFICIENT_WORKFLOW = 702095072,
 }
 
-export const axiosInstance = axios.create();
+// Custom JSON parser to handle large integers safely
+const safeBigIntJSONParse = (jsonString: string) => {
+  try {
+    // Replace large integers with strings to prevent precision loss
+    // Pattern matches integers that are likely to be IDs (typically > 10^15)
+    const safeJsonString = jsonString.replace(
+      /"(ResID|CreatorID|EditTime|SpaceID|res_id|creator_id|edit_time|space_id)"\s*:\s*(\d{16,})/g,
+      '"$1":"$2"',
+    );
+
+    return JSON.parse(safeJsonString);
+  } catch (error) {
+    console.warn(
+      '[BigInt Fix] Failed to parse JSON safely, falling back to default parser:',
+      error,
+    );
+    return JSON.parse(jsonString);
+  }
+};
+
+export const axiosInstance = axios.create({
+  // Add custom transformResponse to handle large integers
+  transformResponse: [
+    function (data: unknown) {
+      if (typeof data === 'string') {
+        try {
+          return safeBigIntJSONParse(data);
+        } catch (error) {
+          return data;
+        }
+      }
+      return data;
+    },
+  ],
+});
 
 const HTTP_STATUS_COE_UNAUTHORIZED = 401;
 

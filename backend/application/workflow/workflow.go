@@ -17,9 +17,14 @@
 package workflow
 
 import (
+	"archive/zip"
+	"bytes"
 	"context"
+	"encoding/base64"
 	"errors"
 	"fmt"
+	"io"
+	"regexp"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -29,6 +34,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 	xmaps "golang.org/x/exp/maps"
 	"golang.org/x/sync/errgroup"
+	"gopkg.in/yaml.v3"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
@@ -83,6 +89,54 @@ var (
 	nodeIconURLCacheMu sync.Mutex
 )
 
+// getLocalizedMessage 获取本地化消息
+func getLocalizedMessage(ctx context.Context, key string) string {
+	locale := i18n.GetLocale(ctx)
+
+	// 中英文消息映射
+	messages := map[string]map[string]string{
+		"zh-CN": {
+			"no_valid_files_to_import":  "没有有效的文件可以导入",
+			"file_parse_failed":         "文件 \"%s\" 解析失败：%v",
+			"file_missing_schema_nodes": "文件 %s 缺少必要字段：schema 或 nodes",
+			"workflow_name_duplicate":   "工作流名称重复：\"%s\"",
+			"batch_import_files":        "批量导入文件：",
+			"batch_import_failed_http":  "批量导入失败，HTTP状态码：%d",
+			"invalid_response_format":   "服务器返回了无效的响应格式，请检查API接口",
+			"batch_import_api_response": "批量导入API响应：",
+			"batch_import_failed":       "批量导入失败",
+		},
+		"en-US": {
+			"no_valid_files_to_import":  "No valid files to import",
+			"file_parse_failed":         "File \"%s\" parse failed: %v",
+			"file_missing_schema_nodes": "File %s missing required fields: schema or nodes",
+			"workflow_name_duplicate":   "Duplicate workflow name: \"%s\"",
+			"batch_import_files":        "Batch import files:",
+			"batch_import_failed_http":  "Batch import failed, HTTP status code: %d",
+			"invalid_response_format":   "Server returned invalid response format, please check API interface",
+			"batch_import_api_response": "Batch import API response:",
+			"batch_import_failed":       "Batch import failed",
+		},
+	}
+
+	// 获取对应语言的消息
+	if localeMessages, exists := messages[string(locale)]; exists {
+		if message, exists := localeMessages[key]; exists {
+			return message
+		}
+	}
+
+	// 默认返回英文
+	if enMessages, exists := messages["en-US"]; exists {
+		if message, exists := enMessages[key]; exists {
+			return message
+		}
+	}
+
+	// 如果都没找到，返回key本身
+	return key
+}
+
 func GetWorkflowDomainSVC() domainWorkflow.Service {
 	return SVC.DomainSVC
 }
@@ -106,7 +160,7 @@ func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
 				url, err := w.TosClient.GetObjectUrl(gCtx, nodeMeta.IconURI)
 				if err != nil {
 					logs.Warnf("failed to get object url for node %s: %v", nodeMeta.Name, err)
-					return err
+					return nil // Continue initialization even if icon URL fails
 				}
 				nodeTypeStr := entity.IDStrToNodeType(strconv.FormatInt(nodeMeta.ID, 10))
 				if len(nodeTypeStr) > 0 {
@@ -3929,6 +3983,770 @@ func (w *ApplicationService) populateChatFlowRoleFields(role *workflow.ChatFlowR
 	return nil
 }
 
+// ExportWorkflow 导出工作流
+func (w *ApplicationService) ExportWorkflow(ctx context.Context, req *workflow.ExportWorkflowRequest) (*workflow.ExportWorkflowResponse, error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err := safego.NewPanicErr(panicErr, debug.Stack())
+			logs.CtxErrorf(ctx, "ExportWorkflow panic: %v", err)
+		}
+	}()
+
+	// 参数验证
+	if req.WorkflowID == "" {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_id is required"))
+	}
+	supportedFormats := map[string]bool{
+		"json": true,
+		"yml":  true,
+		"yaml": true,
+	}
+	if !supportedFormats[req.ExportFormat] {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported export format: %s, supported formats: json, yml, yaml", req.ExportFormat))
+	}
+
+	// 记录操作日志
+	logs.CtxInfof(ctx, "ExportWorkflow started, workflowID=%s, includeDependencies=%v", req.WorkflowID, req.IncludeDependencies)
+
+	// 获取工作流信息
+	workflowID, err := strconv.ParseInt(req.WorkflowID, 10, 64)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ExportWorkflow failed to parse workflow_id: %s, error: %v", req.WorkflowID, err)
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow_id: %s", req.WorkflowID))
+	}
+
+	// 获取工作流详情
+	workflowInfo, err := w.DomainSVC.Get(ctx, &vo.GetPolicy{
+		ID: workflowID,
+	})
+	if err != nil {
+		logs.CtxErrorf(ctx, "ExportWorkflow failed to get workflow: %d, error: %v", workflowID, err)
+		return nil, vo.WrapError(errno.ErrWorkflowNotFound, fmt.Errorf("failed to get workflow: %v", err))
+	}
+
+	// 验证用户权限（检查工作空间）
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), workflowInfo.SpaceID); err != nil {
+		logs.CtxErrorf(ctx, "ExportWorkflow permission denied, user=%d, space=%d, error: %v", ctxutil.MustGetUIDFromCtx(ctx), workflowInfo.SpaceID, err)
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("permission denied: %v", err))
+	}
+
+	// 构建导出数据
+	exportData := &workflow.WorkflowExportData{
+		WorkflowID:  req.WorkflowID,
+		Name:        workflowInfo.Name,
+		Description: workflowInfo.Desc,
+		Version:     workflowInfo.GetVersion(),
+		CreateTime:  workflowInfo.CreatedAt.Unix(),
+		UpdateTime:  workflowInfo.UpdatedAt.Unix(),
+		Metadata: map[string]interface{}{
+			"space_id":     strconv.FormatInt(workflowInfo.SpaceID, 10),
+			"creator_id":   strconv.FormatInt(workflowInfo.CreatorID, 10),
+			"content_type": strconv.FormatInt(int64(workflowInfo.ContentType), 10),
+			"mode":         strconv.FormatInt(int64(workflowInfo.Mode), 10),
+		},
+	}
+
+	// 添加工作流Schema
+	if workflowInfo.Canvas != "" {
+		var canvas vo.Canvas
+		if err := sonic.UnmarshalString(workflowInfo.Canvas, &canvas); err == nil {
+			// 解析Schema
+			var schemaData map[string]interface{}
+			if err := sonic.UnmarshalString(workflowInfo.Canvas, &schemaData); err == nil {
+				exportData.Schema = schemaData
+			}
+
+			// 设置节点
+			exportData.Nodes = make([]interface{}, len(canvas.Nodes))
+			for i, node := range canvas.Nodes {
+				exportData.Nodes[i] = node
+			}
+
+			// 设置边
+			exportData.Edges = make([]interface{}, len(canvas.Edges))
+			for i, edge := range canvas.Edges {
+				edgeData := map[string]string{
+					"from_node": edge.SourceNodeID,
+					"to_node":   edge.TargetNodeID,
+					"from_port": edge.SourcePortID,
+					"to_port":   edge.TargetPortID,
+				}
+				exportData.Edges[i] = edgeData
+			}
+		}
+	}
+
+	// 添加依赖资源信息（如果启用）
+	if req.IncludeDependencies {
+		dependencies := make([]interface{}, 0)
+
+		// 获取工作流中引用的资源
+		if workflowInfo.Canvas != "" {
+			var canvas vo.Canvas
+			if err := sonic.UnmarshalString(workflowInfo.Canvas, &canvas); err == nil {
+				// 分析节点中的资源引用
+				for _, node := range canvas.Nodes {
+					if node.Data != nil && node.Data.Meta != nil {
+						// 这里可以添加更多资源类型的检测逻辑
+						// 目前先添加一个示例
+						dependency := map[string]interface{}{
+							"resource_id":   fmt.Sprintf("node_%s", node.ID),
+							"resource_type": "node",
+							"resource_name": node.Data.Meta.Title,
+							"metadata": map[string]interface{}{
+								"node_type": "workflow_node",
+							},
+						}
+						dependencies = append(dependencies, dependency)
+					}
+				}
+			}
+		}
+
+		exportData.Dependencies = dependencies
+	}
+
+	logs.CtxInfof(ctx, "ExportWorkflow completed successfully, workflowID=%s, nodeCount=%d, edgeCount=%d",
+		req.WorkflowID, len(exportData.Nodes), len(exportData.Edges))
+
+	// 设置导出格式
+	exportData.ExportFormat = req.ExportFormat
+
+	// 根据导出格式进行序列化处理
+	if req.ExportFormat == "yml" || req.ExportFormat == "yaml" {
+		// 创建一个不包含SerializedData的副本用于YAML序列化
+		exportDataForYAML := &workflow.WorkflowExportData{
+			WorkflowID:   exportData.WorkflowID,
+			Name:         exportData.Name,
+			Description:  exportData.Description,
+			Version:      exportData.Version,
+			CreateTime:   exportData.CreateTime,
+			UpdateTime:   exportData.UpdateTime,
+			Schema:       exportData.Schema,
+			Nodes:        exportData.Nodes,
+			Edges:        exportData.Edges,
+			Metadata:     exportData.Metadata,
+			Dependencies: exportData.Dependencies,
+			ExportFormat: exportData.ExportFormat,
+			// 不包含 SerializedData 字段
+		}
+
+		yamlData, err := yaml.Marshal(exportDataForYAML)
+		if err != nil {
+			logs.CtxErrorf(ctx, "ExportWorkflow failed to marshal YAML data: %v", err)
+			return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, fmt.Errorf("failed to serialize workflow to YAML: %v", err))
+		}
+		exportData.SerializedData = string(yamlData)
+		logs.CtxInfof(ctx, "ExportWorkflow YAML serialization completed, size=%d bytes", len(yamlData))
+	}
+
+	// 构建响应
+	return &workflow.ExportWorkflowResponse{
+		Code: 200,
+		Msg:  "success",
+		Data: struct {
+			WorkflowExport *workflow.WorkflowExportData `json:"workflow_export,omitempty"`
+		}{
+			WorkflowExport: exportData,
+		},
+	}, nil
+}
+
+// parseWorkflowData 解析工作流数据，支持JSON和YAML格式
+func (w *ApplicationService) parseWorkflowData(ctx context.Context, data string, format string) (*workflow.WorkflowExportData, error) {
+	var exportData workflow.WorkflowExportData
+
+	if format == "yml" || format == "yaml" {
+		// YAML格式解析
+		if err := yaml.Unmarshal([]byte(data), &exportData); err != nil {
+			return nil, fmt.Errorf("failed to parse YAML workflow data: %v", err)
+		}
+	} else if format == "zip" {
+		// ZIP格式解析和转换
+		convertedData, err := w.parseAndConvertZipWorkflowData(ctx, data)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse ZIP workflow data: %v", err)
+		}
+		exportData = *convertedData
+	} else {
+		// JSON格式解析
+		if err := sonic.UnmarshalString(data, &exportData); err != nil {
+			return nil, fmt.Errorf("failed to parse JSON workflow data: %v", err)
+		}
+	}
+
+	return &exportData, nil
+}
+
+// parseAndConvertZipWorkflowData 解析ZIP格式工作流数据并转换为开源格式
+func (w *ApplicationService) parseAndConvertZipWorkflowData(ctx context.Context, zipDataStr string) (*workflow.WorkflowExportData, error) {
+	// ZIP数据通过base64编码传输
+	zipBytes, err := base64.StdEncoding.DecodeString(zipDataStr)
+	if err != nil {
+		return nil, fmt.Errorf("failed to decode base64 ZIP data: %v", err)
+	}
+
+	// 解析ZIP内容
+	zipReader, err := zip.NewReader(bytes.NewReader(zipBytes), int64(len(zipBytes)))
+	if err != nil {
+		return nil, fmt.Errorf("failed to read ZIP file: %v", err)
+	}
+
+	var workflowContent string
+
+	// 遍历ZIP文件内容
+	for _, file := range zipReader.File {
+		reader, err := file.Open()
+		if err != nil {
+			continue
+		}
+
+		content, err := io.ReadAll(reader)
+		reader.Close()
+		if err != nil {
+			continue
+		}
+
+		// 检查是否是工作流文件
+		if strings.Contains(file.Name, "Workflow-") && strings.HasSuffix(file.Name, ".zip") {
+			// 这是内嵌的工作流文件，需要进一步解析
+			workflowContent = string(content)
+		}
+	}
+
+	if workflowContent == "" {
+		return nil, fmt.Errorf("no workflow content found in ZIP file")
+	}
+
+	// 从工作流内容中提取JSON和MANIFEST
+	jsonData, manifestData, err := extractWorkflowDataFromContent(workflowContent)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract workflow data: %v", err)
+	}
+
+	// 转换为开源格式
+	convertedData, err := w.convertZipWorkflowToOpenSource(ctx, jsonData, manifestData)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert ZIP workflow: %v", err)
+	}
+
+	return convertedData, nil
+}
+
+// extractWorkflowDataFromContent 从工作流内容中提取JSON和MANIFEST数据
+func extractWorkflowDataFromContent(content string) (map[string]interface{}, map[string]interface{}, error) {
+	// 首先尝试找到JSON的开始位置
+	jsonStart := strings.Index(content, "{\"edges\"")
+	if jsonStart == -1 {
+		jsonStart = strings.Index(content, `{"nodes"`)
+	}
+	if jsonStart == -1 {
+		return nil, nil, fmt.Errorf("no JSON start found")
+	}
+
+	// 从JSON开始位置截取，找到完整的JSON
+	contentFromJson := content[jsonStart:]
+
+	// 找到完整的JSON（通过括号匹配）
+	braceCount := 0
+	jsonEnd := -1
+	for i, char := range contentFromJson {
+		if char == '{' {
+			braceCount++
+		} else if char == '}' {
+			braceCount--
+			if braceCount == 0 {
+				jsonEnd = i
+				break
+			}
+		}
+	}
+
+	if jsonEnd == -1 {
+		return nil, nil, fmt.Errorf("no complete JSON found")
+	}
+
+	jsonMatch := contentFromJson[:jsonEnd+1]
+
+	// 清理JSON字符串
+	cleanJsonString := strings.ReplaceAll(jsonMatch, "\x00", "")
+	cleanJsonString = regexp.MustCompile(`[\x00-\x1F\x7F-\x9F]`).ReplaceAllString(cleanJsonString, "")
+	cleanJsonString = strings.TrimSpace(cleanJsonString)
+
+	var jsonData map[string]interface{}
+	if err := sonic.UnmarshalString(cleanJsonString, &jsonData); err != nil {
+		return nil, nil, fmt.Errorf("failed to parse JSON data: %v", err)
+	}
+
+	// 查找MANIFEST.yml数据
+	manifestRegex := regexp.MustCompile(`MANIFEST\.yml[\s\S]*?type:\s*(\w+)[\s\S]*?version:\s*([^\n\r]+)[\s\S]*?main:\s*[\s\S]*?id:\s*([^\n\r]+)[\s\S]*?name:\s*([^\n\r]+)[\s\S]*?desc:\s*([^\n\r]+)`)
+	manifestMatch := manifestRegex.FindStringSubmatch(content)
+
+	manifestData := make(map[string]interface{})
+	if len(manifestMatch) >= 6 {
+		manifestData = map[string]interface{}{
+			"type":    strings.TrimSpace(manifestMatch[1]),
+			"version": strings.Trim(strings.TrimSpace(manifestMatch[2]), `"`),
+			"main": map[string]interface{}{
+				"id":   strings.Trim(strings.TrimSpace(manifestMatch[3]), `"`),
+				"name": strings.Trim(strings.TrimSpace(manifestMatch[4]), `"`),
+				"desc": strings.Trim(strings.TrimSpace(manifestMatch[5]), `"`),
+			},
+		}
+	}
+
+	return jsonData, manifestData, nil
+}
+
+// convertZipWorkflowToOpenSource 转换ZIP格式到开源格式
+func (w *ApplicationService) convertZipWorkflowToOpenSource(ctx context.Context, zipData map[string]interface{}, manifest map[string]interface{}) (*workflow.WorkflowExportData, error) {
+	currentTime := time.Now().Unix()
+
+	logs.CtxInfof(ctx, "Converting ZIP workflow to open source format, preserving original model IDs")
+
+	// 提取edges数据并转换格式
+	var convertedEdges []map[string]interface{}
+	if edgesData, ok := zipData["edges"].([]interface{}); ok {
+		for _, edge := range edgesData {
+			if edgeMap, ok := edge.(map[string]interface{}); ok {
+				convertedEdge := map[string]interface{}{
+					"from_node": edgeMap["sourceNodeID"],
+					"from_port": getStringValue(edgeMap, "sourcePortID"),
+					"to_node":   edgeMap["targetNodeID"],
+					"to_port":   getStringValue(edgeMap, "targetPortID"),
+				}
+				convertedEdges = append(convertedEdges, convertedEdge)
+			}
+		}
+	}
+
+	// 提取nodes数据并转换格式
+	var convertedNodes []map[string]interface{}
+	var simplifiedNodes []map[string]interface{}
+	var dependencies []map[string]interface{}
+
+	if nodesData, ok := zipData["nodes"].([]interface{}); ok {
+		for _, node := range nodesData {
+			if nodeMap, ok := node.(map[string]interface{}); ok {
+				// 移除blocks字段
+				nodeWithoutBlocks := make(map[string]interface{})
+				for k, v := range nodeMap {
+					if k != "blocks" {
+						nodeWithoutBlocks[k] = v
+					}
+				}
+				convertedNodes = append(convertedNodes, nodeWithoutBlocks)
+
+				// 创建简化节点
+				simplifiedNode := map[string]interface{}{
+					"id":   nodeMap["id"],
+					"type": nodeMap["type"],
+					"meta": nodeMap["meta"],
+					"data": extractNodeData(nodeMap),
+				}
+				simplifiedNodes = append(simplifiedNodes, simplifiedNode)
+
+				// 创建依赖
+				nodeTitle := "Node"
+				if dataMap, ok := nodeMap["data"].(map[string]interface{}); ok {
+					if metaMap, ok := dataMap["nodeMeta"].(map[string]interface{}); ok {
+						if title, ok := metaMap["title"].(string); ok && title != "" {
+							nodeTitle = title
+						}
+					}
+				}
+
+				dependency := map[string]interface{}{
+					"metadata": map[string]interface{}{
+						"node_type": "workflow_node",
+					},
+					"resource_id":   fmt.Sprintf("node_%v", nodeMap["id"]),
+					"resource_name": nodeTitle,
+					"resource_type": "node",
+				}
+				dependencies = append(dependencies, dependency)
+			}
+		}
+	}
+
+	// 构建schema中的edges
+	var schemaEdges []map[string]interface{}
+	for _, edge := range convertedEdges {
+		schemaEdge := map[string]interface{}{
+			"sourceNodeID": edge["from_node"],
+			"sourcePortID": edge["from_port"],
+			"targetNodeID": edge["to_node"],
+			"targetPortID": edge["to_port"],
+		}
+		schemaEdges = append(schemaEdges, schemaEdge)
+	}
+
+	// 构建schema
+	schema := map[string]interface{}{
+		"edges": schemaEdges,
+		"nodes": convertedNodes,
+	}
+
+	// 添加versions如果存在
+	if versions, ok := zipData["versions"]; ok {
+		schema["versions"] = versions
+	}
+
+	// 从manifest提取元数据
+	var workflowID, name, description, version string
+	if mainData, ok := manifest["main"].(map[string]interface{}); ok {
+		workflowID = getStringValue(mainData, "id")
+		name = getStringValue(mainData, "name")
+		description = getStringValue(mainData, "desc")
+	}
+	if version == "" {
+		if v, ok := manifest["version"].(string); ok {
+			version = v
+		}
+	}
+	if version == "" {
+		version = "v1.0.0"
+	}
+	if workflowID == "" {
+		workflowID = fmt.Sprintf("imported_%d", currentTime)
+	}
+	if name == "" {
+		name = "Imported Workflow"
+	}
+
+	// 转换切片类型
+	convertedNodesInterface := make([]interface{}, len(simplifiedNodes))
+	for i, node := range simplifiedNodes {
+		convertedNodesInterface[i] = node
+	}
+
+	convertedEdgesInterface := make([]interface{}, len(convertedEdges))
+	for i, edge := range convertedEdges {
+		convertedEdgesInterface[i] = edge
+	}
+
+	convertedDepsInterface := make([]interface{}, len(dependencies))
+	for i, dep := range dependencies {
+		convertedDepsInterface[i] = dep
+	}
+
+	// 构建最终的WorkflowExportData
+	exportData := &workflow.WorkflowExportData{
+		WorkflowID:  workflowID,
+		Name:        name,
+		Description: description,
+		Version:     version,
+		CreateTime:  currentTime,
+		UpdateTime:  currentTime,
+		Schema:      schema,
+		Nodes:       convertedNodesInterface,
+		Edges:       convertedEdgesInterface,
+		Metadata: map[string]interface{}{
+			"content_type": "0",
+			"mode":         "0",
+			"creator_id":   "imported_user",
+			"space_id":     "imported_space",
+		},
+		Dependencies: convertedDepsInterface,
+		ExportFormat: "json",
+	}
+
+	return exportData, nil
+}
+
+// extractNodeData 提取节点数据
+func extractNodeData(nodeMap map[string]interface{}) map[string]interface{} {
+	dataMap := map[string]interface{}{}
+
+	if data, ok := nodeMap["data"].(map[string]interface{}); ok {
+		if nodeMeta, ok := data["nodeMeta"]; ok {
+			dataMap["nodeMeta"] = nodeMeta
+		}
+		if outputs, ok := data["outputs"]; ok {
+			dataMap["outputs"] = outputs
+		}
+		if inputs, ok := data["inputs"]; ok {
+			dataMap["inputs"] = inputs
+		}
+		if triggerParams, ok := data["trigger_parameters"]; ok {
+			dataMap["trigger_parameters"] = triggerParams
+		}
+	}
+
+	return dataMap
+}
+
+// getStringValue 安全获取字符串值
+func getStringValue(m map[string]interface{}, key string) string {
+	if val, ok := m[key].(string); ok {
+		return val
+	}
+	return ""
+}
+
+// ImportWorkflow 导入工作流
+func (w *ApplicationService) ImportWorkflow(ctx context.Context, req *workflow.ImportWorkflowRequest) (*workflow.ImportWorkflowResponse, error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err := safego.NewPanicErr(panicErr, debug.Stack())
+			logs.CtxErrorf(ctx, "ImportWorkflow panic: %v", err)
+		}
+	}()
+
+	// 记录操作日志
+	logs.CtxInfof(ctx, "ImportWorkflow started, workflowName=%s, spaceID=%s, creatorID=%s",
+		req.WorkflowName, req.SpaceID, req.CreatorID)
+
+	// 验证请求参数
+	if req.WorkflowData == "" {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_data is required"))
+	}
+	if req.WorkflowName == "" {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_name is required"))
+	}
+	if req.SpaceID == "" {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("space_id is required"))
+	}
+	if req.CreatorID == "" {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("creator_id is required"))
+	}
+	// 验证导入格式
+	supportedImportFormats := map[string]bool{
+		"json": true,
+		"yml":  true,
+		"yaml": true,
+		"zip":  true, // 支持ZIP格式
+	}
+	if !supportedImportFormats[req.ImportFormat] {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml, zip", req.ImportFormat))
+	}
+
+	// 验证工作流名称格式
+	if !isValidWorkflowName(req.WorkflowName) {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow name format: %s", req.WorkflowName))
+	}
+
+	// 验证用户权限（检查工作空间）
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to parse space_id: %s, error: %v", req.SpaceID, err)
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid space_id: %s", req.SpaceID))
+	}
+
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), spaceID); err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow permission denied, user=%d, space=%d, error: %v", ctxutil.MustGetUIDFromCtx(ctx), spaceID, err)
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("permission denied: %v", err))
+	}
+
+	// 验证导入格式
+	if req.ImportFormat != "json" && req.ImportFormat != "yml" && req.ImportFormat != "yaml" {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml", req.ImportFormat))
+	}
+
+	// 解析工作流数据
+	exportData, err := w.parseWorkflowData(ctx, req.WorkflowData, req.ImportFormat)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to parse workflow data: %v", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, err)
+	}
+
+	// 验证工作流数据结构
+	if exportData.Schema == nil {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow data: missing schema"))
+	}
+
+	// 验证工作流名称长度
+	if len(req.WorkflowName) > 100 {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow name too long: %d characters (max: 100)", len(req.WorkflowName)))
+	}
+
+	// 构建工作流创建请求
+	createReq := &workflow.CreateWorkflowRequest{
+		Name:    req.WorkflowName,
+		Desc:    exportData.Description,
+		SpaceID: req.SpaceID,
+	}
+
+	// 调用创建工作流服务
+	createResp, err := w.CreateWorkflow(ctx, createReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to create workflow: %v", err)
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("failed to create workflow: %v", err))
+	}
+
+	// 保存工作流架构数据
+	canvasData, err := sonic.MarshalString(exportData.Schema)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to marshal canvas data: %v", err)
+		return nil, vo.WrapError(errno.ErrSerializationDeserializationFail, fmt.Errorf("failed to marshal canvas data: %v", err))
+	}
+
+	// 构建保存工作流请求
+	saveReq := &workflow.SaveWorkflowRequest{
+		WorkflowID: createResp.Data.WorkflowID,
+		SpaceID:    ptr.Of(req.SpaceID),
+		Schema:     ptr.Of(canvasData),
+	}
+
+	// 调用保存工作流服务
+	_, err = w.SaveWorkflow(ctx, saveReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ImportWorkflow failed to save workflow schema: %v", err)
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("failed to save workflow schema: %v", err))
+	}
+
+	logs.CtxInfof(ctx, "ImportWorkflow completed successfully, workflowID=%s, workflowName=%s",
+		createResp.Data.WorkflowID, req.WorkflowName)
+
+	// 构建响应
+	return &workflow.ImportWorkflowResponse{
+		Code: 200,
+		Msg:  "success",
+		Data: struct {
+			WorkflowID string `json:"workflow_id,omitempty"`
+		}{
+			WorkflowID: createResp.Data.WorkflowID,
+		},
+	}, nil
+}
+
+// isValidWorkflowName 验证工作流名称格式
+func isValidWorkflowName(name string) bool {
+	if len(name) < 2 || len(name) > 100 {
+		return false
+	}
+
+	// 检查是否以字母开头
+	if !regexp.MustCompile(`^[a-zA-Z]`).MatchString(name) {
+		return false
+	}
+
+	// 检查是否只包含字母、数字和下划线
+	if !regexp.MustCompile(`^[a-zA-Z][a-zA-Z0-9_]*$`).MatchString(name) {
+		return false
+	}
+
+	return true
+}
+
+// BatchImportWorkflow 批量导入工作流
+func (w *ApplicationService) BatchImportWorkflow(ctx context.Context, req *workflow.BatchImportWorkflowRequest) (*workflow.BatchImportWorkflowResponse, error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err := safego.NewPanicErr(panicErr, debug.Stack())
+			logs.CtxErrorf(ctx, "BatchImportWorkflow panic: %v", err)
+		}
+	}()
+
+	startTime := time.Now()
+	logs.CtxInfof(ctx, "BatchImportWorkflow started, fileCount=%d, spaceID=%s, mode=%s",
+		len(req.WorkflowFiles), req.SpaceID, req.ImportMode)
+
+	// 1. 参数验证
+	if err := w.validateBatchImportRequest(req); err != nil {
+		return nil, err
+	}
+
+	// 2. 权限验证
+	spaceID, err := strconv.ParseInt(req.SpaceID, 10, 64)
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid space_id: %s", req.SpaceID))
+	}
+
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), spaceID); err != nil {
+		return nil, vo.WrapError(errno.ErrWorkflowOperationFail, fmt.Errorf("permission denied: %v", err))
+	}
+
+	// 3. 构建导入配置
+	config := w.buildBatchImportConfig(req)
+
+	// 4. 预验证所有文件（如果启用）- 改为警告模式，不阻止导入
+	if config.ValidateBeforeImport {
+		w.preValidateWorkflowFilesWithWarning(ctx, req.WorkflowFiles)
+	}
+
+	// 5. 执行批量导入
+	results, err := w.executeBatchImport(ctx, req, config)
+	if err != nil {
+		return nil, err
+	}
+
+	// 6. 构建响应
+	endTime := time.Now()
+	response := w.buildBatchImportResponse(results, startTime, endTime, config, req.WorkflowFiles)
+
+	logs.CtxInfof(ctx, "BatchImportWorkflow completed, total=%d, success=%d, failed=%d, duration=%dms",
+		response.Data.TotalCount, response.Data.SuccessCount, response.Data.FailedCount, response.Data.ImportSummary.Duration)
+
+	return response, nil
+}
+
+// validateBatchImportRequest 验证批量导入请求参数
+func (w *ApplicationService) validateBatchImportRequest(req *workflow.BatchImportWorkflowRequest) error {
+	if len(req.WorkflowFiles) == 0 {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_files cannot be empty"))
+	}
+
+	// 验证导入格式
+	supportedImportFormats := map[string]bool{
+		"json":  true,
+		"yml":   true,
+		"yaml":  true,
+		"zip":   true, // 支持ZIP格式
+		"mixed": true, // 支持混合格式
+	}
+	if !supportedImportFormats[req.ImportFormat] {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("unsupported import format: %s, supported formats: json, yml, yaml, zip, mixed", req.ImportFormat))
+	}
+
+	// 限制批量导入数量
+	maxBatchSize := 50 // 最大批量导入数量
+	if len(req.WorkflowFiles) > maxBatchSize {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("too many files: %d (max: %d)", len(req.WorkflowFiles), maxBatchSize))
+	}
+
+	if req.SpaceID == "" {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("space_id is required"))
+	}
+
+	if req.CreatorID == "" {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("creator_id is required"))
+	}
+
+	// 验证导入格式（重复验证，已在上面的supportedImportFormats中处理）
+
+	// 验证导入模式
+	if req.ImportMode != "" && req.ImportMode != string(workflow.BatchImportModeBatch) && req.ImportMode != string(workflow.BatchImportModeTransaction) {
+		return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid import mode: %s", req.ImportMode))
+	}
+
+	// 验证每个文件
+	nameSet := make(map[string]bool)
+	for i, file := range req.WorkflowFiles {
+		if file.FileName == "" {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file_name is required for file %d", i))
+		}
+		if file.WorkflowData == "" {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_data is required for file %d", i))
+		}
+		if file.WorkflowName == "" {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("workflow_name is required for file %d", i))
+		}
+
+		// 验证工作流名称格式
+		if !isValidWorkflowName(file.WorkflowName) {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("invalid workflow name format: %s for file %s", file.WorkflowName, file.FileName))
+		}
+
+		// 检查名称重复
+		if nameSet[file.WorkflowName] {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("duplicate workflow name: %s", file.WorkflowName))
+		}
+		nameSet[file.WorkflowName] = true
+	}
+
+	return nil
+}
 func IsChatFlow(wf *entity.Workflow) bool {
 	if wf == nil || wf.ID == 0 {
 		return false
@@ -4250,4 +5068,391 @@ func (w *ApplicationService) OpenAPIGetWorkflowInfo(ctx context.Context, req *wo
 			Role: wfRole,
 		},
 	}, nil
+}
+
+// buildBatchImportConfig 构建批量导入配置
+func (w *ApplicationService) buildBatchImportConfig(req *workflow.BatchImportWorkflowRequest) workflow.BatchImportConfig {
+	config := workflow.BatchImportConfig{
+		ImportMode:           req.ImportMode,
+		MaxConcurrency:       5, // 最大并发数
+		ContinueOnError:      true,
+		ValidateBeforeImport: true,
+	}
+
+	// 设置默认导入模式
+	if config.ImportMode == "" {
+		config.ImportMode = string(workflow.BatchImportModeBatch)
+	}
+
+	// 事务模式不允许在出错时继续
+	if config.ImportMode == string(workflow.BatchImportModeTransaction) {
+		config.ContinueOnError = false
+	}
+
+	return config
+}
+
+// preValidateWorkflowFiles 预验证所有工作流文件
+func (w *ApplicationService) preValidateWorkflowFiles(ctx context.Context, files []workflow.WorkflowFileData) error {
+	for i, file := range files {
+		// 根据文件名确定格式
+		fileName := strings.ToLower(file.FileName)
+		var format string
+		if strings.HasSuffix(fileName, ".yml") {
+			format = "yml"
+		} else if strings.HasSuffix(fileName, ".yaml") {
+			format = "yaml"
+		} else if strings.HasSuffix(fileName, ".zip") {
+			format = "zip"
+		} else {
+			format = "json"
+		}
+
+		// 对于ZIP文件，数据是base64编码的，需要特殊处理
+		if format == "zip" {
+			// ZIP文件验证：检查是否为有效的base64数据
+			if _, err := base64.StdEncoding.DecodeString(file.WorkflowData); err != nil {
+				return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): invalid base64 ZIP data: %v", i, file.FileName, err))
+			}
+			// 暂时跳过ZIP文件的详细验证，在实际导入时再进行
+			continue
+		}
+
+		exportData, err := w.parseWorkflowData(ctx, file.WorkflowData, format)
+		if err != nil {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): invalid %s format: %v", i, file.FileName, format, err))
+		}
+
+		// 验证工作流数据结构
+		if exportData.Schema == nil {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): missing schema", i, file.FileName))
+		}
+
+		if exportData.Nodes == nil {
+			return vo.WrapError(errno.ErrInvalidParameter, fmt.Errorf("file %d (%s): missing nodes", i, file.FileName))
+		}
+	}
+
+	return nil
+}
+
+// preValidateWorkflowFilesWithWarning 预验证所有工作流文件（警告模式，不阻断导入）
+func (w *ApplicationService) preValidateWorkflowFilesWithWarning(ctx context.Context, files []workflow.WorkflowFileData) {
+	for i, file := range files {
+		// 根据文件名确定格式
+		fileName := strings.ToLower(file.FileName)
+		var format string
+		if strings.HasSuffix(fileName, ".yml") {
+			format = "yml"
+		} else if strings.HasSuffix(fileName, ".yaml") {
+			format = "yaml"
+		} else if strings.HasSuffix(fileName, ".zip") {
+			format = "zip"
+		} else {
+			format = "json"
+		}
+
+		// 对于ZIP文件，数据是base64编码的，需要特殊处理
+		if format == "zip" {
+			// ZIP文件验证：检查是否为有效的base64数据
+			if _, err := base64.StdEncoding.DecodeString(file.WorkflowData); err != nil {
+				logs.CtxWarnf(ctx, "File %d (%s): invalid base64 ZIP data: %v", i, file.FileName, err)
+				continue
+			}
+			// 暂时跳过ZIP文件的详细验证，在实际导入时再进行
+			continue
+		}
+
+		exportData, err := w.parseWorkflowData(ctx, file.WorkflowData, format)
+		if err != nil {
+			logs.CtxWarnf(ctx, "File %d (%s): invalid %s format: %v", i, file.FileName, format, err)
+			continue
+		}
+
+		// 验证工作流数据结构
+		if exportData.Schema == nil {
+			logs.CtxWarnf(ctx, "File %d (%s): missing schema", i, file.FileName)
+			continue
+		}
+
+		if exportData.Nodes == nil {
+			logs.CtxWarnf(ctx, "File %d (%s): missing nodes", i, file.FileName)
+			continue
+		}
+	}
+}
+
+// executeBatchImport 执行批量导入
+func (w *ApplicationService) executeBatchImport(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
+	if config.ImportMode == string(workflow.BatchImportModeTransaction) {
+		// 事务模式：所有文件在同一事务中处理
+		return w.executeBatchImportTransaction(ctx, req, config)
+	} else {
+		// 批量模式：每个文件独立处理
+		return w.executeBatchImportParallel(ctx, req, config)
+	}
+}
+
+// BatchImportResult 批量导入结果内部结构
+type BatchImportResult struct {
+	Index        int
+	Success      bool
+	WorkflowID   string
+	NodeCount    int
+	EdgeCount    int
+	ErrorCode    int64
+	ErrorMessage string
+	FailReason   workflow.FailReason
+}
+
+// executeBatchImportParallel 并发执行批量导入
+func (w *ApplicationService) executeBatchImportParallel(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
+	results := make([]BatchImportResult, len(req.WorkflowFiles))
+
+	// 使用信号量控制并发数
+	sem := make(chan struct{}, config.MaxConcurrency)
+	var wg sync.WaitGroup
+
+	for i, file := range req.WorkflowFiles {
+		wg.Add(1)
+		go func(index int, fileData workflow.WorkflowFileData) {
+			defer wg.Done()
+			sem <- struct{}{}        // 获取信号量
+			defer func() { <-sem }() // 释放信号量
+
+			result := w.importSingleWorkflow(ctx, fileData, req.SpaceID, req.CreatorID, "")
+			result.Index = index
+			results[index] = result
+		}(i, file)
+	}
+
+	wg.Wait()
+	return results, nil
+}
+
+// executeBatchImportTransaction 事务模式批量导入
+func (w *ApplicationService) executeBatchImportTransaction(ctx context.Context, req *workflow.BatchImportWorkflowRequest, config workflow.BatchImportConfig) ([]BatchImportResult, error) {
+	// 在事务中导入所有工作流
+	results := make([]BatchImportResult, len(req.WorkflowFiles))
+	createdWorkflowIDs := make([]string, 0)
+
+	// 创建所有工作流
+	for i, file := range req.WorkflowFiles {
+		result := w.importSingleWorkflow(ctx, file, req.SpaceID, req.CreatorID, "")
+		result.Index = i
+		results[i] = result
+
+		if !result.Success {
+			// 如果任何一个失败，回滚所有已创建的工作流
+			w.rollbackBatchCreatedWorkflows(ctx, createdWorkflowIDs)
+			return results, nil
+		}
+
+		createdWorkflowIDs = append(createdWorkflowIDs, result.WorkflowID)
+	}
+
+	return results, nil
+}
+
+// importSingleWorkflow 导入单个工作流
+func (w *ApplicationService) importSingleWorkflow(ctx context.Context, file workflow.WorkflowFileData, spaceID, creatorID, format string) BatchImportResult {
+	result := BatchImportResult{Success: false}
+
+	logs.CtxInfof(ctx, "Starting import for file: %s, workflow: %s", file.FileName, file.WorkflowName)
+
+	// 1. 根据文件名确定格式（如果传入的format为空）
+	if format == "" {
+		fileName := strings.ToLower(file.FileName)
+		if strings.HasSuffix(fileName, ".yml") {
+			format = "yml"
+		} else if strings.HasSuffix(fileName, ".yaml") {
+			format = "yaml"
+		} else if strings.HasSuffix(fileName, ".zip") {
+			format = "zip"
+		} else {
+			format = "json"
+		}
+	}
+
+	logs.CtxDebugf(ctx, "Detected format: %s for file: %s", format, file.FileName)
+
+	// 2. 解析工作流数据
+	exportData, err := w.parseWorkflowData(ctx, file.WorkflowData, format)
+	if err != nil {
+		result.ErrorCode = int64(errno.ErrSerializationDeserializationFail)
+		result.ErrorMessage = fmt.Sprintf(getLocalizedMessage(ctx, "file_parse_failed"), file.FileName, err)
+		result.FailReason = workflow.FailReasonInvalidFormat
+		logs.CtxErrorf(ctx, "Failed to parse file %s: %v", file.FileName, err)
+		return result
+	}
+
+	// 3. 验证数据结构
+	if exportData.Schema == nil || exportData.Nodes == nil {
+		result.ErrorCode = int64(errno.ErrInvalidParameter)
+		result.ErrorMessage = fmt.Sprintf(getLocalizedMessage(ctx, "file_missing_schema_nodes"), file.FileName)
+		result.FailReason = workflow.FailReasonInvalidData
+		logs.CtxErrorf(ctx, "Invalid data structure in file %s: missing schema or nodes", file.FileName)
+		return result
+	}
+
+	logs.CtxDebugf(ctx, "File %s parsed successfully, nodes: %d, edges: %d",
+		file.FileName, len(exportData.Nodes), len(exportData.Edges))
+
+	// 4. 创建工作流
+	createReq := &workflow.CreateWorkflowRequest{
+		Name:    file.WorkflowName,
+		Desc:    exportData.Description,
+		SpaceID: spaceID,
+	}
+
+	createResp, err := w.CreateWorkflow(ctx, createReq)
+	if err != nil {
+		result.ErrorCode = int64(errno.ErrWorkflowOperationFail)
+		result.ErrorMessage = fmt.Sprintf("文件 %s 创建工作流失败：%v", file.FileName, err)
+		result.FailReason = workflow.FailReasonSystemError
+		logs.CtxErrorf(ctx, "Failed to create workflow for file %s: %v", file.FileName, err)
+		return result
+	}
+
+	logs.CtxDebugf(ctx, "Workflow created successfully for file %s, ID: %s",
+		file.FileName, createResp.Data.WorkflowID)
+
+	// 5. 保存工作流架构
+	canvasData, err := sonic.MarshalString(exportData.Schema)
+	if err != nil {
+		w.rollbackCreatedWorkflow(ctx, createResp.Data.WorkflowID)
+		result.ErrorCode = int64(errno.ErrSerializationDeserializationFail)
+		result.ErrorMessage = fmt.Sprintf("文件 %s 序列化工作流架构失败：%v", file.FileName, err)
+		result.FailReason = workflow.FailReasonSystemError
+		logs.CtxErrorf(ctx, "Failed to marshal schema for file %s: %v", file.FileName, err)
+		return result
+	}
+
+	saveReq := &workflow.SaveWorkflowRequest{
+		WorkflowID: createResp.Data.WorkflowID,
+		SpaceID:    ptr.Of(spaceID),
+		Schema:     ptr.Of(canvasData),
+	}
+
+	_, err = w.SaveWorkflow(ctx, saveReq)
+	if err != nil {
+		w.rollbackCreatedWorkflow(ctx, createResp.Data.WorkflowID)
+		result.ErrorCode = int64(errno.ErrWorkflowOperationFail)
+		result.ErrorMessage = fmt.Sprintf("文件 %s 保存工作流架构失败：%v", file.FileName, err)
+		result.FailReason = workflow.FailReasonSystemError
+		logs.CtxErrorf(ctx, "Failed to save workflow schema for file %s: %v", file.FileName, err)
+		return result
+	}
+
+	// 6. 成功
+	result.Success = true
+	result.WorkflowID = createResp.Data.WorkflowID
+	result.NodeCount = len(exportData.Nodes)
+	result.EdgeCount = len(exportData.Edges)
+
+	logs.CtxInfof(ctx, "Successfully imported file %s as workflow %s (ID: %s)",
+		file.FileName, file.WorkflowName, result.WorkflowID)
+
+	return result
+}
+
+// rollbackCreatedWorkflow 回滚单个创建的工作流
+func (w *ApplicationService) rollbackCreatedWorkflow(ctx context.Context, workflowID string) {
+	if workflowID == "" {
+		return
+	}
+
+	id, err := strconv.ParseInt(workflowID, 10, 64)
+	if err != nil {
+		logs.CtxErrorf(ctx, "Failed to parse workflow ID for rollback: %s, error: %v", workflowID, err)
+		return
+	}
+
+	if _, err := w.DomainSVC.Delete(ctx, &vo.DeletePolicy{ID: &id}); err != nil {
+		logs.CtxErrorf(ctx, "Failed to rollback workflow creation: %d, error: %v", id, err)
+	} else {
+		logs.CtxInfof(ctx, "Successfully rolled back workflow creation: %d", id)
+	}
+}
+
+// rollbackBatchCreatedWorkflows 回滚批量创建的工作流
+func (w *ApplicationService) rollbackBatchCreatedWorkflows(ctx context.Context, workflowIDs []string) {
+	for _, workflowID := range workflowIDs {
+		w.rollbackCreatedWorkflow(ctx, workflowID)
+	}
+}
+
+// buildBatchImportResponse 构建批量导入响应
+func (w *ApplicationService) buildBatchImportResponse(results []BatchImportResult, startTime, endTime time.Time, config workflow.BatchImportConfig, files []workflow.WorkflowFileData) *workflow.BatchImportWorkflowResponse {
+	successList := make([]workflow.WorkflowImportResult, 0)
+	failedList := make([]workflow.WorkflowImportFailedResult, 0)
+	errorStats := make(map[string]int)
+
+	totalNodes := 0
+	totalEdges := 0
+	totalSize := int64(0)
+	nodeTypes := make(map[string]bool)
+
+	for _, result := range results {
+		file := files[result.Index]
+
+		if result.Success {
+			successList = append(successList, workflow.WorkflowImportResult{
+				FileName:     file.FileName,
+				WorkflowName: file.WorkflowName,
+				WorkflowID:   result.WorkflowID,
+				NodeCount:    result.NodeCount,
+				EdgeCount:    result.EdgeCount,
+			})
+			totalNodes += result.NodeCount
+			totalEdges += result.EdgeCount
+		} else {
+			failedList = append(failedList, workflow.WorkflowImportFailedResult{
+				FileName:     file.FileName,
+				WorkflowName: file.WorkflowName,
+				ErrorCode:    result.ErrorCode,
+				ErrorMessage: result.ErrorMessage,
+				FailReason:   string(result.FailReason),
+			})
+			errorStats[string(result.FailReason)]++
+		}
+
+		totalSize += int64(len(file.WorkflowData))
+	}
+
+	// 构建资源信息
+	resourceInfo := workflow.BatchImportResourceInfo{
+		TotalFiles:      len(files),
+		TotalSize:       totalSize,
+		TotalNodes:      totalNodes,
+		TotalEdges:      totalEdges,
+		UniqueNodeTypes: make([]string, 0, len(nodeTypes)),
+	}
+
+	for nodeType := range nodeTypes {
+		resourceInfo.UniqueNodeTypes = append(resourceInfo.UniqueNodeTypes, nodeType)
+	}
+
+	// 构建导入摘要
+	summary := workflow.ImportSummary{
+		StartTime:    startTime.Unix(),
+		EndTime:      endTime.Unix(),
+		Duration:     endTime.Sub(startTime).Milliseconds(),
+		ErrorStats:   errorStats,
+		ImportConfig: config,
+		ResourceInfo: resourceInfo,
+	}
+
+	return &workflow.BatchImportWorkflowResponse{
+		Code: 200,
+		Msg:  "success",
+		Data: workflow.BatchImportResponseData{
+			TotalCount:    len(results),
+			SuccessCount:  len(successList),
+			FailedCount:   len(failedList),
+			SuccessList:   successList,
+			FailedList:    failedList,
+			ImportSummary: summary,
+		},
+	}
 }
