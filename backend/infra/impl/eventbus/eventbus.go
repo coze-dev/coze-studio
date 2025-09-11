@@ -23,6 +23,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/kafka"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/nsq"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/pulsar"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus/rmq"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
@@ -54,9 +55,11 @@ func (consumerServiceImpl) RegisterConsumer(nameServer, topic, group string, con
 		return kafka.RegisterConsumer(nameServer, topic, group, consumerHandler, opts...)
 	case "rmq":
 		return rmq.RegisterConsumer(nameServer, topic, group, consumerHandler, opts...)
+	case "pulsar":
+		return pulsar.RegisterConsumer(nameServer, topic, group, consumerHandler, opts...)
 	}
 
-	return fmt.Errorf("invalid mq type: %s , only support nsq, kafka, rmq", tp)
+	return fmt.Errorf("invalid mq type: %s , only support nsq, kafka, rmq, pulsar", tp)
 }
 
 func NewProducer(nameServer, topic, group string, retries int) (eventbus.Producer, error) {
@@ -68,7 +71,9 @@ func NewProducer(nameServer, topic, group string, retries int) (eventbus.Produce
 		return kafka.NewProducer(nameServer, topic)
 	case "rmq":
 		return rmq.NewProducer(nameServer, topic, group, retries)
+	case "pulsar":
+		return pulsar.NewProducer(nameServer, topic, group)
 	}
 
-	return nil, fmt.Errorf("invalid mq type: %s , only support nsq, kafka, rmq", tp)
+	return nil, fmt.Errorf("invalid mq type: %s , only support nsq, kafka, rmq, pulsar", tp)
 }
