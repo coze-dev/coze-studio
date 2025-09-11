@@ -68,6 +68,9 @@ service WorkflowService {
     // App Release Management
     workflow.ListPublishWorkflowResponse ListPublishWorkflow(1: workflow.ListPublishWorkflowRequest request) (api.post='/api/workflow_api/list_publish_workflow', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 
+    // Export workflow
+    workflow.ExportWorkflowResponse ExportWorkflow(1: workflow.ExportWorkflowRequest request) (api.post='/api/workflow_api/export', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
+
     // Open API
     workflow.OpenAPIRunFlowResponse OpenAPIRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api" )
     workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/stream_run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")

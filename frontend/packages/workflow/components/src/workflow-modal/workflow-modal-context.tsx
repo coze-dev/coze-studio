@@ -29,11 +29,15 @@ import { type I18nKey, type ModalI18nKey } from './hooks/use-i18n-text';
 export interface WorkflowModalContextValue {
   spaceId: string;
   spaceType: SpaceType;
+  userId?: string;
   bindBizId?: string;
   bindBizType?: BindBizType;
   /** The current project id, only the workflow within the project has this field */
   projectId?: string;
-  /** Workflow type, this parameter is passed in by props when created by WorkflowModal pop-up window, possible values are Workflow, Imageflow. Used to distinguish which workflow to add */
+  /**
+   * Workflow type, this parameter is passed in by props when created by WorkflowModal pop-up window,
+   * possible values are Workflow, Imageflow. Used to distinguish which workflow to add
+   */
   flowMode: WorkflowMode;
   modalState: WorkflowModalState;
   /** Update popup status, merge mode */

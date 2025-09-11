@@ -17,6 +17,8 @@
 import { useWorkflowResourceMenuActions } from './use-workflow-resource-menu-actions';
 import { useWorkflowResourceClick } from './use-workflow-resource-click';
 import { useCreateWorkflowModal } from './use-create-workflow-modal';
+import { useImportAction } from './use-import-action';
+import { useImportWorkflowModal } from './use-import-workflow-modal';
 import {
   type UseWorkflowResourceAction,
   type WorkflowResourceActionProps,
@@ -55,4 +57,6 @@ export {
   useCreateWorkflowModal,
   useWorkflowResourceClick,
   useWorkflowResourceMenuActions,
+  useImportAction,
+  useImportWorkflowModal,
 };

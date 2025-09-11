@@ -2201,6 +2201,7 @@ struct OpenAPIGetWorkflowInfoResponse{
     255: required base.BaseResp BaseResp
 }
 
+// Conversation related structures
 struct CreateConversationRequest {
         1:  optional  map<string,string> MetaData (api.body = "meta_data") //自定义透传字段
         3:  optional  i64             BotId (api.body = "bot_id",  api.js_conv="true")
@@ -2214,13 +2215,11 @@ struct CreateConversationRequest {
         255: optional base.Base Base
 }
 
-
 struct CreateConversationResponse {
     1: i64    code
     2: string msg
     3: optional ConversationData ConversationData (api.body = "data")
 }
-
 
 struct ConversationData {
     1: i64             Id (api.body = "id", agw.key = "id", api.js_conv="true")
@@ -2230,4 +2229,50 @@ struct ConversationData {
     5: optional i64 ConnectorID (api.body = "connector_id", agw.key="connector_id", api.js_conv="true")
     6: optional i64 LastSectionID (api.body="last_section_id", api.js_conv="true")
     7: optional i64    AccountID (api.body = "account_id")
+}
+
+// Export workflow related structures
+struct ExportWorkflowRequest {
+    1: required string workflow_id,           // 工作流ID
+    2: optional bool include_dependencies,    // 是否包含依赖资源
+    3: required string export_format,         // 导出格式，目前支持 "json"
+    
+    255: optional base.Base Base,
+}
+
+struct ExportWorkflowResponse {
+    1: required ExportWorkflowData data,
+    
+    253: required i64 code,
+    254: required string msg,
+    255: required base.BaseResp BaseResp,
+}
+
+struct ExportWorkflowData {
+    1: required string workflow_id,           // 工作流ID
+    2: required string name,                  // 工作流名称
+    3: optional string description,           // 工作流描述
+    4: optional string version,               // 版本
+    5: optional i64 create_time,              // 创建时间
+    6: optional i64 update_time,              // 更新时间
+    7: optional string schema_json,           // 工作流schema JSON
+    8: optional list<Node> nodes,             // 节点列表
+    9: optional list<Connection> connections, // 连接列表
+    10: optional map<string, string> metadata, // 元数据
+    11: optional list<DependencyResource> dependencies, // 依赖资源
+}
+
+struct DependencyResource {
+    1: required string resource_id,           // 资源ID
+    2: required string resource_type,         // 资源类型
+    3: required string resource_name,         // 资源名称
+    4: optional string resource_version,      // 资源版本
+    5: optional map<string, string> metadata, // 资源元数据
+}
+
+struct Connection {
+    1: required string from_node,             // 起始节点
+    2: required string to_node,               // 目标节点
+    3: optional string from_port,             // 起始端口
+    4: optional string to_port,               // 目标端口
 }

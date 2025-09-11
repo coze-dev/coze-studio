@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "author": "huangjian@bytedance.com",
   "maintainers": [],
+  "type": "module",
   "exports": {
     ".": "./src/index.js",
     "./coze": "./src/coze.js",
