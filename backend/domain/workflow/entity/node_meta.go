@@ -594,7 +594,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "input&output",
 		Desc:         "支持中间过程的信息输入",
 		Color:        "#5C62FF",
-		IconURI:      "default_icon/workflow_icon/icon-input.jpg",
+		IconURI:      "default_icon/workflow_icon/icon_input.jpg",
 		SupportBatch: false,
 		ExecutableMeta: ExecutableMeta{
 			PostFillNil: true,
