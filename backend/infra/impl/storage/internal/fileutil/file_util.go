@@ -30,7 +30,7 @@ func AssembleFileUrl(ctx context.Context, urlExpire *int64, files []*storage.Fil
 	taskGroup := taskgroup.NewTaskGroup(ctx, 5)
 	for idx := range files {
 		f := files[idx]
-		expire := int64(60 * 60 * 24)
+		expire := int64(7 * 60 * 60 * 24)
 		if urlExpire != nil && *urlExpire > 0 {
 			expire = *urlExpire
 		}

@@ -229,11 +229,21 @@ func (t *s3Client) GetObjectUrl(ctx context.Context, objectKey string, opts ...s
 	bucket := t.bucketName
 	presignClient := s3.NewPresignClient(client)
 
+	opt := storage.GetOption{}
+	for _, optFn := range opts {
+		optFn(&opt)
+	}
+
+	expire := int64(60 * 60 * 24)
+	if opt.Expire > 0 {
+		expire = opt.Expire
+	}
+
 	req, err := presignClient.PresignGetObject(ctx, &s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(objectKey),
 	}, func(options *s3.PresignOptions) {
-		options.Expires = time.Duration(60*60*24) * time.Second
+		options.Expires = time.Duration(expire) * time.Second
 	})
 	if err != nil {
 		return "", fmt.Errorf("get object presigned url failed: %v", err)

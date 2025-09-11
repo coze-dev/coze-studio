@@ -246,9 +246,19 @@ func (t *tosClient) GetObjectUrl(ctx context.Context, objectKey string, opts ...
 	client := t.client
 	bucketName := t.bucketName
 
+	opt := storage.GetOption{}
+	for _, optFn := range opts {
+		optFn(&opt)
+	}
+
+	expire := int64(7 * 24 * 60 * 60)
+	if opt.Expire > 0 {
+		expire = opt.Expire
+	}
+
 	output, err := client.PreSignedURL(&tos.PreSignedURLInput{
 		HTTPMethod: enum.HttpMethodGet,
-		Expires:    60 * 60 * 24,
+		Expires:    expire,
 		Bucket:     bucketName,
 		Key:        objectKey,
 	})
