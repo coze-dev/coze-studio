@@ -133,6 +133,10 @@ export const router: ReturnType<typeof createBrowserRouter> =
                   children: [
                     {
                       index: true,
+                      element: <Navigate to="arrange" replace />,
+                    },
+                    {
+                      path: 'arrange',
                       Component: AgentIDE,
                     },
                     {
@@ -243,7 +247,9 @@ export const router: ReturnType<typeof createBrowserRouter> =
                 {
                   path: 'models/*',
                   lazy: async () => {
-                    const { SpaceModelRouter } = await import('../pages/space-model-router');
+                    const { SpaceModelRouter } = await import(
+                      '../pages/space-model-router'
+                    );
                     return { Component: SpaceModelRouter };
                   },
                 },
