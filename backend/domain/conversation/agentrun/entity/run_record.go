@@ -106,24 +106,34 @@ type MetaInfo struct {
 }
 
 type AgentRunMeta struct {
-	ConversationID   int64                    `json:"conversation_id"`
-	ConnectorID      int64                    `json:"connector_id"`
-	SpaceID          int64                    `json:"space_id"`
-	Scene            common.Scene             `json:"scene"`
-	SectionID        int64                    `json:"section_id"`
-	Name             string                   `json:"name"`
-	UserID           string                   `json:"user_id"`
-	CozeUID          int64                    `json:"coze_uid"`
-	AgentID          int64                    `json:"agent_id"`
-	ContentType      message.ContentType      `json:"content_type"`
-	Content          []*message.InputMetaData `json:"content"`
-	PreRetrieveTools []*Tool                  `json:"tools"`
-	IsDraft          bool                     `json:"is_draft"`
-	CustomerConfig   *CustomerConfig          `json:"customer_config"`
-	DisplayContent   string                   `json:"display_content"`
-	CustomVariables  map[string]string        `json:"custom_variables"`
-	Version          string                   `json:"version"`
-	Ext              map[string]string        `json:"ext"`
+	ConversationID     int64                    `json:"conversation_id"`
+	ConnectorID        int64                    `json:"connector_id"`
+	SpaceID            int64                    `json:"space_id"`
+	Scene              common.Scene             `json:"scene"`
+	SectionID          int64                    `json:"section_id"`
+	Name               string                   `json:"name"`
+	UserID             string                   `json:"user_id"`
+	CozeUID            int64                    `json:"coze_uid"`
+	AgentID            int64                    `json:"agent_id"`
+	ContentType        message.ContentType      `json:"content_type"`
+	Content            []*message.InputMetaData `json:"content"`
+	PreRetrieveTools   []*Tool                  `json:"tools"`
+	IsDraft            bool                     `json:"is_draft"`
+	CustomerConfig     *CustomerConfig          `json:"customer_config"`
+	DisplayContent     string                   `json:"display_content"`
+	CustomVariables    map[string]string        `json:"custom_variables"`
+	Version            string                   `json:"version"`
+	Ext                map[string]string        `json:"ext"`
+	AdditionalMessages []*AdditionalMessage     `json:"additional_messages"`
+}
+
+type AdditionalMessage struct {
+	Role        schema.RoleType          `json:"role"`
+	Type        message.MessageType      `json:"type"`
+	Content     []*message.InputMetaData `json:"content"`
+	ContentType message.ContentType      `json:"content_type"`
+	Name        *string                  `json:"name"`
+	Meta        map[string]string        `json:"meta"`
 }
 
 type UpdateMeta struct {

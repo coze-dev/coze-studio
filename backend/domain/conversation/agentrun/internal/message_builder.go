@@ -221,6 +221,52 @@ func preCreateAnswer(ctx context.Context, rtDependence *AgentRuntime) (*msgEntit
 	return crossmessage.DefaultSVC().PreCreate(ctx, msgMeta)
 }
 
+func buildAdditionalMessage2Create(ctx context.Context, runRecord *entity.RunRecordMeta, additionalMessage *entity.AdditionalMessage,userID string) *message.Message {
+
+	msg := &msgEntity.Message{
+		ConversationID: runRecord.ConversationID,
+		RunID:          runRecord.ID,
+		AgentID:        runRecord.AgentID,
+		SectionID:      runRecord.SectionID,
+		UserID:         userID,
+		MessageType:    additionalMessage.Type,
+	}
+
+	switch additionalMessage.Type {
+	case message.MessageTypeQuestion:
+		msg.Role = schema.User
+		msg.ContentType = additionalMessage.ContentType
+		for _, content := range additionalMessage.Content {
+			if content.Type == message.InputTypeText {
+				msg.Content = content.Text
+				break
+			}
+		}
+		msg.MultiContent = additionalMessage.Content
+
+	case message.MessageTypeAnswer:
+		msg.Role = schema.Assistant
+		msg.ContentType = message.ContentTypeText
+		for _, content := range additionalMessage.Content {
+			if content.Type == message.InputTypeText {
+				msg.Content = content.Text
+				break
+			}
+		}
+		modelContent := &schema.Message{
+			Role: schema.Assistant,
+			Content: msg.Content,
+		}
+
+		jsonContent, err := json.Marshal(modelContent)
+		if err == nil {
+			msg.ModelContent = string(jsonContent)
+		}
+	}
+	return msg
+}
+
+
 func buildAgentMessage2Create(ctx context.Context, chunk *entity.AgentRespEvent, messageType message.MessageType, rtDependence *AgentRuntime) *message.Message {
 	arm := rtDependence.GetRunMeta()
 	msg := &msgEntity.Message{

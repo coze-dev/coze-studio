@@ -72,6 +72,25 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	return dao.messagePO2DO(poData), nil
 }
 
+func (dao *MessageDAO) BatchCreate(ctx context.Context, msg []*entity.Message) ([]*entity.Message, error) {
+	poList := make([]*model.Message, 0, len(msg))
+	for _, m := range msg {
+		po, err := dao.messageDO2PO(ctx, m)
+		if err != nil {
+			return nil, err
+		}
+		poList = append(poList, po)
+	}
+
+	do := dao.query.Message.WithContext(ctx).Debug()
+	cErr := do.CreateInBatches(poList, len(poList))
+	if cErr != nil {
+		return nil, cErr
+	}
+
+	return dao.batchMessagePO2DO(poList), nil
+}
+
 func (dao *MessageDAO) List(ctx context.Context, listMeta *entity.ListMeta) ([]*entity.Message, bool, error) {
 	m := dao.query.Message
 	do := m.WithContext(ctx).Debug().Where(m.ConversationID.Eq(listMeta.ConversationID)).Where(m.Status.Eq(int32(entity.MessageStatusAvailable)))

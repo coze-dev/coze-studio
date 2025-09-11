@@ -80,7 +80,7 @@ func (art *AgentRuntime) AgentStreamExecute(ctx context.Context, imagex imagex.I
 
 func (art *AgentRuntime) push(ctx context.Context, mainChan chan *entity.AgentRespEvent) {
 
-	mh := &MesssageEventHanlder{
+	mh := &MessageEventHandler{
 		sw:           art.SW,
 		messageEvent: art.MessageEvent,
 	}

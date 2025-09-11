@@ -170,6 +170,9 @@ func (c *impl) GetMessageByID(ctx context.Context, id int64) (*entity.Message, e
 func (c *impl) ListWithoutPair(ctx context.Context, req *entity.ListMeta) (*entity.ListResult, error) {
 	return c.DomainSVC.ListWithoutPair(ctx, req)
 }
+func (c *impl) BatchCreate(ctx context.Context, msgs []*entity.Message) ([]*entity.Message, error) {
+	return c.DomainSVC.BatchCreate(ctx, msgs)
+}
 
 func convertToConvAndSchemaMessage(ctx context.Context, msgs []*entity.Message) ([]*crossmessage.WfMessage, []*schema.Message, error) {
 	messages := make([]*schema.Message, 0)

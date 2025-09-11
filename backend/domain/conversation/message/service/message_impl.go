@@ -124,6 +124,10 @@ func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, e
 	return m.MessageRepo.GetByID(ctx, id)
 }
 
+func (m *messageImpl) BatchCreate(ctx context.Context, req []*entity.Message) ([]*entity.Message, error) {
+	return m.MessageRepo.BatchCreate(ctx, req)
+}
+
 func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenMeta) error {
 
 	_, err := m.MessageRepo.Edit(ctx, req.ID, &message.Message{
