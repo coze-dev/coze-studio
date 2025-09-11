@@ -3,16 +3,47 @@ import { IconCozInfoCircle } from '@coze-arch/coze-design/icons';
 import { Tooltip, Spin } from '@coze-arch/bot-semi';
 import { Line } from '@antv/g2plot';
 
+const request = (url, params?: {}, method?: string) =>
+  fetch(url, {
+    method: method || 'POST',
+    headers:
+      method !== 'GET'
+        ? {
+            Accept: 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            'Agw-Js-Conv': 'str',
+            'x-requested-with': 'XMLHttpRequest',
+          }
+        : undefined,
+    body: method !== 'GET' ? JSON.stringify(params) : undefined,
+  })
+    .then(res => res.json())
+    .then(res => {
+      if (typeof res.code === 'number' && res.code !== 0) {
+        throw new Error(res.msg);
+      } else {
+        return res;
+      }
+    });
+
 export const BotStatisticChartItem: React.FC = ({
   title = '',
   description = '',
   updateTimestamp,
   dateRange,
+  api,
+  botId,
+  spaceId,
+  dataAdapter,
 }: {
   title: string;
   description: string;
   updateTimestamp: number;
   dateRange: [number, number];
+  botId: string;
+  spaceId: string;
+  api: string;
+  dataAdapter?: (data) => [];
 }) => {
   const [loading, setLoading] = useState(false);
   const chartRef = useRef<HTMLDivElement>(null);
@@ -23,7 +54,7 @@ export const BotStatisticChartItem: React.FC = ({
     if (dom) {
       const line = new Line(dom, {
         data: [],
-        xField: 'year',
+        xField: 'date',
         yField: 'value',
         seriesField: 'category',
         xAxis: {
@@ -43,21 +74,24 @@ export const BotStatisticChartItem: React.FC = ({
 
   useEffect(() => {
     setLoading(true);
-    fetch(
-      'https://gw.alipayobjects.com/os/bmw-prod/55424a73-7cb8-4f79-b60d-3ab627ac5698.json',
-    )
-      .then(res => res.json())
-      .then(data => {
-        console.log('data', updateTimestamp, dateRange);
+    request(api, {
+      agent_id: botId,
+      start_time: dateRange[0],
+      end_time: dateRange[1],
+      _updateTimestamp: updateTimestamp,
+    })
+      .then(res => {
+        const list = dataAdapter?.(res.data);
+        console.log('res', list);
         const line = lineChart.current;
         if (line) {
-          line.changeData(data);
+          line.changeData(list);
         }
       })
       .finally(() => {
         setLoading(false);
       });
-  }, [updateTimestamp, dateRange]);
+  }, [updateTimestamp, dateRange, api, botId, dataAdapter]);
 
   return (
     <div className="bg-white min-h-[220px] border border-solid border-gray-200 rounded-[8px] p-[24px]">
