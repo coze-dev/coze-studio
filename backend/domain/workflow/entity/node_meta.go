@@ -915,7 +915,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		// Color is the color of the upper edge of the node displayed on Canvas.
 		Color: "F2B600",
 
-		// IconURL is the URL of the icon displayed on Canvas.
+		// IconURI is the resource identifier for the icon displayed on the Canvas. It's resolved into a full URL by the backend to support different deployment environments.
 		IconURI: "default_icon/workflow_icon/icon-json-stringify.jpg",
 
 		// SupportBatch indicates whether this node can set batch mode.
