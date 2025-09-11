@@ -82,7 +82,9 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 			return nil, fmt.Errorf("exit node's content value type must be %s, got %s", vo.BlockInputValueTypeLiteral, content.Value.Type)
 		}
 
-		c.Template = content.Value.Content.(string)
+		if content.Value.Content != nil {
+			c.Template = content.Value.Content.(string)
+		}
 	}
 
 	if n.Data.Inputs.TerminatePlan == nil {
