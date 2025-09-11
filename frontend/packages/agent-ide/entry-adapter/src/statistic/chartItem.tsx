@@ -82,7 +82,6 @@ export const BotStatisticChartItem: React.FC = ({
     })
       .then(res => {
         const list = dataAdapter?.(res.data);
-        console.log('res', list);
         const line = lineChart.current;
         if (line) {
           line.changeData(list);
