@@ -57,6 +57,12 @@ export const BotStatisticChartItem: React.FC = ({
         xField: 'date',
         yField: 'value',
         seriesField: 'category',
+        area: {
+          visible: true,
+          style: {
+            fillOpacity: 0.1,
+          },
+        },
         xAxis: {
           type: 'time',
         },
