@@ -28,6 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -50,7 +51,9 @@ func (v *VariablesDAO) DeleteAllVariableData(ctx context.Context, bizType projec
 
 	defer func() {
 		if err != nil {
-			tx.Rollback()
+			if e := tx.Rollback(); e != nil {
+				logs.CtxErrorf(ctx, "rollback failed, err=%v", e)
+			}
 		}
 	}()
 
