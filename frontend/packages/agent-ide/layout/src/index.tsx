@@ -25,6 +25,8 @@ export { BotHeader, type BotHeaderProps } from './components/header';
 
 export { MoreMenuButton } from './components/header/more-menu-button';
 
+export { AgentHistoryButton } from './components/header/history-button';
+
 export {
   DeployButtonUI,
   DeployButton,

@@ -18,6 +18,7 @@ import { lazy, Suspense } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import { usePersonaStore } from '@coze-studio/bot-detail-store/persona';
+import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
 import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
 import { Spin } from '@coze-arch/coze-design';
 const AgentIdePrompt = lazy(() => import('./agent-ide-prompt'));
@@ -39,6 +40,7 @@ export const PromptEditorEntry: React.FC<PromptEditorEntryProps> = ({
       setPersonaByImmer: state.setPersonaByImmer,
     })),
   );
+  const version = useBotInfoStore(state => state.version);
   const isReadonly = useBotDetailIsReadonly();
 
   const onChange = (value: string) => {
@@ -50,6 +52,7 @@ export const PromptEditorEntry: React.FC<PromptEditorEntryProps> = ({
   return (
     <Suspense fallback={<Spin style={{ width: '100%', height: '100%' }} />}>
       <AgentIdePrompt
+        key={`prompt-editor-${version || 'current'}`}
         className={className}
         defaultValue={systemMessageData}
         onChange={onChange}

@@ -188,8 +188,9 @@ export function useCommitAction() {
 
   const viewCommitNewPage = (item: VersionMetaInfo) => {
     const query = new URLSearchParams();
-    query.append('space_id', item.space_id || '');
-    query.append('workflow_id', item.workflow_id || '');
+    // 使用globalState中的spaceId和workflowId，而不是item中可能为空的字段
+    query.append('space_id', globalState.spaceId || '');
+    query.append('workflow_id', globalState.workflowId || '');
 
     if (item.submit_commit_id) {
       query.append('version', item.submit_commit_id || '');

@@ -209,7 +209,7 @@ type publishFn func(ctx context.Context, appContext *ServiceComponents, publishI
 
 func publishAgentVariables(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
 	draftAgent := agent
-	if draftAgent.VariablesMetaID != nil || *draftAgent.VariablesMetaID == 0 {
+	if draftAgent.VariablesMetaID == nil || *draftAgent.VariablesMetaID == 0 {
 		return draftAgent, nil
 	}
 
