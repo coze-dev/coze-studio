@@ -33,15 +33,13 @@ interface AgentHistoryDrawerProps {
   onClose?: () => void;
 }
 
-const AgentHistoryDrawer: FC<AgentHistoryDrawerProps> = ({
+export const AgentHistoryDrawer: FC<AgentHistoryDrawerProps> = ({
   spaceId,
   botId,
   visible,
   onClose,
 }) => {
-  const [activeTab, setActiveTab] = useState('publish');
   const [selectedVersion, setSelectedVersion] = useState<string>('current');
-
 
   return (
     <SideSheet
@@ -50,11 +48,12 @@ const AgentHistoryDrawer: FC<AgentHistoryDrawerProps> = ({
       placement="right"
       width={540}
       headerStyle={{ display: 'none' }}
+      bodyStyle={{ padding: '0' }}
       mask={false}
     >
       <div className="h-full flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between px-[24px] py-[16px]">
           <Typography.Title heading={5} style={{ margin: 0 }}>
             {I18n.t('workflow_publish_multibranch_viewhistory')}
           </Typography.Title>
@@ -73,7 +72,7 @@ const AgentHistoryDrawer: FC<AgentHistoryDrawerProps> = ({
           <AgentHistoryList
             spaceId={spaceId}
             botId={botId}
-            activeTab={activeTab}
+            activeTab="publish"
             selectedVersion={selectedVersion}
             onVersionSelect={setSelectedVersion}
           />
@@ -82,33 +81,3 @@ const AgentHistoryDrawer: FC<AgentHistoryDrawerProps> = ({
     </SideSheet>
   );
 };
-
-export function useAgentHistoryDrawer(props: {
-  spaceId: string;
-  botId: string;
-}) {
-  const [visible, setVisible] = useState(false);
-
-  const show = useCallback(() => {
-    setVisible(true);
-  }, []);
-
-  const hide = useCallback(() => {
-    setVisible(false);
-  }, []);
-
-  const node = (
-    <AgentHistoryDrawer
-      {...props}
-      visible={visible}
-      onClose={hide}
-    />
-  );
-
-  return {
-    node,
-    show,
-    hide,
-    visible,
-  };
-}
