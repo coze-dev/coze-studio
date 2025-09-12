@@ -72,7 +72,8 @@ func staticFileRegister(r *server.Hertz) {
 
 	staticFile := path.Join(cwd, "resources/static/index.html")
 
-	r.Static("/static", path.Join(cwd, "/resources/static"))
+    // Serve static assets from cwd/resources/static (avoid absolute join)
+    r.Static("/static", path.Join(cwd, "resources/static"))
 	r.StaticFile("/favicon.png", "./resources/static/favicon.png")
 	r.StaticFile("/", staticFile)
 	r.StaticFile("/sign", staticFile)

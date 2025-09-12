@@ -30,6 +30,11 @@ const ProjectPage = lazy(() =>
     default: exps.ProjectPage,
   })),
 );
+const ExternalAppPage = lazy(() =>
+  import('@coze-community/explore').then(exps => ({
+    default: exps.ExternalAppPage,
+  })),
+);
 const PluginPage = lazy(() =>
   import('@coze-community/explore').then(exps => ({
     default: exps.PluginPage,
@@ -54,6 +59,13 @@ export const exploreRouter: RouteObject = {
     {
       index: true,
       element: <Navigate to="project/latest" replace />,
+    },
+    {
+      path: 'project/tools',
+      element: <ExternalAppPage />,
+      loader: () => ({
+        type: 'project-tools',
+      }),
     },
     {
       path: 'plugin',

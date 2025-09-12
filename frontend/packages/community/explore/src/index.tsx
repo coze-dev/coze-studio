@@ -18,3 +18,4 @@ export { ExploreSubMenu, TemplateSubMenu } from './components/sub-menu';
 export { TemplateProjectPage } from './pages/template';
 export { PluginPage } from './pages/plugin';
 export { ProjectPage } from './pages/project';
+export { ExternalAppPage } from './pages/project/external-app-page';
