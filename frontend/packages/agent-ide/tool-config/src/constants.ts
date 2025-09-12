@@ -37,6 +37,7 @@ export const TOOL_KEY_TO_API_STATUS_KEY_MAP: {
   [ToolKey.DATABASE]: 'database_tab_status',
   [ToolKey.FILE_BOX]: 'filebox_tab_status',
   [ToolKey.KNOWLEDGE]: 'knowledge_tab_status',
+  [ToolKey.EXTERNAL_KNOWLEDGE]: 'external_knowledge_tab_status',
   [ToolKey.ONBOARDING]: 'opening_dialog_tab_status',
   [ToolKey.SUGGEST]: 'suggestion_tab_status',
   [ToolKey.TRIGGER]: 'scheduled_task_tab_status',

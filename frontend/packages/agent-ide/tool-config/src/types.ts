@@ -29,6 +29,7 @@ export const enum ToolKey {
   WORKFLOW = 'workflow',
   IMAGEFLOW = 'imageflow',
   KNOWLEDGE = 'knowledge',
+  EXTERNAL_KNOWLEDGE = 'externalKnowledge',
   VARIABLE = 'variable',
   DATABASE = 'database',
   LONG_TERM_MEMORY = 'longTermMemory',

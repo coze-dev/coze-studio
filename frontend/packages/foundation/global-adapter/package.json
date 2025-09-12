@@ -46,6 +46,7 @@
     "@coze-foundation/global": "workspace:*",
     "@coze-foundation/global-store": "workspace:*",
     "@coze-foundation/layout": "workspace:*",
+    "@coze-studio/api-schema": "workspace:*",
     "@coze-studio/default-slardar": "workspace:*",
     "@coze-studio/open-auth": "workspace:*",
     "@coze-studio/user-store": "workspace:*",

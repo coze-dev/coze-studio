@@ -469,7 +469,23 @@ struct BotInfo {
     32: optional HookInfo  HookInfo         (api.body="hook_info")                                          , // Hook information
     33: UserQueryCollectConf UserQueryCollectConf (api.body="user_query_collect_conf") , // User query collection configuration
     34: LayoutInfo         LayoutInfo       (api.body="layout_info")                                        , // Orchestration information for workflow patterns
-    35: BusinessType       BusinessType     (api.body="business_type")
+    35: BusinessType       BusinessType     (api.body="business_type"),
+    36: optional ExternalKnowledge ExternalKnowledge (api.body="external_knowledge")                           // External Knowledge configuration for RAGFlow integration
+}
+
+// External Knowledge structures for RAGFlow integration
+struct ExternalKnowledge {
+    1: optional list<string> dataset_ids                                   (api.body="dataset_ids"),                 // List of dataset IDs from RAGFlow
+    2: optional i32 top_k                                                  (api.body="top_k"),                       // Number of chunks for vector computation, default 10
+    3: optional i32 page_size                                              (api.body="page_size"),                   // Max chunks per page, default 30
+    4: optional double similarity_threshold                                (api.body="similarity_threshold"),        // Min similarity score, default 0.2
+    5: optional double vector_similarity_weight                            (api.body="vector_similarity_weight"),    // Weight of vector cosine similarity, default 0.3
+    6: optional i32 rerank_id                                              (api.body="rerank_id"),                   // ID of rerank model
+    7: optional bool keyword                                               (api.body="keyword"),                     // Enable keyword matching, default false
+    8: optional bool highlight                                             (api.body="highlight"),                   // Enable term highlighting, default false
+    9: optional list<string> cross_languages                              (api.body="cross_languages"),             // Languages for translation
+    10: optional string description                                        (api.body="description"),                 // Description to help LLM understand the knowledge base purpose
+    11: optional string name                                               (api.body="name"),                         // Custom name for the knowledge base configuration
 }
 
 
@@ -616,6 +632,7 @@ struct BotInfoForUpdate {
     31: optional HookInfo             HookInfo (api.body="hook_info")
     32: optional UserQueryCollectConf     UserQueryCollectConf (api.body="user_query_collect_conf")// User query collection configuration
     33: optional LayoutInfo               LayoutInfo(api.body="layout_info")                           // Orchestration information for workflow patterns
+    34: optional ExternalKnowledge        ExternalKnowledge (api.body="external_knowledge")           // External Knowledge configuration for RAGFlow integration
 }
 
 struct AgentForUpdate {

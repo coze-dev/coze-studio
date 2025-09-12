@@ -278,11 +278,40 @@ func TryCorrectValueType(paramName string, schemaRef *openapi3.SchemaRef, value 
 	case openapi3.TypeBoolean:
 		return tryCorrectBool(value)
 	case openapi3.TypeArray:
+		// First try to convert to array if it's not already an array
 		arrVal, ok := value.([]any)
 		if !ok {
-			return nil, fmt.Errorf("[TryCorrectValueType] value '%s' is not array", paramName)
+			// Try to convert different types to array
+			switch v := value.(type) {
+			case string:
+				// Handle single string value or comma-separated values
+				if v == "" {
+					return []any{}, nil
+				}
+				// Try to parse as JSON array first
+				var jsonArr []any
+				if err := json.Unmarshal([]byte(v), &jsonArr); err == nil {
+					arrVal = jsonArr
+				} else {
+					// Treat as single string value
+					arrVal = []any{v}
+				}
+			case []string:
+				// Convert []string to []any
+				arrVal = make([]any, len(v))
+				for i, s := range v {
+					arrVal[i] = s
+				}
+			case []interface{}:
+				// Already the right type
+				arrVal = v
+			default:
+				// Treat any single value as array with one element
+				arrVal = []any{value}
+			}
 		}
 
+		// Process each element in the array
 		for i, v := range arrVal {
 			_v, err := TryCorrectValueType(paramName, schemaRef.Value.Items, v)
 			if err != nil {

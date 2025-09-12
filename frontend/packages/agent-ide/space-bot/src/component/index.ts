@@ -50,6 +50,7 @@ export { BotSubmitModalDiffView } from './bot-diff-view/bot-submit-modal';
 export { InputSlider } from './input-slider';
 export { Setting } from './data-set/data-set-area';
 export { AuthorizeButton } from './authorize-button';
+export { ExternalKnowledgeArea } from './external-knowledge-area';
 
 export {
   NavModal,

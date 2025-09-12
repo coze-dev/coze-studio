@@ -71,6 +71,7 @@ type SingleAgent struct {
 	Prompt                  *bot_common.PromptInfo
 	Plugin                  []*bot_common.PluginInfo
 	Knowledge               *bot_common.Knowledge
+	ExternalKnowledge       *bot_common.ExternalKnowledge
 	Workflow                []*bot_common.WorkflowInfo
 	SuggestReply            *bot_common.SuggestReplyInfo
 	JumpConfig              *bot_common.JumpConfig

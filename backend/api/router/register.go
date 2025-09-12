@@ -29,6 +29,7 @@ import (
 
 	cozeHandler "github.com/coze-dev/coze-studio/backend/api/handler/coze"
 	coze "github.com/coze-dev/coze-studio/backend/api/router/coze"
+	external_knowledge "github.com/coze-dev/coze-studio/backend/api/router/external_knowledge"
 	memory_config "github.com/coze-dev/coze-studio/backend/api/router/memory_config"
 	modelmgr "github.com/coze-dev/coze-studio/backend/api/router/modelmgr"
 	space "github.com/coze-dev/coze-studio/backend/api/router/space"
@@ -48,6 +49,7 @@ func GeneratedRegister(r *server.Hertz) {
 	statistics.Register(r)
 
 	coze.Register(r)
+	external_knowledge.Register(r)
 	modelmgr.Register(r)
 	space.Register(r)
 	// space_member.Register(r) // 已经在space模块中包含了
