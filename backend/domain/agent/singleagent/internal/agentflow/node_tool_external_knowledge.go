@@ -22,13 +22,19 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	external_knowledge "github.com/coze-dev/coze-studio/backend/api/model/external_knowledge"
+	externalKnowledgeApp "github.com/coze-dev/coze-studio/backend/application/external_knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
+	domainExternalKnowledge "github.com/coze-dev/coze-studio/backend/domain/external_knowledge"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type externalKnowledgeConfig struct {
@@ -111,21 +117,53 @@ func (e *externalKnowledgeInvokableTool) InvokableRun(ctx context.Context, argum
 	return string(resultJSON), nil
 }
 
-// callRAGFlowAPI directly calls RAGFlow API with bot configuration parameters
+// callRAGFlowAPI directly calls RAGFlow API v2 with user's binding key and Bot configuration
 func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, question string) (map[string]interface{}, error) {
 	// Get RAGFlow base URL from environment
 	ragflowBaseURL := os.Getenv("RAGFLOW_BASE_URL")
 	if ragflowBaseURL == "" {
-		ragflowBaseURL = "http://10.10.10.223" // fallback
-	}
-	
-	// Get RAGFlow API key from environment
-	apiKey := os.Getenv("RAGFLOW_API_KEY")
-	if apiKey == "" {
-		apiKey = "Bearer ragflow-JmYzBmN2EwOGViMTExZjA4ODhhNTYxM2" // fallback
+		ragflowBaseURL = "http://10.10.10.223:9222" // fallback with port
 	}
 
-	// Use bot configuration parameters
+	// Get user's binding key from the application service
+	if externalKnowledgeApp.ExternalKnowledgeApplicationSVC == nil {
+		return nil, fmt.Errorf("external knowledge service not initialized")
+	}
+
+	// Get the user's enabled binding for RAGFlow API key
+	userIDInt, err := strconv.ParseInt(e.userID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid user ID: %s", e.userID)
+	}
+	userIDStr := strconv.FormatInt(userIDInt, 10)
+
+	// Get user bindings through the existing GetBindingList API
+	bindingReq := &external_knowledge.GetBindingListRequest{
+		Page:     ptr.Of(int32(1)),
+		PageSize: ptr.Of(int32(10)),
+	}
+	bindingResp, err := externalKnowledgeApp.ExternalKnowledgeApplicationSVC.GetBindingList(ctx, userIDStr, bindingReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user bindings: %w", err)
+	}
+
+	if bindingResp.Code != 0 || len(bindingResp.Data) == 0 {
+		return nil, fmt.Errorf("no enabled RAGFlow binding found for user %s", userIDStr)
+	}
+
+	// Find an enabled binding
+	var apiKey string
+	for _, binding := range bindingResp.Data {
+		if binding.Status == domainExternalKnowledge.BindingStatusEnabled {
+			apiKey = fmt.Sprintf("Bearer %s", binding.BindingKey)
+			break
+		}
+	}
+	if apiKey == "" {
+		return nil, fmt.Errorf("no enabled binding found for user %s", userIDStr)
+	}
+
+	// Use Bot configuration parameters
 	datasetIDs := e.externalKnowledge.DatasetIds
 	topK := int(5) // default
 	if e.externalKnowledge.TopK != nil {
@@ -147,17 +185,18 @@ func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, que
 		vectorSimilarityWeight = *e.externalKnowledge.VectorSimilarityWeight
 	}
 
-	// Build retrieval request body
+	// Build retrieval request body with v2 API format and exclude_fields
 	requestBody := map[string]interface{}{
 		"question":                 question,
-		"dataset_ids":             datasetIDs,
-		"top_k":                   topK,
-		"page":                    1,
-		"page_size":               pageSize,
-		"similarity_threshold":    similarityThreshold,
+		"page":                     1,
+		"page_size":                pageSize,
+		"dataset_ids":              datasetIDs,
+		"exclude_fields":           []string{"image_id", "positions", "content_ltks", "important_keywords"}, // 固定的exclude_fields
+		"top_k":                    topK,
+		"similarity_threshold":     similarityThreshold,
 		"vector_similarity_weight": vectorSimilarityWeight,
-		"keyword":                 true, // enable keyword search
-		"highlight":               true, // enable highlight
+		"keyword":                  true, // enable keyword search
+		"highlight":                true, // enable highlight
 	}
 
 	jsonBody, err := json.Marshal(requestBody)
@@ -165,8 +204,8 @@ func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, que
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	// Create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/api/v1/retrieval", ragflowBaseURL), strings.NewReader(string(jsonBody)))
+	// Create HTTP request for v2 API
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/api/v1/retrieval_v2", ragflowBaseURL), strings.NewReader(string(jsonBody)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -188,9 +227,11 @@ func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, que
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
-	// Check if the request was successful
-	if code, ok := result["code"].(float64); !ok || code != 0 {
-		return nil, fmt.Errorf("RAGFlow API error: %v", result)
+	// Log request details for debugging
+	if data, ok := result["data"].(map[string]interface{}); ok {
+		if chunks, ok := data["chunks"].([]interface{}); ok {
+			logs.Infof("RAGFlow API v2 called with page_size=%d, returned %d chunks", pageSize, len(chunks))
+		}
 	}
 
 	return result, nil

@@ -339,7 +339,7 @@ func (s *Service) GetRAGFlowDatasets(ctx context.Context, userID string, req *ex
 
 	// Make request to RAGFlow API
 	url := fmt.Sprintf("%s/api/v1/datasets", ragflowBaseURL)
-	
+
 	httpReq, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		logs.Errorf("Failed to create request: %v", err)
@@ -462,19 +462,19 @@ func (s *Service) Retrieval(ctx context.Context, userID string, req *external_kn
 	// Get bot's external knowledge configuration
 	// Note: In a complete implementation, we would fetch the bot configuration
 	// from the database using the bot_id and draft_mode flag
-	
+
 	// For now, we'll need to get the external knowledge settings from the bot
 	// This requires integration with the singleagent service
 	// TODO: Integrate with singleagent.GetAgentBotInfo to get actual bot config
-	
+
 	// Default RAGFlow URL
 	ragflowURL := os.Getenv("RAGFLOW_API_URL")
 	if ragflowURL == "" {
 		ragflowURL = "http://10.10.10.223"
 	}
-	
+
 	// Get RAGFlow API key - in production, this should come from user's binding
-	apiKey := os.Getenv("RAGFLOW_API_KEY") 
+	apiKey := os.Getenv("RAGFLOW_API_KEY")
 	if apiKey == "" {
 		// Use default key for testing
 		apiKey = "Bearer ragflow-JmYzBmN2EwOGViMTExZjA4ODhhNTYxM2"
@@ -489,7 +489,7 @@ func (s *Service) Retrieval(ctx context.Context, userID string, req *external_kn
 	vectorSimilarityWeight := 0.3
 	useKeyword := false
 	useHighlight := false
-	
+
 	// Build retrieval request body
 	requestBody := map[string]interface{}{
 		"question":                 req.Question,
@@ -513,7 +513,7 @@ func (s *Service) Retrieval(ctx context.Context, userID string, req *external_kn
 	}
 
 	// Create HTTP request
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/api/v1/retrieval", ragflowURL), strings.NewReader(string(jsonBody)))
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/api/v1/retrieval_v2", ragflowURL), strings.NewReader(string(jsonBody)))
 	if err != nil {
 		logs.Errorf("Failed to create retrieval request: %v", err)
 		return &external_knowledge.RetrievalResponse{
