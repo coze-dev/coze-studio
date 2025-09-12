@@ -154,26 +154,60 @@ export function useAgentHistoryAction() {
       });
 
       try {
-        // 这里需要实现智能体版本回滚的API调用
-        // 目前API可能还不支持智能体版本回滚，所以先显示成功提示
-        // 后续需要根据实际的回滚API进行调整
-        
-        reporter.successEvent({
-          eventName: 'agent_revert_success',
-          namespace: 'agent',
+        // 调用新的回滚API接口
+        const response = await fetch('/api/ynet-agent/revert-draft-bot', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            space_id: spaceId,
+            bot_id: botId,
+            version: item.version,
+          }),
         });
 
-        Toast.success({
-          content: I18n.t('workflow_publish_multibranch_revert_success'),
-          showClose: false,
-        });
+        const result = await response.json();
 
-        // 回滚成功后刷新页面
-        setTimeout(() => {
-          window.location.reload();
-        }, 1000);
+        if (result.code === 0) {
+          // 回滚成功
+          reporter.successEvent({
+            eventName: 'agent_revert_success',
+            namespace: 'agent',
+          });
 
-        return true;
+          Toast.success({
+            content: I18n.t('workflow_publish_multibranch_revert_success'),
+            showClose: false,
+          });
+
+          // 回滚成功后重新加载当前版本的数据
+          const reloadResponse = await fetch('/api/playground_api/draftbot/get_draft_bot_info', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              space_id: spaceId,
+              bot_id: botId,
+              // 不传版本ID，获取最新版本（已经回滚后的版本）
+            }),
+          });
+
+          const reloadResult = await reloadResponse.json();
+          if (reloadResult.code === 0 && reloadResult.data) {
+            // 恢复到可编辑状态
+            const { setPageRuntimeBotInfo } = usePageRuntimeStore.getState();
+            setPageRuntimeBotInfo({ isPreview: false });
+            
+            // 使用完整的store初始化，确保所有资源都被更新
+            initAllStoresWithBotData(reloadResult.data);
+          }
+
+          return true;
+        } else {
+          throw new Error(result.msg || '版本回滚失败');
+        }
       } catch (error) {
         reporter.errorEvent({
           eventName: 'agent_revert_fail',
