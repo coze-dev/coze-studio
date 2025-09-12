@@ -40,4 +40,6 @@ type VersionMeta struct {
 	VersionDescription string
 	VersionCreatedAt   time.Time
 	VersionCreatorID   int64
+	CreatorName        string
+	CreatorIconURI     string
 }

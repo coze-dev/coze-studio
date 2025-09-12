@@ -314,6 +314,46 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       );
     }
 
+    // 对于简单的版本查看场景，使用新的 API
+    if (operateType && !log_id && !execute_id && !sub_execute_id && !projectId && !projectCommitVersion) {
+      const workflowJSON = await this.loadVersionSchema({
+        commit_id,
+        type: operateType,
+        env,
+      });
+      
+      if (workflowJSON) {
+        // 构造 workflowInfo 结构
+        const workflowInfo: WorkflowInfo = {
+          workflow_id: workflowId,
+          space_id: spaceId,
+          name: `Workflow_${workflowId}`, // 默认名称，新接口会提供实际名称
+          desc: '',
+          flow_mode: WorkflowMode.Workflow,
+          url: '',
+          status: WorkFlowDevStatus.HadSubmit,
+          type: WorkFlowType.User,
+          schema_json: JSON.stringify(workflowJSON),
+          collaborator_mode: CollaboratorMode.Open,
+          vcsData: {
+            type: operateType === OperateType.PublishOperate ? VCSCanvasType.Publish : VCSCanvasType.Submit,
+            submit_commit_id: commit_id,
+          },
+        };
+
+        this.updateConfig({
+          workflowId,
+          info: workflowInfo,
+          preview: true,
+          bindBizID: '',
+          bindBizType: 'workflow',
+        });
+
+        return workflowJSON;
+      }
+    }
+
+    // 对于复杂场景（有执行记录、项目相关等），继续使用旧接口
     const { data } = await workflowApi.GetHistorySchema({
       workflow_id: workflowId,
       space_id: spaceId,
@@ -388,6 +428,112 @@ export class WorkflowGlobalStateEntity extends ConfigEntity<WorkflowGlobalState>
       });
 
     return workflowJSON;
+  }
+
+  /**
+   * 加载版本历史 - 新的直接版本查看接口
+   * 根据 commit_id 和 type 直接查询版本内容
+   */
+  async loadVersionSchema(params: {
+    commit_id: string;
+    type: OperateType;
+    env?: string;
+  }): Promise<WorkflowJSON | undefined> {
+    const workflowId = this.workflowId || this.playgroundProps.workflowId;
+    const spaceId = this.spaceId || this.playgroundProps.spaceId;
+    const { commit_id, type: operateType, env } = params;
+
+    if (!workflowId || !spaceId) {
+      throw new CustomError(
+        REPORT_EVENTS.parmasValidation,
+        I18n.t(
+          'loadVersionSchema error: no workflowId or spaceId' as I18nKeysNoOptionsType,
+        ),
+      );
+    }
+
+    try {
+      // 处理特殊的commit_id值
+      const actualCommitId = commit_id === 'current-draft' ? '' : commit_id;
+      const backendType = (operateType === OperateType.PublishOperate || operateType === OperateType.PubPPEOperate) ? 2 : 1;
+
+      // 调用新的版本查看接口
+      const response = await fetch('/api/workflow_api/get_version_schema', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workflow_id: workflowId,
+          space_id: spaceId,
+          commit_id: actualCommitId,
+          type: backendType,
+          env,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (result.code !== 0) {
+        throw new Error(result.msg || 'Failed to get version schema');
+      }
+
+      const {
+        schema,
+        name,
+        description,
+        icon_url,
+        version,
+        flow_mode,
+        input_params,
+        output_params,
+      } = result;
+
+      // 构建工作流信息
+      const workflowInfo: WorkflowInfo = {
+        workflow_id: workflowId,
+        space_id: spaceId,
+        name: name || '',
+        desc: description || '',
+        flow_mode: flow_mode ?? WorkflowMode.Workflow,
+        url: icon_url || '',
+        status: WorkFlowDevStatus.HadSubmit,
+        type: WorkFlowType.User,
+        schema_json: schema,
+        collaborator_mode: CollaboratorMode.Open,
+        vcsData: {
+          type: operateType === OperateType.PublishOperate 
+            ? VCSCanvasType.Publish 
+            : VCSCanvasType.Submit,
+          submit_commit_id: commit_id,
+        },
+      };
+
+      const workflowJSON = (
+        schema ? JSON.parse(schema) : undefined
+      ) as WorkflowJSON;
+
+      // 更新配置
+      this.updateConfig({
+        workflowId,
+        info: workflowInfo,
+        preview: true,
+        historyStatus: operateType,
+      });
+
+      // 更新画布只读状态
+      this.entityManager
+        .getEntity<PlaygroundConfigEntity>(PlaygroundConfigEntity)
+        ?.updateConfig({
+          readonly: true, // 历史版本为只读
+        });
+
+      return workflowJSON;
+
+    } catch (error) {
+      console.error('Failed to load version schema:', error);
+      throw error;
+    }
   }
 
   /** Acquire space-related information */

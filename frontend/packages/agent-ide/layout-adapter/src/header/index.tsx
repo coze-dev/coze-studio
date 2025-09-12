@@ -25,6 +25,7 @@ import {
   DeployButton,
   MoreMenuButton,
   OriginStatus,
+  AgentHistoryButton,
 } from '@coze-agent-ide/layout';
 
 export type HeaderAddonAfterProps = Omit<
@@ -60,6 +61,7 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
           <>
             <div className="flex items-center gap-2">
               {/** Function button area */}
+              <AgentHistoryButton />
               <MoreMenuButton />
             </div>
             {/** Submit post related button */}

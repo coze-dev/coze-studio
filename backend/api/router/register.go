@@ -34,6 +34,7 @@ import (
 	space "github.com/coze-dev/coze-studio/backend/api/router/space"
 	statistics "github.com/coze-dev/coze-studio/backend/api/router/statistics"
 	template_publish "github.com/coze-dev/coze-studio/backend/api/router/template_publish"
+	ynet_workflow "github.com/coze-dev/coze-studio/backend/api/router/ynet_workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -41,6 +42,8 @@ import (
 func GeneratedRegister(r *server.Hertz) {
 	//INSERT_POINT: DO NOT DELETE THIS LINE!
 	memory_config.Register(r)
+
+	ynet_workflow.Register(r)
 
 	statistics.Register(r)
 

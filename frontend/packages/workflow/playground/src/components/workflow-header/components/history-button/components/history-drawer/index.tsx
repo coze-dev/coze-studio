@@ -25,7 +25,6 @@ import {
   IconButton,
   Typography,
   SideSheet,
-  Select,
 } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { IconCloseNoCycle } from '@coze-arch/bot-icons';
@@ -96,7 +95,7 @@ export const HistoryDrawer: FC<HistoryDrawerProps> = ({
       item => item.value !== OperateType.PubPPEOperate,
     );
   }, [enablePublishPPE]);
-  const [optType, setOptType] = useState(tabOptions[0].value);
+  const [optType, setOptType] = useState(OperateType.SubmitPublishPPEOperate);
   const [activeItem, setActiveItem] = useState(defaultActiveItem);
 
   /**
@@ -136,7 +135,7 @@ export const HistoryDrawer: FC<HistoryDrawerProps> = ({
   useEffect(() => {
     if (!visible) {
       setActiveItem(defaultActiveItem);
-      setOptType(tabOptions[0].value);
+      setOptType(OperateType.SubmitPublishPPEOperate);
     }
   }, [visible]);
 
@@ -183,7 +182,8 @@ export const HistoryDrawer: FC<HistoryDrawerProps> = ({
         ) : undefined
       }
     >
-      <Select
+      {/* 隐藏筛选下拉框，固定只查询发布版本 */}
+      {/* <Select
         optionList={tabOptions}
         value={optType}
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -191,9 +191,9 @@ export const HistoryDrawer: FC<HistoryDrawerProps> = ({
           setOptType(e);
         }}
         className="w-full"
-      />
+      /> */}
       <WorkflowCommitList
-        className="mt-3"
+        className=""
         showCurrent={showLatest}
         value={activeItem}
         enablePublishPPE={enablePublishPPE}

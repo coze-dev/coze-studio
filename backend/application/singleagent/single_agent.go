@@ -436,6 +436,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		DatabaseList:            do.Database,
 		ShortcutSort:            do.ShortcutCommand,
 		LayoutInfo:              do.LayoutInfo,
+		Version:                 do.Version,
 	}
 
 	if do.VariablesMetaID != nil {

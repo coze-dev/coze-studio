@@ -92,9 +92,28 @@ export function useVersionHistory({
   );
 
   const fetchList = async (params: VersionHistoryListRequest) => {
-    const resp = await workflowApi.VersionHistoryList(params);
+    // 直接调用我们的新接口
+    const response = await fetch('/api/workflow_api/version_list', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        space_id: params.space_id,
+        workflow_id: params.workflow_id,
+        type: params.type,
+        limit: params.limit,
+        last_commit_id: params.last_commit_id || '',
+      }),
+    });
+    
+    const data = await response.json();
+    
+    if (data.code !== 0) {
+      throw new Error(data.msg || 'Failed to fetch version history');
+    }
 
-    return resp.data;
+    return data;
   };
 
   const {

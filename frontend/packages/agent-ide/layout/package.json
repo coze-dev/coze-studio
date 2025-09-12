@@ -55,7 +55,8 @@
     "lodash-es": "^4.17.21",
     "nanoid": "^4.0.2",
     "react-helmet": "^6.1.0",
-    "zustand": "^4.4.7"
+    "zustand": "^4.4.7",
+    "dayjs": "^1.11.7"
   },
   "devDependencies": {
     "@coze-arch/bot-typings": "workspace:*",

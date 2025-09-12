@@ -70,30 +70,47 @@ export function useCommitAction() {
     });
 
     try {
-      // Priority is given to using the commit ID to operate, and the commit ID is fixed to the OperateType. SubmitOperate type
-      await workflowApi.RevertDraft({
-        workflow_id: globalState.workflowId,
-        space_id: globalState.spaceId,
-        commit_id: item.submit_commit_id || item.commit_id || '',
-        type:
-          (item.submit_commit_id ? OperateType.SubmitOperate : item.type) ??
-          OperateType.SubmitOperate,
-        env: item.submit_commit_id ? '' : item.env,
+      // 直接调用我们的新接口
+      const response = await fetch('/api/workflow_api/revert_draft', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          workflow_id: globalState.workflowId,
+          space_id: globalState.spaceId,
+          commit_id: item.submit_commit_id || item.commit_id || '',
+          type:
+            (item.submit_commit_id ? OperateType.SubmitOperate : item.type) ??
+            OperateType.SubmitOperate,
+          env: item.submit_commit_id ? '' : item.env,
+        }),
       });
-      reporter.successEvent({
-        eventName: 'workflow_revert_success',
-        namespace: 'workflow',
-      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        reporter.successEvent({
+          eventName: 'workflow_revert_success',
+          namespace: 'workflow',
+        });
 
-      Toast.success({
-        content: I18n.t('workflow_publish_multibranch_revert_success'),
-        showClose: false,
-      });
+        Toast.success({
+          content: result.message || I18n.t('workflow_publish_multibranch_revert_success'),
+          showClose: false,
+        });
+      } else {
+        throw new Error(result.message || 'Revert failed');
+      }
     } catch (error) {
       reporter.errorEvent({
         eventName: 'workflow_revert_fail',
         namespace: 'workflow',
         error,
+      });
+      Toast.error({
+        content: error.message || '版本回滚失败',
+        showClose: false,
       });
     }
 
@@ -131,26 +148,49 @@ export function useCommitAction() {
       version_id: item.commit_id,
     });
 
-    if (item.submit_commit_id) {
-      await saveService.reloadDocument({
-        commitId: item.submit_commit_id,
-        type: OperateType.SubmitOperate,
+    try {
+      // 使用新的版本查看接口
+      let commitId: string;
+      let operateType: OperateType;
+      let env: string | undefined;
+
+      if (item.submit_commit_id) {
+        commitId = item.submit_commit_id;
+        operateType = OperateType.SubmitOperate;
+        env = undefined;
+      } else {
+        commitId = item.commit_id;
+        operateType = item.type as OperateType;
+        env = item.env;
+      }
+
+      // 调用新的直接版本查看方法
+      const workflowJSON = await globalState.loadVersionSchema({
+        commit_id: commitId,
+        type: operateType,
+        env,
       });
-    } else {
-      await saveService.reloadDocument({
-        commitId: item.commit_id,
-        type: item.type,
-        env: item.env,
-      });
+
+      if (workflowJSON) {
+        // 使用获取的workflowJSON重新加载文档
+        await saveService.reloadDocument({
+          customWorkflowJson: workflowJSON,
+        });
+      }
+    } catch (error) {
+      console.error('Failed to view commit:', error);
+      throw error; // 不再回退到旧方法，直接抛出错误
     }
+    
     // You need to dry run results after switching versions
     runService.clearTestRun();
   };
 
   const viewCommitNewPage = (item: VersionMetaInfo) => {
     const query = new URLSearchParams();
-    query.append('space_id', item.space_id || '');
-    query.append('workflow_id', item.workflow_id || '');
+    // 使用globalState中的spaceId和workflowId，而不是item中可能为空的字段
+    query.append('space_id', globalState.spaceId || '');
+    query.append('workflow_id', globalState.workflowId || '');
 
     if (item.submit_commit_id) {
       query.append('version', item.submit_commit_id || '');

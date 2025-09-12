@@ -14,31 +14,33 @@
  * limitations under the License.
  */
 
-/* eslint-disable @coze-arch/no-deep-relative-import */
 import React from 'react';
 
+import { useShallow } from 'zustand/react/shallow';
+import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
+import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
 import { I18n } from '@coze-arch/i18n';
 import { IconButton, Tooltip } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { IconHistory } from '@coze-arch/bot-icons';
 
-import { useGlobalState } from '../../../../hooks';
-import { useHistoryDrawer } from './components/history-drawer';
+import { useAgentHistoryDrawer } from './components/history-drawer';
 
-const WorkflowHistory = () => {
-  const globalState = useGlobalState();
-  const { info } = globalState;
-  // const vcsPermission = info.vcsData?.can_edit;
-  // 1. Collaboration mode 2. Collaboration mode permissions
-  // 临时启用：开源版本也显示历史按钮
-  const showHistory = true; // 原本是: vcsPermission
+const AgentHistory = () => {
+  const isReadonly = useBotDetailIsReadonly();
+  const { botId, spaceId } = useBotInfoStore(
+    useShallow(state => ({
+      botId: state.botId,
+      spaceId: state.space_id,
+    })),
+  );
 
-  const { node: historyDrawer, show: showHistoryDrawer } = useHistoryDrawer({
-    spaceId: globalState.spaceId,
-    workflowId: globalState.workflowId,
-    enablePublishPPE: Boolean(
-      globalState.isDevSpace && globalState.hasPublished,
-    ),
+  // 显示历史按钮的条件：非只读状态且有botId
+  const showHistory = !isReadonly && !!botId;
+
+  const { node: historyDrawer, show: showHistoryDrawer } = useAgentHistoryDrawer({
+    spaceId: spaceId || '',
+    botId: botId || '',
   });
 
   if (!showHistory) {
@@ -56,8 +58,8 @@ const WorkflowHistory = () => {
           color="secondary"
           onClick={() => {
             sendTeaEvent(EVENT_NAMES.workflow_submit_version_history, {
-              workflow_id: globalState.workflowId,
-              workspace_id: globalState.spaceId,
+              bot_id: botId,
+              workspace_id: spaceId,
             });
             showHistoryDrawer();
           }}
@@ -68,4 +70,4 @@ const WorkflowHistory = () => {
   );
 };
 
-export const HistoryButton = () => <WorkflowHistory />;
+export const AgentHistoryButton = () => <AgentHistory />;

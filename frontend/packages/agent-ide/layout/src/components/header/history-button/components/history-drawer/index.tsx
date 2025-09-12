@@ -1,0 +1,114 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { type FC, useState, useCallback } from 'react';
+
+import { I18n } from '@coze-arch/i18n';
+import {
+  IconButton,
+  Typography,
+  SideSheet,
+} from '@coze-arch/coze-design';
+import { IconCloseNoCycle } from '@coze-arch/bot-icons';
+
+import { AgentHistoryList } from './agent-history-list';
+
+interface AgentHistoryDrawerProps {
+  spaceId: string;
+  botId: string;
+  visible: boolean;
+  onClose?: () => void;
+}
+
+const AgentHistoryDrawer: FC<AgentHistoryDrawerProps> = ({
+  spaceId,
+  botId,
+  visible,
+  onClose,
+}) => {
+  const [activeTab, setActiveTab] = useState('publish');
+  const [selectedVersion, setSelectedVersion] = useState<string>('current');
+
+
+  return (
+    <SideSheet
+      visible={visible}
+      onCancel={onClose}
+      placement="right"
+      width={540}
+      headerStyle={{ display: 'none' }}
+      mask={false}
+    >
+      <div className="h-full flex flex-col">
+        {/* Header */}
+        <div className="flex items-center justify-between p-4 border-b border-gray-200">
+          <Typography.Title heading={5} style={{ margin: 0 }}>
+            {I18n.t('workflow_publish_multibranch_viewhistory')}
+          </Typography.Title>
+          <div className="flex items-center gap-2">
+            <IconButton
+              icon={<IconCloseNoCycle />}
+              onClick={onClose}
+              color="secondary"
+              size="small"
+            />
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="flex-1 overflow-auto">
+          <AgentHistoryList
+            spaceId={spaceId}
+            botId={botId}
+            activeTab={activeTab}
+            selectedVersion={selectedVersion}
+            onVersionSelect={setSelectedVersion}
+          />
+        </div>
+      </div>
+    </SideSheet>
+  );
+};
+
+export function useAgentHistoryDrawer(props: {
+  spaceId: string;
+  botId: string;
+}) {
+  const [visible, setVisible] = useState(false);
+
+  const show = useCallback(() => {
+    setVisible(true);
+  }, []);
+
+  const hide = useCallback(() => {
+    setVisible(false);
+  }, []);
+
+  const node = (
+    <AgentHistoryDrawer
+      {...props}
+      visible={visible}
+      onClose={hide}
+    />
+  );
+
+  return {
+    node,
+    show,
+    hide,
+    visible,
+  };
+}

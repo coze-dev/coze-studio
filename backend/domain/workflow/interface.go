@@ -88,7 +88,9 @@ type Repository interface {
 	GetMeta(ctx context.Context, id int64) (*vo.Meta, error)
 	UpdateMeta(ctx context.Context, id int64, metaUpdate *vo.MetaUpdate) error
 	GetVersion(ctx context.Context, id int64, version string) (*vo.VersionInfo, error)
+	GetVersionByCommitID(ctx context.Context, workflowID int64, commitID string) (*vo.VersionInfo, error)
 	GetVersionListByConnectorAndWorkflowID(ctx context.Context, connectorID, workflowID int64, limit int) ([]string, error)
+	GetVersionList(ctx context.Context, workflowID int64, limit int) ([]*vo.VersionInfo, error)
 
 	GetEntity(ctx context.Context, policy *vo.GetPolicy) (*entity.Workflow, error)
 
