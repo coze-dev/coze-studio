@@ -79,7 +79,6 @@ const initAllStoresWithBotData = (botData: any) => {
       // 清空知识库数据集存储，让组件重新获取数据
       const { setDataSetList } = useDatasetStore.getState();
       setDataSetList([]);
-      
     } catch (error) {
       console.warn('处理知识库数据集存储时出错:', error);
     }
@@ -109,27 +108,29 @@ export function useAgentHistoryAction() {
   const showCurrent = useCallback(async () => {
     // 重新加载当前版本的智能体数据，类似workflow的reloadDocument
     try {
-      const response = await fetch('/api/playground_api/draftbot/get_draft_bot_info', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        '/api/playground_api/draftbot/get_draft_bot_info',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            space_id: spaceId,
+            bot_id: botId,
+            // 不传版本ID，获取最新版本
+          }),
         },
-        body: JSON.stringify({
-          space_id: spaceId,
-          bot_id: botId,
-          // 不传版本ID，获取最新版本
-        }),
-      });
+      );
 
       const result = await response.json();
       if (result.code === 0 && result.data) {
         // 恢复到可编辑状态
         const { setPageRuntimeBotInfo } = usePageRuntimeStore.getState();
         setPageRuntimeBotInfo({ isPreview: false });
-        
+
         // 使用完整的store初始化，确保所有资源都被更新
         initAllStoresWithBotData(result.data);
-        
       }
     } catch (error) {
       console.error('Failed to reload current version:', error);
@@ -157,7 +158,7 @@ export function useAgentHistoryAction() {
         // 这里需要实现智能体版本回滚的API调用
         // 目前API可能还不支持智能体版本回滚，所以先显示成功提示
         // 后续需要根据实际的回滚API进行调整
-        
+
         reporter.successEvent({
           eventName: 'agent_revert_success',
           namespace: 'agent',
@@ -180,12 +181,14 @@ export function useAgentHistoryAction() {
           namespace: 'agent',
           error,
         });
-        
+
         Toast.error({
-          content: (error as Error).message || I18n.t('workflow_publish_multibranch_revert_failed'),
+          content:
+            (error as Error).message ||
+            I18n.t('workflow_publish_multibranch_revert_failed'),
           showClose: false,
         });
-        
+
         return false;
       }
     },
@@ -208,17 +211,20 @@ export function useAgentHistoryAction() {
 
       try {
         // 调用get_draft_bot_info接口获取特定版本的智能体信息
-        const response = await fetch('/api/playground_api/draftbot/get_draft_bot_info', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const response = await fetch(
+          '/api/playground_api/draftbot/get_draft_bot_info',
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              space_id: spaceId,
+              bot_id: botId,
+              version: item.version, // 传入版本ID
+            }),
           },
-          body: JSON.stringify({
-            space_id: spaceId,
-            bot_id: botId,
-            version: item.version, // 传入版本ID
-          }),
-        });
+        );
 
         const result = await response.json();
 
@@ -227,22 +233,24 @@ export function useAgentHistoryAction() {
           // 先设置为预览模式，避免触发自动保存
           const { setPageRuntimeBotInfo } = usePageRuntimeStore.getState();
           setPageRuntimeBotInfo({ isPreview: true });
-          
+
           // 使用完整的store初始化，确保所有资源（插件、工作流、知识库、记忆、对话体验等）都被更新
           initAllStoresWithBotData(result.data);
-          
+
           return true;
         } else {
           throw new Error(result.msg || '获取版本数据失败');
         }
       } catch (error) {
         console.error('Failed to view history version:', error);
-        
+
         Toast.error({
-          content: (error as Error).message || I18n.t('workflow_publish_multibranch_view_failed'),
+          content:
+            (error as Error).message ||
+            I18n.t('workflow_publish_multibranch_view_failed'),
           showClose: false,
         });
-        
+
         return false;
       }
     },
@@ -271,12 +279,14 @@ export function useAgentHistoryAction() {
         return true;
       } catch (error) {
         console.error('Failed to view history version:', error);
-        
+
         Toast.error({
-          content: (error as Error).message || I18n.t('workflow_publish_multibranch_view_failed'),
+          content:
+            (error as Error).message ||
+            I18n.t('workflow_publish_multibranch_view_failed'),
           showClose: false,
         });
-        
+
         return false;
       }
     },

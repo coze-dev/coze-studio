@@ -54,7 +54,7 @@ export const AgentHistoryList: FC<AgentHistoryListProps> = ({
   onVersionSelect,
 }) => {
   const [historyList, setHistoryList] = useState<HistoryInfo[]>([]);
-  
+
   const { resetToHistory, viewHistoryInCurrentPage, viewHistoryInNewPage, showCurrent } = useAgentHistoryAction();
 
   // 获取智能体发布历史
@@ -78,15 +78,15 @@ export const AgentHistoryList: FC<AgentHistoryListProps> = ({
         });
 
         const result = await response.json();
-        
+
         if (result.code === 0 && result.data?.history_infos) {
           // 转换后端数据格式为前端期望的格式
           const convertedHistoryList: HistoryInfo[] = result.data.history_infos.map((item: any) => {
-            
+
             // 时间戳处理：后端返回的是秒级时间戳，转换为毫秒级
             const timestamp = parseInt(item.create_time);
             const created_time = timestamp * 1000; // 秒级转毫秒级
-            
+
             return {
               version: item.version,
               created_time: created_time,
@@ -100,10 +100,10 @@ export const AgentHistoryList: FC<AgentHistoryListProps> = ({
               publish_id: item.publish_id,
             };
           });
-          
+
           // 直接在这里设置状态
           setHistoryList(convertedHistoryList);
-          
+
           return {
             data: {
               history_list: convertedHistoryList,
@@ -198,14 +198,14 @@ export const AgentHistoryList: FC<AgentHistoryListProps> = ({
             </Typography.Text>
           </div>
         </Timeline.Item>
-        
+
         {/* 历史版本 */}
         {historyList.map((item, index) => {
           // 确保item和必要字段存在
           if (!item || !item.version) {
             return null;
           }
-          
+
           return (
             <Timeline.Item
               key={`history-${item.version || 'unknown'}-${item.created_time || index}-${index}`}
@@ -273,7 +273,7 @@ export const AgentHistoryList: FC<AgentHistoryListProps> = ({
                 </div>
 
                 <div className="flex-1" />
-                
+
                 {/* 操作菜单 */}
                 <Menu
                   className="min-w-[96px] mb-2px flex-shrink-0"

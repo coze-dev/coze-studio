@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Divider } from '@coze-arch/bot-semi';
 import { DuplicateBot } from '@coze-studio/components';
@@ -26,6 +27,7 @@ import {
   MoreMenuButton,
   OriginStatus,
   AgentHistoryButton,
+  AgentHistoryDrawer,
 } from '@coze-agent-ide/layout';
 
 export type HeaderAddonAfterProps = Omit<
@@ -36,11 +38,13 @@ export type HeaderAddonAfterProps = Omit<
 export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
   isEditLocked,
 }) => {
+  const [visible, setVisible] = useState(false);
   const isReadonly = useBotDetailIsReadonly();
   const editable = usePageRuntimeStore(state => state.editable);
-  const { botId, botInfo } = useBotInfoStore(
+  const { botId, spaceId, botInfo } = useBotInfoStore(
     useShallow(state => ({
       botId: state.botId,
+      spaceId: state.space_id,
       botInfo: state,
     })),
   );
@@ -61,7 +65,7 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
           <>
             <div className="flex items-center gap-2">
               {/** Function button area */}
-              <AgentHistoryButton />
+              <AgentHistoryButton onClick={() => setVisible(true)} />
               <MoreMenuButton />
             </div>
             {/** Submit post related button */}
@@ -74,9 +78,15 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
             </div>
           </>
         ) : (
-          <AgentHistoryButton />
+          <AgentHistoryButton onClick={() => setVisible(true)} />
         )}
       </div>
+      <AgentHistoryDrawer
+        botId={botId}
+        spaceId={spaceId}
+        visible={visible}
+        onClose={() => setVisible(false)}
+      />
     </div>
   );
 };

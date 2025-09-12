@@ -23,11 +23,7 @@ import { IconButton, Tooltip } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { IconHistory } from '@coze-arch/bot-icons';
 
-import { AgentHistoryDrawer } from './components/history-drawer';
-
-export const AgentHistoryButton = () => {
-  const [visible, setVisible] = useState(false);
-
+export const AgentHistoryButton = ({ onClick }: { onClick: () => void }) => {
   const { botId, spaceId } = useBotInfoStore(
     useShallow(state => ({
       botId: state.botId,
@@ -49,16 +45,10 @@ export const AgentHistoryButton = () => {
               bot_id: botId,
               workspace_id: spaceId,
             });
-            setVisible(true);
+            onClick?.();
           }}
         />
       </Tooltip>
-      <AgentHistoryDrawer
-        botId={botId}
-        spaceId={spaceId}
-        visible={visible}
-        onClose={() => setVisible(false)}
-      />
     </>
   );
 };
