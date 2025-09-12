@@ -35,6 +35,7 @@ import {
   Setting as DataSetSetting,
   settingAreaScrollId,
   SuggestionBlock,
+  ExternalKnowledgeArea,
 } from '@coze-agent-ide/space-bot/component';
 import { PluginApisArea } from '@coze-agent-ide/plugin-area-adapter';
 import { OnboardingMessage } from '@coze-agent-ide/onboarding-message-adapter';
@@ -118,6 +119,13 @@ export const ToolArea: React.FC<ToolAreaProps> = props => {
                 title={I18n.t('knowledge_photo_025')}
                 formatType={FormatType.Image}
                 desc={I18n.t('knowledge_photo_027')}
+              />
+              
+              {/* External Knowledge */}
+              <ExternalKnowledgeArea
+                toolKey={ToolKey.EXTERNAL_KNOWLEDGE}
+                title={I18n.t('external_knowledge_title', {}, '外部知识库')}
+                desc={I18n.t('external_knowledge_desc', {}, '接入RAGFlow等外部知识库系统')}
               />
               {knowledgeToolSlot}
             </GroupingContainer>

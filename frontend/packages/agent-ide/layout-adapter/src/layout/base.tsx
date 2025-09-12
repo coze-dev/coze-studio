@@ -71,7 +71,7 @@ export const BotEditorInitLayoutAdapter: React.FC<
   useInitAgent();
 
   const isPreview = usePageRuntimeStore(state => state.isPreview);
-  const isEditLocked = isPreview;
+  const isEditLocked = isPreview || tabPath === 'statistic';
 
   return (
     <BotEditorLayout
@@ -81,12 +81,7 @@ export const BotEditorInitLayoutAdapter: React.FC<
           pageName={pageName}
           isEditLocked={isPreview}
           addonAfter={
-            tabPath === 'statistic' ? null : (
-              <HeaderAddonAfter
-                pageName={pageName}
-                isEditLocked={isEditLocked}
-              />
-            )
+            <HeaderAddonAfter pageName={pageName} isEditLocked={isEditLocked} />
           }
           addonCenter={
             <div className="flex items-center gap-4 cursor-pointer">

@@ -140,6 +140,13 @@ export const WorkspaceSubMenu = () => {
       dataTestId: 'navigation_workspace_library_knowledge',
     },
     {
+      icon: <IconBotKnowledge />,
+      activeIcon: <IconBotKnowledgeActive />,
+      title: () => '外部知识库',
+      path: `${SpaceSubModuleEnum.LIBRARY}/external-knowledge`,
+      dataTestId: 'navigation_workspace_library_external_knowledge',
+    },
+    {
       icon: <IconBotPrompt />,
       activeIcon: <IconBotPromptActive />,
       title: () => I18n.t('navigation_workspace_library_prompt', {}, 'Prompt'),

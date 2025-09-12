@@ -382,6 +382,11 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		target.LayoutInfo = patch.LayoutInfo
 	}
 
+	// Add ExternalKnowledge handling
+	if patch.ExternalKnowledge != nil {
+		target.ExternalKnowledge = patch.ExternalKnowledge
+	}
+
 	return target, nil
 }
 
@@ -436,6 +441,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		DatabaseList:            do.Database,
 		ShortcutSort:            do.ShortcutCommand,
 		LayoutInfo:              do.LayoutInfo,
+		ExternalKnowledge:       do.ExternalKnowledge,
 		Version:                 do.Version,
 	}
 

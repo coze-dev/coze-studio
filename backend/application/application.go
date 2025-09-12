@@ -31,6 +31,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
 	"github.com/coze-dev/coze-studio/backend/application/connector"
 	"github.com/coze-dev/coze-studio/backend/application/conversation"
+	"github.com/coze-dev/coze-studio/backend/application/external_knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/memory"
 	"github.com/coze-dev/coze-studio/backend/application/modelmgr"
@@ -188,6 +189,9 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		Storage: infra.TOSClient,
 	})
 	statisticsApp := statistics.NewStatisticsApp(infra.DB)
+	
+	// Initialize external knowledge service
+	external_knowledge.InitExternalKnowledgeService(infra.DB)
 
 	return &basicServices{
 		infra:         infra,

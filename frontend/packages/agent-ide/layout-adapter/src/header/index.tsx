@@ -73,7 +73,9 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
               <div id="diff-task-button-container"></div>
             </div>
           </>
-        ) : null}
+        ) : (
+          <AgentHistoryButton />
+        )}
       </div>
     </div>
   );

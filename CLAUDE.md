@@ -1496,6 +1496,222 @@ The project includes a comprehensive model management system (`modelmgr`):
 - Model lifecycle management through application services
 - Integration with various AI model providers through standardized interfaces
 
+## 📋 开发规范与最佳实践
+
+### 🏗️ 架构设计原则
+
+#### 领域驱动设计(DDD)
+项目严格遵循DDD架构模式，分层清晰：
+
+```
+backend/
+├── api/           # HTTP接口层 - 处理请求响应
+├── application/   # 应用服务层 - 业务流程编排
+├── domain/        # 领域层 - 核心业务逻辑
+├── infra/         # 基础设施层 - 数据访问、外部服务
+├── crossdomain/   # 跨域服务 - 通用功能
+└── types/         # 共享类型定义
+```
+
+**关键原则**：
+- **单一职责**：每层只处理自己的职责
+- **依赖倒置**：上层依赖抽象接口，不依赖具体实现
+- **清晰边界**：严格遵循层级调用关系
+
+#### 分离关注点
+- **API层**：仅处理HTTP请求绑定和响应格式化
+- **Application层**：业务流程编排，事务管理
+- **Domain层**：纯业务逻辑，无外部依赖
+- **Infrastructure层**：数据持久化，外部服务调用
+
+### 🔧 开发环境标准
+
+#### 环境要求
+- **Go**: ≥ 1.24 (遵循Google Go Style Guide)
+- **Node.js**: ≥ 22 (fronted开发)
+- **Docker**: 容器化开发和部署
+- **Make**: 自动化构建工具
+
+#### 开发调试流程
+
+**首次环境搭建**：
+```bash
+# 完整环境初始化
+make debug
+
+# 验证所有服务状态
+docker ps -a
+```
+
+**日常开发流程**：
+```bash
+# 1. 启动基础服务（数据库、缓存等）
+make middleware
+
+# 2. 启动后端服务
+make server
+
+# 3. 启动前端开发环境
+bash scripts/setup_fe.sh
+cd frontend/apps/coze-studio
+npm run dev
+```
+
+**故障排查步骤**：
+```bash
+# 检查容器状态
+docker ps -a
+
+# 查看服务日志
+docker logs <container-name>
+
+# 检查错误码定义
+# 错误码定义位置：backend/types/errno
+```
+
+### 📝 代码质量标准
+
+#### 后端Go代码规范
+- **代码格式化**：强制使用 `gofmt`
+- **命名规范**：遵循Go官方命名约定
+- **错误处理**：统一错误处理模式，使用项目自定义错误类型
+- **测试覆盖率**：核心业务逻辑要求80%+覆盖率
+
+#### IDL接口设计规范
+```thrift
+// 1. 服务和方法命名使用camelCase
+service UserManagementService {
+    // 2. 方法命名清晰表达业务意图
+    CreateUserResponse CreateUser(1: CreateUserRequest req)
+    GetUserListResponse GetUserList(1: GetUserListRequest req)
+}
+
+// 3. 严格的参数类型定义
+struct CreateUserRequest {
+    1: required string name        // 必填字段
+    2: optional string email       // 可选字段
+    3: optional UserRole role      // 使用枚举类型
+}
+
+// 4. 统一的响应结构
+struct CreateUserResponse {
+    1: required UserInfo data      // 业务数据
+    253: required i32 code         // 固定位置：状态码
+    254: required string msg       // 固定位置：状态消息
+}
+```
+
+#### 前端TypeScript规范
+- **框架选择**：React 18 + TypeScript + Tailwind CSS
+- **状态管理**：Zustand用于全局状态
+- **测试框架**：Vitest进行单元测试
+- **代码检查**：集成ESLint和Prettier
+
+#### 单元测试标准
+```typescript
+// 测试文件组织：__tests__目录下
+// 文件结构与源码保持一致
+
+// 测试用例遵循AAA模式
+describe('UserService', () => {
+  it('should create user successfully', () => {
+    // Arrange - 准备测试数据
+    const mockUser = { name: 'test', email: 'test@example.com' };
+    
+    // Act - 执行测试动作
+    const result = userService.createUser(mockUser);
+    
+    // Assert - 验证测试结果
+    expect(result).toBeDefined();
+    expect(result.name).toBe('test');
+  });
+});
+```
+
+### 🔄 依赖管理策略
+
+#### 技术栈一致性原则
+- **坚持现有依赖**：避免引入功能重复的库
+- **优先项目工具**：使用Rspack、Vitest等项目既定工具
+- **版本锁定**：critical dependencies锁定具体版本
+
+#### 前端包管理
+```bash
+# 使用Rush管理monorepo依赖
+rush update          # 安装依赖
+rush build          # 构建所有包
+rush test           # 运行测试
+rush lint           # 代码检查
+
+# 避免使用npm install在根目录
+# 使用workspace引用内部依赖
+```
+
+#### 后端模块管理
+```bash
+# Go modules管理
+go mod tidy         # 清理依赖
+go mod verify       # 验证依赖完整性
+
+# 项目内部导入路径规范
+import (
+    "github.com/coze-dev/coze-studio/backend/domain/user"
+    "github.com/coze-dev/coze-studio/backend/application/user"
+)
+```
+
+### 🚨 开发规范检查清单
+
+#### API开发检查点
+- [ ] IDL文件符合命名规范（camelCase服务，PascalCase结构体）
+- [ ] 响应结构包含标准字段（253: code, 254: msg）
+- [ ] 参数类型严格定义（required/optional明确）
+- [ ] 路由路径遵循RESTful风格
+- [ ] 错误处理使用项目统一模式
+
+#### 代码质量检查点
+- [ ] Go代码通过gofmt格式化
+- [ ] TypeScript代码通过ESLint检查
+- [ ] 单元测试覆盖核心业务逻辑
+- [ ] 无业务逻辑写在Handler层
+- [ ] 依赖注入通过接口实现
+
+#### 架构合规检查点
+- [ ] 层级调用关系正确（API→Application→Domain→Infra）
+- [ ] 没有跨层直接调用
+- [ ] 领域逻辑集中在Domain层
+- [ ] 外部依赖抽象为接口
+
+#### 性能优化检查点
+- [ ] 数据库查询优化（索引、批量操作）
+- [ ] 前端组件懒加载
+- [ ] API响应数据结构精简
+- [ ] 缓存策略合理应用
+
+### 🎯 开发流程最佳实践
+
+#### 功能开发流程
+1. **需求分析** → 明确业务目标和技术要求
+2. **架构设计** → 确定模块边界和接口设计
+3. **IDL定义** → 先定义接口契约
+4. **TDD开发** → 测试驱动开发模式
+5. **代码审查** → 代码质量和架构合规检查
+6. **集成测试** → 端到端功能验证
+
+#### 问题排查流程
+1. **日志分析** → 查看detailed error logs
+2. **服务状态** → 检查所有依赖服务健康状态
+3. **配置验证** → 确认环境配置正确性
+4. **版本一致** → 确保前后端代码版本同步
+5. **数据一致** → 验证数据库schema和数据状态
+
+#### 性能优化流程
+1. **性能基线** → 建立性能指标基准
+2. **瓶颈识别** → 使用profiling工具定位问题
+3. **优化实施** → 针对性优化实现
+4. **效果验证** → 对比优化前后指标
+5. **监控部署** → 建立长期性能监控
+
 ## Acknowledgments
 
 Key dependencies and frameworks:

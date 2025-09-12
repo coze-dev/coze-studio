@@ -139,12 +139,29 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	if err != nil {
 		return nil, err
 	}
+	
+	// 添加外部知识库工具（如果配置了dataset_ids）
+	var externalKnowledgeTools []tool.InvokableTool
+	if conf.Agent.ExternalKnowledge != nil && len(conf.Agent.ExternalKnowledge.DatasetIds) > 0 {
+		externalKnowledgeConfig := &externalKnowledgeConfig{
+			spaceID:           conf.Agent.SpaceID,
+			userID:            conf.UserID,
+			agentIdentity:     conf.Identity,
+			botID:             fmt.Sprintf("%d", conf.Agent.AgentID),
+			externalKnowledge: conf.Agent.ExternalKnowledge,
+		}
+		externalKnowledgeTools, err = newExternalKnowledgeTools(ctx, externalKnowledgeConfig)
+		if err != nil {
+			return nil, err
+		}
+	}
+	
 	containWfTool := false
 
 	if len(wfTools) > 0 {
 		containWfTool = true
 	}
-	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools)+len(dbTools)+len(avTools))
+	agentTools := make([]tool.BaseTool, 0, len(pluginTools)+len(wfTools)+len(dbTools)+len(avTools)+len(externalKnowledgeTools))
 	agentTools = append(agentTools, slices.Transform(pluginTools, func(a tool.InvokableTool) tool.BaseTool {
 		return a
 	})...)
@@ -154,6 +171,11 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	})...)
 
 	agentTools = append(agentTools, slices.Transform(avTools, func(a tool.InvokableTool) tool.BaseTool {
+		return a
+	})...)
+	
+	// 添加外部知识库工具
+	agentTools = append(agentTools, slices.Transform(externalKnowledgeTools, func(a tool.InvokableTool) tool.BaseTool {
 		return a
 	})...)
 

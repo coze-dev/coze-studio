@@ -123,6 +123,7 @@
     "@coze-foundation/account-adapter": "workspace:*",
     "@coze-foundation/enterprise-store-adapter": "workspace:*",
     "@coze-foundation/global-store": "workspace:*",
+    "@coze-studio/api-schema": "workspace:*",
     "@coze-studio/bot-audit-adapter": "workspace:*",
     "@coze-studio/bot-detail-store": "workspace:*",
     "@coze-studio/bot-utils": "workspace:*",

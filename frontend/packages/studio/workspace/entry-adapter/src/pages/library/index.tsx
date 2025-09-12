@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import { type FC, useRef } from 'react';
+import { type FC, useRef, lazy, Suspense } from 'react';
+import { Spin } from '@coze-arch/coze-design';
 
 import {
   BaseLibraryPage,
@@ -25,10 +26,22 @@ import {
   useKnowledgeConfig,
 } from '@coze-studio/workspace-base/library';
 
+// Lazy load the external knowledge page
+const ExternalKnowledgePage = lazy(() => import('../external-knowledge'));
+
 export const LibraryPage: FC<{ spaceId: string; sourceType: string }> = ({
   spaceId,
   sourceType,
 }) => {
+  // Handle external-knowledge as a special case
+  if (sourceType === 'external-knowledge') {
+    return (
+      <Suspense fallback={<Spin size="large" />}>
+        <ExternalKnowledgePage />
+      </Suspense>
+    );
+  }
+
   const basePageRef = useRef<{ reloadList: () => void }>(null);
   const configCommonParams = {
     spaceId,

@@ -59,6 +59,7 @@
     "@coze-arch/i18n": "workspace:*",
     "@coze-arch/idl": "workspace:*",
     "@coze-foundation/space-store-adapter": "workspace:*",
+    "@coze-studio/api-schema": "workspace:*",
     "@coze-studio/workspace-base": "workspace:*",
     "classnames": "^2.3.2"
   },

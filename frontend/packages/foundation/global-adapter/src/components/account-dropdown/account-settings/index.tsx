@@ -20,6 +20,7 @@ import {
   UserInfoPanel,
 } from '@coze-foundation/account-ui-base';
 import { I18n } from '@coze-arch/i18n';
+import { ExternalKnowledgeBinding } from '../external-knowledge-binding';
 
 export const useAccountSettings = () => {
   const tabs = [
@@ -32,6 +33,11 @@ export const useAccountSettings = () => {
       id: 'api-auth',
       tabName: I18n.t('settings_api_authorization'),
       content: () => <PatBody size="small" type="primary" />,
+    },
+    {
+      id: 'external-knowledge',
+      tabName: '外部知识库绑定',
+      content: () => <ExternalKnowledgeBinding />,
     },
   ];
 
