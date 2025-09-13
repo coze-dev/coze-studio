@@ -30,6 +30,19 @@ interface NodeIconProps {
   size?: number;
   alt?: string;
 }
+import cardSelectorIcon from './icon-CardSelector-v2.png';
+import LLM_V2Icon from './icon-LLM-V2.png';
+
+export const iconCustomerReplacer = (src) => {
+  let iconSrc = src;
+  if (src.includes('icon-CardSelector-v2')) {
+    iconSrc = cardSelectorIcon;
+  } else if (src.includes('icon-LLM-v2')) {
+    iconSrc = LLM_V2Icon;
+  }
+  return iconSrc;
+}
+
 export const NodeIcon: FC<WithCustomStyle<NodeIconProps>> = props => {
   const { nodeId, className, size, alt } = props;
 
@@ -61,7 +74,7 @@ export const NodeIcon: FC<WithCustomStyle<NodeIconProps>> = props => {
     <div className={className}>
       <img
         className="object-cover"
-        src={nodeData.icon}
+        src={iconCustomerReplacer(nodeData.icon)}
         alt={alt}
         style={{
           width: size || 'auto',

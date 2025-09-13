@@ -19,7 +19,7 @@ import { type FC, type MouseEvent } from 'react';
 import classNames from 'classnames';
 import { Typography, Highlight } from '@coze-arch/coze-design';
 
-import { NodeIconOutlined } from '@/components/node-icon';
+import { NodeIconOutlined, iconCustomerReplacer } from '@/components/node-icon';
 
 import styles from './styles.module.less';
 
@@ -50,7 +50,7 @@ export const NodeCard: FC<NodesContainerProps> = props => {
     >
       <NodeIconOutlined
         size={20}
-        icon={icon}
+        icon={iconCustomerReplacer(icon)}
         hideOutline={hideOutline}
         borderRadius="var(--coze-4)"
         outlineColor="var(--coz-stroke-plus)"
