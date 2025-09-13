@@ -31,7 +31,7 @@ interface NodeIconProps {
   alt?: string;
 }
 import cardSelectorIcon from './icon-CardSelector-v2.png';
-import LLM_V2Icon from './icon-LLM-V2.png';
+import LLM_V2Icon from './icon-LLM-v2.png';
 
 export const iconCustomerReplacer = (src) => {
   let iconSrc = src;
