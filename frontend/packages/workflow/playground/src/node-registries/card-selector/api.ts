@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { workflow } from '@coze-studio/api-schema';
+import { workflowApi } from '@coze-studio/api-schema';
 
 import type { CardItem } from './types';
 
@@ -32,7 +32,7 @@ export async function fetchCardList(params: {
   const { sassWorkspaceId, pageNo = 1, pageSize = 200, searchValue } = params;
 
   try {
-    const response = await workflow.GetCardList({
+    const response = await workflowApi.GetCardList({
       sassWorkspaceId,
       pageNo,
       pageSize,
@@ -98,7 +98,7 @@ export async function fetchCardDetail(params: {
   const { cardId, sassWorkspaceId } = params;
 
   try {
-    const response = await workflow.GetCardDetail({
+    const response = await workflowApi.GetCardDetail({
       cardId,
       sassWorkspaceId,
     });

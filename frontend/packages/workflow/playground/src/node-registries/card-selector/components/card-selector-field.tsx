@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 
 import { type InputValueVO } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
@@ -141,6 +141,16 @@ function CardSelectorComp({
     }
   }, [cardList.length, loading, fetchCards]);
 
+  // 在组件挂载时预取卡片列表，确保无论是否触发焦点事件都会请求
+  useEffect(() => {
+    // 若已存在列表则不重复请求
+    if (cardList.length === 0 && !loading) {
+      void fetchCards();
+    }
+    // 仅在首次挂载时尝试预取
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 处理选择
   const handleSelect = useCallback(
     async (selectedValue: string) => {
@@ -246,6 +256,12 @@ function CardSelectorComp({
         onSelect={handleSelect}
         onChange={handleChange}
         onFocus={handleFocus}
+        // 兼容有些浏览器/组件库不触发 onFocus 的情况
+        onClick={() => {
+          if (cardList.length === 0 && !loading) {
+            void fetchCards();
+          }
+        }}
         disabled={readonly}
         placeholder={I18n.t('请输入卡片名称或代码进行搜索')}
         style={{ width: '100%' }}
