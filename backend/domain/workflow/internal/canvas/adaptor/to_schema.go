@@ -446,7 +446,7 @@ func PruneIsolatedNodes(nodes []*vo.Node, edges []*vo.Edge, parentNode *vo.Node)
 
 func parseBatchMode(n *vo.Node) (
 	batchN *vo.Node, // the new batch node
-	enabled bool,    // whether the node has enabled batch mode
+	enabled bool, // whether the node has enabled batch mode
 	err error) {
 	if n.Data == nil || n.Data.Inputs == nil {
 		return nil, false, nil

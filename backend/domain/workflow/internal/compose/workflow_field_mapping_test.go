@@ -27,17 +27,17 @@ import (
 
 func TestAddFieldMappingsWithDeduplication(t *testing.T) {
 	tests := []struct {
-		name           string
+		name              string
 		initialCarryOvers map[vo.NodeKey][]*compose.FieldMapping
-		fromNodeKey    vo.NodeKey
-		fieldMappings  []*compose.FieldMapping
-		expectedCount  int
-		description    string
+		fromNodeKey       vo.NodeKey
+		fieldMappings     []*compose.FieldMapping
+		expectedCount     int
+		description       string
 	}{
 		{
-			name:           "empty_carry_overs",
+			name:              "empty_carry_overs",
 			initialCarryOvers: make(map[vo.NodeKey][]*compose.FieldMapping),
-			fromNodeKey:    "node1",
+			fromNodeKey:       "node1",
 			fieldMappings: []*compose.FieldMapping{
 				compose.MapFieldPaths(compose.FieldPath{"input1"}, compose.FieldPath{"output1"}),
 				compose.MapFieldPaths(compose.FieldPath{"input2"}, compose.FieldPath{"output2"}),
@@ -94,7 +94,7 @@ func TestAddFieldMappingsWithDeduplication(t *testing.T) {
 			description:   "should not add any mappings when all are duplicates",
 		},
 		{
-			name:           "new_node_key",
+			name: "new_node_key",
 			initialCarryOvers: map[vo.NodeKey][]*compose.FieldMapping{
 				"node1": {
 					compose.MapFieldPaths(compose.FieldPath{"input1"}, compose.FieldPath{"output1"}),
@@ -109,7 +109,7 @@ func TestAddFieldMappingsWithDeduplication(t *testing.T) {
 			description:   "should add all mappings for new node key",
 		},
 		{
-			name:           "empty_field_mappings",
+			name: "empty_field_mappings",
 			initialCarryOvers: map[vo.NodeKey][]*compose.FieldMapping{
 				"node1": {
 					compose.MapFieldPaths(compose.FieldPath{"input1"}, compose.FieldPath{"output1"}),

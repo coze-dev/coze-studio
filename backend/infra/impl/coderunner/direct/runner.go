@@ -74,20 +74,23 @@ func (r *runner) Run(ctx context.Context, request *coderunner.RunRequest) (*code
 }
 
 func (r *runner) pythonCmdRun(_ context.Context, code string, params map[string]any) (map[string]any, error) {
-	bs, _ := sonic.Marshal(params)
+	bs, err := sonic.Marshal(params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal params to json, err: %w", err)
+	}
 	cmd := exec.Command(goutil.GetPython3Path(), "-c", fmt.Sprintf(pythonCode, code), string(bs)) // ignore_security_alert RCE
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd.Stdout = stdout
 	cmd.Stderr = stderr
-	err := cmd.Run()
+	err = cmd.Run()
 	if err != nil {
 		return nil, fmt.Errorf("failed to run python script err: %s, std err: %s", err.Error(), stderr.String())
 	}
-
 	if stderr.String() != "" {
 		return nil, fmt.Errorf("failed to run python script err: %s", stderr.String())
 	}
+
 	ret := make(map[string]any)
 	err = sonic.Unmarshal(stdout.Bytes(), &ret)
 	if err != nil {
