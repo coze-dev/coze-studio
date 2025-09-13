@@ -712,8 +712,8 @@ func canvasToRefs(referringID int64, canvasStr string) (map[entity.WorkflowRefer
 				}] = struct{}{}
 			} else if node.Type == entity.NodeTypeLLM.IDStr() {
 				if node.Data.Inputs.LLM != nil {
-					if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
-						for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+					if node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.WorkflowFCParam != nil {
+						for _, w := range node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList {
 							referredID, err := strconv.ParseInt(w.WorkflowID, 10, 64)
 							if err != nil {
 								return vo.WrapError(errno.ErrSchemaConversionFail, err)
@@ -1062,8 +1062,8 @@ func (i *impl) CopyWorkflowFromAppToLibrary(ctx context.Context, workflowID int6
 			}
 
 			if node.Type == entity.NodeTypeLLM.IDStr() {
-				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
-					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+				if node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.WorkflowFCParam != nil {
+					for _, w := range node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList {
 						var (
 							v    *vo.DraftInfo
 							wfID int64
@@ -1293,8 +1293,8 @@ func (i *impl) DuplicateWorkflowsByAppID(ctx context.Context, sourceAppID, targe
 
 			}
 			if node.Type == entity.NodeTypeLLM.IDStr() {
-				if node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
-					for _, w := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+				if node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.WorkflowFCParam != nil {
+					for _, w := range node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList {
 						var (
 							v    *vo.DraftInfo
 							wfID int64
@@ -1494,6 +1494,10 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 	var collectDependence func(nodes []*vo.Node) error
 	collectDependence = func(nodes []*vo.Node) error {
 		for _, node := range nodes {
+			// Guard against nil nodes or nodes with nil Data to avoid panics
+			if node == nil || node.Data == nil {
+				continue
+			}
 			switch entity.IDStrToNodeType(node.Type) {
 			case entity.NodeTypePlugin:
 				if node.Data.Inputs == nil {
@@ -1525,6 +1529,9 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 				if node.Data.Inputs == nil {
 					return fmt.Errorf("node data inputs is nil for knowledge node")
 				}
+				if len(node.Data.Inputs.DatasetParam) == 0 {
+					return fmt.Errorf("dataset param is required for knowledge node")
+				}
 				datasetListInfoParam := node.Data.Inputs.DatasetParam[0]
 				datasetIDs := datasetListInfoParam.Input.Value.Content.([]any)
 				for _, id := range datasetIDs {
@@ -1550,10 +1557,10 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					ds.DatabaseIDs = append(ds.DatabaseIDs, dsID)
 				}
 			case entity.NodeTypeLLM:
-				if node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil && node.Data.Inputs.FCParam.PluginFCParam.PluginList != nil {
-					for idx := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
-						if node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx].IsDraft {
-							pl := node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
+				if node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.PluginFCParam != nil && node.Data.Inputs.LLM.FCParam.PluginFCParam.PluginList != nil {
+					for idx := range node.Data.Inputs.LLM.FCParam.PluginFCParam.PluginList {
+						if node.Data.Inputs.LLM.FCParam.PluginFCParam.PluginList[idx].IsDraft {
+							pl := node.Data.Inputs.LLM.FCParam.PluginFCParam.PluginList[idx]
 							pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
 							if err != nil {
 								return err
@@ -1564,9 +1571,9 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 
 					}
 				}
-				if node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList != nil {
-					for idx := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
-						kn := node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList[idx]
+				if node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.KnowledgeFCParam != nil && node.Data.Inputs.LLM.FCParam.KnowledgeFCParam.KnowledgeList != nil {
+					for idx := range node.Data.Inputs.LLM.FCParam.KnowledgeFCParam.KnowledgeList {
+						kn := node.Data.Inputs.LLM.FCParam.KnowledgeFCParam.KnowledgeList[idx]
 						kid, err := strconv.ParseInt(kn.ID, 10, 64)
 						if err != nil {
 							return err
@@ -1576,10 +1583,10 @@ func (i *impl) GetWorkflowDependenceResource(ctx context.Context, workflowID int
 					}
 				}
 
-				if node.Data.Inputs != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList != nil {
-					for idx := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
-						if node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx].IsDraft {
-							wID, err := strconv.ParseInt(node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx].WorkflowID, 10, 64)
+				if node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.WorkflowFCParam != nil && node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList != nil {
+					for idx := range node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList {
+						if node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList[idx].IsDraft {
+							wID, err := strconv.ParseInt(node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList[idx].WorkflowID, 10, 64)
 							if err != nil {
 								return err
 							}
@@ -1732,8 +1739,8 @@ func (i *impl) validateNodesRecursively(ctx context.Context, nodes []*vo.Node, c
 			queue = append(queue, canvas.Nodes...)
 		}
 
-		if node.Type == entity.NodeTypeLLM.IDStr() && node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
-			for _, subWfInfo := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
+		if node.Type == entity.NodeTypeLLM.IDStr() && node.Data != nil && node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.WorkflowFCParam != nil {
+			for _, subWfInfo := range node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList {
 				if subWfInfo.WorkflowID == "" {
 					continue
 				}
@@ -2011,9 +2018,9 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 			if node.Data.Inputs.LLM == nil {
 				continue
 			}
-			if hasWorkflowRelated && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.WorkflowFCParam != nil {
-				for idx := range node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList {
-					wf := node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx]
+			if hasWorkflowRelated && node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.WorkflowFCParam != nil {
+				for idx := range node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList {
+					wf := node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList[idx]
 					workflowID, err := strconv.ParseInt(wf.WorkflowID, 10, 64)
 					if err != nil {
 						return err
@@ -2022,13 +2029,13 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 						wf.WorkflowID = strconv.FormatInt(refWf.ID, 10)
 						wf.WorkflowVersion = refWf.Version
 					}
-					node.Data.Inputs.FCParam.WorkflowFCParam.WorkflowList[idx] = wf
+					node.Data.Inputs.LLM.FCParam.WorkflowFCParam.WorkflowList[idx] = wf
 				}
 
 			}
-			if hasPluginRelated && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.PluginFCParam != nil {
-				for idx := range node.Data.Inputs.FCParam.PluginFCParam.PluginList {
-					pl := node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx]
+			if hasPluginRelated && node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.PluginFCParam != nil {
+				for idx := range node.Data.Inputs.LLM.FCParam.PluginFCParam.PluginList {
+					pl := node.Data.Inputs.LLM.FCParam.PluginFCParam.PluginList[idx]
 					pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
 					if err != nil {
 						return err
@@ -2052,13 +2059,13 @@ func replaceRelatedWorkflowOrExternalResourceInWorkflowNodes(nodes []*vo.Node, r
 						}
 
 					}
-					node.Data.Inputs.FCParam.PluginFCParam.PluginList[idx] = pl
+					node.Data.Inputs.LLM.FCParam.PluginFCParam.PluginList[idx] = pl
 
 				}
 			}
-			if hasKnowledgeRelated && node.Data.Inputs.FCParam != nil && node.Data.Inputs.FCParam.KnowledgeFCParam != nil {
-				for idx := range node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList {
-					kn := node.Data.Inputs.FCParam.KnowledgeFCParam.KnowledgeList[idx]
+			if hasKnowledgeRelated && node.Data.Inputs != nil && node.Data.Inputs.LLM != nil && node.Data.Inputs.LLM.FCParam != nil && node.Data.Inputs.LLM.FCParam.KnowledgeFCParam != nil {
+				for idx := range node.Data.Inputs.LLM.FCParam.KnowledgeFCParam.KnowledgeList {
+					kn := node.Data.Inputs.LLM.FCParam.KnowledgeFCParam.KnowledgeList[idx]
 					kid, err := strconv.ParseInt(kn.ID, 10, 64)
 					if err != nil {
 						return err
