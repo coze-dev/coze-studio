@@ -21,12 +21,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/coze-dev/coze-studio/backend/pkg/parsex"
+	"io"
+	"os"
+
 	"github.com/elastic/go-elasticsearch/v7"
 	"github.com/elastic/go-elasticsearch/v7/esapi"
 	"github.com/elastic/go-elasticsearch/v7/esutil"
-	"io"
-	"os"
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -39,7 +39,7 @@ type es7Client struct {
 }
 
 func newES7() (Client, error) {
-	addresses, err := parsex.ParseClusterEndpoints(os.Getenv("ES_ADDR"))
+	addresses, err := parseClusterEndpoints(os.Getenv("ES_ADDR"))
 	if err != nil {
 		return nil, err
 	}
@@ -123,8 +123,8 @@ func (c *es7Client) CreateIndex(ctx context.Context, index string, properties ma
 			"properties": properties,
 		},
 		"settings": map[string]any{
-			"number_of_shards":   parsex.GetEnvDefaultIntSetting("ES_NUMBER_OF_SHARDS", "1"),
-			"number_of_replicas": parsex.GetEnvDefaultIntSetting("ES_NUMBER_OF_REPLICAS", "1"),
+			"number_of_shards":   getEnvDefaultIntSetting("ES_NUMBER_OF_SHARDS", "1"),
+			"number_of_replicas": getEnvDefaultIntSetting("ES_NUMBER_OF_REPLICAS", "1"),
 		},
 	}
 

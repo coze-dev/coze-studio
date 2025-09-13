@@ -609,7 +609,7 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		Category:     "",             // Not found in cate_list
 		Desc:         "comment_desc", // Placeholder from JSON
 		Color:        "",
-		SupportBatch: false,          // supportBatch: 1
+		SupportBatch: false, // supportBatch: 1
 		EnUSName:     "Comment",
 	},
 	NodeTypeVariableAggregator: {

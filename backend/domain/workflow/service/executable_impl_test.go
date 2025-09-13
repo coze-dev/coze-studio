@@ -204,11 +204,11 @@ func TestImpl_prefetchChatHistory(t *testing.T) {
 	crossmessage.SetDefaultSVC(mockMessage)
 
 	tests := []struct {
-		name        string
-		setupMock   func(msgSvc *messagemock.MockMessage)
-		config      workflowModel.ExecuteConfig
+		name          string
+		setupMock     func(msgSvc *messagemock.MockMessage)
+		config        workflowModel.ExecuteConfig
 		historyRounds int64
-		expectErr   bool
+		expectErr     bool
 	}{
 		{
 			name: "SectionID is nil",

@@ -14,18 +14,18 @@
  * limitations under the License.
  */
 
-package parsex
+package es
 
 import (
 	"fmt"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
-// ParseClusterEndpoints 解析 ES /kafka 地址，多个地址用逗号分隔
-func ParseClusterEndpoints(address string) ([]string, error) {
+func parseClusterEndpoints(address string) ([]string, error) {
 	if strings.TrimSpace(address) == "" {
 		return nil, fmt.Errorf("endpoints environment variable is required")
 	}
@@ -52,8 +52,7 @@ func ParseClusterEndpoints(address string) ([]string, error) {
 	return validEndpoints, nil
 }
 
-// GetEnvDefaultIntSetting 获取环境变量的值，如果不存在或无效则返回默认值
-func GetEnvDefaultIntSetting(envVar, defaultValue string) string {
+func getEnvDefaultIntSetting(envVar, defaultValue string) string {
 	value := os.Getenv(envVar)
 	if value == "" {
 		return defaultValue
