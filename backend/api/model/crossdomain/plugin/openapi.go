@@ -228,12 +228,14 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 			Required: paramVal.Required,
 		}
 
-		if _, ok := result[paramVal.Name]; ok {
-			logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramVal.Name)
+		// Use location+name as unique key to allow same names in different locations
+		key := paramVal.In + "-" + paramVal.Name
+		if _, ok := result[key]; ok {
+			logs.CtxWarnf(ctx, "duplicate parameter in same location: %s@%s", paramVal.Name, paramVal.In)
 			continue
 		}
 
-		result[paramVal.Name] = paramInfo
+		result[key] = paramInfo
 	}
 
 	if op.RequestBody == nil || op.RequestBody.Value == nil || len(op.RequestBody.Value.Content) == 0 {
@@ -259,12 +261,14 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 				continue
 			}
 
-			if _, ok := result[paramName]; ok {
-				logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramName)
+			// Use location+name as unique key for body parameters
+			key := string(ParamInBody) + "-" + paramName
+			if _, ok := result[key]; ok {
+				logs.CtxWarnf(ctx, "duplicate parameter in same location: %s@%s", paramName, string(ParamInBody))
 				continue
 			}
 
-			result[paramName] = paramInfo
+			result[key] = paramInfo
 		}
 
 		break // Take only one MIME.
