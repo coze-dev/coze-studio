@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type FC, useState, useCallback } from 'react';
+import { type FC, useState, useCallback, useEffect } from 'react';
 
 import { I18n } from '@coze-arch/i18n';
 import {
@@ -40,6 +40,13 @@ export const AgentHistoryDrawer: FC<AgentHistoryDrawerProps> = ({
   onClose,
 }) => {
   const [selectedVersion, setSelectedVersion] = useState<string>('current');
+
+  // 每次打开抽屉时将高亮重置为“当前”，避免保留上次选择的历史版本
+  useEffect(() => {
+    if (visible) {
+      setSelectedVersion('current');
+    }
+  }, [visible]);
 
   return (
     <SideSheet

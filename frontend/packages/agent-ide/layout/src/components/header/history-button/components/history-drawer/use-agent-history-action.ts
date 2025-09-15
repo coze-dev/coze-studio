@@ -131,6 +131,13 @@ export function useAgentHistoryAction() {
 
         // 使用完整的store初始化，确保所有资源都被更新
         initAllStoresWithBotData(result.data);
+        // 强制清空知识库展示，避免残留（若历史/草稿有知识库，init 重新拉取会补回）
+        try {
+          const { useDatasetStore } = require('@coze-data/knowledge-data-set-for-agent');
+          useDatasetStore.getState().setDataSetList([]);
+        } catch (_) {
+          // ignore
+        }
       }
     } catch (error) {
       console.error('Failed to reload current version:', error);
@@ -203,6 +210,13 @@ export function useAgentHistoryAction() {
             
             // 使用完整的store初始化，确保所有资源都被更新
             initAllStoresWithBotData(reloadResult.data);
+            // 强制清空知识库展示，避免残留（随后根据草稿数据回填）
+            try {
+              const { useDatasetStore } = require('@coze-data/knowledge-data-set-for-agent');
+              useDatasetStore.getState().setDataSetList([]);
+            } catch (_) {
+              // ignore
+            }
           }
 
           return true;
@@ -270,6 +284,13 @@ export function useAgentHistoryAction() {
 
           // 使用完整的store初始化，确保所有资源（插件、工作流、知识库、记忆、对话体验等）都被更新
           initAllStoresWithBotData(result.data);
+          // 强制清空知识库展示，避免沿用草稿（若该版本有知识库，会在 init 后自动回填）
+          try {
+            const { useDatasetStore } = require('@coze-data/knowledge-data-set-for-agent');
+            useDatasetStore.getState().setDataSetList([]);
+          } catch (_) {
+            // ignore
+          }
 
           return true;
         } else {
@@ -307,7 +328,8 @@ export function useAgentHistoryAction() {
 
       try {
         // 在新标签页打开特定版本的智能体页面
-        const versionUrl = `/space/${spaceId}/agent/${botId}?version=${item.version}&readonly=true`;
+        // 使用主应用内路由，避免微应用入口造成空白或循环刷新
+        const versionUrl = `/space/${spaceId}/bot/${botId}/arrange?version=${item.version}&readonly=true`;
         window.open(versionUrl, '_blank');
 
         return true;

@@ -27,6 +27,7 @@ export { MoreMenuButton } from './components/header/more-menu-button';
 
 export { AgentHistoryButton } from './components/header/history-button';
 export { AgentHistoryDrawer } from './components/header/history-button/components/history-drawer';
+export { useAgentHistoryAction } from './components/header/history-button/components/history-drawer/use-agent-history-action';
 
 export {
   DeployButtonUI,

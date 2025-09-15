@@ -418,6 +418,9 @@ export const useDataSetArea = () => {
       // Easy data reuse
       useDraftBotDataSetStore.getState().batchUpdate(validDatasetList);
       setDataSetList(validDatasetList);
+    } else {
+      // 历史版本知识库为空时，主动清空展示，避免继承上一次的残留
+      setDataSetList([]);
     }
     initRef.current = true;
   };

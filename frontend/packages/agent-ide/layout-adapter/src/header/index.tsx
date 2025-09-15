@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Divider } from '@coze-arch/bot-semi';
 import { DuplicateBot } from '@coze-studio/components';
 import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
 import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
+import { Tag } from '@coze-arch/coze-design';
 import {
   type BotHeaderProps,
   DeployButton,
@@ -28,6 +29,7 @@ import {
   OriginStatus,
   AgentHistoryButton,
   AgentHistoryDrawer,
+  useAgentHistoryAction,
 } from '@coze-agent-ide/layout';
 
 export type HeaderAddonAfterProps = Omit<
@@ -41,6 +43,8 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
   const [visible, setVisible] = useState(false);
   const isReadonly = useBotDetailIsReadonly();
   const editable = usePageRuntimeStore(state => state.editable);
+  const isPreview = usePageRuntimeStore(state => state.isPreview);
+  const setPageRuntimeBotInfo = usePageRuntimeStore(state => state.setPageRuntimeBotInfo);
   const { botId, spaceId, botInfo } = useBotInfoStore(
     useShallow(state => ({
       botId: state.botId,
@@ -48,12 +52,35 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
       botInfo: state,
     })),
   );
+
+  const { showCurrent } = useAgentHistoryAction();
+
+  const openHistory = useCallback(() => {
+    setVisible(true);
+    // 标记为历史视图展开，影响布局和交互
+    setPageRuntimeBotInfo({ historyVisible: true });
+  }, [setPageRuntimeBotInfo]);
+
+  const closeHistory = useCallback(() => {
+    setVisible(false);
+    // 关闭历史抽屉后恢复草稿最新内容（服务端查询）
+    // 同时还原布局标识
+    setPageRuntimeBotInfo({ historyVisible: false });
+    // 异步恢复到草稿（不限制光标位置）
+    if (usePageRuntimeStore.getState().isPreview) {
+      void showCurrent();
+    }
+  }, [setPageRuntimeBotInfo, showCurrent]);
   return (
     <div className="flex items-center gap-2">
       {/** 3.1 State Zone */}
       <div className="flex items-center gap-2">
         {/*  3.1.1 Draft Status | Collaboration Status */}
         {!isReadonly ? <OriginStatus /> : null}
+        {/* 历史版本预览提示（只在预览态展示）*/}
+        {isPreview ? (
+          <Tag color="orange" size="small">历史版本预览中（只读）</Tag>
+        ) : null}
       </div>
       {/** TODO: hzf implicitly associated button, which can be extracted later */}
       {editable ? (
@@ -65,7 +92,7 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
           <>
             <div className="flex items-center gap-2">
               {/** Function button area */}
-              <AgentHistoryButton onClick={() => setVisible(true)} />
+              <AgentHistoryButton onClick={openHistory} />
               <MoreMenuButton />
             </div>
             {/** Submit post related button */}
@@ -78,14 +105,14 @@ export const HeaderAddonAfter: React.FC<HeaderAddonAfterProps> = ({
             </div>
           </>
         ) : (
-          <AgentHistoryButton onClick={() => setVisible(true)} />
+          <AgentHistoryButton onClick={openHistory} />
         )}
       </div>
       <AgentHistoryDrawer
         botId={botId}
         spaceId={spaceId}
         visible={visible}
-        onClose={() => setVisible(false)}
+        onClose={closeHistory}
       />
     </div>
   );

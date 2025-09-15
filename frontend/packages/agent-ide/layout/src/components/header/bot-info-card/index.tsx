@@ -18,6 +18,7 @@ import { type ReactNode } from 'react';
 
 import { useShallow } from 'zustand/react/shallow';
 import { useBotInfoStore } from '@coze-studio/bot-detail-store/bot-info';
+import { usePageRuntimeStore } from '@coze-studio/bot-detail-store/page-runtime';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozPeopleFill,
@@ -121,9 +122,7 @@ export const BotInfoCard = ({
           </div>
         ) : null}
       </div>
-      <Typography.Title className="!text-[16px] !coz-fg-plus !font-medium !leading-[22px]">
-        {botInfo?.name}
-      </Typography.Title>
+      <TitleWithPreview name={botInfo?.name} />
       {!isReadonly && (
         <IconButton
           className="edit-btn"
@@ -147,5 +146,23 @@ export const BotInfoCard = ({
     >
       {triggerContent}
     </Popover>
+  );
+};
+
+const TitleWithPreview = ({ name }: { name?: string }) => {
+  const isPreview = usePageRuntimeStore(state => state.isPreview);
+  return (
+    <div className="flex flex-col leading-[18px]">
+      <Typography.Title className="!text-[16px] !coz-fg-plus !font-medium !leading-[22px]">
+        {name}
+      </Typography.Title>
+      {isPreview ? (
+        <div className="mt-[-2px]">
+          <Tag size="mini" color="blue">
+            {I18n.t('workflow_detail_title_previewing')}
+          </Tag>
+        </div>
+      ) : null}
+    </div>
   );
 };

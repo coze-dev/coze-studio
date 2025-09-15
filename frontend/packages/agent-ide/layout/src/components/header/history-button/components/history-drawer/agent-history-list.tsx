@@ -285,7 +285,7 @@ export const AgentHistoryList: FC<AgentHistoryListProps> = ({
                       <Menu.Item
                         onClick={(_, e) => {
                           e.stopPropagation();
-                          handleViewHistory(item);
+                          handleViewHistoryNewPage(item);
                         }}
                       >
                         {I18n.t('查看版本')}
