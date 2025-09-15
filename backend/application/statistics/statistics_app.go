@@ -77,6 +77,55 @@ func (app *StatisticsApp) GetAppDailyMessages(ctx context.Context, req *statisti
 	return resp, nil
 }
 
+// ListAppConversationLog 获取应用会话日志列表（支持分页）
+func (app *StatisticsApp) ListAppConversationLog(ctx context.Context, req *statistics.ListAppConversationLogRequest) (*statistics.ListAppConversationLogResponse, error) {
+	// 转换请求参数
+	domainReq := &entity.ListAppConversationLogRequest{
+		AgentID:   req.AgentID,
+		StartTime: time.UnixMilli(req.StartTime),
+		EndTime:   time.UnixMilli(req.EndTime),
+		Page:      req.Page,
+		PageSize:  req.PageSize,
+	}
+
+	// 调用domain service
+	result, err := app.statisticsService.ListAppConversationLog(ctx, domainReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换响应
+	resp := &statistics.ListAppConversationLogResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: make([]*statistics.ListAppConversationLogData, 0, len(result.Data)),
+	}
+
+	// 转换数据
+	for _, data := range result.Data {
+		resp.Data = append(resp.Data, &statistics.ListAppConversationLogData{
+			CreateTime:        data.CreateTime,
+			User:              data.User,
+			ConversationName:  data.ConversationName,
+			MessageCount:      data.MessageCount,
+			AppConversationID: data.AppConversationID,
+			CreateTimestamp:   data.CreateTimestamp,
+		})
+	}
+
+	// 设置分页信息
+	if result.Pagination != nil {
+		resp.Pagination = &statistics.PaginationInfo{
+			Page:       result.Pagination.Page,
+			PageSize:   result.Pagination.PageSize,
+			Total:      result.Pagination.Total,
+			TotalPages: result.Pagination.TotalPages,
+		}
+	}
+
+	return resp, nil
+}
+
 // GetAppDailyActiveUsers 获取应用每日活跃用户统计
 func (app *StatisticsApp) GetAppDailyActiveUsers(ctx context.Context, req *statistics.GetAppDailyActiveUsersRequest) (*statistics.GetAppDailyActiveUsersResponse, error) {
 	// 转换请求参数

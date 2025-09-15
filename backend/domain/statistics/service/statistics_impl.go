@@ -81,6 +81,28 @@ func (s *statisticsImpl) GetAppDailyMessages(ctx context.Context, req *entity.Ge
 	return responses, nil
 }
 
+// ListAppConversationLog 实现获取应用会话日志列表（支持分页）
+func (s *statisticsImpl) ListAppConversationLog(ctx context.Context, req *entity.ListAppConversationLogRequest) (*entity.ListAppConversationLogResult, error) {
+	// 设置默认分页参数
+	page := int32(1)
+	pageSize := int32(20)
+
+	if req.Page != nil && *req.Page > 0 {
+		page = *req.Page
+	}
+	if req.PageSize != nil && *req.PageSize > 0 {
+		pageSize = *req.PageSize
+	}
+
+	// 调用Repository层获取数据
+	result, err := s.StatisticsRepo.ListAppConversationLog(ctx, req.AgentID, req.StartTime, req.EndTime, page, pageSize)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 // GetAppDailyActiveUsers 实现获取应用每日活跃用户统计
 func (s *statisticsImpl) GetAppDailyActiveUsers(ctx context.Context, req *entity.GetAppDailyActiveUsersRequest) ([]*entity.GetAppDailyActiveUsersResponse, error) {
 	duration := req.EndTime.Sub(req.StartTime)

@@ -45,4 +45,7 @@ type Statistics interface {
 
 	// GetAppTokensPerSecond 获取应用Token每秒吞吐量统计
 	GetAppTokensPerSecond(ctx context.Context, req *entity.GetAppTokensPerSecondRequest) ([]*entity.GetAppTokensPerSecondResponse, error)
+
+	// ListAppConversationLog 获取应用会话日志列表（支持分页）
+	ListAppConversationLog(ctx context.Context, req *entity.ListAppConversationLogRequest) (*entity.ListAppConversationLogResult, error)
 }

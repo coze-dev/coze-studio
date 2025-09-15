@@ -28,6 +28,7 @@ const config = [
         './idl/flow/marketplace/flow_marketplace_product/public_api.thrift',
       ynet_workflow: './idl/ynet_workflow/ynet_workflow.thrift', // 工作流版本管理API
       ynet_agent: './idl/ynet-agent/ynet_agent.thrift', // 智能体版本管理API
+      statistics: './idl/statistics/statistics.thrift', // 数据统计接口
     },
     commonCodePath: path.resolve(__dirname, './src/api/config.ts'), // custom profile
     output: './src', // Product location

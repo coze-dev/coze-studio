@@ -151,3 +151,28 @@ func GetAppTokensPerSecond(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ListAppConversationLog .
+// @router /api/statistics/app/list_app_conversation_log [POST]
+func ListAppConversationLog(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req statistics.ListAppConversationLogRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用Application层
+	resp, err := application.GetStatisticsApp().ListAppConversationLog(ctx, &req)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, &statistics.ListAppConversationLogResponse{
+			Code: 500,
+			Msg:  err.Error(),
+			Data: []*statistics.ListAppConversationLogData{},
+		})
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

@@ -309,3 +309,121 @@ func (dao *StatisticsDAO) GetHourlyTokensPerSecond(ctx context.Context, agentID 
 
 	return results, err
 }
+
+// ListAppConversationLog 获取应用会话日志列表（支持分页）
+func (dao *StatisticsDAO) ListAppConversationLog(ctx context.Context, agentID int64, startTime, endTime time.Time, page, pageSize int32) (*entity.ListAppConversationLogResult, error) {
+	// 设置默认值
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	// 计算偏移量
+	offset := (page - 1) * pageSize
+
+	// 查询总数
+	countSQL := `
+		SELECT COUNT(*) as total
+		FROM (
+			SELECT
+				id,
+				creator_id,
+				created_at,
+				name,
+				scene
+			FROM conversation
+			WHERE agent_id = ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') >= ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') <= ?
+		) t1
+		LEFT JOIN (
+			SELECT
+				conversation_id,
+				COUNT(DISTINCT run_id) as message_count
+			FROM message
+			WHERE message_type <> 'verbose'
+			GROUP BY conversation_id
+		) t3 ON t1.id = t3.conversation_id
+		WHERE t3.message_count IS NOT NULL
+	`
+
+	var total int64
+	err := dao.db.WithContext(ctx).Raw(countSQL,
+		agentID,
+		startTime.Format("2006-01-02 15:04:05"),
+		endTime.Format("2006-01-02 15:04:05"),
+	).Scan(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询分页数据
+	var results []*entity.ListAppConversationLogResponse
+	dataSQL := `
+		SELECT
+			DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(t1.created_at / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') as create_time,
+			t2.name as user,
+			IF(t1.name IS NULL OR t1.name='','新的会话',t1.name) as conversation_name,
+			t3.message_count as message_count,
+			t1.id as app_conversation_id,
+			t1.created_at as create_timestamp
+		FROM (
+			SELECT
+				id,
+				creator_id,
+				created_at,
+				name,
+				scene
+			FROM conversation
+			WHERE agent_id = ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') >= ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') <= ?
+		) t1
+		LEFT JOIN (
+			SELECT
+				id,
+				name
+			FROM user
+		) t2 ON t1.creator_id = t2.id
+		LEFT JOIN (
+			SELECT
+				conversation_id,
+				COUNT(DISTINCT run_id) as message_count
+			FROM message
+			WHERE message_type <> 'verbose'
+			GROUP BY conversation_id
+		) t3 ON t1.id = t3.conversation_id
+		WHERE t3.message_count IS NOT NULL
+		ORDER BY t1.created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	err = dao.db.WithContext(ctx).Raw(dataSQL,
+		agentID,
+		startTime.Format("2006-01-02 15:04:05"),
+		endTime.Format("2006-01-02 15:04:05"),
+		pageSize,
+		offset,
+	).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 计算总页数
+	totalPages := int32((total + int64(pageSize) - 1) / int64(pageSize))
+
+	// 构建分页结果
+	result := &entity.ListAppConversationLogResult{
+		Data: results,
+		Pagination: &entity.PaginationInfo{
+			Page:       page,
+			PageSize:   pageSize,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}
+
+	return result, nil
+}

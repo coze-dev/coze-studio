@@ -110,6 +110,44 @@ struct GetAppTokensPerSecondResponse {
     1: required list<TokensPerSecondData> data
 }
 
+
+// ListAppConversationLog 应用会话日志列表
+// 应用会话日志列表请求
+struct ListAppConversationLogRequest {
+    1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
+    2: required i64 start_time (api.body="start_time") // Unix时间戳（毫秒）
+    3: required i64 end_time (api.body="end_time") // Unix时间戳（毫秒）
+    4: optional i32 page (api.body="page") // 页码，默认1
+    5: optional i32 page_size (api.body="page_size") // 页面大小，默认20
+}
+
+// 应用会话日志列表数据
+struct ListAppConversationLogData {
+    1: required string CreateTime //日期格式
+    2: required string user
+    3: required string ConversationName
+    4: required i64 MessageCount
+    5: required i64 AppConversationID (api.js_conv="true")
+    6: required i64 CreateTimestamp
+
+}
+
+// 分页信息
+struct PaginationInfo {
+    1: required i32 page       // 当前页码
+    2: required i32 page_size  // 页面大小
+    3: required i64 total      // 总记录数
+    4: required i32 total_pages // 总页数
+}
+
+// 应用会话日志列表响应
+struct ListAppConversationLogResponse {
+    253: required i32 code
+    254: required string msg
+    1: required list<ListAppConversationLogData> data
+    2: optional PaginationInfo pagination // 分页信息
+}
+
 // 智能体统计服务
 service StatisticsService {
     // 获取应用每日消息统计
@@ -126,4 +164,7 @@ service StatisticsService {
     
     // 获取应用Token每秒吞吐量统计
     GetAppTokensPerSecondResponse GetAppTokensPerSecond(1:GetAppTokensPerSecondRequest request) (api.post="/api/statistics/app/tokens-per-second")
+
+    // 获取应用对话日志列表统计
+    ListAppConversationLogResponse ListAppConversationLog(1:ListAppConversationLogRequest request) (api.post="/api/statistics/app/list_app_conversation_log")
 }

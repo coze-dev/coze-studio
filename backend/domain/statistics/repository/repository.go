@@ -61,4 +61,7 @@ type StatisticsRepo interface {
 
 	// GetHourlyTokensPerSecond 获取每小时Token每秒吞吐量（周期<=24小时）
 	GetHourlyTokensPerSecond(ctx context.Context, agentID int64, startTime, endTime time.Time) ([]*entity.HourlyAppTokensPerSecondStats, error)
+
+	// ListAppConversationLog 获取应用会话日志列表（支持分页）
+	ListAppConversationLog(ctx context.Context, agentID int64, startTime, endTime time.Time, page, pageSize int32) (*entity.ListAppConversationLogResult, error)
 }
