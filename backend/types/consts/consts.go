@@ -34,6 +34,8 @@ const (
 	FileUploadComponentTypeStorage = "storage"
 	StorageUploadHTTPScheme        = "STORAGE_UPLOAD_HTTP_SCHEME"
 
+	EnableLocalFileToLLMWithBase64 = "ENABLE_LOCAL_FILE_TO_LLM_WITH_BASE64"
+
 	StorageType        = "STORAGE_TYPE"
 	MinIOAK            = "MINIO_AK"
 	MinIOSK            = "MINIO_SK"
