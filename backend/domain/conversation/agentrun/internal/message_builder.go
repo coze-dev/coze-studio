@@ -500,7 +500,7 @@ func parseMessageURI(ctx context.Context, mcMsg *schema.Message, imagexClient im
 			if one.ImageURL.URI != "" {
 				url, err := imagexClient.GetResourceURL(ctx, one.ImageURL.URI)
 				if err == nil {
-					mcMsg.MultiContent[k].ImageURL = transImageFileURLToBase64(url.URL)
+					mcMsg.MultiContent[k].ImageURL = transImageURLToBase64(url.URL)
 				}
 			}
 		case schema.ChatMessagePartTypeFileURL:
@@ -563,7 +563,7 @@ func enableLocalFileToLLMWithBase64() bool {
 	return os.Getenv(consts.EnableLocalFileToLLMWithBase64) == "true"
 }
 
-func transImageFileURLToBase64(url string) *schema.ChatMessageImageURL {
+func transImageURLToBase64(url string) *schema.ChatMessageImageURL {
 
 	schemaImgUrl := &schema.ChatMessageImageURL{
 		URL: url,
