@@ -22,6 +22,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 )
 
+//go:generate mockgen -destination ../../../../internal/mock/domain/conversation/conversation/conversation_mock.go --package conversation -source conversation.go
 type Conversation interface {
 	Create(ctx context.Context, req *entity.CreateMeta) (*entity.Conversation, error)
 	GetByID(ctx context.Context, id int64) (*entity.Conversation, error)

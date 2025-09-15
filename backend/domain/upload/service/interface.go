@@ -22,6 +22,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/upload/entity"
 )
 
+//go:generate mockgen -destination ../../../internal/mock/domain/upload/upload_service_mock.go --package upload -source interface.go
 type UploadService interface {
 	UploadFile(ctx context.Context, req *UploadFileRequest) (resp *UploadFileResponse, err error)
 	UploadFiles(ctx context.Context, req *UploadFilesRequest) (resp *UploadFilesResponse, err error)
