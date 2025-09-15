@@ -25,6 +25,8 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
+	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -91,6 +93,9 @@ func (wt *workflowTool) prepare(ctx context.Context, rInfo *entity.ResumeRequest
 	lastEventChan <-chan *execute.Event, callOpts []einoCompose.Option, err error) {
 	cfg := execute.GetExecuteConfig(opts...)
 
+	cfg.InputFileFields = slices.ToMap(wt.sc.GetAllNodesInputFileFields(ctx), func(e *workflowModel.FileInfo) (string, *workflowModel.FileInfo) {
+		return e.FileURL, e
+	})
 	var runOpts []WorkflowRunnerOption
 	if rInfo != nil && !rInfo.Resumed {
 		runOpts = append(runOpts, WithResumeReq(rInfo))
@@ -121,11 +126,18 @@ func (wt *workflowTool) prepare(ctx context.Context, rInfo *entity.ResumeRequest
 		if entryNode == nil {
 			panic("entry node not found in tool workflow")
 		}
-		input, ws, err = nodes.ConvertInputs(ctx, input, entryNode.OutputTypes)
+		collectFileFields := make(map[string]*workflowModel.FileInfo, 0)
+		input, ws, err = nodes.ConvertInputs(ctx, input, entryNode.OutputTypes, nodes.WithCollectFileFields(collectFileFields))
 		if err != nil {
 			return
 		} else if ws != nil {
 			logs.CtxWarnf(ctx, "convert inputs warnings: %v", *ws)
+		}
+
+		if len(collectFileFields) > 0 {
+			for k, v := range collectFileFields {
+				cfg.InputFileFields[k] = v
+			}
 		}
 	}
 
