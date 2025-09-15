@@ -624,7 +624,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		sp := newPromptTpl(schema.System, c.SystemPrompt, inputs)
 		up := newPromptTpl(schema.User, userPrompt, inputs, withReservedKeys([]string{knowledgeUserPromptTemplateKey}), withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
-		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting, modelWithInfo)
 
 		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory,
 			compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state llmState) (map[string]any, error) {
@@ -639,7 +639,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		sp := newPromptTpl(schema.System, c.SystemPrompt, ns.InputTypes)
 		up := newPromptTpl(schema.User, userPrompt, ns.InputTypes, withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
-		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting, modelWithInfo)
 
 		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory)
 

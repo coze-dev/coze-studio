@@ -1310,6 +1310,7 @@ func toConversationMessage(ctx context.Context, bizID, cid, userID, roundID, sec
 			UserID:         strconv.FormatInt(userID, 10),
 			RunID:          roundID,
 			ContentType:    message.ContentTypeMix,
+			DisplayContent: msg.Content,
 			MultiContent:   make([]*message.InputMetaData, 0, len(contents)),
 			SectionID:      sectionID,
 		}

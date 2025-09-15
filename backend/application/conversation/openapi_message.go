@@ -127,9 +127,11 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 			MetaData:         dm.Ext,
 			ReasoningContent: ptr.Of(dm.ReasoningContent),
 		}
-		if dm.ContentType == message3.ContentTypeMix && dm.DisplayContent != "" {
-			msg.Content = m.parseDisplayContent(ctx, dm)
+		if dm.ContentType == message3.ContentTypeMix {
 			msg.ContentType = run.ContentTypeMixApi
+			if dm.DisplayContent != "" {
+				msg.Content = m.parseDisplayContent(ctx, dm)
+			}
 		}
 		return msg
 	})
@@ -166,6 +168,8 @@ func (m *OpenapiMessageApplication) parseDisplayContent(ctx context.Context, dm 
 				})
 				if err == nil {
 					inputs[k].FileURL = ptr.Of(fileInfo.File.Url)
+					inputs[k].Name = ptr.Of(fileInfo.File.Name)
+					inputs[k].Size = ptr.Of(fileInfo.File.FileSize)
 				}
 			}
 		default:
