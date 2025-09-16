@@ -18,7 +18,6 @@ package pulsar
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"sync"
 	"testing"
