@@ -61,3 +61,34 @@ type ListConversationMessageLogResult struct {
 	Statistics *MessageStatistics                `json:"statistics"`
 	Pagination *PaginationInfo                   `json:"pagination"`
 }
+
+// ListAppMessageWithConLogRequest 获取应用会话和消息日志请求
+type ListAppMessageWithConLogRequest struct {
+	AgentID  int64  `json:"agent_id"`
+	Page     *int32 `json:"page"`      // 可选，页码，默认1
+	PageSize *int32 `json:"page_size"` // 可选，页面大小，默认20
+}
+
+// ListAppMessageWithConLogData 应用会话和消息日志数据
+type ListAppMessageWithConLogData struct {
+	ConversationID   int64           `json:"conversation_id"`
+	User             string          `json:"user"`
+	ConversationName string          `json:"conversation_name"`
+	RunID            int64           `json:"run_id"`
+	Message          *MessageContent `json:"message"`
+	CreateTime       string          `json:"create_time"`
+	Tokens           int64           `json:"tokens"`
+	TimeCost         float64         `json:"time_cost"`
+}
+
+// ListAppMessageWithConLogResponse 应用会话和消息日志响应
+type ListAppMessageWithConLogResponse struct {
+	Data       []*ListAppMessageWithConLogData `json:"data"`
+	Pagination *PaginationInfo                 `json:"pagination,omitempty"` // 分页信息，可选
+}
+
+// ListAppMessageWithConLogResult 分页查询结果
+type ListAppMessageWithConLogResult struct {
+	Data       []*ListAppMessageWithConLogData `json:"data"`
+	Pagination *PaginationInfo                 `json:"pagination"`
+}

@@ -190,6 +190,51 @@ struct ListConversationMessageLogResponse {
 
 }
 
+// ExportConversationMessageLog 导出会话消息日志请求
+struct ExportConversationMessageLogRequest {
+    1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
+    2: required string file_name (api.body="file_name")
+    3: optional list<i64> conversation_ids (api.body="conversation_ids", api.js_conv="true")
+    4: optional list<i64> run_ids (api.body="run_ids", api.js_conv="true")
+}
+
+// ExportConversationMessageLog 导出会话消息日志响应
+struct ExportConversationMessageLogResponse {
+    253: required i32 code
+    254: required string msg
+    1: optional string file_url
+}
+
+// ListAppMessageWithConLog 请求 
+struct ListAppMessageWithConLogRequest {
+    1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
+    2: optional i32 page (api.body="page") // 页码
+    3: optional i32 page_size (api.body="page_size") // 页面大小
+}
+
+// ListAppMessageWithConLog 数据 
+struct ListAppMessageWithConLogData {
+    1: required i64 conversation_id (api.js_conv="true")
+    2: required string user
+    3: required string ConversationName
+    4: required i64 run_id (api.js_conv="true")
+    5: required MessageContent message
+    6: required string create_time
+    7: required i64 tokens
+    8: required double time_cost
+}
+
+// ListAppMessageWithConLog 响应
+struct ListAppMessageWithConLogResponse {
+    253: required i32 code
+    254: required string msg
+    1: required list<ListAppMessageWithConLogData> data
+    2: optional PaginationInfo pagination // 分页信息
+}
+
+
+
+
 // 智能体统计服务
 service StatisticsService {
     // 获取应用每日消息统计
@@ -212,5 +257,11 @@ service StatisticsService {
 
     // 获取应用对话消息日志
     ListConversationMessageLogResponse ListConversationMessageLog(1:ListConversationMessageLogRequest request) (api.post="/api/statistics/app/list_conversation_message_log")
+
+    // 获取应用会话和消息日志
+    ListAppMessageWithConLogResponse ListAppMessageWithConLog(1:ListAppMessageWithConLogRequest request) (api.post="/api/statistics/app/list_app_message_conlog")
+
+    // 导出应用对话消息日志
+    ExportConversationMessageLogResponse ExportConversationMessageLog(1:ExportConversationMessageLogRequest request) (api.post="/api/statistics/app/export_conversation_message_log")
 
 }

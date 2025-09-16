@@ -201,3 +201,28 @@ func ListConversationMessageLog(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ListAppMessageWithConLog .
+// @router /api/statistics/app/list_app_message_conlog [POST]
+func ListAppMessageWithConLog(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req statistics.ListAppMessageWithConLogRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用Application层
+	resp, err := application.GetStatisticsApp().ListAppMessageWithConLog(ctx, &req)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, &statistics.ListAppMessageWithConLogResponse{
+			Code: 500,
+			Msg:  err.Error(),
+			Data: []*statistics.ListAppMessageWithConLogData{},
+		})
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

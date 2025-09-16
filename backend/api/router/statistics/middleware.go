@@ -76,3 +76,8 @@ func _listconversationmessagelogMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _listappmessagewithconlogMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

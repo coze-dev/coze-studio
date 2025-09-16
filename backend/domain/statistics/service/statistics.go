@@ -51,4 +51,7 @@ type Statistics interface {
 
 	// ListConversationMessageLog 获取会话消息历史日志列表（支持分页）
 	ListConversationMessageLog(ctx context.Context, req *entity.ListConversationMessageLogRequest) (*entity.ListConversationMessageLogResult, error)
+
+	// ListAppMessageWithConLog 获取应用会话和消息日志列表（支持分页）
+	ListAppMessageWithConLog(ctx context.Context, req *entity.ListAppMessageWithConLogRequest) (*entity.ListAppMessageWithConLogResult, error)
 }

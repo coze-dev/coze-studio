@@ -322,3 +322,57 @@ func (app *StatisticsApp) ListConversationMessageLog(ctx context.Context, req *s
 
 	return resp, nil
 }
+
+// ListAppMessageWithConLog 获取应用会话和消息日志列表
+func (app *StatisticsApp) ListAppMessageWithConLog(ctx context.Context, req *statistics.ListAppMessageWithConLogRequest) (*statistics.ListAppMessageWithConLogResponse, error) {
+	// 转换请求参数
+	domainReq := &entity.ListAppMessageWithConLogRequest{
+		AgentID:  req.AgentID,
+		Page:     req.Page,
+		PageSize: req.PageSize,
+	}
+
+	// 调用domain service
+	result, err := app.statisticsService.ListAppMessageWithConLog(ctx, domainReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换响应数据
+	resp := &statistics.ListAppMessageWithConLogResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: make([]*statistics.ListAppMessageWithConLogData, 0, len(result.Data)),
+	}
+
+	// 转换消息数据
+	for _, data := range result.Data {
+		messageContent := &statistics.MessageContent{
+			Query:  data.Message.Query,
+			Answer: data.Message.Answer,
+		}
+
+		resp.Data = append(resp.Data, &statistics.ListAppMessageWithConLogData{
+			ConversationID:   data.ConversationID,
+			User:             data.User,
+			ConversationName: data.ConversationName,
+			RunID:            data.RunID,
+			Message:          messageContent,
+			CreateTime:       data.CreateTime,
+			Tokens:           data.Tokens,
+			TimeCost:         data.TimeCost,
+		})
+	}
+
+	// 转换分页信息
+	if result.Pagination != nil {
+		resp.Pagination = &statistics.PaginationInfo{
+			Page:       result.Pagination.Page,
+			PageSize:   result.Pagination.PageSize,
+			Total:      result.Pagination.Total,
+			TotalPages: result.Pagination.TotalPages,
+		}
+	}
+
+	return resp, nil
+}
