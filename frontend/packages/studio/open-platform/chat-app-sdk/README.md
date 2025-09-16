@@ -1,3 +1,3 @@
 # @flow-platform/chat-app-sdk
 
-https://bytedance.larkoffice.com/wiki/IdTkw7Kd5iahWLkv6FKcIo53nBe
+https://github.com/coze-dev/coze-studio/wiki/8.-Chat-SDK
