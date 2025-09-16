@@ -214,3 +214,10 @@ func DefaultOpenapi3RequestBody() *openapi3.RequestBodyRef {
 		},
 	}
 }
+
+type PluginExtHeader struct {
+	LogId          string
+	UserId         string
+	BotId          int64
+	ConversationId int64
+}

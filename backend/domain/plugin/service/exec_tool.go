@@ -21,6 +21,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"io"
 	"net/http"
 	"net/url"
@@ -737,6 +739,12 @@ func (t *toolExecutor) buildHTTPRequest(ctx context.Context, argMaps map[string]
 	if err != nil {
 		return nil, err
 	}
+
+	extHeader := pluginutil.GetExtHeader(ctx)
+	header.Set("X-Tt-Logid", extHeader.LogId)
+	header.Set("X-Aiplugin-Connector-Identifier", extHeader.UserId)
+	header.Set("X-AIPlugin-Bot-ID", conv.Int64ToStr(extHeader.BotId))
+	header.Set("X-AIPlugin-Conversation-ID", conv.Int64ToStr(extHeader.ConversationId))
 
 	httpReq.Header = header
 
