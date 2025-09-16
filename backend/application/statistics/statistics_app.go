@@ -256,6 +256,69 @@ func (app *StatisticsApp) GetAppTokensPerSecond(ctx context.Context, req *statis
 			Count:   result.Count,
 		})
 	}
-	
+
+	return resp, nil
+}
+
+// ListConversationMessageLog 获取会话消息历史日志列表
+func (app *StatisticsApp) ListConversationMessageLog(ctx context.Context, req *statistics.ListConversationMessageLogRequest) (*statistics.ListConversationMessageLogResponse, error) {
+	// 转换请求参数
+	domainReq := &entity.ListConversationMessageLogRequest{
+		AgentID:        req.AgentID,
+		ConversationID: req.ConversationID,
+		Page:           req.Page,
+		PageSize:       req.PageSize,
+	}
+
+	// 调用domain service
+	result, err := app.statisticsService.ListConversationMessageLog(ctx, domainReq)
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换响应数据
+	resp := &statistics.ListConversationMessageLogResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: make([]*statistics.ListConversationMessageLogData, 0, len(result.Data)),
+	}
+
+	// 转换消息数据
+	for _, data := range result.Data {
+		messageContent := &statistics.MessageContent{
+			Query:  data.Message.Query,
+			Answer: data.Message.Answer,
+		}
+
+		resp.Data = append(resp.Data, &statistics.ListConversationMessageLogData{
+			ConversationID: data.ConversationID,
+			RunID:          data.RunID,
+			Message:        messageContent,
+			Tokens:         data.Tokens,
+			TimeCost:       data.TimeCost,
+			CreateTime:     data.CreateTime,
+		})
+	}
+
+	// 转换统计信息
+	if result.Statistics != nil {
+		resp.Statistics = &statistics.MessageStatistics{
+			MessageCount: result.Statistics.MessageCount,
+			TokensP50:    result.Statistics.TokensP50,
+			LatencyP50:   result.Statistics.LatencyP50,
+			LatencyP99:   result.Statistics.LatencyP99,
+		}
+	}
+
+	// 转换分页信息
+	if result.Pagination != nil {
+		resp.Pagination = &statistics.PaginationInfo{
+			Page:       result.Pagination.Page,
+			PageSize:   result.Pagination.PageSize,
+			Total:      result.Pagination.Total,
+			TotalPages: result.Pagination.TotalPages,
+		}
+	}
+
 	return resp, nil
 }

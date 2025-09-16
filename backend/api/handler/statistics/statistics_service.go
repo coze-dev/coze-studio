@@ -176,3 +176,28 @@ func ListAppConversationLog(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ListConversationMessageLog .
+// @router /api/statistics/app/list_conversation_message_log [POST]
+func ListConversationMessageLog(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req statistics.ListConversationMessageLogRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 调用Application层
+	resp, err := application.GetStatisticsApp().ListConversationMessageLog(ctx, &req)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, &statistics.ListConversationMessageLogResponse{
+			Code: 500,
+			Msg:  err.Error(),
+			Data: []*statistics.ListConversationMessageLogData{},
+		})
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

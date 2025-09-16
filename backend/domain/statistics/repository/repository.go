@@ -64,4 +64,7 @@ type StatisticsRepo interface {
 
 	// ListAppConversationLog 获取应用会话日志列表（支持分页）
 	ListAppConversationLog(ctx context.Context, agentID int64, startTime, endTime time.Time, page, pageSize int32) (*entity.ListAppConversationLogResult, error)
+
+	// ListConversationMessageLog 获取应用会话消息日志列表（支持分页）
+	ListConversationMessageLog(ctx context.Context, agentID int64, conversationID int64, page, pageSize int32) (*entity.ListConversationMessageLogResult, error)
 }

@@ -148,6 +148,48 @@ struct ListAppConversationLogResponse {
     2: optional PaginationInfo pagination // 分页信息
 }
 
+// ListConversationMessageLog 会话消息历史请求
+struct ListConversationMessageLogRequest {
+    1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
+    2: required i64 conversation_id (api.body="conversation_id", api.js_conv="true")
+    3: optional i32 page (api.body="page") // 页码，默认1
+    4: optional i32 page_size (api.body="page_size") // 页面大小，默认20
+
+}
+
+struct MessageContent {
+    1: required string query
+    2: optional string answer
+}
+
+// ListConversationMessageLog 会话消息历史数据
+struct ListConversationMessageLogData {
+    1: required i64 conversation_id (api.js_conv="true")
+    2: required i64 run_id (api.js_conv="true")
+    3: required MessageContent message
+    4: required i64 tokens
+    5: required double time_cost
+    6: required string create_time //日期格式
+}
+
+struct MessageStatistics {
+    1: required i64 message_count
+    2: required i64 tokens_p50
+    3: required double latency_p50
+    4: required double latency_p99
+
+}
+
+// ListConversationMessageLog 会话消息历史 响应
+struct ListConversationMessageLogResponse {
+    253: required i32 code
+    254: required string msg
+    1: required list<ListConversationMessageLogData> data
+    2: required MessageStatistics statistics
+    3: optional PaginationInfo pagination // 分页信息
+
+}
+
 // 智能体统计服务
 service StatisticsService {
     // 获取应用每日消息统计
@@ -167,4 +209,8 @@ service StatisticsService {
 
     // 获取应用对话日志列表统计
     ListAppConversationLogResponse ListAppConversationLog(1:ListAppConversationLogRequest request) (api.post="/api/statistics/app/list_app_conversation_log")
+
+    // 获取应用对话消息日志
+    ListConversationMessageLogResponse ListConversationMessageLog(1:ListConversationMessageLogRequest request) (api.post="/api/statistics/app/list_conversation_message_log")
+
 }

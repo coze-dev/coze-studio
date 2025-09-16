@@ -18,6 +18,8 @@ package dal
 
 import (
 	"context"
+	"encoding/json"
+	"sort"
 	"time"
 
 	"gorm.io/gorm"
@@ -426,4 +428,221 @@ func (dao *StatisticsDAO) ListAppConversationLog(ctx context.Context, agentID in
 	}
 
 	return result, nil
+}
+
+// ListConversationMessageLog 获取会话消息历史日志列表
+func (dao *StatisticsDAO) ListConversationMessageLog(ctx context.Context, agentID int64, conversationID int64, page, pageSize int32) (*entity.ListConversationMessageLogResult, error) {
+	// 设置默认分页参数
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 查询总数
+	countSQL := `
+		SELECT COUNT(DISTINCT run_id)
+		FROM message
+		WHERE message_type <> 'verbose'
+		AND agent_id = ? AND conversation_id = ?
+	`
+
+	var total int64
+	err := dao.db.WithContext(ctx).Raw(countSQL, agentID, conversationID).Scan(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询消息历史数据
+	type messageLogResult struct {
+		ConversationID int64  `json:"conversation_id"`
+		RunID          int64  `json:"run_id"`
+		Result         string `json:"result"` // JSON字符串
+		Token          int64  `json:"token"`
+		TimeCost       float64 `json:"time_cost"`
+		CreateTime     string `json:"create_time"`
+	}
+
+	var rawResults []*messageLogResult
+	dataSQL := `
+		SELECT
+			conversation_id,
+			run_id,
+			JSON_OBJECT(
+				'query', MAX(CASE WHEN message_type = 'question' THEN content END),
+				'answer', MAX(CASE WHEN message_type = 'answer' THEN content END)
+			) AS result,
+			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) AS token,
+			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)) AS time_cost,
+			DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') AS create_time
+		FROM message
+		WHERE message_type <> 'verbose'
+		AND agent_id = ? AND conversation_id = ?
+		GROUP BY conversation_id, run_id
+		ORDER BY MIN(created_at) DESC
+		LIMIT ? OFFSET ?
+	`
+
+	err = dao.db.WithContext(ctx).Raw(dataSQL,
+		agentID,
+		conversationID,
+		pageSize,
+		offset,
+	).Scan(&rawResults).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为目标格式
+	var results []*entity.ListConversationMessageLogData
+	for _, raw := range rawResults {
+		// 解析JSON字符串为MessageContent
+		var messageContent entity.MessageContent
+		err := json.Unmarshal([]byte(raw.Result), &messageContent)
+		if err != nil {
+			return nil, err
+		}
+
+		// 如果answer为null，设为空字符串
+		if messageContent.Answer == nil {
+			emptyAnswer := ""
+			messageContent.Answer = &emptyAnswer
+		}
+
+		results = append(results, &entity.ListConversationMessageLogData{
+			ConversationID: raw.ConversationID,
+			RunID:          raw.RunID,
+			Message:        &messageContent,
+			Tokens:         raw.Token,
+			TimeCost:       raw.TimeCost,
+			CreateTime:     raw.CreateTime,
+		})
+	}
+
+	// 查询统计数据 - 获取原始数据用于Go中计算
+	statsSQL := `
+		SELECT
+			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) AS total_token,
+			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)) AS total_time_cost
+		FROM message
+		WHERE message_type <> 'verbose'
+		AND agent_id = ? AND conversation_id = ?
+		GROUP BY run_id
+		ORDER BY total_token, total_time_cost
+	`
+
+	var statsResults []*statsData
+	err = dao.db.WithContext(ctx).Raw(statsSQL, agentID, conversationID).Scan(&statsResults).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 在Go中计算统计信息
+	stats := dao.calculateMessageStatistics(statsResults)
+
+	// 计算总页数
+	totalPages := int32((total + int64(pageSize) - 1) / int64(pageSize))
+
+	// 构建分页结果
+	result := &entity.ListConversationMessageLogResult{
+		Data:       results,
+		Statistics: stats,
+		Pagination: &entity.PaginationInfo{
+			Page:       page,
+			PageSize:   pageSize,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}
+
+	return result, nil
+}
+
+// statsData 用于统计计算的数据结构
+type statsData struct {
+	TotalToken    int64   `json:"total_token"`
+	TotalTimeCost float64 `json:"total_time_cost"`
+}
+
+// calculateMessageStatistics 计算消息统计信息
+func (dao *StatisticsDAO) calculateMessageStatistics(statsResults []*statsData) *entity.MessageStatistics {
+	if len(statsResults) == 0 {
+		return &entity.MessageStatistics{
+			MessageCount: 0,
+			TokensP50:    0,
+			LatencyP50:   0,
+			LatencyP99:   0,
+		}
+	}
+
+	// 提取token和latency数据
+	tokens := make([]int64, len(statsResults))
+	latencies := make([]float64, len(statsResults))
+
+	for i, data := range statsResults {
+		tokens[i] = data.TotalToken
+		latencies[i] = data.TotalTimeCost
+	}
+
+	// 排序数据
+	sort.Slice(tokens, func(i, j int) bool { return tokens[i] < tokens[j] })
+	sort.Slice(latencies, func(i, j int) bool { return latencies[i] < latencies[j] })
+
+	// 计算百分位数
+	messageCount := int64(len(statsResults))
+	tokensP50 := calculatePercentile(tokens, 0.5)
+	latencyP50 := calculatePercentileFloat(latencies, 0.5)
+	latencyP99 := calculatePercentileFloat(latencies, 0.99)
+
+	return &entity.MessageStatistics{
+		MessageCount: messageCount,
+		TokensP50:    tokensP50,
+		LatencyP50:   latencyP50,
+		LatencyP99:   latencyP99,
+	}
+}
+
+// calculatePercentile 计算整数切片的百分位数
+func calculatePercentile(data []int64, percentile float64) int64 {
+	if len(data) == 0 {
+		return 0
+	}
+	if len(data) == 1 {
+		return data[0]
+	}
+
+	index := percentile * float64(len(data)-1)
+	lower := int(index)
+	upper := lower + 1
+
+	if upper >= len(data) {
+		return data[len(data)-1]
+	}
+
+	weight := index - float64(lower)
+	return int64(float64(data[lower])*(1-weight) + float64(data[upper])*weight)
+}
+
+// calculatePercentileFloat 计算浮点数切片的百分位数
+func calculatePercentileFloat(data []float64, percentile float64) float64 {
+	if len(data) == 0 {
+		return 0
+	}
+	if len(data) == 1 {
+		return data[0]
+	}
+
+	index := percentile * float64(len(data)-1)
+	lower := int(index)
+	upper := lower + 1
+
+	if upper >= len(data) {
+		return data[len(data)-1]
+	}
+
+	weight := index - float64(lower)
+	return data[lower]*(1-weight) + data[upper]*weight
 }
