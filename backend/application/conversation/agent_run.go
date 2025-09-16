@@ -18,10 +18,16 @@ package conversation
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
+	"mime"
+	"net/http"
+	"path/filepath"
 	"strconv"
+	"strings"
 
 	"github.com/cloudwego/eino/schema"
 
@@ -44,6 +50,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
+
+const maxInlineResourceSize = 2 * 1024 * 1024
 
 func (c *ConversationApplicationService) Run(ctx context.Context, sseSender *sseImpl.SSenderImpl, ar *run.AgentRunRequest) error {
 	agentInfo, caErr := c.checkAgent(ctx, ar)
@@ -433,6 +441,13 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 				continue
 			}
 
+			inlineURL := resourceUrl
+			if dataURI, encErr := c.inlineResourceAsDataURI(ctx, item.Image.Key); encErr == nil {
+				inlineURL = dataURI
+			} else {
+				logs.CtxWarnf(ctx, "inlineResourceAsDataURI failed, use original url, uri=%s err=%v", item.Image.Key, encErr)
+			}
+
 			mc[index].Image.ImageThumb.URL = resourceUrl
 			mc[index].Image.ImageOri.URL = resourceUrl
 
@@ -440,7 +455,7 @@ func (c *ConversationApplicationService) parseMultiContent(ctx context.Context, 
 				Type: crossDomainMessage.InputTypeImage,
 				FileData: []*crossDomainMessage.FileData{
 					{
-						Url: resourceUrl,
+						Url: inlineURL,
 						URI: item.Image.Key,
 					},
 				},
@@ -487,4 +502,32 @@ func (c *ConversationApplicationService) getUrlByUri(ctx context.Context, uri st
 	}
 
 	return url.URL, nil
+}
+
+func (c *ConversationApplicationService) inlineResourceAsDataURI(ctx context.Context, uri string) (string, error) {
+	if c.appContext == nil || c.appContext.TosClient == nil {
+		return "", fmt.Errorf("storage client not configured")
+	}
+
+	data, err := c.appContext.TosClient.GetObject(ctx, uri)
+	if err != nil {
+		return "", err
+	}
+	if len(data) == 0 {
+		return "", fmt.Errorf("resource %s is empty", uri)
+	}
+	if len(data) > maxInlineResourceSize {
+		return "", fmt.Errorf("resource %s exceeds inline limit", uri)
+	}
+
+	contentType := http.DetectContentType(data)
+	if contentType == "application/octet-stream" {
+		ext := strings.ToLower(filepath.Ext(uri))
+		if mimeType := mime.TypeByExtension(ext); mimeType != "" {
+			contentType = mimeType
+		}
+	}
+
+	encoded := base64.StdEncoding.EncodeToString(data)
+	return fmt.Sprintf("data:%s;base64,%s", contentType, encoded), nil
 }
