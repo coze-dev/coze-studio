@@ -190,32 +190,26 @@ import (
 
 	 // 将历史消息和输入转换为 schema.Message 格式
 	 // 过滤掉verbose消息，这些是内部状态消息不应发送给LLM
-	 var historySchema []*schema.Message
-	 for _, msg := range historyMsg {
-		 // 跳过verbose消息（包括generate_answer_finish）
-		 if msg.MessageType == message.MessageTypeVerbose {
-			 continue
-		 }
-		 
-		 if msg.ModelContent != "" {
-			 // 优先使用ModelContent中的正确结构
-			 var modelMsg schema.Message
-			 if err := json.Unmarshal([]byte(msg.ModelContent), &modelMsg); err == nil {
-				 historySchema = append(historySchema, &modelMsg)
-				 continue
-			 }
-		 }
-		 // 降级方案：如果ModelContent解析失败，使用原来的方式
-		 historySchema = append(historySchema, &schema.Message{
-			 Role:    msg.Role,
-			 Content: msg.Content,
-		 })
-	 }
+	var historySchema []*schema.Message
+	for _, msg := range historyMsg {
+		// 跳过verbose消息（包括generate_answer_finish）
+		if msg.MessageType == message.MessageTypeVerbose {
+			continue
+		}
 
-	 inputSchema := &schema.Message{
-		 Role:    input.Role,
-		 Content: input.Content,
-	 }
+		schemaMsg := buildSchemaMessage(msg)
+		if schemaMsg != nil {
+			historySchema = append(historySchema, schemaMsg)
+		}
+	}
+
+	inputSchema := buildSchemaMessage(input)
+	if inputSchema == nil {
+		inputSchema = &schema.Message{
+			Role:    input.Role,
+			Content: input.Content,
+		}
+	}
 
 	 ar := &crossagent.AgentRuntime{
 		 AgentVersion:     rtDependence.runMeta.Version,
@@ -248,10 +242,111 @@ import (
 
 	 wg.Wait()
 
-	 return err
- }
+	return err
+}
 
- func transformEventMap(eventType singleagent.EventType) (message.MessageType, error) {
+func buildSchemaMessage(msg *msgEntity.Message) *schema.Message {
+	if msg == nil {
+		return nil
+	}
+
+	if msg.ModelContent != "" {
+		var modelMsg schema.Message
+		if err := json.Unmarshal([]byte(msg.ModelContent), &modelMsg); err == nil {
+			if modelMsg.Role == "" {
+				modelMsg.Role = msg.Role
+			}
+			return &modelMsg
+		}
+	}
+
+	return &schema.Message{
+		Role:         msg.Role,
+		Content:      msg.Content,
+		MultiContent: buildSchemaMultiContent(msg.MultiContent, msg.Content),
+	}
+}
+
+func buildSchemaMultiContent(multi []*message.InputMetaData, fallbackText string) []schema.ChatMessagePart {
+	if len(multi) == 0 {
+		return nil
+	}
+
+	parts := make([]schema.ChatMessagePart, 0, len(multi))
+	textExists := false
+	for _, item := range multi {
+		switch item.Type {
+		case message.InputTypeText:
+			parts = append(parts, schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeText,
+				Text: item.Text,
+			})
+			textExists = true
+		case message.InputTypeImage:
+			if len(item.FileData) == 0 || item.FileData[0] == nil {
+				continue
+			}
+			fd := item.FileData[0]
+			parts = append(parts, schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeImageURL,
+				ImageURL: &schema.ChatMessageImageURL{
+					URL: fd.Url,
+					URI: fd.URI,
+				},
+			})
+		case message.InputTypeFile:
+			if len(item.FileData) == 0 || item.FileData[0] == nil {
+				continue
+			}
+			fd := item.FileData[0]
+			parts = append(parts, schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeFileURL,
+				FileURL: &schema.ChatMessageFileURL{
+					URL: fd.Url,
+					URI: fd.URI,
+				},
+			})
+		case message.InputTypeAudio:
+			if len(item.FileData) == 0 || item.FileData[0] == nil {
+				continue
+			}
+			fd := item.FileData[0]
+			parts = append(parts, schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeAudioURL,
+				AudioURL: &schema.ChatMessageAudioURL{
+					URL: fd.Url,
+					URI: fd.URI,
+				},
+			})
+		case message.InputTypeVideo:
+			if len(item.FileData) == 0 || item.FileData[0] == nil {
+				continue
+			}
+			fd := item.FileData[0]
+			parts = append(parts, schema.ChatMessagePart{
+				Type: schema.ChatMessagePartTypeVideoURL,
+				VideoURL: &schema.ChatMessageVideoURL{
+					URL: fd.Url,
+				},
+			})
+		}
+	}
+
+	if !textExists && fallbackText != "" {
+		parts = append(parts, schema.ChatMessagePart{
+			Type: schema.ChatMessagePartTypeText,
+			Text: fallbackText,
+		})
+	}
+
+	if len(parts) == 0 {
+		return nil
+	}
+
+	return parts
+}
+
+func transformEventMap(eventType singleagent.EventType) (message.MessageType, error) {
 	 var eType message.MessageType
 	 switch eventType {
 	 case singleagent.EventTypeOfFuncCall:
