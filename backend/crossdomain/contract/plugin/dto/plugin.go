@@ -167,3 +167,10 @@ type ToolInterruptEvent struct {
 type ToolNeedOAuthInterruptEvent struct {
 	Message string
 }
+
+type ListPluginProductsRequest struct{}
+
+type ListPluginProductsResponse struct {
+	Plugins []*PluginInfo
+	Total   int64
+}

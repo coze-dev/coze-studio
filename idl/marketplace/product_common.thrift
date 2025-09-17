@@ -20,6 +20,8 @@ enum ProductEntityType {
     SubsMsgCredit    = 60, // There is only one subscription product in theory
     Common           = 99,
     Topic = 101 // Special Topics (Compatible with previous designs)
+
+    SaasPlugin = 999 // Saas plugin,the plugins from coze saas
 }
 
 enum SortType {

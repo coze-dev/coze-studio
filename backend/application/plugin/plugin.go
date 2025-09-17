@@ -1723,3 +1723,45 @@ func (p *PluginApplicationService) GetQueriedOAuthPluginList(ctx context.Context
 
 	return resp, nil
 }
+
+func (t *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+	domainReq := &service.ListPluginProductsRequest{}
+	
+	domainResp, err := t.DomainSVC.ListSaasPluginProducts(ctx, domainReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ListSaasPluginProducts failed: %v", err)
+		return &productAPI.GetProductListResponse{
+			Code:    -1,
+			Message: "Failed to get SaaS plugin list",
+		}, nil
+	}
+
+	products := make([]*productAPI.ProductInfo, 0, len(domainResp.Plugins))
+	for _, plugin := range domainResp.Plugins {
+		productInfo := &productAPI.ProductInfo{
+			MetaInfo: &productAPI.ProductMetaInfo{
+				ID:          plugin.ID,
+				Name:        plugin.GetName(),
+				EntityID:    plugin.ID,
+				Description: plugin.GetDesc(),
+				IconURL:     plugin.GetIconURI(),
+				ListedAt:    plugin.CreatedAt,
+			},
+			PluginExtra: &productAPI.PluginExtraInfo{
+				IsOfficial: plugin.IsOfficial(),
+			},
+		}
+		products = append(products, productInfo)
+	}
+
+	return &productAPI.GetProductListResponse{
+		Code:    0,
+		Message: "success",
+		Data: &productAPI.GetProductListData{
+			Products: products,
+			Total:    int32(domainResp.Total),
+			HasMore:  false,
+		},
+	}, nil
+}
+
