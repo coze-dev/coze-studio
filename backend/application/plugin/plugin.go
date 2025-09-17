@@ -314,3 +314,111 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 
 	return plugin, nil
 }
+
+func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, req *botOpenAPI.OauthAuthorizationCodeReq) (resp *botOpenAPI.OauthAuthorizationCodeResp, err error) {
+	stateStr, err := url.QueryUnescape(req.State)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	secret := os.Getenv(encrypt.StateSecretEnv)
+	if secret == "" {
+		secret = encrypt.DefaultStateSecret
+	}
+
+	stateBytes, err := encrypt.DecryptByAES(stateStr, secret)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	state := &entity.OAuthState{}
+	err = json.Unmarshal(stateBytes, state)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	err = p.DomainSVC.OAuthCode(ctx, req.Code, state)
+	if err != nil {
+		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "authorize failed"))
+	}
+
+	resp = &botOpenAPI.OauthAuthorizationCodeResp{}
+
+	return resp, nil
+}
+
+func (p *PluginApplicationService) GetQueriedOAuthPluginList(ctx context.Context, req *pluginAPI.GetQueriedOAuthPluginListRequest) (resp *pluginAPI.GetQueriedOAuthPluginListResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	status, err := p.DomainSVC.GetAgentPluginsOAuthStatus(ctx, *userID, req.BotID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetAgentPluginsOAuthStatus failed, userID=%d, agentID=%d", *userID, req.BotID)
+	}
+
+	if len(status) == 0 {
+		return &pluginAPI.GetQueriedOAuthPluginListResponse{
+			OauthPluginList: []*pluginAPI.OAuthPluginInfo{},
+		}, nil
+	}
+
+	oauthPluginList := make([]*pluginAPI.OAuthPluginInfo, 0, len(status))
+	for _, s := range status {
+		oauthPluginList = append(oauthPluginList, &pluginAPI.OAuthPluginInfo{
+			PluginID:   s.PluginID,
+			Status:     s.Status,
+			Name:       s.PluginName,
+			PluginIcon: s.PluginIconURL,
+		})
+	}
+
+	resp = &pluginAPI.GetQueriedOAuthPluginListResponse{
+		OauthPluginList: oauthPluginList,
+	}
+
+	return resp, nil
+}
+
+func (t *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+	domainReq := &service.ListPluginProductsRequest{}
+
+	domainResp, err := t.DomainSVC.ListSaasPluginProducts(ctx, domainReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ListSaasPluginProducts failed: %v", err)
+		return &productAPI.GetProductListResponse{
+			Code:    -1,
+			Message: "Failed to get SaaS plugin list",
+		}, nil
+	}
+
+	products := make([]*productAPI.ProductInfo, 0, len(domainResp.Plugins))
+	for _, plugin := range domainResp.Plugins {
+		productInfo := &productAPI.ProductInfo{
+			MetaInfo: &productAPI.ProductMetaInfo{
+				ID:          plugin.ID,
+				Name:        plugin.GetName(),
+				EntityID:    plugin.ID,
+				Description: plugin.GetDesc(),
+				IconURL:     plugin.GetIconURI(),
+				ListedAt:    plugin.CreatedAt,
+			},
+			PluginExtra: &productAPI.PluginExtraInfo{
+				IsOfficial: plugin.IsOfficial(),
+			},
+		}
+		products = append(products, productInfo)
+	}
+
+	return &productAPI.GetProductListResponse{
+		Code:    0,
+		Message: "success",
+		Data: &productAPI.GetProductListData{
+			Products: products,
+			Total:    int32(domainResp.Total),
+			HasMore:  false,
+		},
+	}, nil
+}
+

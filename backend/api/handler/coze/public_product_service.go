@@ -68,6 +68,12 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 			internalServerErrorResponse(ctx, c, err)
 			return
 		}
+	case product_common.ProductEntityType_SaasPlugin:
+		resp, err = plugin.PluginApplicationSVC.GetCozeSaasPluginList(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
 	}
 
 	c.JSON(consts.StatusOK, resp)
