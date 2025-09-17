@@ -32,3 +32,7 @@ type User struct {
 	CreatedAt int64 // creation time
 	UpdatedAt int64 // update time
 }
+
+type UserBenefit struct {
+	UserID int64
+}
