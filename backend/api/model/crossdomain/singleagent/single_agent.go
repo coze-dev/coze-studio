@@ -112,6 +112,8 @@ type ExecuteRequest struct {
 	History      []*schema.Message
 	ResumeInfo   *InterruptInfo
 	PreCallTools []*agentrun.ToolsRetriever
+
+	ConversationID int64
 }
 
 type AgentIdentity struct {

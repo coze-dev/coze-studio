@@ -18,7 +18,6 @@ package agentrun
 
 import (
 	"context"
-	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
 	"runtime/debug"
 	"time"
 
@@ -68,8 +67,6 @@ func (c *runImpl) AgentRun(ctx context.Context, arm *entity.AgentRunMeta) (*sche
 	}
 	safego.Go(ctx, func() {
 		defer sw.Close()
-		logId := ctx.Value("log-id").(string)
-		ctx = pluginutil.SetExtHeader(ctx, logId, arm.UserID, arm.AgentID, arm.ConversationID)
 		_ = art.Run(ctx)
 	})
 
