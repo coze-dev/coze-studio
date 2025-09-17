@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"reflect"
 	"strconv"
 	"time"
@@ -113,7 +114,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if parentNodeID != nil { // root workflow execution has already been created
 			var logID string
-			logID, _ = ctx.Value("log-id").(string)
+			logID, _ = ctx.Value(consts.CtxLogIDKey).(string)
 
 			wfExec := &entity.WorkflowExecution{
 				ID:                  exeID,

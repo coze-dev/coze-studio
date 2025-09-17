@@ -98,6 +98,10 @@ const (
 )
 
 const (
+	CtxLogIDKey = "log-id"
+)
+
+const (
 	ShortcutCommandResourceType = "uri"
 )
 

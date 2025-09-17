@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"io"
 	"net/http"
 	"net/url"
@@ -744,7 +745,7 @@ func (t *toolExecutor) buildHTTPRequest(ctx context.Context, argMaps map[string]
 		return nil, err
 	}
 
-	logId := ctx.Value("log-id").(string)
+	logId, _ := ctx.Value(consts.CtxLogIDKey).(string)
 	header.Set("X-Tt-Logid", logId)
 	header.Set("X-Aiplugin-Connector-Identifier", t.userID)
 	header.Set("X-AIPlugin-Bot-ID", conv.Int64ToStr(t.agentID))

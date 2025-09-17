@@ -19,6 +19,7 @@ package compose
 import (
 	"context"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"runtime/debug"
 	"strconv"
 	"strings"
@@ -257,7 +258,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 
 	if interruptEvent == nil {
 		var logID string
-		logID, _ = ctx.Value("log-id").(string)
+		logID, _ = ctx.Value(consts.CtxLogIDKey).(string)
 
 		wfExec := &entity.WorkflowExecution{
 			ID:                     executeID,
