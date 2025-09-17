@@ -1,0 +1,209 @@
+{
+  "nodes": [
+    {
+      "id": "100001",
+      "type": "1",
+      "meta": {
+        "position": {
+          "x": 180,
+          "y": 13.700000000000003
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的起始节点，用于设定启动工作流需要的信息",
+          "icon": "http://10.37.46.247:9000/opencoze/default_icon/workflow_icon/icon-start.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250917%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250917T100753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=cc901caf2ac7105e181a549398596a3d77a45b1735d75082da7924bcd6ee4a56",
+          "subTitle": "",
+          "title": "开始"
+        },
+        "outputs": [
+          {
+            "type": "string",
+            "name": "input",
+            "required": false
+          }
+        ],
+        "trigger_parameters": []
+      }
+    },
+    {
+      "id": "900001",
+      "type": "2",
+      "meta": {
+        "position": {
+          "x": 1300,
+          "y": 0.7000000000000028
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "description": "工作流的最终节点，用于返回工作流运行后的结果信息",
+          "icon": "http://10.37.46.247:9000/opencoze/default_icon/workflow_icon/icon-end.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250917%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250917T100753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=61259d932108c153d5470e7fe21984f0961007508b01b1e884250744ede25dde",
+          "subTitle": "",
+          "title": "结束"
+        },
+        "inputs": {
+          "terminatePlan": "returnVariables",
+          "inputParameters": [
+            {
+              "name": "output",
+              "input": {
+                "type": "list",
+                "schema": {
+                  "type": "string"
+                },
+                "value": {
+                  "type": "ref",
+                  "content": {
+                    "source": "block-output",
+                    "blockID": "105709",
+                    "name": "output"
+                  },
+                  "rawMeta": {
+                    "type": 99
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "105709",
+      "type": "28",
+      "meta": {
+        "position": {
+          "x": 740,
+          "y": 0
+        },
+        "canvasPosition": {
+          "x": 560,
+          "y": 293.4
+        }
+      },
+      "data": {
+        "nodeMeta": {
+          "title": "批处理",
+          "icon": "http://10.37.46.247:9000/opencoze/default_icon/workflow_icon/icon-batch.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250917%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250917T100753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=ea39a384a6d4ddb2dfe873ab7277b996747e42e129da23367c62068bf8980068",
+          "description": "通过设定批量运行次数和逻辑，运行批处理体内的任务",
+          "mainColor": "#00B2B2",
+          "subTitle": "批处理"
+        },
+        "inputs": {
+          "concurrentSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "1"
+            }
+          },
+          "batchSize": {
+            "type": "integer",
+            "value": {
+              "type": "literal",
+              "content": "100"
+            }
+          },
+          "inputParameters": [
+            {
+              "name": "input",
+              "input": {
+                "type": "list",
+                "value": {
+                  "type": "literal",
+                  "content": "[\"12\",\"2\"]",
+                  "rawMeta": {
+                    "type": 99
+                  }
+                },
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          ]
+        },
+        "outputs": [
+          {
+            "name": "output",
+            "input": {
+              "type": "list",
+              "schema": {
+                "type": "string"
+              },
+              "value": {
+                "type": "ref",
+                "content": {
+                  "source": "block-output",
+                  "blockID": "136577",
+                  "name": "input"
+                },
+                "rawMeta": {
+                  "type": 1
+                }
+              }
+            }
+          }
+        ]
+      },
+      "blocks": [
+        {
+          "id": "136577",
+          "type": "30",
+          "meta": {
+            "position": {
+              "x": 180,
+              "y": 0
+            }
+          },
+          "data": {
+            "outputs": [
+              {
+                "type": "string",
+                "name": "input",
+                "required": true
+              }
+            ],
+            "nodeMeta": {
+              "title": "输入",
+              "icon": "http://10.37.46.247:9000/opencoze/default_icon/workflow_icon/icon-input.jpg?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=minioadmin%2F20250917%2Fus-east-1%2Fs3%2Faws4_request&X-Amz-Date=20250917T100753Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=d0af4e55a091037e82c025f29e925fbdb0592ca1319d03948a1833b5559ab2c4",
+              "description": "支持中间过程的信息输入",
+              "mainColor": "#5C62FF",
+              "subTitle": "输入"
+            },
+            "inputs": {
+              "outputSchema": "[{\"type\":\"string\",\"name\":\"input\",\"required\":true}]"
+            }
+          }
+        }
+      ],
+      "edges": [
+        {
+          "sourceNodeID": "105709",
+          "targetNodeID": "136577",
+          "sourcePortID": "batch-function-inline-output"
+        },
+        {
+          "sourceNodeID": "136577",
+          "targetNodeID": "105709",
+          "targetPortID": "batch-function-inline-input"
+        }
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "sourceNodeID": "100001",
+      "targetNodeID": "105709"
+    },
+    {
+      "sourceNodeID": "105709",
+      "targetNodeID": "900001",
+      "sourcePortID": "batch-output"
+    }
+  ],
+  "versions": {
+    "loop": "v2"
+  }
+}
