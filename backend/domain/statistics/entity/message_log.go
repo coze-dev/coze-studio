@@ -16,6 +16,8 @@
 
 package entity
 
+import "time"
+
 // MessageContent 消息内容结构
 type MessageContent struct {
 	Query  string  `json:"query"`            // 用户查询
@@ -91,4 +93,82 @@ type ListAppMessageWithConLogResponse struct {
 type ListAppMessageWithConLogResult struct {
 	Data       []*ListAppMessageWithConLogData `json:"data"`
 	Pagination *PaginationInfo                 `json:"pagination"`
+}
+
+// ExportConversationMessageLogRequest 导出会话消息日志请求
+type ExportConversationMessageLogRequest struct {
+	AgentID         int64   `json:"agent_id"`
+	FileName        string  `json:"file_name"`
+	ConversationIDs []int64 `json:"conversation_ids,omitempty"`
+	RunIDs          []int64 `json:"run_ids,omitempty"`
+}
+
+// ExportConversationMessageLogData 导出会话消息日志数据
+type ExportConversationMessageLogData struct {
+	ConversationID          int64   `json:"conversation_id"`
+	RunID                   int64   `json:"run_id"`
+	ConversationName        string  `json:"conversation_name"`
+	ConversationCreatedTime string  `json:"conversation_created_time"`
+	User                    string  `json:"user"`
+	MessageCreatedTime      string  `json:"message_created_time"`
+	Query                   string  `json:"query"`
+	Answer                  string  `json:"answer"`
+	Tokens                  int64   `json:"tokens"`
+	TimeCost                float64 `json:"time_cost"`
+}
+
+// ExportConversationMessageLogResult 导出会话消息日志结果
+type ExportConversationMessageLogResult struct {
+	FileName string                              `json:"file_name"`
+	Data     []*ExportConversationMessageLogData `json:"data"`
+}
+
+const (
+	ExportFileStatusPending int32 = 0
+	ExportFileStatusSuccess int32 = 1
+	ExportFileStatusFailed  int32 = 2
+)
+
+var ExportTimeLocation = time.FixedZone("CST", 8*3600)
+
+// ConversationExportFile 导出的文件记录
+type ConversationExportFile struct {
+	ID           int64     `json:"id"`
+	AgentID      int64     `json:"agent_id"`
+	ExportTaskID string    `json:"export_task_id"`
+	FileName     string    `json:"file_name"`
+	ObjectKey    string    `json:"object_key"`
+	CreatedAt    time.Time `json:"created_at"`
+	ExpireAt     time.Time `json:"expire_at"`
+	Status       int32     `json:"status"`
+}
+
+// CreateConversationExportFileRequest 创建导出文件记录请求
+type CreateConversationExportFileRequest struct {
+	AgentID      int64
+	ExportTaskID string
+	FileName     string
+	ObjectKey    string
+	ExpireAt     time.Time
+	Status       int32
+	CreatedAt    time.Time
+}
+
+// ListConversationExportFilesRequest 查询导出文件列表请求
+type ListConversationExportFilesRequest struct {
+	AgentID  int64
+	Page     *int32
+	PageSize *int32
+}
+
+// ListConversationExportFilesResult 查询导出文件列表结果
+type ListConversationExportFilesResult struct {
+	Data       []*ConversationExportFile `json:"data"`
+	Pagination *PaginationInfo           `json:"pagination"`
+}
+
+// GetConversationExportFileRequest 查询单个导出文件请求
+type GetConversationExportFileRequest struct {
+	AgentID      int64
+	ExportTaskID string
 }

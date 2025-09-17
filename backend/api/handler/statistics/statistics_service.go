@@ -226,3 +226,73 @@ func ListAppMessageWithConLog(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// ExportConversationMessageLog .
+// @router /api/statistics/app/export_conversation_message_log [POST]
+func ExportConversationMessageLog(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req statistics.ExportConversationMessageLogRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := application.GetStatisticsApp().ExportConversationMessageLog(ctx, &req)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, &statistics.ExportConversationMessageLogResponse{
+			Code: 500,
+			Msg:  err.Error(),
+		})
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// ListExportConversationFiles .
+// @router /api/statistics/app/list_export_conversation_files [POST]
+func ListExportConversationFiles(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req statistics.ListExportConversationFilesRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := application.GetStatisticsApp().ListExportConversationFiles(ctx, &req)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, &statistics.ListExportConversationFilesResponse{
+			Code: 500,
+			Msg:  err.Error(),
+			Data: []*statistics.ExportedConversationFileInfo{},
+		})
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetExportConversationFileDownloadUrl .
+// @router /api/statistics/app/get_export_conversation_file_download_url [POST]
+func GetExportConversationFileDownloadUrl(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req statistics.GetExportConversationFileDownloadUrlRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp, err := application.GetStatisticsApp().GetExportConversationFileDownloadUrl(ctx, &req)
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, &statistics.GetExportConversationFileDownloadUrlResponse{
+			Code: 500,
+			Msg:  err.Error(),
+		})
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}

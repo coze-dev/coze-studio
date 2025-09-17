@@ -54,4 +54,16 @@ type Statistics interface {
 
 	// ListAppMessageWithConLog 获取应用会话和消息日志列表（支持分页）
 	ListAppMessageWithConLog(ctx context.Context, req *entity.ListAppMessageWithConLogRequest) (*entity.ListAppMessageWithConLogResult, error)
+
+	// ExportConversationMessageLog 导出会话消息日志数据
+	ExportConversationMessageLog(ctx context.Context, req *entity.ExportConversationMessageLogRequest) (*entity.ExportConversationMessageLogResult, error)
+
+	// CreateConversationExportFile 创建导出文件记录
+	CreateConversationExportFile(ctx context.Context, req *entity.CreateConversationExportFileRequest) (*entity.ConversationExportFile, error)
+
+	// ListConversationExportFiles 查询导出文件列表
+	ListConversationExportFiles(ctx context.Context, req *entity.ListConversationExportFilesRequest) (*entity.ListConversationExportFilesResult, error)
+
+	// GetConversationExportFile 获取单个导出文件记录
+	GetConversationExportFile(ctx context.Context, req *entity.GetConversationExportFileRequest) (*entity.ConversationExportFile, error)
 }

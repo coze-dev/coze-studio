@@ -196,10 +196,50 @@ struct ExportConversationMessageLogRequest {
     2: required string file_name (api.body="file_name")
     3: optional list<i64> conversation_ids (api.body="conversation_ids", api.js_conv="true")
     4: optional list<i64> run_ids (api.body="run_ids", api.js_conv="true")
+    5: optional i32 expire_hours (api.body="expire_hours") // 导出文件保存小时数，默认72小时
 }
 
 // ExportConversationMessageLog 导出会话消息日志响应
 struct ExportConversationMessageLogResponse {
+    253: required i32 code
+    254: required string msg
+    1: optional string export_task_id
+}
+
+// ExportedConversationFileInfo 导出的会话日志文件信息
+struct ExportedConversationFileInfo {
+    1: required string export_task_id
+    2: required string file_name
+    3: required string object_key
+    4: required string created_at
+    5: required string expire_at
+    6: required i32 status
+}
+
+// ListExportConversationFilesRequest 查看导出文件列表请求
+struct ListExportConversationFilesRequest {
+    1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
+    2: optional i32 page (api.body="page")
+    3: optional i32 page_size (api.body="page_size")
+}
+
+// ListExportConversationFilesResponse 查看导出文件列表响应
+struct ListExportConversationFilesResponse {
+    253: required i32 code
+    254: required string msg
+    1: required list<ExportedConversationFileInfo> data
+    2: optional PaginationInfo pagination
+}
+
+// GetExportConversationFileDownloadUrlRequest 获取导出文件下载链接请求
+struct GetExportConversationFileDownloadUrlRequest {
+    1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
+    2: required string export_task_id (api.body="export_task_id")
+    3: optional i32 expire_seconds (api.body="expire_seconds") // 下载链接有效期，默认600s
+}
+
+// GetExportConversationFileDownloadUrlResponse 获取导出文件下载链接响应
+struct GetExportConversationFileDownloadUrlResponse {
     253: required i32 code
     254: required string msg
     1: optional string file_url
@@ -263,5 +303,11 @@ service StatisticsService {
 
     // 导出应用对话消息日志
     ExportConversationMessageLogResponse ExportConversationMessageLog(1:ExportConversationMessageLogRequest request) (api.post="/api/statistics/app/export_conversation_message_log")
+
+    // 查看导出的会话消息日志文件列表
+    ListExportConversationFilesResponse ListExportConversationFiles(1:ListExportConversationFilesRequest request) (api.post="/api/statistics/app/list_export_conversation_files")
+
+    // 获取导出的会话消息日志文件下载链接
+    GetExportConversationFileDownloadUrlResponse GetExportConversationFileDownloadUrl(1:GetExportConversationFileDownloadUrlRequest request) (api.post="/api/statistics/app/get_export_conversation_file_download_url")
 
 }
