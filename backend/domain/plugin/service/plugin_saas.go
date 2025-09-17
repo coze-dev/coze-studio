@@ -18,11 +18,9 @@ package service
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
-
-	"github.com/bytedance/sonic"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
@@ -30,24 +28,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"github.com/coze-dev/coze-studio/backend/pkg/saasapi"
 )
-
-// CozePluginResponse 定义coze.cn API返回的插件数据结构
-type CozePluginResponse struct {
-	Code int    `json:"code"`
-	Msg  string `json:"msg"`
-	Data struct {
-		Plugins []CozePlugin `json:"plugins"`
-		Total   int64        `json:"total"`
-	} `json:"data"`
-}
-
-type CozeSinglePluginResponse struct {
-	Code int        `json:"code"`
-	Msg  string     `json:"msg"`
-	Data CozePlugin `json:"data"`
-}
 
 type CozePlugin struct {
 	ID          string `json:"id"`
@@ -75,50 +57,24 @@ func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *Lis
 
 
 func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context) ([]*entity.PluginInfo, error) {
+	client := saasapi.NewCozeAPIClient()
 
-	baseURL := getCozeAPIBaseURL()
-	token := getCozeAPIToken()
-
-	if baseURL == "" {
-		return nil, errorx.New(errno.ErrPluginAPIErr, errorx.KV(errno.PluginMsgKey, "COZE_API_BASE_URL not configured"))
-	}
-
-	url := baseURL + "/v1/stores/plugins"
-
-	req := p.httpCli.R().
-		SetContext(ctx).
-		SetHeader("Content-Type", "application/json").
-		SetHeader("User-Agent", "Coze-Studio/1.0")
-
-	// 如果有token，添加认证头
-	if token != "" {
-		req.SetHeader("Authorization", "Bearer "+token)
-	}
-
-	resp, err := req.Get(url)
+	resp, err := client.Get(ctx, "/v1/stores/plugins")
 	if err != nil {
 		return nil, errorx.Wrapf(err, "failed to call coze.cn API")
 	}
 
-	if resp.StatusCode() != 200 {
-		return nil, errorx.New(errno.ErrPluginAPIErr,
-			errorx.KVf(errno.PluginMsgKey, "coze.cn API returned status %d: %s", resp.StatusCode(), resp.String()))
+	var pluginsData struct {
+		Plugins []CozePlugin `json:"plugins"`
+		Total   int64        `json:"total"`
 	}
 
-	var cozeResp CozePluginResponse
-	if err := sonic.Unmarshal(resp.Body(), &cozeResp); err != nil {
+	if err := json.Unmarshal(resp.Data, &pluginsData); err != nil {
 		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
 	}
 
-	// 检查业务状态码
-	if cozeResp.Code != 0 {
-		return nil, errorx.New(errno.ErrPluginAPIErr,
-			errorx.KVf(errno.PluginMsgKey, "coze.cn API returned error: %s", cozeResp.Msg))
-	}
-
-	// 转换为内部数据结构
-	plugins := make([]*entity.PluginInfo, 0, len(cozeResp.Data.Plugins))
-	for _, cozePlugin := range cozeResp.Data.Plugins {
+	plugins := make([]*entity.PluginInfo, 0, len(pluginsData.Plugins))
+	for _, cozePlugin := range pluginsData.Plugins {
 		plugin := convertCozePluginToEntity(cozePlugin)
 		plugins = append(plugins, plugin)
 	}
@@ -156,11 +112,11 @@ func convertCozePluginToEntity(cozePlugin CozePlugin) *entity.PluginInfo {
 	pluginInfo := &model.PluginInfo{
 		ID:          pluginID,
 		PluginType:  pluginCommon.PluginType_PLUGIN,
-		SpaceID:     0, 
-		DeveloperID: 0, 
+		SpaceID:     0,
+		DeveloperID: 0,
 		APPID:       nil,
 		IconURI:     &cozePlugin.IconURL,
-		ServerURL:   ptr.Of("https://www.coze.cn"), 
+		ServerURL:   ptr.Of(""),
 		CreatedAt:   cozePlugin.CreatedAt,
 		UpdatedAt:   cozePlugin.UpdatedAt,
 		Manifest:    manifest,
@@ -177,57 +133,22 @@ func simpleHash(s string) uint32 {
 	return hash
 }
 
-func getCozeAPIBaseURL() string {
-	if url := os.Getenv("COZE_API_BASE_URL"); url != "" {
-		return url
-	}
-	return "https://www.coze.cn/api"
-}
-
-func getCozeAPIToken() string {
-	return os.Getenv("COZE_API_TOKEN")
-}
-
 func (p *pluginServiceImpl) GetSaasPluginInfo(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {
-	baseURL := getCozeAPIBaseURL()
-	token := getCozeAPIToken()
+	client := saasapi.NewCozeAPIClient()
 
-	if baseURL == "" {
-		return nil, errorx.New(errno.ErrPluginAPIErr, errorx.KV(errno.PluginMsgKey, "COZE_API_BASE_URL not configured"))
-	}
-
-	url := fmt.Sprintf("%s/v1/plugins/%d", baseURL, pluginID)
-
-	req := p.httpCli.R().
-		SetContext(ctx).
-		SetHeader("Content-Type", "application/json").
-		SetHeader("User-Agent", "Coze-Studio/1.0")
-
-	if token != "" {
-		req.SetHeader("Authorization", "Bearer "+token)
-	}
-
-	resp, err := req.Get(url)
+	path := fmt.Sprintf("/v1/plugins/%d", pluginID)
+	resp, err := client.Get(ctx, path)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "failed to call coze.cn API")
 	}
 
-	if resp.StatusCode() != 200 {
-		return nil, errorx.New(errno.ErrPluginAPIErr,
-			errorx.KVf(errno.PluginMsgKey, "coze.cn API returned status %d: %s", resp.StatusCode(), resp.String()))
-	}
-
-	var cozeResp CozeSinglePluginResponse
-	if err := sonic.Unmarshal(resp.Body(), &cozeResp); err != nil {
+	// 解析响应数据
+	var cozePlugin CozePlugin
+	if err := json.Unmarshal(resp.Data, &cozePlugin); err != nil {
 		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
 	}
 
-	if cozeResp.Code != 0 {
-		return nil, errorx.New(errno.ErrPluginAPIErr,
-			errorx.KVf(errno.PluginMsgKey, "coze.cn API returned error: %s", cozeResp.Msg))
-	}
-
-	plugin = convertCozePluginToEntity(cozeResp.Data)
+	plugin = convertCozePluginToEntity(cozePlugin)
 
 	logs.CtxInfof(ctx, "fetched SaaS plugin info from coze.cn, pluginID: %d, name: %s", pluginID, plugin.GetName())
 
