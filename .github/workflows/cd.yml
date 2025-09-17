@@ -1,0 +1,218 @@
+name: Deploy Coze Studio
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - 'docker/**'
+      - 'Makefile'
+      - 'scripts/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      # 步骤1：检出代码
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # 步骤2：配置SSH连接
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 步骤3：添加服务器到已知主机
+      - name: Add server to known_hosts
+        run: |
+          ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
+
+      # 步骤4：部署代码到服务器（保护现有配置）
+      - name: Deploy to server
+        run: |
+          echo "🚀 开始部署 Coze Studio 到服务器..."
+
+          echo "📦 同步代码到临时目录..."
+          # 创建唯一的临时目录名
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          TEMP_DIR="${{ secrets.SERVER_TARGET_DIR }}/temp_deploy_${TIMESTAMP}"
+
+          # 先同步到临时目录
+          rsync -avz \
+            --exclude '.env*' \
+            --exclude '.github' \
+            --exclude 'node_modules' \
+            --exclude 'common/temp' \
+            --exclude 'frontend/apps/*/node_modules' \
+            --exclude 'frontend/packages/*/node_modules' \
+            --exclude 'backend/bin' \
+            --exclude 'backend/conf/model/*.yaml' \
+            --exclude '**/*.log' \
+            --exclude 'docker/data' \
+            --exclude 'docker/volumes' \
+            ./ ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:${TEMP_DIR}
+
+          echo "🔄 安全更新代码（保护配置文件）..."
+
+      # 步骤5：在服务器上安全更新代码
+      - name: Execute deployment commands
+        run: |
+          # 传递时间戳到服务器
+          TIMESTAMP=$(date +%Y%m%d_%H%M%S)
+          ssh ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }} "TIMESTAMP=${TIMESTAMP}" << 'EOF'
+          set -e
+          echo "🔧 开始在服务器上执行部署命令..."
+
+          TARGET_DIR="${{ secrets.SERVER_TARGET_DIR }}"
+          CODE_DIR="${TARGET_DIR}/code"
+          TEMP_DIR="${TARGET_DIR}/temp_deploy_${TIMESTAMP}"
+
+          # 检查目标目录是否存在
+          if [ ! -d "$TARGET_DIR" ]; then
+            echo "📁 创建目标目录: $TARGET_DIR"
+            mkdir -p "$TARGET_DIR"
+          fi
+
+          # 检查 Docker 是否运行
+          if ! docker info > /dev/null 2>&1; then
+            echo "❌ Docker 未运行，请启动 Docker 服务"
+            exit 1
+          fi
+
+          # 创建代码目录
+          mkdir -p "$CODE_DIR"
+
+          # 备份现有配置文件
+          echo "💾 备份现有配置文件..."
+          BACKUP_DIR="${TARGET_DIR}/config_backup_${TIMESTAMP}"
+          mkdir -p "$BACKUP_DIR"
+
+          # 备份根目录下的配置文件
+          for config_file in "$TARGET_DIR"/*.env "$TARGET_DIR"/*.yaml "$TARGET_DIR"/*.yml "$TARGET_DIR"/*.json; do
+            if [ -f "$config_file" ]; then
+              cp "$config_file" "$BACKUP_DIR/"
+              echo "✅ 备份配置文件: $(basename $config_file)"
+            fi
+          done
+
+          # 备份代码目录中的数据目录
+          if [ -d "$CODE_DIR/docker/data" ]; then
+            echo "📂 Docker 数据目录已保留"
+          fi
+
+          # 停止现有服务
+          echo "🛑 停止现有服务..."
+          if [ -f "$CODE_DIR/docker/docker-compose.yml" ]; then
+            cd "$CODE_DIR/docker"
+            docker compose down || true
+          fi
+
+          # 更新代码到 code 目录
+          echo "🔄 更新应用代码到 code 目录..."
+          rsync -av --delete "${TEMP_DIR}/" "${CODE_DIR}/"
+
+          # 创建配置文件软链接或复制
+          echo "🔗 设置配置文件链接..."
+
+          # 处理 Docker .env 文件
+          if [ -f "$TARGET_DIR/.env" ]; then
+            ln -sf "$TARGET_DIR/.env" "$CODE_DIR/docker/.env"
+            echo "✅ 链接根目录 .env 到 docker/.env"
+          elif [ -f "$CODE_DIR/docker/.env.example" ]; then
+            cp "$CODE_DIR/docker/.env.example" "$TARGET_DIR/.env"
+            ln -sf "$TARGET_DIR/.env" "$CODE_DIR/docker/.env"
+            echo "✅ 创建 .env 文件并建立链接"
+          fi
+
+          # 处理 AI 模型配置文件
+          mkdir -p "$CODE_DIR/backend/conf/model"
+          for model_file in "$TARGET_DIR"/*.yaml "$TARGET_DIR"/*.yml; do
+            if [ -f "$model_file" ]; then
+              filename=$(basename "$model_file")
+              ln -sf "$model_file" "$CODE_DIR/backend/conf/model/$filename"
+              echo "✅ 链接模型配置: $filename"
+            fi
+          done
+
+          # 如果根目录没有模型配置，提示用户
+          model_count=$(ls -1 "$TARGET_DIR"/*.yaml "$TARGET_DIR"/*.yml 2>/dev/null | wc -l)
+          if [ "$model_count" -eq 0 ]; then
+            echo "⚠️  未找到模型配置文件，请在以下位置创建:"
+            echo "    $TARGET_DIR/openai-gpt4o.yaml"
+            echo "    $TARGET_DIR/claude-3-5-sonnet.yaml"
+            echo "    $TARGET_DIR/gemini-pro.yaml"
+            echo ""
+            echo "📝 参考模板文件: $CODE_DIR/backend/conf/model/template/"
+          fi
+
+          # 清理临时目录
+          echo "🧹 清理临时文件..."
+          if [ -d "$TEMP_DIR" ]; then
+            rm -rf "$TEMP_DIR"
+            echo "✅ 已清理临时目录"
+          fi
+
+          # 保留最新的3个备份
+          cd "$TARGET_DIR"
+          echo "🗂️  清理旧备份文件..."
+          ls -dt config_backup_* 2>/dev/null | tail -n +4 | xargs rm -rf 2>/dev/null || true
+
+          # 清理过老的日志文件（保留最近7天）
+          find "$TARGET_DIR" -name "*.log" -type f -mtime +7 -delete 2>/dev/null || true
+
+          # 返回 docker 目录准备启动服务
+          cd "$CODE_DIR/docker"
+
+          # 拉取最新镜像并启动服务
+          echo "🐳 启动 Docker 服务..."
+          docker compose pull || true
+          docker compose up -d
+
+          # 等待服务启动
+          echo "⏳ 等待服务启动..."
+          sleep 30
+
+          # 检查服务状态
+          echo "🔍 检查服务状态..."
+          docker compose ps
+
+          # 检查服务健康状态
+          if docker compose ps | grep -q "unhealthy\|exited"; then
+            echo "❌ 某些服务启动失败"
+            docker compose logs --tail=50
+            exit 1
+          fi
+
+          # 检查主服务是否可访问
+          echo "🌐 检查服务可访问性..."
+          sleep 10
+          if curl -f http://localhost:8888 > /dev/null 2>&1; then
+            echo "✅ Coze Studio 服务启动成功！"
+            echo "🎉 部署完成！访问地址: http://${{ secrets.SERVER_HOST }}:8888"
+          else
+            echo "⚠️  服务可能仍在启动中，请稍后检查"
+            echo "📋 查看日志命令: docker compose logs -f"
+          fi
+
+          # 清理旧的 Docker 镜像
+          echo "🧹 清理旧镜像..."
+          docker image prune -f || true
+
+          EOF
