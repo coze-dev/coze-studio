@@ -77,3 +77,19 @@ type CheckCanPublishPluginsRequest struct {
 type CheckCanPublishPluginsResponse struct {
 	InvalidPlugins []*PluginInfo
 }
+
+type ToolInterruptEvent struct {
+	Event         InterruptEventType
+	ToolNeedOAuth *ToolNeedOAuthInterruptEvent
+}
+
+type ToolNeedOAuthInterruptEvent struct {
+	Message string
+}
+
+type ListPluginProductsRequest struct{}
+
+type ListPluginProductsResponse struct {
+	Plugins []*PluginInfo
+	Total   int64
+}
