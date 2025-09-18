@@ -21,7 +21,6 @@ import (
 	"errors"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"strings"
 	"testing"
 
@@ -31,7 +30,6 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	mockImagex "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 func TestParseMessageURI(t *testing.T) {
@@ -60,8 +58,6 @@ func TestParseMessageURI(t *testing.T) {
 		name           string
 		mcMsg          *schema.Message
 		setupMock      func(mock *mockImagex.MockImageX, serverURL string)
-		setupEnv       func()
-		cleanupEnv     func()
 		expectedResult *schema.Message
 	}{
 		{
@@ -74,8 +70,6 @@ func TestParseMessageURI(t *testing.T) {
 			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
 				// No mock calls expected
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role:         schema.User,
 				Content:      "test message",
@@ -92,8 +86,6 @@ func TestParseMessageURI(t *testing.T) {
 			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
 				// No mock calls expected
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role:         schema.User,
 				Content:      "test message",
@@ -101,7 +93,7 @@ func TestParseMessageURI(t *testing.T) {
 			},
 		},
 		{
-			name: "ImageURL with valid URI should be processed (base64 disabled)",
+			name: "ImageURL with valid URI should be processed",
 			mcMsg: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -121,59 +113,14 @@ func TestParseMessageURI(t *testing.T) {
 					URL: serverURL + "/image.jpg",
 				}, nil)
 			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "false")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
 					{
 						Type: schema.ChatMessagePartTypeImageURL,
 						ImageURL: &schema.ChatMessageImageURL{
+							URI: "test-image-uri",
 							URL: "",
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "ImageURL with valid URI should be processed (base64 enabled)",
-			mcMsg: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeImageURL,
-						ImageURL: &schema.ChatMessageImageURL{
-							URI: "test-image-uri",
-						},
-					},
-				},
-			},
-			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
-				mock.EXPECT().GetResourceURL(
-					gomock.Any(),
-					"test-image-uri",
-				).Return(&imagex.ResourceURL{
-					URL: serverURL + "/image.jpg",
-				}, nil)
-			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "true")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
-			expectedResult: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeImageURL,
-						ImageURL: &schema.ChatMessageImageURL{
-							URL:      "data:image/jpeg;base64,ZmFrZS1pbWFnZS1kYXRh", // base64 encoded "fake-image-data"
-							MIMEType: "image/jpeg",
 						},
 					},
 				},
@@ -195,8 +142,6 @@ func TestParseMessageURI(t *testing.T) {
 			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
 				// No mock calls expected
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -228,8 +173,6 @@ func TestParseMessageURI(t *testing.T) {
 					"invalid-uri",
 				).Return(nil, errors.New("resource not found"))
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -237,6 +180,7 @@ func TestParseMessageURI(t *testing.T) {
 						Type: schema.ChatMessagePartTypeImageURL,
 						ImageURL: &schema.ChatMessageImageURL{
 							URI: "invalid-uri",
+							URL: "",
 						},
 					},
 				},
@@ -244,7 +188,7 @@ func TestParseMessageURI(t *testing.T) {
 		},
 		// FileURL
 		{
-			name: "FileURL with valid URI should be processed (base64 disabled)",
+			name: "FileURL with valid URI should be processed",
 			mcMsg: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -264,59 +208,14 @@ func TestParseMessageURI(t *testing.T) {
 					URL: serverURL + "/file.pdf",
 				}, nil)
 			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "false")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
 			expectedResult: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeFileURL,
-						FileURL: &schema.ChatMessageFileURL{
-							URL: "", // 将在测试中动态设置
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "FileURL with valid URI should be processed (base64 enabled)",
-			mcMsg: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
 					{
 						Type: schema.ChatMessagePartTypeFileURL,
 						FileURL: &schema.ChatMessageFileURL{
 							URI: "test-file-uri",
-						},
-					},
-				},
-			},
-			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
-				mock.EXPECT().GetResourceURL(
-					gomock.Any(),
-					"test-file-uri",
-				).Return(&imagex.ResourceURL{
-					URL: serverURL + "/file.pdf",
-				}, nil)
-			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "true")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
-			expectedResult: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeFileURL,
-						FileURL: &schema.ChatMessageFileURL{
-							URL:      "data:application/pdf;base64,ZmFrZS1wZGYtZGF0YQ==", // base64 encoded "fake-pdf-data"
-							MIMEType: "application/pdf",
+							URL: "",
 						},
 					},
 				},
@@ -341,8 +240,6 @@ func TestParseMessageURI(t *testing.T) {
 					"invalid-file-uri",
 				).Return(nil, errors.New("resource not found"))
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -350,6 +247,7 @@ func TestParseMessageURI(t *testing.T) {
 						Type: schema.ChatMessagePartTypeFileURL,
 						FileURL: &schema.ChatMessageFileURL{
 							URI: "invalid-file-uri",
+							URL: "",
 						},
 					},
 				},
@@ -357,7 +255,7 @@ func TestParseMessageURI(t *testing.T) {
 		},
 		// AudioURL
 		{
-			name: "AudioURL with valid URI should be processed (base64 disabled)",
+			name: "AudioURL with valid URI should be processed",
 			mcMsg: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -377,59 +275,14 @@ func TestParseMessageURI(t *testing.T) {
 					URL: serverURL + "/audio.mp3",
 				}, nil)
 			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "false")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
 					{
 						Type: schema.ChatMessagePartTypeAudioURL,
 						AudioURL: &schema.ChatMessageAudioURL{
+							URI: "test-audio-uri",
 							URL: "",
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "AudioURL with valid URI should be processed (base64 enabled)",
-			mcMsg: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeAudioURL,
-						AudioURL: &schema.ChatMessageAudioURL{
-							URI: "test-audio-uri",
-						},
-					},
-				},
-			},
-			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
-				mock.EXPECT().GetResourceURL(
-					gomock.Any(),
-					"test-audio-uri",
-				).Return(&imagex.ResourceURL{
-					URL: serverURL + "/audio.mp3",
-				}, nil)
-			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "true")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
-			expectedResult: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeAudioURL,
-						AudioURL: &schema.ChatMessageAudioURL{
-							URL:      "data:audio/mpeg;base64,ZmFrZS1hdWRpby1kYXRh", // base64 encoded "fake-audio-data"
-							MIMEType: "audio/mpeg",
 						},
 					},
 				},
@@ -454,8 +307,6 @@ func TestParseMessageURI(t *testing.T) {
 					"invalid-audio-uri",
 				).Return(nil, errors.New("resource not found"))
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -463,6 +314,7 @@ func TestParseMessageURI(t *testing.T) {
 						Type: schema.ChatMessagePartTypeAudioURL,
 						AudioURL: &schema.ChatMessageAudioURL{
 							URI: "invalid-audio-uri",
+							URL: "",
 						},
 					},
 				},
@@ -470,7 +322,7 @@ func TestParseMessageURI(t *testing.T) {
 		},
 		// VideoURL
 		{
-			name: "VideoURL with valid URI should be processed (base64 disabled)",
+			name: "VideoURL with valid URI should be processed",
 			mcMsg: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -490,59 +342,14 @@ func TestParseMessageURI(t *testing.T) {
 					URL: serverURL + "/video.mp4",
 				}, nil)
 			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "false")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
 					{
 						Type: schema.ChatMessagePartTypeVideoURL,
 						VideoURL: &schema.ChatMessageVideoURL{
+							URI: "test-video-uri",
 							URL: "",
-						},
-					},
-				},
-			},
-		},
-		{
-			name: "VideoURL with valid URI should be processed (base64 enabled)",
-			mcMsg: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeVideoURL,
-						VideoURL: &schema.ChatMessageVideoURL{
-							URI: "test-video-uri",
-						},
-					},
-				},
-			},
-			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
-				mock.EXPECT().GetResourceURL(
-					gomock.Any(),
-					"test-video-uri",
-				).Return(&imagex.ResourceURL{
-					URL: serverURL + "/video.mp4",
-				}, nil)
-			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "true")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
-			expectedResult: &schema.Message{
-				Role: schema.User,
-				MultiContent: []schema.ChatMessagePart{
-					{
-						Type: schema.ChatMessagePartTypeVideoURL,
-						VideoURL: &schema.ChatMessageVideoURL{
-							URL:      "data:video/mp4;base64,ZmFrZS12aWRlby1kYXRh", // base64 encoded "fake-video-data"
-							MIMEType: "video/mp4",
 						},
 					},
 				},
@@ -567,8 +374,6 @@ func TestParseMessageURI(t *testing.T) {
 					"invalid-video-uri",
 				).Return(nil, errors.New("resource not found"))
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -576,6 +381,7 @@ func TestParseMessageURI(t *testing.T) {
 						Type: schema.ChatMessagePartTypeVideoURL,
 						VideoURL: &schema.ChatMessageVideoURL{
 							URI: "invalid-video-uri",
+							URL: "",
 						},
 					},
 				},
@@ -583,7 +389,7 @@ func TestParseMessageURI(t *testing.T) {
 		},
 		// mix content types
 		{
-			name: "Mixed content types should be processed correctly (base64 enabled)",
+			name: "Mixed content types should be processed correctly",
 			mcMsg: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -619,27 +425,21 @@ func TestParseMessageURI(t *testing.T) {
 					URL: serverURL + "/file.pdf",
 				}, nil)
 			},
-			setupEnv: func() {
-				os.Setenv(consts.EnableLocalFileToLLMWithBase64, "true")
-			},
-			cleanupEnv: func() {
-				os.Unsetenv(consts.EnableLocalFileToLLMWithBase64)
-			},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
 					{
 						Type: schema.ChatMessagePartTypeImageURL,
 						ImageURL: &schema.ChatMessageImageURL{
-							URL:      "data:image/jpeg;base64,ZmFrZS1pbWFnZS1kYXRh",
-							MIMEType: "image/jpeg",
+							URI: "test-image-uri",
+							URL: "",
 						},
 					},
 					{
 						Type: schema.ChatMessagePartTypeFileURL,
 						FileURL: &schema.ChatMessageFileURL{
-							URL:      "data:application/pdf;base64,ZmFrZS1wZGYtZGF0YQ==",
-							MIMEType: "application/pdf",
+							URI: "test-file-uri",
+							URL: "",
 						},
 					},
 					{
@@ -663,8 +463,6 @@ func TestParseMessageURI(t *testing.T) {
 			setupMock: func(mock *mockImagex.MockImageX, serverURL string) {
 				// No mock calls expected
 			},
-			setupEnv:   func() {},
-			cleanupEnv: func() {},
 			expectedResult: &schema.Message{
 				Role: schema.User,
 				MultiContent: []schema.ChatMessagePart{
@@ -685,29 +483,28 @@ func TestParseMessageURI(t *testing.T) {
 			mockImagexClient := mockImagex.NewMockImageX(ctrl)
 			tt.setupMock(mockImagexClient, testServer.URL)
 
-			tt.setupEnv()
-			defer tt.cleanupEnv()
-
 			ctx := context.Background()
 			result := parseMessageURI(ctx, tt.mcMsg, mockImagexClient)
 
-			if strings.Contains(tt.name, "base64 disabled") {
+			// For tests that expect dynamic URL setting, update expected results
+			// Only set URLs for successful cases (where mock returns no error)
+			if !strings.Contains(tt.name, "error") {
 				for i, part := range tt.expectedResult.MultiContent {
 					switch part.Type {
 					case schema.ChatMessagePartTypeImageURL:
-						if part.ImageURL != nil && part.ImageURL.URL == "" {
+						if part.ImageURL != nil && part.ImageURL.URL == "" && part.ImageURL.URI != "" {
 							tt.expectedResult.MultiContent[i].ImageURL.URL = testServer.URL + "/image.jpg"
 						}
 					case schema.ChatMessagePartTypeFileURL:
-						if part.FileURL != nil && part.FileURL.URL == "" {
+						if part.FileURL != nil && part.FileURL.URL == "" && part.FileURL.URI != "" {
 							tt.expectedResult.MultiContent[i].FileURL.URL = testServer.URL + "/file.pdf"
 						}
 					case schema.ChatMessagePartTypeAudioURL:
-						if part.AudioURL != nil && part.AudioURL.URL == "" {
+						if part.AudioURL != nil && part.AudioURL.URL == "" && part.AudioURL.URI != "" {
 							tt.expectedResult.MultiContent[i].AudioURL.URL = testServer.URL + "/audio.mp3"
 						}
 					case schema.ChatMessagePartTypeVideoURL:
-						if part.VideoURL != nil && part.VideoURL.URL == "" {
+						if part.VideoURL != nil && part.VideoURL.URL == "" && part.VideoURL.URI != "" {
 							tt.expectedResult.MultiContent[i].VideoURL.URL = testServer.URL + "/video.mp4"
 						}
 					}
