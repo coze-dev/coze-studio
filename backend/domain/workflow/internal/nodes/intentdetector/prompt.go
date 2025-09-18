@@ -72,6 +72,21 @@ func (t *historyChatTemplate) Format(ctx context.Context, vs map[string]any, opt
 		return baseMessages, nil
 	}
 
+	if len(historyMessages) == 0 {
+		return baseMessages, nil
+	}
+
+	finalMessages := make([]*schema.Message, 0, len(baseMessages)+len(historyMessages))
+	finalMessages = append(finalMessages, baseMessages[0]) // System prompt
+	finalMessages = append(finalMessages, handleHistoryMessages(historyMessages)...)
+	if len(baseMessages) > 1 {
+		finalMessages = append(finalMessages, baseMessages[1:]...) // User prompt and any others
+	}
+
+	return finalMessages, nil
+}
+
+func handleHistoryMessages(historyMessages []*schema.Message) []*schema.Message {
 	for _, msg := range historyMessages {
 		var sb strings.Builder
 		if msg.Content != "" {
@@ -98,17 +113,5 @@ func (t *historyChatTemplate) Format(ctx context.Context, vs map[string]any, opt
 		msg.Content = sb.String()
 		msg.MultiContent = nil
 	}
-
-	if len(historyMessages) == 0 {
-		return baseMessages, nil
-	}
-
-	finalMessages := make([]*schema.Message, 0, len(baseMessages)+len(historyMessages))
-	finalMessages = append(finalMessages, baseMessages[0]) // System prompt
-	finalMessages = append(finalMessages, historyMessages...)
-	if len(baseMessages) > 1 {
-		finalMessages = append(finalMessages, baseMessages[1:]...) // User prompt and any others
-	}
-
-	return finalMessages, nil
+	return historyMessages
 }
