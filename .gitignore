@@ -60,3 +60,4 @@ values-dev.yaml
 
 *.tsbuildinfo
 
+.coda/

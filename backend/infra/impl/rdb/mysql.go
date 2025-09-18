@@ -646,15 +646,15 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 	var processedParams []interface{}
 	var err error
 
-	// Handle SQLType: if raw, do not process params
+	// 禁用原始SQL执行以防止SQL注入攻击
 	if req.SQLType == entity2.SQLType_Raw {
-		processedSQL = req.SQL
-		processedParams = nil
-	} else {
-		processedSQL, processedParams, err = m.processSliceParams(req.SQL, req.Params)
-		if err != nil {
-			return nil, fmt.Errorf("failed to process parameters: %v", err)
-		}
+		return nil, fmt.Errorf("raw SQL execution is not allowed for security reasons")
+	}
+	
+	// 强制使用参数化查询
+	processedSQL, processedParams, err = m.processSliceParams(req.SQL, req.Params)
+	if err != nil {
+		return nil, fmt.Errorf("failed to process parameters: %v", err)
 	}
 
 	operation, err := sqlparser.NewSQLParser().GetSQLOperation(processedSQL)

@@ -51,7 +51,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/messages2query"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/direct"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/sandbox"
 	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/ppocr"
@@ -346,40 +345,43 @@ func initKnowledgeEventBusProducer() (eventbus.Producer, error) {
 }
 
 func initCodeRunner() coderunner.Runner {
-	switch typ := os.Getenv(consts.CodeRunnerType); typ {
-	case "sandbox":
-		getAndSplit := func(key string) []string {
-			v := os.Getenv(key)
-			if v == "" {
-				return nil
-			}
-			return strings.Split(v, ",")
+	// 为了安全考虑，移除不安全的direct runner，强制使用sandbox
+	getAndSplit := func(key string) []string {
+		v := os.Getenv(key)
+		if v == "" {
+			return nil
 		}
-		config := &sandbox.Config{
-			AllowEnv:       getAndSplit(consts.CodeRunnerAllowEnv),
-			AllowRead:      getAndSplit(consts.CodeRunnerAllowRead),
-			AllowWrite:     getAndSplit(consts.CodeRunnerAllowWrite),
-			AllowNet:       getAndSplit(consts.CodeRunnerAllowNet),
-			AllowRun:       getAndSplit(consts.CodeRunnerAllowRun),
-			AllowFFI:       getAndSplit(consts.CodeRunnerAllowFFI),
-			NodeModulesDir: os.Getenv(consts.CodeRunnerNodeModulesDir),
-			TimeoutSeconds: 0,
-			MemoryLimitMB:  0,
-		}
-		if f, err := strconv.ParseFloat(os.Getenv(consts.CodeRunnerTimeoutSeconds), 64); err == nil {
-			config.TimeoutSeconds = f
-		} else {
-			config.TimeoutSeconds = 60.0
-		}
-		if mem, err := strconv.ParseInt(os.Getenv(consts.CodeRunnerMemoryLimitMB), 10, 64); err == nil {
-			config.MemoryLimitMB = mem
-		} else {
-			config.MemoryLimitMB = 100
-		}
-		return sandbox.NewRunner(config)
-	default:
-		return direct.NewRunner()
+		return strings.Split(v, ",")
 	}
+	
+	// 使用安全的默认配置
+	config := &sandbox.Config{
+		AllowEnv:       getAndSplit(consts.CodeRunnerAllowEnv),       // 默认为空，禁止环境变量访问
+		AllowRead:      getAndSplit(consts.CodeRunnerAllowRead),      // 默认为空，禁止文件读取
+		AllowWrite:     getAndSplit(consts.CodeRunnerAllowWrite),     // 默认为空，禁止文件写入
+		AllowNet:       getAndSplit(consts.CodeRunnerAllowNet),       // 默认为空，禁止网络访问
+		AllowRun:       getAndSplit(consts.CodeRunnerAllowRun),       // 默认为空，禁止运行外部程序
+		AllowFFI:       getAndSplit(consts.CodeRunnerAllowFFI),       // 默认为空，禁止FFI调用
+		NodeModulesDir: os.Getenv(consts.CodeRunnerNodeModulesDir),
+		TimeoutSeconds: 0,
+		MemoryLimitMB:  0,
+	}
+	
+	// 设置安全的超时时间，最大30秒
+	if f, err := strconv.ParseFloat(os.Getenv(consts.CodeRunnerTimeoutSeconds), 64); err == nil && f > 0 && f <= 30 {
+		config.TimeoutSeconds = f
+	} else {
+		config.TimeoutSeconds = 30.0 // 默认30秒超时
+	}
+	
+	// 设置安全的内存限制，最大100MB
+	if mem, err := strconv.ParseInt(os.Getenv(consts.CodeRunnerMemoryLimitMB), 10, 64); err == nil && mem > 0 && mem <= 100 {
+		config.MemoryLimitMB = mem
+	} else {
+		config.MemoryLimitMB = 100 // 默认100MB内存限制
+	}
+	
+	return sandbox.NewRunner(config)
 }
 
 func initOCR() ocr.OCR {
