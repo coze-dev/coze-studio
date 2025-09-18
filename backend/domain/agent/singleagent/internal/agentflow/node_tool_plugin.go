@@ -74,7 +74,6 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			projectInfo: projectInfo,
 			toolInfo:    ti,
 
-			agentID:        conf.agentIdentity.AgentID,
 			conversationID: conf.conversationID,
 		})
 	}
@@ -88,7 +87,6 @@ type pluginInvokableTool struct {
 	toolInfo    *pluginEntity.ToolInfo
 	projectInfo *plugin.ProjectInfo
 
-	agentID        int64
 	conversationID int64
 }
 
@@ -132,7 +130,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 		plugin.WithToolVersion(p.toolInfo.GetVersion()),
 		plugin.WithProjectInfo(p.projectInfo),
-		plugin.WithPluginHTTPHeader(p.agentID, p.conversationID),
+		plugin.WithPluginHTTPHeader(p.conversationID),
 	}
 
 	resp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, opts...)

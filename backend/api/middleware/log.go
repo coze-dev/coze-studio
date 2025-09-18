@@ -19,7 +19,6 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -31,6 +30,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 func AccessLogMW() app.HandlerFunc {

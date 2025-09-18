@@ -140,6 +140,7 @@ type ProjectInfo = model.ProjectInfo
 
 type PluginManifest = model.PluginManifest
 
+// TODO API.DESC 来给不同 default 值
 func NewDefaultPluginManifest() *PluginManifest {
 	return &model.PluginManifest{
 		SchemaVersion: "v1",
