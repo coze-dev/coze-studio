@@ -1,0 +1,22 @@
+export const request = (url, params?: {}, method?: string) =>
+  fetch(url, {
+    method: method || 'POST',
+    headers:
+      method !== 'GET'
+        ? {
+            Accept: 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+            'Agw-Js-Conv': 'str',
+            'x-requested-with': 'XMLHttpRequest',
+          }
+        : undefined,
+    body: method !== 'GET' ? JSON.stringify(params) : undefined,
+  })
+    .then(res => res.json())
+    .then(res => {
+      if (typeof res.code === 'number' && res.code !== 0) {
+        throw new Error(res.msg);
+      } else {
+        return res;
+      }
+    });

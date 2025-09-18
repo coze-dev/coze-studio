@@ -42,7 +42,6 @@ export const BotEditorInitLayoutAdapter: React.FC<
 > = ({ children, headerExtra, pageName, ...layoutProps }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const tabPath = location.pathname.split('/').pop();
 
   const tabOptions = [
     {
@@ -64,6 +63,8 @@ export const BotEditorInitLayoutAdapter: React.FC<
     })),
   );
 
+  const tabPath = location.pathname.split(botId)[1];
+
   const switchRoute = (path: String) => {
     navigate(`/space/${spaceId}/bot/${botId}/${path}`, { replace: true });
   };
@@ -71,7 +72,7 @@ export const BotEditorInitLayoutAdapter: React.FC<
   useInitAgent();
 
   const isPreview = usePageRuntimeStore(state => state.isPreview);
-  const isEditLocked = isPreview || tabPath === 'statistic';
+  const isEditLocked = isPreview || tabPath.includes('statistic');
 
   return (
     <BotEditorLayout
@@ -89,7 +90,7 @@ export const BotEditorInitLayoutAdapter: React.FC<
                 <div
                   key={item.value}
                   className={cls('font-bold', {
-                    'coz-fg-plus': tabPath === item.value,
+                    'coz-fg-plus': tabPath.includes(item.value),
                   })}
                   onClick={() => switchRoute(item.value)}
                 >

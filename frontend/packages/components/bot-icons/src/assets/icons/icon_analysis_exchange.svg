@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg class="hiagent-icon hiagent-icon-switchover " width="1em" height="1em" xmlns="http://www.w3.org/2000/svg"
+    fill="currentColor" viewBox="0 0 24 24">
+    <path fill-rule="evenodd"
+        d="M21 8.375a.5.5 0 0 0-.5-.5H9.462V4.8a.3.3 0 0 0-.483-.237L3.264 9.011a.5.5 0 0 0-.124.14.5.5 0 0 0 .358.85H20.5A.5.5 0 0 0 21 9.5V8.375Zm-.09 5.835a.5.5 0 0 0-.407-.21H3.502a.5.5 0 0 0-.5.5v1.126a.5.5 0 0 0 .5.499h11.037V19.2a.3.3 0 0 0 .485.237l5.715-4.448a.498.498 0 0 0 .124-.14.5.5 0 0 0 .048-.64Z"
+        clip-rule="evenodd"></path>
+</svg>
