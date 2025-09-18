@@ -70,6 +70,7 @@ meta:
         frequency_penalty: 0
         presence_penalty: 0
         max_tokens: 4096
+        enable_base64_url: false
         top_p: 0.95
         top_k: 20
         stop: []

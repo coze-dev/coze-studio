@@ -39,6 +39,7 @@ type Config struct {
 	TopK                *int     `json:"top_k,omitempty" yaml:"top_k"`
 	Stop                []string `json:"stop,omitempty" yaml:"stop"`
 	EnableThinking      *bool    `json:"enable_thinking,omitempty" yaml:"enable_thinking,omitempty"`
+	EnableBase64Url     *bool    `json:"enable_base64_url,omitempty" yaml:"enable_base64_url,omitempty"`
 
 	OpenAI   *OpenAIConfig   `json:"open_ai,omitempty" yaml:"openai"`
 	Claude   *ClaudeConfig   `json:"claude,omitempty" yaml:"claude"`

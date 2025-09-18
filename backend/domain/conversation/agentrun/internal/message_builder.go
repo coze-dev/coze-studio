@@ -19,7 +19,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
@@ -38,8 +37,6 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/urltobase64url"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -500,28 +497,28 @@ func parseMessageURI(ctx context.Context, mcMsg *schema.Message, imagexClient im
 			if one.ImageURL.URI != "" {
 				url, err := imagexClient.GetResourceURL(ctx, one.ImageURL.URI)
 				if err == nil {
-					mcMsg.MultiContent[k].ImageURL = transImageURLToBase64(url.URL)
+					mcMsg.MultiContent[k].ImageURL.URL = url.URL
 				}
 			}
 		case schema.ChatMessagePartTypeFileURL:
 			if one.FileURL.URI != "" {
 				url, err := imagexClient.GetResourceURL(ctx, one.FileURL.URI)
 				if err == nil {
-					mcMsg.MultiContent[k].FileURL = transFileURLToBase64(url.URL)
+					mcMsg.MultiContent[k].FileURL.URL = url.URL
 				}
 			}
 		case schema.ChatMessagePartTypeAudioURL:
 			if one.AudioURL.URI != "" {
 				url, err := imagexClient.GetResourceURL(ctx, one.AudioURL.URI)
 				if err == nil {
-					mcMsg.MultiContent[k].AudioURL = transAudioFileURLToBase64(url.URL)
+					mcMsg.MultiContent[k].AudioURL.URL = url.URL
 				}
 			}
 		case schema.ChatMessagePartTypeVideoURL:
 			if one.VideoURL.URI != "" {
 				url, err := imagexClient.GetResourceURL(ctx, one.VideoURL.URI)
 				if err == nil {
-					mcMsg.MultiContent[k].VideoURL = transVideoFileURLToBase64(url.URL)
+					mcMsg.MultiContent[k].VideoURL.URL = url.URL
 				}
 			}
 		}
@@ -557,80 +554,4 @@ func buildSendRunRecord(_ context.Context, runRecord *entity.RunRecordMeta, runS
 		Status:         runStatus,
 		CreatedAt:      runRecord.CreatedAt,
 	}
-}
-
-func enableLocalFileToLLMWithBase64() bool {
-	return os.Getenv(consts.EnableLocalFileToLLMWithBase64) == "true"
-}
-
-func transImageURLToBase64(url string) *schema.ChatMessageImageURL {
-
-	schemaImgUrl := &schema.ChatMessageImageURL{
-		URL: url,
-	}
-
-	if !enableLocalFileToLLMWithBase64() {
-		return schemaImgUrl
-	}
-	fileData, err := urltobase64url.URLToBase64(url)
-	if err != nil {
-		return schemaImgUrl
-	}
-	schemaImgUrl.URL = fileData.Base64Url
-	schemaImgUrl.MIMEType = fileData.MimeType
-	return schemaImgUrl
-}
-
-func transFileURLToBase64(url string) *schema.ChatMessageFileURL {
-
-	schemaFileUrl := &schema.ChatMessageFileURL{
-		URL: url,
-	}
-
-	if !enableLocalFileToLLMWithBase64() {
-		return schemaFileUrl
-	}
-	fileData, err := urltobase64url.URLToBase64(url)
-	if err != nil {
-		return schemaFileUrl
-	}
-	schemaFileUrl.URL = fileData.Base64Url
-	schemaFileUrl.MIMEType = fileData.MimeType
-	return schemaFileUrl
-}
-
-func transAudioFileURLToBase64(url string) *schema.ChatMessageAudioURL {
-
-	schemaAudioUrl := &schema.ChatMessageAudioURL{
-		URL: url,
-	}
-
-	if !enableLocalFileToLLMWithBase64() {
-		return schemaAudioUrl
-	}
-	fileData, err := urltobase64url.URLToBase64(url)
-	if err != nil {
-		return schemaAudioUrl
-	}
-	schemaAudioUrl.URL = fileData.Base64Url
-	schemaAudioUrl.MIMEType = fileData.MimeType
-	return schemaAudioUrl
-}
-
-func transVideoFileURLToBase64(url string) *schema.ChatMessageVideoURL {
-
-	schemaVideoUrl := &schema.ChatMessageVideoURL{
-		URL: url,
-	}
-
-	if !enableLocalFileToLLMWithBase64() {
-		return schemaVideoUrl
-	}
-	fileData, err := urltobase64url.URLToBase64(url)
-	if err != nil {
-		return schemaVideoUrl
-	}
-	schemaVideoUrl.URL = fileData.Base64Url
-	schemaVideoUrl.MIMEType = fileData.MimeType
-	return schemaVideoUrl
 }
