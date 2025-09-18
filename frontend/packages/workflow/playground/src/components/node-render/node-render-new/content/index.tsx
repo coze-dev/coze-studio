@@ -39,6 +39,7 @@ import { CodeContent } from '@/node-registries/code';
 import { CardSelectorContent } from '@/node-registries/card-selector';
 import { BreakContent } from '@/node-registries/break';
 import { BatchContent } from '@/node-registries/batch';
+import { AgentContent } from '@/node-registries/agent';
 
 import { ExceptionField } from '../fields/exception-field';
 import { VariableMergeContent } from './variable-merge-content';
@@ -94,6 +95,7 @@ const ContentMap = {
   [StandardNodeType.Variable]: VariableContent,
   [StandardNodeType.JsonStringify]: JsonStringifyContent,
   [StandardNodeType.CardSelector]: CardSelectorContent,
+  [StandardNodeType.Agent]: AgentContent,
   [StandardNodeType.Mcp]: McpContent,
   // The cli script inserts the identifier (registry), do not modify/delete this line comment
 };

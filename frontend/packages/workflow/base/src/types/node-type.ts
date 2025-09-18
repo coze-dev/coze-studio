@@ -110,6 +110,9 @@ export enum StandardNodeType {
 
   /** MCP工具调用节点 */
   Mcp = '61',
+
+  // Agent invocation node
+  Agent = '100',
 }
 
 /**
@@ -154,6 +157,7 @@ export const NODE_ORDER = {
   [StandardNodeType.TriggerDelete]: 28,
   [StandardNodeType.CardSelector]: 29,
   [StandardNodeType.Mcp]: 29,
+  [StandardNodeType.Agent]: 30,
 };
 
 /** session class node */
