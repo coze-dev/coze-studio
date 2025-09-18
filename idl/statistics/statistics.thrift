@@ -248,8 +248,10 @@ struct GetExportConversationFileDownloadUrlResponse {
 // ListAppMessageWithConLog 请求 
 struct ListAppMessageWithConLogRequest {
     1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
-    2: optional i32 page (api.body="page") // 页码
-    3: optional i32 page_size (api.body="page_size") // 页面大小
+    2: required i64 start_time (api.body="start_time") // Unix时间戳（毫秒）
+    3: required i64 end_time (api.body="end_time") // Unix时间戳（毫秒）
+    4: optional i32 page (api.body="page") // 页码
+    5: optional i32 page_size (api.body="page_size") // 页面大小
 }
 
 // ListAppMessageWithConLog 数据 

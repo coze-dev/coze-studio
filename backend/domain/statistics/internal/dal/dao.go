@@ -666,7 +666,7 @@ func calculatePercentileFloat(data []float64, percentile float64) float64 {
 }
 
 // ListAppMessageWithConLog 获取应用会话和消息日志列表
-func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID int64, page, pageSize int32) (*entity.ListAppMessageWithConLogResult, error) {
+func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID int64, startTime, endTime time.Time, page, pageSize int32) (*entity.ListAppMessageWithConLogResult, error) {
 	// 设置默认分页参数
 	if page <= 0 {
 		page = 1
@@ -676,6 +676,9 @@ func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID 
 	}
 
 	offset := (page - 1) * pageSize
+
+	startTimeStr := startTime.In(entity.ExportTimeLocation).Format("2006-01-02 15:04:05")
+	endTimeStr := endTime.In(entity.ExportTimeLocation).Format("2006-01-02 15:04:05")
 
 	// 查询总数
 	countSQL := `
@@ -691,6 +694,8 @@ func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID 
 					name
 				FROM conversation
 				WHERE agent_id = ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') >= ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') <= ?
 			) t1
 			LEFT JOIN (
 				SELECT
@@ -706,7 +711,11 @@ func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID 
 	`
 
 	var total int64
-	err := dao.db.WithContext(ctx).Raw(countSQL, agentID).Scan(&total).Error
+	err := dao.db.WithContext(ctx).Raw(countSQL,
+		agentID,
+		startTimeStr,
+		endTimeStr,
+	).Scan(&total).Error
 	if err != nil {
 		return nil, err
 	}
@@ -742,6 +751,8 @@ func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID 
 				name
 			FROM conversation
 			WHERE agent_id = ?
+			AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') >= ?
+			AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') <= ?
 		) t1
 		LEFT JOIN (
 			SELECT
@@ -773,6 +784,8 @@ func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID 
 
 	err = dao.db.WithContext(ctx).Raw(dataSQL,
 		agentID,
+		startTimeStr,
+		endTimeStr,
 		pageSize,
 		offset,
 	).Scan(&rawResults).Error

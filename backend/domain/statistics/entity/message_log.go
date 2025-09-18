@@ -67,6 +67,8 @@ type ListConversationMessageLogResult struct {
 // ListAppMessageWithConLogRequest 获取应用会话和消息日志请求
 type ListAppMessageWithConLogRequest struct {
 	AgentID  int64  `json:"agent_id"`
+	StartTime time.Time `json:"start_time"`
+	EndTime   time.Time `json:"end_time"`
 	Page     *int32 `json:"page"`      // 可选，页码，默认1
 	PageSize *int32 `json:"page_size"` // 可选，页面大小，默认20
 }

@@ -9235,10 +9235,14 @@ func (p *GetExportConversationFileDownloadUrlResponse) String() string {
 // ListAppMessageWithConLog 请求
 type ListAppMessageWithConLogRequest struct {
 	AgentID int64 `thrift:"agent_id,1,required" form:"agent_id,required" json:"agent_id,string,required"`
+	// Unix时间戳（毫秒）
+	StartTime int64 `thrift:"start_time,2,required" form:"start_time,required" json:"start_time,required"`
+	// Unix时间戳（毫秒）
+	EndTime int64 `thrift:"end_time,3,required" form:"end_time,required" json:"end_time,required"`
 	// 页码
-	Page *int32 `thrift:"page,2,optional" form:"page" json:"page,omitempty"`
+	Page *int32 `thrift:"page,4,optional" form:"page" json:"page,omitempty"`
 	// 页面大小
-	PageSize *int32 `thrift:"page_size,3,optional" form:"page_size" json:"page_size,omitempty"`
+	PageSize *int32 `thrift:"page_size,5,optional" form:"page_size" json:"page_size,omitempty"`
 }
 
 func NewListAppMessageWithConLogRequest() *ListAppMessageWithConLogRequest {
@@ -9250,6 +9254,14 @@ func (p *ListAppMessageWithConLogRequest) InitDefault() {
 
 func (p *ListAppMessageWithConLogRequest) GetAgentID() (v int64) {
 	return p.AgentID
+}
+
+func (p *ListAppMessageWithConLogRequest) GetStartTime() (v int64) {
+	return p.StartTime
+}
+
+func (p *ListAppMessageWithConLogRequest) GetEndTime() (v int64) {
+	return p.EndTime
 }
 
 var ListAppMessageWithConLogRequest_Page_DEFAULT int32
@@ -9272,8 +9284,10 @@ func (p *ListAppMessageWithConLogRequest) GetPageSize() (v int32) {
 
 var fieldIDToName_ListAppMessageWithConLogRequest = map[int16]string{
 	1: "agent_id",
-	2: "page",
-	3: "page_size",
+	2: "start_time",
+	3: "end_time",
+	4: "page",
+	5: "page_size",
 }
 
 func (p *ListAppMessageWithConLogRequest) IsSetPage() bool {
@@ -9288,6 +9302,8 @@ func (p *ListAppMessageWithConLogRequest) Read(iprot thrift.TProtocol) (err erro
 	var fieldTypeId thrift.TType
 	var fieldId int16
 	var issetAgentID bool = false
+	var issetStartTime bool = false
+	var issetEndTime bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -9313,16 +9329,34 @@ func (p *ListAppMessageWithConLogRequest) Read(iprot thrift.TProtocol) (err erro
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.I32 {
+			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetStartTime = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetEndTime = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
-		case 3:
+		case 5:
 			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField3(iprot); err != nil {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -9343,6 +9377,16 @@ func (p *ListAppMessageWithConLogRequest) Read(iprot thrift.TProtocol) (err erro
 
 	if !issetAgentID {
 		fieldId = 1
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetStartTime {
+		fieldId = 2
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetEndTime {
+		fieldId = 3
 		goto RequiredFieldNotSetError
 	}
 	return nil
@@ -9376,6 +9420,28 @@ func (p *ListAppMessageWithConLogRequest) ReadField1(iprot thrift.TProtocol) err
 }
 func (p *ListAppMessageWithConLogRequest) ReadField2(iprot thrift.TProtocol) error {
 
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.StartTime = _field
+	return nil
+}
+func (p *ListAppMessageWithConLogRequest) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.EndTime = _field
+	return nil
+}
+func (p *ListAppMessageWithConLogRequest) ReadField4(iprot thrift.TProtocol) error {
+
 	var _field *int32
 	if v, err := iprot.ReadI32(); err != nil {
 		return err
@@ -9385,7 +9451,7 @@ func (p *ListAppMessageWithConLogRequest) ReadField2(iprot thrift.TProtocol) err
 	p.Page = _field
 	return nil
 }
-func (p *ListAppMessageWithConLogRequest) ReadField3(iprot thrift.TProtocol) error {
+func (p *ListAppMessageWithConLogRequest) ReadField5(iprot thrift.TProtocol) error {
 
 	var _field *int32
 	if v, err := iprot.ReadI32(); err != nil {
@@ -9413,6 +9479,14 @@ func (p *ListAppMessageWithConLogRequest) Write(oprot thrift.TProtocol) (err err
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
 			goto WriteFieldError
 		}
 	}
@@ -9450,8 +9524,40 @@ WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
 }
 func (p *ListAppMessageWithConLogRequest) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("start_time", thrift.I64, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.StartTime); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *ListAppMessageWithConLogRequest) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("end_time", thrift.I64, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.EndTime); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *ListAppMessageWithConLogRequest) writeField4(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPage() {
-		if err = oprot.WriteFieldBegin("page", thrift.I32, 2); err != nil {
+		if err = oprot.WriteFieldBegin("page", thrift.I32, 4); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.Page); err != nil {
@@ -9463,13 +9569,13 @@ func (p *ListAppMessageWithConLogRequest) writeField2(oprot thrift.TProtocol) (e
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
-func (p *ListAppMessageWithConLogRequest) writeField3(oprot thrift.TProtocol) (err error) {
+func (p *ListAppMessageWithConLogRequest) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetPageSize() {
-		if err = oprot.WriteFieldBegin("page_size", thrift.I32, 3); err != nil {
+		if err = oprot.WriteFieldBegin("page_size", thrift.I32, 5); err != nil {
 			goto WriteFieldBeginError
 		}
 		if err := oprot.WriteI32(*p.PageSize); err != nil {
@@ -9481,9 +9587,9 @@ func (p *ListAppMessageWithConLogRequest) writeField3(oprot thrift.TProtocol) (e
 	}
 	return nil
 WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
 WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
 }
 
 func (p *ListAppMessageWithConLogRequest) String() string {

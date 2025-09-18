@@ -344,11 +344,19 @@ func (app *StatisticsApp) ListConversationMessageLog(ctx context.Context, req *s
 
 // ListAppMessageWithConLog 获取应用会话和消息日志列表
 func (app *StatisticsApp) ListAppMessageWithConLog(ctx context.Context, req *statistics.ListAppMessageWithConLogRequest) (*statistics.ListAppMessageWithConLogResponse, error) {
+	startTime := time.UnixMilli(req.StartTime).In(entity.ExportTimeLocation)
+	endTime := time.UnixMilli(req.EndTime).In(entity.ExportTimeLocation)
+	if endTime.Before(startTime) {
+		return nil, fmt.Errorf("end_time must be greater than or equal to start_time")
+	}
+
 	// 转换请求参数
 	domainReq := &entity.ListAppMessageWithConLogRequest{
-		AgentID:  req.AgentID,
-		Page:     req.Page,
-		PageSize: req.PageSize,
+		AgentID:   req.AgentID,
+		StartTime: startTime,
+		EndTime:   endTime,
+		Page:      req.Page,
+		PageSize:  req.PageSize,
 	}
 
 	// 调用domain service

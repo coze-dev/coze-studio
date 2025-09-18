@@ -69,7 +69,7 @@ type StatisticsRepo interface {
 	ListConversationMessageLog(ctx context.Context, agentID int64, conversationID int64, page, pageSize int32) (*entity.ListConversationMessageLogResult, error)
 
 	// ListAppMessageWithConLog 获取应用会话和消息日志列表（支持分页）
-	ListAppMessageWithConLog(ctx context.Context, agentID int64, page, pageSize int32) (*entity.ListAppMessageWithConLogResult, error)
+	ListAppMessageWithConLog(ctx context.Context, agentID int64, startTime, endTime time.Time, page, pageSize int32) (*entity.ListAppMessageWithConLogResult, error)
 
 	// ExportConversationMessageLog 导出会话消息日志数据
 	ExportConversationMessageLog(ctx context.Context, agentID int64, conversationIDs, runIDs []int64) ([]*entity.ExportConversationMessageLogData, error)

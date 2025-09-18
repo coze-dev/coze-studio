@@ -139,7 +139,7 @@ func (s *statisticsImpl) ListAppMessageWithConLog(ctx context.Context, req *enti
 	}
 
 	// 调用Repository层获取数据
-	result, err := s.StatisticsRepo.ListAppMessageWithConLog(ctx, req.AgentID, page, pageSize)
+	result, err := s.StatisticsRepo.ListAppMessageWithConLog(ctx, req.AgentID, req.StartTime, req.EndTime, page, pageSize)
 	if err != nil {
 		return nil, err
 	}
