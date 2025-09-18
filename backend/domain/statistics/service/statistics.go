@@ -45,4 +45,25 @@ type Statistics interface {
 
 	// GetAppTokensPerSecond 获取应用Token每秒吞吐量统计
 	GetAppTokensPerSecond(ctx context.Context, req *entity.GetAppTokensPerSecondRequest) ([]*entity.GetAppTokensPerSecondResponse, error)
+
+	// ListAppConversationLog 获取应用会话日志列表（支持分页）
+	ListAppConversationLog(ctx context.Context, req *entity.ListAppConversationLogRequest) (*entity.ListAppConversationLogResult, error)
+
+	// ListConversationMessageLog 获取会话消息历史日志列表（支持分页）
+	ListConversationMessageLog(ctx context.Context, req *entity.ListConversationMessageLogRequest) (*entity.ListConversationMessageLogResult, error)
+
+	// ListAppMessageWithConLog 获取应用会话和消息日志列表（支持分页）
+	ListAppMessageWithConLog(ctx context.Context, req *entity.ListAppMessageWithConLogRequest) (*entity.ListAppMessageWithConLogResult, error)
+
+	// ExportConversationMessageLog 导出会话消息日志数据
+	ExportConversationMessageLog(ctx context.Context, req *entity.ExportConversationMessageLogRequest) (*entity.ExportConversationMessageLogResult, error)
+
+	// CreateConversationExportFile 创建导出文件记录
+	CreateConversationExportFile(ctx context.Context, req *entity.CreateConversationExportFileRequest) (*entity.ConversationExportFile, error)
+
+	// ListConversationExportFiles 查询导出文件列表
+	ListConversationExportFiles(ctx context.Context, req *entity.ListConversationExportFilesRequest) (*entity.ListConversationExportFilesResult, error)
+
+	// GetConversationExportFile 获取单个导出文件记录
+	GetConversationExportFile(ctx context.Context, req *entity.GetConversationExportFileRequest) (*entity.ConversationExportFile, error)
 }

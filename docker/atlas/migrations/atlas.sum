@@ -8,3 +8,5 @@ h1:3ar6fnSw3e4ni74BcE2N9cIentO27OcfSt465WTv2Po=
 20250717125913_update.sql h1:WtPR99RlWZn0rXZsB19qp1hq0FwO5qmFhcTcV6EnFYs=
 20250730131847_update.sql h1:qIutMrXtuOA98jeucTFxXck+sQNjNTtIF2apbCYt3IY=
 20250802115105_update.sql h1:irreQaMAL0LtXcDlkdHP86C7/0e2HzEVsa1hP/FkZ2M=
+20250916103000_add_statistics_export_file.sql h1:z+ZE2AF23kzKiaK+7PaVTNFyWna4/ESmtfpOUXtVr9k=
+20250916113000_update_statistics_export_file.sql h1:ABxIX0zZMClTtSMmjZ+nlBkcQdUt4DpUIzkbsoZHHBE=

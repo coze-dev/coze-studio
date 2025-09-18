@@ -40,6 +40,12 @@ func Register(r *server.Hertz) {
 			{
 				_app := _statistics.Group("/app", _appMw()...)
 				_app.POST("/active-users", append(_getappdailyactiveusersMw(), statistics.GetAppDailyActiveUsers)...)
+				_app.POST("/export_conversation_message_log", append(_exportconversationmessagelogMw(), statistics.ExportConversationMessageLog)...)
+				_app.POST("/get_export_conversation_file_download_url", append(_getexportconversationfiledownloadurlMw(), statistics.GetExportConversationFileDownloadUrl)...)
+				_app.POST("/list_app_conversation_log", append(_listappconversationlogMw(), statistics.ListAppConversationLog)...)
+				_app.POST("/list_app_message_conlog", append(_listappmessagewithconlogMw(), statistics.ListAppMessageWithConLog)...)
+				_app.POST("/list_conversation_message_log", append(_listconversationmessagelogMw(), statistics.ListConversationMessageLog)...)
+				_app.POST("/list_export_conversation_files", append(_listexportconversationfilesMw(), statistics.ListExportConversationFiles)...)
 				_app.POST("/messages", append(_getappdailymessagesMw(), statistics.GetAppDailyMessages)...)
 				_app.POST("/session-interactions", append(_getappaveragesessioninteractionsMw(), statistics.GetAppAverageSessionInteractions)...)
 				_app.POST("/tokens", append(_getapptokensMw(), statistics.GetAppTokens)...)

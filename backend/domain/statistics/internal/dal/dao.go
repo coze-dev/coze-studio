@@ -18,16 +18,36 @@ package dal
 
 import (
 	"context"
+	"database/sql"
+	"encoding/json"
+	"fmt"
+	"sort"
+	"strings"
 	"time"
 
-	"gorm.io/gorm"
 	"github.com/coze-dev/coze-studio/backend/domain/statistics/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/statistics/internal/dal/query"
+	"gorm.io/gorm"
 )
 
 type StatisticsDAO struct {
 	db    *gorm.DB
 	query *query.Query
+}
+
+type conversationExportFile struct {
+	ID           int64     `gorm:"column:id"`
+	AgentID      int64     `gorm:"column:agent_id"`
+	ExportTaskID string    `gorm:"column:export_task_id"`
+	FileName     string    `gorm:"column:file_name"`
+	ObjectKey    string    `gorm:"column:object_key"`
+	CreatedAt    time.Time `gorm:"column:created_at"`
+	ExpireAt     time.Time `gorm:"column:expire_at"`
+	Status       int32     `gorm:"column:status"`
+}
+
+func (conversationExportFile) TableName() string {
+	return "statistics_export_file"
 }
 
 func NewStatisticsDAO(db *gorm.DB) *StatisticsDAO {
@@ -308,4 +328,732 @@ func (dao *StatisticsDAO) GetHourlyTokensPerSecond(ctx context.Context, agentID 
 	).Scan(&results).Error
 
 	return results, err
+}
+
+// ListAppConversationLog 获取应用会话日志列表（支持分页）
+func (dao *StatisticsDAO) ListAppConversationLog(ctx context.Context, agentID int64, startTime, endTime time.Time, page, pageSize int32) (*entity.ListAppConversationLogResult, error) {
+	// 设置默认值
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	// 计算偏移量
+	offset := (page - 1) * pageSize
+
+	// 查询总数
+	countSQL := `
+		SELECT COUNT(*) as total
+		FROM (
+			SELECT
+				id,
+				creator_id,
+				created_at,
+				name,
+				scene
+			FROM conversation
+			WHERE agent_id = ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') >= ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') <= ?
+		) t1
+		LEFT JOIN (
+			SELECT
+				conversation_id,
+				COUNT(DISTINCT run_id) as message_count
+			FROM message
+			WHERE message_type <> 'verbose'
+			GROUP BY conversation_id
+		) t3 ON t1.id = t3.conversation_id
+		WHERE t3.message_count IS NOT NULL
+	`
+
+	var total int64
+	err := dao.db.WithContext(ctx).Raw(countSQL,
+		agentID,
+		startTime.Format("2006-01-02 15:04:05"),
+		endTime.Format("2006-01-02 15:04:05"),
+	).Scan(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询分页数据
+	var results []*entity.ListAppConversationLogResponse
+	dataSQL := `
+		SELECT
+			DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(t1.created_at / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') as create_time,
+			t2.name as user,
+			IF(t1.name IS NULL OR t1.name='','新的会话',t1.name) as conversation_name,
+			t3.message_count as message_count,
+			t1.id as app_conversation_id,
+			t1.created_at as create_timestamp
+		FROM (
+			SELECT
+				id,
+				creator_id,
+				created_at,
+				name,
+				scene
+			FROM conversation
+			WHERE agent_id = ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') >= ?
+				AND CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai') <= ?
+		) t1
+		LEFT JOIN (
+			SELECT
+				id,
+				name
+			FROM user
+		) t2 ON t1.creator_id = t2.id
+		LEFT JOIN (
+			SELECT
+				conversation_id,
+				COUNT(DISTINCT run_id) as message_count
+			FROM message
+			WHERE message_type <> 'verbose'
+			GROUP BY conversation_id
+		) t3 ON t1.id = t3.conversation_id
+		WHERE t3.message_count IS NOT NULL
+		ORDER BY t1.created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	err = dao.db.WithContext(ctx).Raw(dataSQL,
+		agentID,
+		startTime.Format("2006-01-02 15:04:05"),
+		endTime.Format("2006-01-02 15:04:05"),
+		pageSize,
+		offset,
+	).Scan(&results).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 计算总页数
+	totalPages := int32((total + int64(pageSize) - 1) / int64(pageSize))
+
+	// 构建分页结果
+	result := &entity.ListAppConversationLogResult{
+		Data: results,
+		Pagination: &entity.PaginationInfo{
+			Page:       page,
+			PageSize:   pageSize,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}
+
+	return result, nil
+}
+
+// ListConversationMessageLog 获取会话消息历史日志列表
+func (dao *StatisticsDAO) ListConversationMessageLog(ctx context.Context, agentID int64, conversationID int64, page, pageSize int32) (*entity.ListConversationMessageLogResult, error) {
+	// 设置默认分页参数
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 查询总数
+	countSQL := `
+		SELECT COUNT(DISTINCT run_id)
+		FROM message
+		WHERE message_type <> 'verbose'
+		AND agent_id = ? AND conversation_id = ?
+	`
+
+	var total int64
+	err := dao.db.WithContext(ctx).Raw(countSQL, agentID, conversationID).Scan(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询消息历史数据
+	type messageLogResult struct {
+		ConversationID int64   `json:"conversation_id"`
+		RunID          int64   `json:"run_id"`
+		Result         string  `json:"result"` // JSON字符串
+		Token          int64   `json:"token"`
+		TimeCost       float64 `json:"time_cost"`
+		CreateTime     string  `json:"create_time"`
+	}
+
+	var rawResults []*messageLogResult
+	dataSQL := `
+		SELECT
+			conversation_id,
+			run_id,
+			JSON_OBJECT(
+				'query', MAX(CASE WHEN message_type = 'question' THEN content END),
+				'answer', MAX(CASE WHEN message_type = 'answer' THEN content END)
+			) AS result,
+			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) AS token,
+			ROUND(SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)),2) AS time_cost,
+			DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') AS create_time
+		FROM message
+		WHERE message_type <> 'verbose'
+		AND agent_id = ? AND conversation_id = ?
+		GROUP BY conversation_id, run_id
+		ORDER BY MIN(created_at) DESC
+		LIMIT ? OFFSET ?
+	`
+
+	err = dao.db.WithContext(ctx).Raw(dataSQL,
+		agentID,
+		conversationID,
+		pageSize,
+		offset,
+	).Scan(&rawResults).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为目标格式
+	var results []*entity.ListConversationMessageLogData
+	for _, raw := range rawResults {
+		// 解析JSON字符串为MessageContent
+		var messageContent entity.MessageContent
+		err := json.Unmarshal([]byte(raw.Result), &messageContent)
+		if err != nil {
+			return nil, err
+		}
+
+		// 如果answer为null，设为空字符串
+		if messageContent.Answer == nil {
+			emptyAnswer := ""
+			messageContent.Answer = &emptyAnswer
+		}
+
+		results = append(results, &entity.ListConversationMessageLogData{
+			ConversationID: raw.ConversationID,
+			RunID:          raw.RunID,
+			Message:        &messageContent,
+			Tokens:         raw.Token,
+			TimeCost:       raw.TimeCost,
+			CreateTime:     raw.CreateTime,
+		})
+	}
+
+	// 查询统计数据 - 获取原始数据用于Go中计算
+	statsSQL := `
+		SELECT
+			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) AS total_token,
+			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)) AS total_time_cost
+		FROM message
+		WHERE message_type <> 'verbose'
+		AND agent_id = ? AND conversation_id = ?
+		GROUP BY run_id
+		ORDER BY total_token, total_time_cost
+	`
+
+	var statsResults []*statsData
+	err = dao.db.WithContext(ctx).Raw(statsSQL, agentID, conversationID).Scan(&statsResults).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 在Go中计算统计信息
+	stats := dao.calculateMessageStatistics(statsResults)
+
+	// 计算总页数
+	totalPages := int32((total + int64(pageSize) - 1) / int64(pageSize))
+
+	// 构建分页结果
+	result := &entity.ListConversationMessageLogResult{
+		Data:       results,
+		Statistics: stats,
+		Pagination: &entity.PaginationInfo{
+			Page:       page,
+			PageSize:   pageSize,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}
+
+	return result, nil
+}
+
+// statsData 用于统计计算的数据结构
+type statsData struct {
+	TotalToken    int64   `json:"total_token"`
+	TotalTimeCost float64 `json:"total_time_cost"`
+}
+
+// calculateMessageStatistics 计算消息统计信息
+func (dao *StatisticsDAO) calculateMessageStatistics(statsResults []*statsData) *entity.MessageStatistics {
+	if len(statsResults) == 0 {
+		return &entity.MessageStatistics{
+			MessageCount: 0,
+			TokensP50:    0,
+			LatencyP50:   0,
+			LatencyP99:   0,
+		}
+	}
+
+	// 提取token和latency数据
+	tokens := make([]int64, len(statsResults))
+	latencies := make([]float64, len(statsResults))
+
+	for i, data := range statsResults {
+		tokens[i] = data.TotalToken
+		latencies[i] = data.TotalTimeCost
+	}
+
+	// 排序数据
+	sort.Slice(tokens, func(i, j int) bool { return tokens[i] < tokens[j] })
+	sort.Slice(latencies, func(i, j int) bool { return latencies[i] < latencies[j] })
+
+	// 计算百分位数
+	messageCount := int64(len(statsResults))
+	tokensP50 := calculatePercentile(tokens, 0.5)
+	latencyP50 := calculatePercentileFloat(latencies, 0.5)
+	latencyP99 := calculatePercentileFloat(latencies, 0.99)
+
+	return &entity.MessageStatistics{
+		MessageCount: messageCount,
+		TokensP50:    tokensP50,
+		LatencyP50:   latencyP50,
+		LatencyP99:   latencyP99,
+	}
+}
+
+// calculatePercentile 计算整数切片的百分位数
+func calculatePercentile(data []int64, percentile float64) int64 {
+	if len(data) == 0 {
+		return 0
+	}
+	if len(data) == 1 {
+		return data[0]
+	}
+
+	index := percentile * float64(len(data)-1)
+	lower := int(index)
+	upper := lower + 1
+
+	if upper >= len(data) {
+		return data[len(data)-1]
+	}
+
+	weight := index - float64(lower)
+	return int64(float64(data[lower])*(1-weight) + float64(data[upper])*weight)
+}
+
+// calculatePercentileFloat 计算浮点数切片的百分位数
+func calculatePercentileFloat(data []float64, percentile float64) float64 {
+	if len(data) == 0 {
+		return 0
+	}
+	if len(data) == 1 {
+		return data[0]
+	}
+
+	index := percentile * float64(len(data)-1)
+	lower := int(index)
+	upper := lower + 1
+
+	if upper >= len(data) {
+		return data[len(data)-1]
+	}
+
+	weight := index - float64(lower)
+	return data[lower]*(1-weight) + data[upper]*weight
+}
+
+// ListAppMessageWithConLog 获取应用会话和消息日志列表
+func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID int64, page, pageSize int32) (*entity.ListAppMessageWithConLogResult, error) {
+	// 设置默认分页参数
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	offset := (page - 1) * pageSize
+
+	// 查询总数
+	countSQL := `
+		SELECT COUNT(*)
+		FROM (
+			SELECT
+				t1.id
+			FROM (
+				SELECT
+					id,
+					creator_id,
+					created_at,
+					name
+				FROM conversation
+				WHERE agent_id = ?
+			) t1
+			LEFT JOIN (
+				SELECT
+					conversation_id,
+					run_id
+				FROM message
+				WHERE message_type <> 'verbose'
+				GROUP BY conversation_id, run_id
+			) t3
+			ON t1.id=t3.conversation_id
+			WHERE t3.run_id IS NOT NULL
+		) AS total_count
+	`
+
+	var total int64
+	err := dao.db.WithContext(ctx).Raw(countSQL, agentID).Scan(&total).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 查询主数据
+	type rawResult struct {
+		ConversationID   int64   `db:"conversation_id"`
+		User             string  `db:"user"`
+		ConversationName string  `db:"ConversationName"`
+		RunID            int64   `db:"run_id"`
+		Result           string  `db:"result"` // JSON字符串
+		CreateTime       string  `db:"CreateTime"`
+		Token            int64   `db:"token"`
+		TimeCost         float64 `db:"time_cost"`
+	}
+
+	var rawResults []*rawResult
+	dataSQL := `
+		SELECT
+			t1.id AS conversation_id,
+			t2.name as user,
+			IF(t1.name IS NULL OR t1.name='','新的会话',t1.name) as ConversationName,
+			t3.run_id,
+			t3.result,
+			t3.CreateTime,
+			t3.token,
+			t3.time_cost
+		FROM (
+			SELECT
+				id,
+				creator_id,
+				created_at,
+				name
+			FROM conversation
+			WHERE agent_id = ?
+		) t1
+		LEFT JOIN (
+			SELECT
+				id,
+				name
+			FROM user
+		) t2
+		ON t1.creator_id=t2.id
+		LEFT JOIN (
+			SELECT
+				conversation_id,
+				run_id,
+				JSON_OBJECT(
+					'query', MAX(CASE WHEN message_type = 'question' THEN content END),
+					'answer', MAX(CASE WHEN message_type = 'answer' THEN content END)
+				) AS result,
+				SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) as token,
+				ROUND(SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)),2) as time_cost,
+				DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') as CreateTime
+			FROM message
+			WHERE message_type <> 'verbose'
+			GROUP BY conversation_id, run_id
+		) t3
+		ON t1.id=t3.conversation_id
+		WHERE t3.run_id IS NOT NULL
+		ORDER BY t1.created_at DESC
+		LIMIT ? OFFSET ?
+	`
+
+	err = dao.db.WithContext(ctx).Raw(dataSQL,
+		agentID,
+		pageSize,
+		offset,
+	).Scan(&rawResults).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 转换为目标格式
+	var results []*entity.ListAppMessageWithConLogData
+	for _, raw := range rawResults {
+		// 解析JSON字符串为MessageContent
+		var messageContent entity.MessageContent
+		err := json.Unmarshal([]byte(raw.Result), &messageContent)
+		if err != nil {
+			return nil, err
+		}
+
+		// 如果answer为null，设为空字符串
+		if messageContent.Answer == nil {
+			emptyAnswer := ""
+			messageContent.Answer = &emptyAnswer
+		}
+
+		results = append(results, &entity.ListAppMessageWithConLogData{
+			ConversationID:   raw.ConversationID,
+			User:             raw.User,
+			ConversationName: raw.ConversationName,
+			RunID:            raw.RunID,
+			Message:          &messageContent,
+			CreateTime:       raw.CreateTime,
+			Tokens:           raw.Token,
+			TimeCost:         raw.TimeCost,
+		})
+	}
+
+	// 计算总页数
+	totalPages := int32((total + int64(pageSize) - 1) / int64(pageSize))
+
+	// 构建分页结果
+	result := &entity.ListAppMessageWithConLogResult{
+		Data: results,
+		Pagination: &entity.PaginationInfo{
+			Page:       page,
+			PageSize:   pageSize,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}
+
+	return result, nil
+}
+
+// ExportConversationMessageLog 导出会话消息日志数据
+func (dao *StatisticsDAO) ExportConversationMessageLog(ctx context.Context, agentID int64, conversationIDs, runIDs []int64) ([]*entity.ExportConversationMessageLogData, error) {
+	placeholders := func(count int) string {
+		if count <= 0 {
+			return ""
+		}
+		return strings.TrimRight(strings.Repeat("?,", count), ",")
+	}
+
+	conversationFilter := ""
+	args := []interface{}{agentID}
+	if len(conversationIDs) > 0 {
+		conversationFilter = fmt.Sprintf(" AND id IN (%s)", placeholders(len(conversationIDs)))
+		for _, id := range conversationIDs {
+			args = append(args, id)
+		}
+	}
+
+	runFilter := ""
+	if len(runIDs) > 0 {
+		runFilter = fmt.Sprintf(" AND run_id IN (%s)", placeholders(len(runIDs)))
+		for _, id := range runIDs {
+			args = append(args, id)
+		}
+	}
+
+	dataSQL := `
+		SELECT
+			t3.conversation_id,
+			t3.run_id,
+			IF(t1.name IS NULL OR t1.name='', '新的会话', t1.name) AS conversation_name,
+			t1.created_at AS conversation_created_time,
+			t2.name AS user,
+			t3.CreateTime AS message_created_time,
+			JSON_UNQUOTE(JSON_EXTRACT(t3.result, '$.query')) AS query,
+			JSON_UNQUOTE(JSON_EXTRACT(t3.result, '$.answer')) AS answer,
+			t3.token,
+			t3.time_cost
+		FROM (
+			SELECT
+				id,
+				creator_id,
+				DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(created_at / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') AS created_at,
+				name
+			FROM conversation
+			WHERE agent_id = ?`
+
+	dataSQL += conversationFilter + `
+		) t1
+		LEFT JOIN (
+			SELECT
+				id,
+				name
+			FROM user
+		) t2 ON t1.creator_id = t2.id
+		LEFT JOIN (
+			SELECT
+				conversation_id,
+				run_id,
+				JSON_OBJECT(
+					'query', MAX(CASE WHEN message_type = 'question' THEN content END),
+					'answer', MAX(CASE WHEN message_type = 'answer' THEN content END)
+				) AS result,
+				SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) AS token,
+				ROUND(SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)),2) AS time_cost,
+				DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') AS CreateTime
+			FROM message
+			WHERE message_type <> 'verbose'`
+
+	dataSQL += runFilter + `
+			GROUP BY conversation_id, run_id
+		) t3 ON t1.id = t3.conversation_id
+		WHERE t3.run_id IS NOT NULL
+		ORDER BY t3.CreateTime DESC
+	`
+
+	type exportRaw struct {
+		ConversationID          int64           `db:"conversation_id"`
+		RunID                   int64           `db:"run_id"`
+		ConversationName        string          `db:"conversation_name"`
+		ConversationCreatedTime string          `db:"conversation_created_time"`
+		User                    sql.NullString  `db:"user"`
+		MessageCreatedTime      string          `db:"message_created_time"`
+		Query                   sql.NullString  `db:"query"`
+		Answer                  sql.NullString  `db:"answer"`
+		Token                   sql.NullInt64   `db:"token"`
+		TimeCost                sql.NullFloat64 `db:"time_cost"`
+	}
+
+	var rows []*exportRaw
+	if err := dao.db.WithContext(ctx).Raw(dataSQL, args...).Scan(&rows).Error; err != nil {
+		return nil, err
+	}
+
+	results := make([]*entity.ExportConversationMessageLogData, 0, len(rows))
+	for _, row := range rows {
+		var queryValue string
+		if row.Query.Valid {
+			queryValue = row.Query.String
+		}
+		var answerValue string
+		if row.Answer.Valid {
+			answerValue = row.Answer.String
+		}
+		var userValue string
+		if row.User.Valid {
+			userValue = row.User.String
+		}
+		tokenValue := int64(0)
+		if row.Token.Valid {
+			tokenValue = row.Token.Int64
+		}
+		timeCostValue := 0.0
+		if row.TimeCost.Valid {
+			timeCostValue = row.TimeCost.Float64
+		}
+
+		results = append(results, &entity.ExportConversationMessageLogData{
+			ConversationID:          row.ConversationID,
+			RunID:                   row.RunID,
+			ConversationName:        row.ConversationName,
+			ConversationCreatedTime: row.ConversationCreatedTime,
+			User:                    userValue,
+			MessageCreatedTime:      row.MessageCreatedTime,
+			Query:                   queryValue,
+			Answer:                  answerValue,
+			Tokens:                  tokenValue,
+			TimeCost:                timeCostValue,
+		})
+	}
+
+	return results, nil
+}
+
+// CreateConversationExportFile 创建导出文件记录
+func (dao *StatisticsDAO) CreateConversationExportFile(ctx context.Context, req *entity.CreateConversationExportFileRequest) (*entity.ConversationExportFile, error) {
+	record := &conversationExportFile{
+		AgentID:      req.AgentID,
+		ExportTaskID: req.ExportTaskID,
+		FileName:     req.FileName,
+		ObjectKey:    req.ObjectKey,
+		CreatedAt:    req.CreatedAt,
+		ExpireAt:     req.ExpireAt,
+		Status:       req.Status,
+	}
+
+	if err := dao.db.WithContext(ctx).Table(record.TableName()).Create(record).Error; err != nil {
+		return nil, err
+	}
+
+	return &entity.ConversationExportFile{
+		ID:           record.ID,
+		AgentID:      record.AgentID,
+		ExportTaskID: record.ExportTaskID,
+		FileName:     record.FileName,
+		ObjectKey:    record.ObjectKey,
+		CreatedAt:    record.CreatedAt,
+		ExpireAt:     record.ExpireAt,
+		Status:       record.Status,
+	}, nil
+}
+
+// ListConversationExportFiles 查询导出文件列表
+func (dao *StatisticsDAO) ListConversationExportFiles(ctx context.Context, req *entity.ListConversationExportFilesRequest, page, pageSize int32) (*entity.ListConversationExportFilesResult, error) {
+	if page <= 0 {
+		page = 1
+	}
+	if pageSize <= 0 {
+		pageSize = 20
+	}
+
+	now := time.Now().In(entity.ExportTimeLocation)
+	var total int64
+	countQuery := dao.db.WithContext(ctx).Table((conversationExportFile{}).TableName()).Where("agent_id = ? AND expire_at > ?", req.AgentID, now)
+	if err := countQuery.Count(&total).Error; err != nil {
+		return nil, err
+	}
+
+	var records []*conversationExportFile
+	dataQuery := dao.db.WithContext(ctx).Table((conversationExportFile{}).TableName()).Where("agent_id = ? AND expire_at > ?", req.AgentID, now).
+		Order("id DESC").
+		Limit(int(pageSize)).
+		Offset(int((page - 1) * pageSize))
+	if err := dataQuery.Find(&records).Error; err != nil {
+		return nil, err
+	}
+
+	results := make([]*entity.ConversationExportFile, 0, len(records))
+	for _, record := range records {
+		results = append(results, &entity.ConversationExportFile{
+			ID:           record.ID,
+			AgentID:      record.AgentID,
+			ExportTaskID: record.ExportTaskID,
+			FileName:     record.FileName,
+			ObjectKey:    record.ObjectKey,
+			CreatedAt:    record.CreatedAt,
+			ExpireAt:     record.ExpireAt,
+			Status:       record.Status,
+		})
+	}
+
+	totalPages := int32((total + int64(pageSize) - 1) / int64(pageSize))
+
+	return &entity.ListConversationExportFilesResult{
+		Data: results,
+		Pagination: &entity.PaginationInfo{
+			Page:       page,
+			PageSize:   pageSize,
+			Total:      total,
+			TotalPages: totalPages,
+		},
+	}, nil
+}
+
+// GetConversationExportFile 获取单个导出文件记录
+func (dao *StatisticsDAO) GetConversationExportFile(ctx context.Context, req *entity.GetConversationExportFileRequest) (*entity.ConversationExportFile, error) {
+	var record conversationExportFile
+	if err := dao.db.WithContext(ctx).Table(record.TableName()).Where("export_task_id = ? AND agent_id = ? AND expire_at > ?", req.ExportTaskID, req.AgentID, time.Now().In(entity.ExportTimeLocation)).Take(&record).Error; err != nil {
+		return nil, err
+	}
+
+	return &entity.ConversationExportFile{
+		ID:           record.ID,
+		AgentID:      record.AgentID,
+		ExportTaskID: record.ExportTaskID,
+		FileName:     record.FileName,
+		ObjectKey:    record.ObjectKey,
+		CreatedAt:    record.CreatedAt,
+		ExpireAt:     record.ExpireAt,
+		Status:       record.Status,
+	}, nil
 }

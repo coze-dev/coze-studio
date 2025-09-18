@@ -188,8 +188,8 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		IDGen:   infra.IDGenSVC,
 		Storage: infra.TOSClient,
 	})
-	statisticsApp := statistics.NewStatisticsApp(infra.DB)
-	
+	statisticsApp := statistics.NewStatisticsApp(infra.DB, infra.TOSClient)
+
 	// Initialize external knowledge service
 	external_knowledge.InitExternalKnowledgeService(infra.DB)
 

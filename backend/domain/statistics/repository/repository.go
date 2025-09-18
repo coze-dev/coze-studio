@@ -19,9 +19,9 @@ package repository
 import (
 	"context"
 	"time"
-	
+
 	"gorm.io/gorm"
-	
+
 	"github.com/coze-dev/coze-studio/backend/domain/statistics/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/statistics/internal/dal"
 )
@@ -61,4 +61,25 @@ type StatisticsRepo interface {
 
 	// GetHourlyTokensPerSecond 获取每小时Token每秒吞吐量（周期<=24小时）
 	GetHourlyTokensPerSecond(ctx context.Context, agentID int64, startTime, endTime time.Time) ([]*entity.HourlyAppTokensPerSecondStats, error)
+
+	// ListAppConversationLog 获取应用会话日志列表（支持分页）
+	ListAppConversationLog(ctx context.Context, agentID int64, startTime, endTime time.Time, page, pageSize int32) (*entity.ListAppConversationLogResult, error)
+
+	// ListConversationMessageLog 获取应用会话消息日志列表（支持分页）
+	ListConversationMessageLog(ctx context.Context, agentID int64, conversationID int64, page, pageSize int32) (*entity.ListConversationMessageLogResult, error)
+
+	// ListAppMessageWithConLog 获取应用会话和消息日志列表（支持分页）
+	ListAppMessageWithConLog(ctx context.Context, agentID int64, page, pageSize int32) (*entity.ListAppMessageWithConLogResult, error)
+
+	// ExportConversationMessageLog 导出会话消息日志数据
+	ExportConversationMessageLog(ctx context.Context, agentID int64, conversationIDs, runIDs []int64) ([]*entity.ExportConversationMessageLogData, error)
+
+	// CreateConversationExportFile 创建导出文件记录
+	CreateConversationExportFile(ctx context.Context, req *entity.CreateConversationExportFileRequest) (*entity.ConversationExportFile, error)
+
+	// ListConversationExportFiles 查询导出文件列表
+	ListConversationExportFiles(ctx context.Context, req *entity.ListConversationExportFilesRequest, page, pageSize int32) (*entity.ListConversationExportFilesResult, error)
+
+	// GetConversationExportFile 获取单个导出文件记录
+	GetConversationExportFile(ctx context.Context, req *entity.GetConversationExportFileRequest) (*entity.ConversationExportFile, error)
 }
