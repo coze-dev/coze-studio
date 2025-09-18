@@ -19,10 +19,11 @@ package logs
 import (
 	"context"
 	"fmt"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"io"
 	"log"
 	"os"
+
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 var logger FullLogger = &defaultLogger{

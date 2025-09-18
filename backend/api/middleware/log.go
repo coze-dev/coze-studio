@@ -19,7 +19,6 @@ package middleware
 import (
 	"context"
 	"fmt"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -27,10 +26,10 @@ import (
 	"unsafe"
 
 	"github.com/cloudwego/hertz/pkg/app"
-	"github.com/google/uuid"
-
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
+	"github.com/google/uuid"
 )
 
 func AccessLogMW() app.HandlerFunc {
