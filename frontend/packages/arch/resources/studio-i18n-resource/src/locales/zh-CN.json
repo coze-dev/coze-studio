@@ -408,6 +408,7 @@
   "bmv_view_version": "查看版本",
   "bot_autosave_saving": "保存中...",
   "bot_build_title": "编排",
+  "bot_statistic_log": "导出日志",
   "bot_copy_id_error": "缺失bot_id信息",
   "bot_copy_info_error": "缺失智能体信息",
   "bot_copy_success": "智能体副本已创建",

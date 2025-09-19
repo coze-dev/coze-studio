@@ -407,6 +407,7 @@
   "bmv_view_version": "View Version",
   "bot_autosave_saving": "Saving…",
   "bot_build_title": "Arrangement",
+  "bot_statistic_log": "Export Log",
   "bot_copy_id_error": "Missing bot_id",
   "bot_copy_info_error": "Missing agent information",
   "bot_copy_success": "The agent is duplicated",

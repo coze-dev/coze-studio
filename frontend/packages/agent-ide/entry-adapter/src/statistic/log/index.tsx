@@ -1,16 +1,18 @@
 /* eslint-disable @coze-arch/max-line-per-function */
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Banner, Empty, Spin, Typography } from '@coze-arch/bot-semi';
+import { Banner, Empty, Button } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozCheckMarkCircleFill,
   IconCozWarningCircleFill,
 } from '@coze-arch/coze-design/icons';
+import { IconBotStatisticLog } from '@coze-arch/bot-icons';
 import { Table } from '@coze-arch/coze-design';
 import BotStatisticFilter, { getDateRangeByDays } from '../filter';
 import { useSize } from 'ahooks';
 import { request } from '../tools';
+import { getBaseColumns } from './baseColumn';
 
 const dateRangeDays = '1';
 const defaultDateRange = getDateRangeByDays(Number(dateRangeDays));
@@ -26,6 +28,7 @@ export const BotStatisticLog: React.FC = () => {
 
   const [loading, setLoading] = useState(false);
   const [dataSource, setDataSource] = useState([]);
+  const [selectedRows, setSelectedRows] = useState([]);
 
   const [dataMode, setDataMode] = useState('cov');
   const wrapRef = useRef(null);
@@ -37,12 +40,12 @@ export const BotStatisticLog: React.FC = () => {
   };
 
   const onDateChange = range => {
-    reset();
     setDateRange(range);
   };
 
   const reset = () => {
     pageNum.current = 1;
+    setSelectedRows([]);
     setDataSource([]);
     setLoading(false);
     setHasMore(true);
@@ -52,10 +55,6 @@ export const BotStatisticLog: React.FC = () => {
     refresh => {
       if (refresh) {
         reset();
-      }
-
-      if (!hasMore) {
-        return;
       }
 
       const url =
@@ -110,96 +109,22 @@ export const BotStatisticLog: React.FC = () => {
     [botId, dataMode, dateRange],
   );
 
+  const rowSelection = useMemo(
+    () => ({
+      width: 38,
+      fixed: true,
+      selectedRowKeys: selectedRows.map(r => r.messageId || r.conversationId),
+      onChange: (_, rows) => setSelectedRows(rows ?? []),
+    }),
+    [selectedRows],
+  );
+
+  const exportSelectedRows = useCallback(() => {}, []);
+
   useEffect(() => {
     reset();
     getListData();
-  }, [getListData, dataMode, dateRange]);
-
-  const columns = {
-    cov: [
-      {
-        title: '时间',
-        dataIndex: 'createTime',
-        render: (_text, record) => (
-          <div>
-            <div className="font-bold text-gray-600 text-[14px]">
-              {record.createTime}
-            </div>
-            <div className="text-gray-400">{record.conversationId}</div>
-          </div>
-        ),
-      },
-      {
-        title: '标题',
-        dataIndex: 'title',
-      },
-      {
-        title: '消息数',
-        dataIndex: 'messageCount',
-      },
-      {
-        title: '创建用户',
-        dataIndex: 'userName',
-      },
-    ],
-    msg: [
-      {
-        title: '时间',
-        dataIndex: 'createTime',
-        width: 240,
-        render: (_text, record) => (
-          <div>
-            <div className="font-bold text-gray-600 text-[14px]">
-              {record.createTime}
-            </div>
-            <div className="text-gray-400">{record.messageId}</div>
-          </div>
-        ),
-      },
-      {
-        title: '会话标题',
-        dataIndex: 'title',
-      },
-      {
-        title: '问答',
-        dataIndex: 'message',
-        render: (_text, record) => (
-          <>
-            <div className="max-w-[320px]">
-              <Typography.Text
-                className="text-[12px]"
-                ellipsis={{ showTooltip: true }}
-              >
-                问题：{record.message?.query || '-'}
-              </Typography.Text>
-            </div>
-            <div className="max-w-[320px]">
-              <Typography.Text
-                className="text-[12px]"
-                ellipsis={{ showTooltip: true }}
-              >
-                回答：{record.message?.answer || '-'}
-              </Typography.Text>
-            </div>
-          </>
-        ),
-      },
-      {
-        title: '创建用户',
-        dataIndex: 'userName',
-      },
-      {
-        title: 'Tokens消耗',
-        dataIndex: 'costToken',
-      },
-      {
-        title: '耗时',
-        dataIndex: 'costTime',
-        render: (_text, record) =>
-          record.costTime ? `${record.costTime}s` : '-',
-      },
-    ],
-  };
+  }, [dataMode, dateRange, getListData]);
 
   return (
     <div className="flex flex-col h-full">
@@ -231,12 +156,14 @@ export const BotStatisticLog: React.FC = () => {
         <Table
           wrapperClassName="flex-1 min-h-0"
           tableProps={{
+            rowSelection,
             sticky: true,
             loading,
             dataSource,
-            columns: columns[dataMode],
+            columns: getBaseColumns(dataMode),
             pagination: false,
             scroll: { y: size?.height - 40 },
+            rowKey: record => record?.messageId || record?.conversationId,
           }}
           empty={<Empty title={I18n.t('analytic_query_blank_context')} />}
           enableLoad
@@ -246,6 +173,23 @@ export const BotStatisticLog: React.FC = () => {
           onLoad={getListData}
         />
       </div>
+      {dataSource.length > 0 ? (
+        <div className="flex gap-[8px] py-[12px] items-center">
+          <div className="text-[14px]">
+            {I18n.t('table_view_002', {
+              n: selectedRows.length,
+            })}
+          </div>
+          <Button
+            color="secondary"
+            disabled={selectedRows.length === 0}
+            icon={<IconBotStatisticLog />}
+            onClick={exportSelectedRows}
+          >
+            {I18n.t('bot_statistic_log')}
+          </Button>
+        </div>
+      ) : null}
     </div>
   );
 };
