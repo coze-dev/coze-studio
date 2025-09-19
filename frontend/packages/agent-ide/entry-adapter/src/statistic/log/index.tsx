@@ -3,10 +3,6 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Banner, Empty, Button, Notification } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
-// import {
-//   IconCozCheckMarkCircleFill,
-//   IconCozWarningCircleFill,
-// } from '@coze-arch/coze-design/icons';
 import { IconBotStatisticLog } from '@coze-arch/bot-icons';
 import { Table } from '@coze-arch/coze-design';
 import BotStatisticFilter, { getDateRangeByDays } from '../filter';
@@ -14,6 +10,7 @@ import { useSize } from 'ahooks';
 import { request, getRowsCount } from '../tools';
 import { getBaseColumns } from './baseColumn';
 import { MessageDrawer } from './mesageDrawer';
+import { ExportDrawer } from './exportDrawer';
 
 const dateRangeDays = '1';
 const defaultDateRange = getDateRangeByDays(Number(dateRangeDays));
@@ -29,6 +26,8 @@ export const BotStatisticLog: React.FC = () => {
   const [selectedRows, setSelectedRows] = useState([]);
   const [currentItem, setCurrentItem] = useState();
   const [messageDrawerVisible, setMessageDrawerVisible] = useState(false);
+  const [exportDrawerVisible, setExportDrawerVisible] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
 
   const [dataMode, setDataMode] = useState('cov');
   const wrapRef = useRef(null);
@@ -127,6 +126,7 @@ export const BotStatisticLog: React.FC = () => {
       params.run_id = selectedRows.map(r => r.messageId);
     }
 
+    setExportLoading(true);
     request('/api/statistics/app/export_conversation_message_log', params)
       .then(res => {
         Notification.success({
@@ -140,6 +140,9 @@ export const BotStatisticLog: React.FC = () => {
           title: I18n.t('bot_ide_knowledge_confirm_title'),
           content: I18n.t('bot_static_log_export_failed'),
         });
+      })
+      .finally(() => {
+        setExportLoading(false);
       });
   }, [botId, botInfo, dataMode, selectedRows]);
 
@@ -167,7 +170,10 @@ export const BotStatisticLog: React.FC = () => {
           description={
             <div className="f-full flex gap-4 text-[13px]">
               <div className="flex-1">{I18n.t('bot_static_log_desc')}</div>
-              <div className="coz-fg-plus cursor-pointer font-bold">
+              <div
+                className="coz-fg-plus cursor-pointer font-bold"
+                onClick={() => setExportDrawerVisible(true)}
+              >
                 {I18n.t('bot_static_log_view_download_record')}
               </div>
             </div>
@@ -214,6 +220,7 @@ export const BotStatisticLog: React.FC = () => {
           </div>
           <Button
             color="secondary"
+            loading={exportLoading}
             disabled={selectedRows.length === 0}
             icon={<IconBotStatisticLog />}
             onClick={exportSelectedRows}
@@ -228,6 +235,12 @@ export const BotStatisticLog: React.FC = () => {
         params={currentItem}
         visible={messageDrawerVisible}
         onClose={() => setMessageDrawerVisible(false)}
+      />
+      <ExportDrawer
+        spaceId={spaceId}
+        botId={botId}
+        visible={exportDrawerVisible}
+        onClose={() => setExportDrawerVisible(false)}
       />
     </div>
   );

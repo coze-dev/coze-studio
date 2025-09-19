@@ -351,6 +351,7 @@ import { ReactComponent as SvgIconBotCard } from './assets/icons/icon_card_defau
 import { ReactComponent as SvgIconBotCardActive } from './assets/icons/icon_card_active.svg';
 import { ReactComponent as SvgIconBotAnalysisExchange } from './assets/icons/icon_analysis_exchange.svg';
 import { ReactComponent as SvgIconBotStatisticLog } from './assets/icons/icon_analysis_export.svg';
+import { ReactComponent as SvgIconBotAnalysisDownload } from './assets/icons/icon_analysis_download.svg';
 
 import { ReactComponent as SvgIconBotMenuLogoText } from './assets/icons/icon-menu-logo-text.svg';
 import { ReactComponent as SvgIconBotMenuLogoTextCN } from './assets/icons/icon-menu-logo-text-cn.svg';
@@ -797,6 +798,9 @@ export const IconBotAnalysisExchange = IconFactory(
   <SvgIconBotAnalysisExchange />,
 );
 export const IconBotStatisticLog = IconFactory(<SvgIconBotStatisticLog />);
+export const IconBotAnalysisDownload = IconFactory(
+  <SvgIconBotAnalysisDownload />,
+);
 
 export const IconChatHashtag = IconFactory(<SvgChatHashtag />);
 export const IconMenuLogoText = IconFactory(<SvgIconBotMenuLogoText />);
