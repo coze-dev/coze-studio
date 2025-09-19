@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { I18n } from '@coze-arch/i18n';
-import { RadioGroup, DatePicker, Button } from '@coze-arch/bot-semi';
+import { RadioGroup, DatePicker, Button, Tooltip } from '@coze-arch/bot-semi';
 import { IconCozRefresh } from '@coze-arch/coze-design/icons';
+import { IconBotAnalysisExchange } from '@coze-arch/bot-icons';
 import dayjs from 'dayjs';
 
 export const getDateRangeByDays = (days: number) => {
@@ -14,8 +15,11 @@ export const BotStatisticFilter: React.FC = ({
   defaultDateRangeDays = '1',
   onDateChange,
   onRefresh,
+  onExchange,
+  exchangeTooltip,
 }: {
   defaultDateRangeDays?: string;
+  exchangeTooltip?: string;
   onDateChange: (dateRange: number[]) => void;
   onRefresh: () => void;
 }) => {
@@ -27,7 +31,13 @@ export const BotStatisticFilter: React.FC = ({
   };
 
   return (
-    <div className="flex items-center justify-between pt-[24px] pb-[20px]">
+    <div
+      className="flex items-center justify-between py-[20px] sticky top-0 z-10"
+      style={{
+        backgroundColor: 'rgba(255, 255, 255, 0.5)',
+        backdropFilter: 'blur(12px)',
+      }}
+    >
       <div className="flex items-center gap-4">
         <RadioGroup
           buttonSize="middle"
@@ -79,9 +89,24 @@ export const BotStatisticFilter: React.FC = ({
           />
         )}
       </div>
-      <Button color="secondary" icon={<IconCozRefresh />} onClick={onRefresh}>
-        {/* {I18n.t('db_optimize_012')} */}
-      </Button>
+      <div className="flex items-center gap-2">
+        {onExchange ? (
+          <Tooltip content={exchangeTooltip} position="top">
+            <Button
+              color="secondary"
+              icon={<IconBotAnalysisExchange />}
+              onClick={onExchange}
+            />
+          </Tooltip>
+        ) : null}
+        <Tooltip content={I18n.t('pop_up_button_refresh')} position="top">
+          <Button
+            color="secondary"
+            icon={<IconCozRefresh />}
+            onClick={onRefresh}
+          />
+        </Tooltip>
+      </div>
     </div>
   );
 };
