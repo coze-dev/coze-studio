@@ -174,98 +174,161 @@ func (c *impl) BatchCreate(ctx context.Context, msgs []*entity.Message) ([]*enti
 	return c.DomainSVC.BatchCreate(ctx, msgs)
 }
 
-func convertToConvAndSchemaMessage(ctx context.Context, msgs []*entity.Message) ([]*crossmessage.WfMessage, []*schema.Message, error) {
-	messages := make([]*schema.Message, 0)
-	convMessages := make([]*crossmessage.WfMessage, 0)
-	for _, m := range msgs {
-		msg := &schema.Message{}
-		err := sonic.UnmarshalString(m.ModelContent, msg)
-		if err != nil {
-			return nil, nil, err
+func extractContentFromCard(content string) *schema.Message {
+	type inputCard struct {
+		CardType     int64             `json:"card_type"`
+		ContentType  int64             `json:"content_type"`
+		ResponseType string            `json:"response_type"`
+		TemplateId   int64             `json:"template_id"`
+		TemplateURL  string            `json:"template_url"`
+		Data         string            `json:"data"`
+		XProperties  map[string]string `json:"x_properties"`
+	}
+	type qaField struct {
+		Name string `json:"name"`
+	}
+	type qaProps struct {
+		CardType         string `json:"card_type"`
+		QuestionCardData struct {
+			Title   string     `json:"Title"`
+			Options []*qaField `json:"Options"`
+		} `json:"question_card_data"`
+	}
+
+	card := &inputCard{}
+	if err := sonic.UnmarshalString(content, card); err != nil {
+		return nil
+	}
+
+	prop, ok := card.XProperties["workflow_card_info"]
+	if !ok || prop == "" {
+		return nil
+	}
+
+	qaCard := &qaProps{}
+	if err := sonic.UnmarshalString(prop, qaCard); err != nil {
+		return nil
+	}
+
+	if qaCard.QuestionCardData.Title != "" {
+		return &schema.Message{
+			Content: qaCard.QuestionCardData.Title,
 		}
-		msg.Role = m.Role
+	}
 
-		covMsg := &crossmessage.WfMessage{
-			ID:          m.ID,
-			Role:        m.Role,
-			ContentType: string(m.ContentType),
-			SectionID:   m.SectionID,
-		}
+	return nil
+}
 
-		if len(msg.MultiContent) == 0 {
-			covMsg.Text = ptr.Of(msg.Content)
-		} else {
-			covMsg.MultiContent = make([]*crossmessage.Content, 0, len(msg.MultiContent))
-			for _, part := range msg.MultiContent {
-				switch part.Type {
-				case schema.ChatMessagePartTypeText:
-					covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
-						Type: model.InputTypeText,
-						Text: ptr.Of(part.Text),
-					})
+func buildConvMessage(ctx context.Context, m *entity.Message, multiContent []schema.ChatMessagePart) (*crossmessage.WfMessage, error) {
+	covMsg := &crossmessage.WfMessage{
+		ID:          m.ID,
+		Role:        m.Role,
+		ContentType: string(m.ContentType),
+		SectionID:   m.SectionID,
+	}
 
-				case schema.ChatMessagePartTypeImageURL:
-					if part.ImageURL != nil {
-						part.ImageURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.ImageURL.URI)
-						if err != nil {
-							return nil, nil, err
-						}
-						covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
-							Uri:  ptr.Of(part.ImageURL.URI),
-							Type: model.InputTypeImage,
-							Url:  ptr.Of(part.ImageURL.URL),
-						})
-					}
+	if len(multiContent) == 0 {
+		covMsg.Text = ptr.Of(m.Content)
+		return covMsg, nil
+	}
 
-				case schema.ChatMessagePartTypeFileURL:
-
-					if part.FileURL != nil {
-						part.FileURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.FileURL.URI)
-						if err != nil {
-							return nil, nil, err
-						}
-
-						covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
-							Uri:  ptr.Of(part.FileURL.URI),
-							Type: model.InputTypeFile,
-							Url:  ptr.Of(part.FileURL.URL),
-						})
-
-					}
-
-				case schema.ChatMessagePartTypeAudioURL:
-					if part.AudioURL != nil {
-						part.AudioURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.AudioURL.URI)
-						if err != nil {
-							return nil, nil, err
-						}
-						covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
-							Uri:  ptr.Of(part.AudioURL.URI),
-							Type: model.InputTypeAudio,
-							Url:  ptr.Of(part.AudioURL.URL),
-						})
-
-					}
-				case schema.ChatMessagePartTypeVideoURL:
-					if part.VideoURL != nil {
-						part.VideoURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.VideoURL.URI)
-						if err != nil {
-							return nil, nil, err
-						}
-						covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
-							Uri:  ptr.Of(part.VideoURL.URI),
-							Type: model.InputTypeVideo,
-							Url:  ptr.Of(part.VideoURL.URL),
-						})
-					}
-				default:
-					return nil, nil, fmt.Errorf("unknown part type: %s", part.Type)
+	covMsg.MultiContent = make([]*crossmessage.Content, 0, len(multiContent))
+	for _, part := range multiContent {
+		var err error
+		switch part.Type {
+		case schema.ChatMessagePartTypeText:
+			covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
+				Type: model.InputTypeText,
+				Text: ptr.Of(part.Text),
+			})
+		case schema.ChatMessagePartTypeImageURL:
+			if part.ImageURL != nil {
+				part.ImageURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.ImageURL.URI)
+				if err != nil {
+					return nil, err
 				}
+				covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
+					Uri:  ptr.Of(part.ImageURL.URI),
+					Type: model.InputTypeImage,
+					Url:  ptr.Of(part.ImageURL.URL),
+				})
+			}
+		case schema.ChatMessagePartTypeFileURL:
+			if part.FileURL != nil {
+				part.FileURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.FileURL.URI)
+				if err != nil {
+					return nil, err
+				}
+				covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
+					Uri:  ptr.Of(part.FileURL.URI),
+					Type: model.InputTypeFile,
+					Url:  ptr.Of(part.FileURL.URL),
+				})
+			}
+		case schema.ChatMessagePartTypeAudioURL:
+			if part.AudioURL != nil {
+				part.AudioURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.AudioURL.URI)
+				if err != nil {
+					return nil, err
+				}
+				covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
+					Uri:  ptr.Of(part.AudioURL.URI),
+					Type: model.InputTypeAudio,
+					Url:  ptr.Of(part.AudioURL.URL),
+				})
+			}
+		case schema.ChatMessagePartTypeVideoURL:
+			if part.VideoURL != nil {
+				part.VideoURL.URL, err = workflow.GetRepository().GetObjectUrl(ctx, part.VideoURL.URI)
+				if err != nil {
+					return nil, err
+				}
+				covMsg.MultiContent = append(covMsg.MultiContent, &crossmessage.Content{
+					Uri:  ptr.Of(part.VideoURL.URI),
+					Type: model.InputTypeVideo,
+					Url:  ptr.Of(part.VideoURL.URL),
+				})
+			}
+		default:
+			return nil, fmt.Errorf("unknown part type: %s", part.Type)
+		}
+	}
+	return covMsg, nil
+}
+
+func convertToConvAndSchemaMessage(ctx context.Context, msgs []*entity.Message) ([]*crossmessage.WfMessage, []*schema.Message, error) {
+	messages := make([]*schema.Message, 0, len(msgs))
+	convMessages := make([]*crossmessage.WfMessage, 0, len(msgs))
+
+	for _, m := range msgs {
+		var schemaMsg *schema.Message
+		var err error
+
+		if m.ContentType == model.ContentTypeCard {
+			schemaMsg = extractContentFromCard(m.Content)
+		} else {
+			schemaMsg = &schema.Message{}
+			if err = sonic.UnmarshalString(m.ModelContent, schemaMsg); err != nil {
+				return nil, nil, fmt.Errorf("failed to unmarshal message content: %w", err)
 			}
 		}
 
-		messages = append(messages, msg)
+		var multiContentForUI []schema.ChatMessagePart
+		if schemaMsg != nil {
+			multiContentForUI = schemaMsg.MultiContent
+		}
+
+		covMsg, err := buildConvMessage(ctx, m, multiContentForUI)
+		if err != nil {
+			return nil, nil, fmt.Errorf("failed to build conversation message: %w", err)
+		}
 		convMessages = append(convMessages, covMsg)
+
+		if schemaMsg != nil && (schemaMsg.Content != "" || len(schemaMsg.MultiContent) > 0) {
+			schemaMsg.Role = m.Role
+			messages = append(messages, schemaMsg)
+		}
 	}
+
 	return convMessages, messages, nil
 }
