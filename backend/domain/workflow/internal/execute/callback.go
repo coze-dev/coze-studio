@@ -44,6 +44,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
+	"go.opentelemetry.io/otel/attribute"
 )
 
 type NodeHandler struct {
@@ -234,6 +235,12 @@ func (w *WorkflowHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, 
 		}
 	}
 
+	var startPayload map[string]any
+	if m, ok := input.(map[string]any); ok {
+		startPayload = m
+	}
+	newCtx = startWorkflowSpan(newCtx, GetExeCtx(newCtx), w, resumed, "workflow.on_start", startPayload, w.nodeCount)
+
 	if resumed {
 		c := GetExeCtx(newCtx)
 		w.ch <- &Event{
@@ -261,11 +268,12 @@ func (w *WorkflowHandler) OnEnd(ctx context.Context, info *callbacks.RunInfo, ou
 	}
 
 	c := GetExeCtx(ctx)
+	outputMap, _ := output.(map[string]any)
 	e := &Event{
 		Type:      WorkflowSuccess,
 		Context:   c,
-		Output:    output.(map[string]any),
-		RawOutput: output.(map[string]any),
+		Output:    outputMap,
+		RawOutput: outputMap,
 		Duration:  time.Since(time.UnixMilli(c.StartTime)),
 	}
 
@@ -452,6 +460,8 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 		}
 	}
 
+	newCtx = startWorkflowSpan(newCtx, GetExeCtx(newCtx), w, resumed, "workflow.on_start_stream", nil, w.nodeCount)
+
 	if resumed {
 		input.Close()
 		c := GetExeCtx(newCtx)
@@ -481,6 +491,7 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 		}
 	}
 	c := GetExeCtx(newCtx)
+	addWorkflowSpanEvent(c, "workflow.input.stream_collected", attribute.Int("coze.workflow.input_field_count", len(fullInput)))
 	w.ch <- &Event{
 		Type:      WorkflowStart,
 		Context:   c,
@@ -498,6 +509,8 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 		output.Close()
 		return ctx
 	}
+
+	baseCtx := GetExeCtx(ctx)
 
 	safego.Go(ctx, func() {
 		defer output.Close()
@@ -522,18 +535,28 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 				logs.Errorf("failed to concat two maps: %v", e)
 				return
 			}
+
+			if baseCtx != nil {
+				addWorkflowSpanEvent(baseCtx, "workflow.output.stream_chunk", attribute.Int("coze.workflow.output_field_count", len(fullOutput)))
+			}
 		}
 
-		c := GetExeCtx(ctx)
+		currentCtx := GetExeCtx(ctx)
+		if currentCtx == nil {
+			currentCtx = baseCtx
+		}
+		if currentCtx == nil {
+			return
+		}
 		e := &Event{
 			Type:     WorkflowSuccess,
-			Context:  c,
-			Duration: time.Since(time.UnixMilli(c.StartTime)),
+			Context:  currentCtx,
+			Duration: time.Since(time.UnixMilli(currentCtx.StartTime)),
 			Output:   fullOutput,
 		}
 
-		if c.TokenCollector != nil {
-			usage := c.TokenCollector.wait()
+		if currentCtx.TokenCollector != nil {
+			usage := currentCtx.TokenCollector.wait()
 			e.Token = &TokenInfo{
 				InputToken:  int64(usage.PromptTokens),
 				OutputToken: int64(usage.CompletionTokens),
@@ -541,6 +564,7 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 			}
 		}
 		w.ch <- e
+		addWorkflowSpanEvent(currentCtx, "workflow.output.stream_complete", attribute.Int("coze.workflow.output_field_count", len(fullOutput)))
 	})
 
 	return ctx
@@ -631,6 +655,11 @@ func (n *NodeHandler) OnStart(ctx context.Context, info *callbacks.RunInfo, inpu
 	}
 
 	newCtx, resumed := n.initNodeCtx(ctx, entity.NodeType(info.Type))
+	var inputPayload map[string]any
+	if m, ok := input.(map[string]any); ok {
+		inputPayload = m
+	}
+	newCtx = startNodeSpan(newCtx, GetExeCtx(newCtx), entity.NodeType(info.Type), resumed, "node.on_start", inputPayload)
 
 	if resumed {
 		return newCtx
@@ -851,6 +880,7 @@ func (n *NodeHandler) OnStartWithStreamInput(ctx context.Context, info *callback
 	}
 
 	newCtx, resumed := n.initNodeCtx(ctx, entity.NodeType(info.Type))
+	newCtx = startNodeSpan(newCtx, GetExeCtx(newCtx), entity.NodeType(info.Type), resumed, "node.on_start_stream", nil)
 
 	if resumed {
 		input.Close()
@@ -968,6 +998,10 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					return
 				}
 
+				if c != nil {
+					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)))
+				}
+
 				if so.Error != nil {
 					warning = so.Error
 				}
@@ -997,6 +1031,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			} else {
 				e.extra.CurrentSubExecuteID = c.SubExecuteID
 			}
+
+			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)))
 
 			// TODO: hard-coded string
 			if _, ok := fullOutput["output"]; ok {
@@ -1096,6 +1132,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						first = false
 					}
 					n.ch <- deltaEvent
+					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)))
 				}
 			}
 
@@ -1108,6 +1145,7 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			n.ch <- e
+			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)))
 		})
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
 		consumer := func(ctx context.Context) context.Context {

@@ -36,6 +36,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
+	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/codes"
 )
 
 func setRootWorkflowSuccess(ctx context.Context, event *Event, repo workflow.Repository,
@@ -161,10 +163,23 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			}
 		}
 	case WorkflowSuccess:
+		spanAttrs := []attribute.KeyValue{
+			attribute.Bool("coze.workflow.subworkflow", event.SubWorkflowCtx != nil),
+		}
+		if event.Output != nil {
+			spanAttrs = append(spanAttrs, attribute.Int("coze.workflow.output_field_count", len(event.Output)))
+		}
+		spanErr := error(nil)
+		spanStatus := codes.Ok
+		defer func() {
+			finishWorkflowSpan(event.Context, event.Duration, spanStatus, spanErr, event.Token, spanAttrs...)
+		}()
+
 		// sub workflow, no need to wait for exit node to be done
 		if event.SubWorkflowCtx != nil {
 			exeID := event.RootCtx.RootExecuteID
-			if event.SubWorkflowCtx != nil {
+			subCtx := event.SubWorkflowCtx
+			if subCtx != nil {
 				exeID = event.SubExecuteID
 			}
 			wfExec := &entity.WorkflowExecution{
@@ -183,9 +198,14 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 				currentStatus entity.WorkflowExecuteStatus
 			)
 			if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
+				spanErr = err
+				spanStatus = codes.Error
 				return noTerminate, fmt.Errorf("failed to save workflow execution when successful: %v", err)
 			} else if updatedRows == 0 {
-				return noTerminate, fmt.Errorf("failed to update workflow execution to success for execution id %d, current status is %v", exeID, currentStatus)
+				err := fmt.Errorf("failed to update workflow execution to success for execution id %d, current status is %v", exeID, currentStatus)
+				spanErr = err
+				spanStatus = codes.Error
+				return noTerminate, err
 			}
 
 			return noTerminate, nil
@@ -193,6 +213,14 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		return workflowSuccess, nil
 	case WorkflowFailed:
+		spanAttrs := []attribute.KeyValue{
+			attribute.Bool("coze.workflow.subworkflow", event.SubWorkflowCtx != nil),
+		}
+		spanStatus := codes.Error
+		spanErr := event.Err
+		defer func() {
+			finishWorkflowSpan(event.Context, event.Duration, spanStatus, spanErr, event.Token, spanAttrs...)
+		}()
 		exeID := event.RootCtx.RootExecuteID
 		wfID := event.RootCtx.RootWorkflowBasic.ID
 		if event.SubWorkflowCtx != nil {
@@ -240,9 +268,12 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			currentStatus entity.WorkflowExecuteStatus
 		)
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning}); err != nil {
+			spanErr = err
 			return noTerminate, fmt.Errorf("failed to save workflow execution when failed: %v", err)
 		} else if updatedRows == 0 {
-			return noTerminate, fmt.Errorf("failed to update workflow execution to failed for execution id %d, current status is %v", exeID, currentStatus)
+			err := fmt.Errorf("failed to update workflow execution to failed for execution id %d, current status is %v", exeID, currentStatus)
+			spanErr = err
+			return noTerminate, err
 		}
 
 		if event.SubWorkflowCtx == nil {
@@ -263,6 +294,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if event.done != nil {
 			defer close(event.done)
 		}
+		addWorkflowSpanEvent(event.Context, "workflow.interrupt", attribute.Int("coze.workflow.interrupt.count", len(event.InterruptEvents)))
 
 		exeID := event.RootCtx.RootExecuteID
 		if event.SubWorkflowCtx != nil {
@@ -356,6 +388,15 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		return workflowAbort, nil
 	case WorkflowCancel:
+		spanAttrs := []attribute.KeyValue{
+			attribute.Bool("coze.workflow.subworkflow", event.SubWorkflowCtx != nil),
+			attribute.Bool("coze.workflow.cancelled", true),
+		}
+		spanErr := context.Canceled
+		spanStatus := codes.Error
+		defer func() {
+			finishWorkflowSpan(event.Context, event.Duration, spanStatus, spanErr, event.Token, spanAttrs...)
+		}()
 		exeID := event.RootCtx.RootExecuteID
 		if event.SubWorkflowCtx != nil {
 			exeID = event.SubExecuteID
@@ -381,9 +422,12 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if updatedRows, currentStatus, err = repo.UpdateWorkflowExecution(ctx, wfExec, []entity.WorkflowExecuteStatus{entity.WorkflowRunning,
 			entity.WorkflowInterrupted}); err != nil {
+			spanErr = err
 			return noTerminate, fmt.Errorf("failed to save workflow execution when canceled: %v", err)
 		} else if updatedRows == 0 {
-			return noTerminate, fmt.Errorf("failed to update workflow execution to canceled for execution id %d, current status is %v", exeID, currentStatus)
+			err := fmt.Errorf("failed to update workflow execution to canceled for execution id %d, current status is %v", exeID, currentStatus)
+			spanErr = err
+			return noTerminate, err
 		}
 
 		if event.SubWorkflowCtx == nil {
@@ -404,6 +448,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if sw == nil || event.SubWorkflowCtx != nil {
 			return noTerminate, nil
 		}
+		addWorkflowSpanEvent(event.Context, "workflow.resume", attribute.Bool("coze.workflow.subworkflow", false))
 
 		sw.Send(&entity.Message{
 			StateMessage: &entity.StateMessage{
@@ -416,6 +461,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 	case NodeStart:
 		if event.Context == nil {
 			panic("nil event context")
+		}
+		if event.Input != nil {
+			addNodeSpanEvent(event.Context, "node.input.received", attribute.Int("coze.workflow.node.input_field_count", len(event.Input)))
 		}
 
 		wfExeID := event.RootCtx.RootExecuteID
@@ -441,6 +489,21 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			return noTerminate, fmt.Errorf("failed to create node execution: %v", err)
 		}
 	case NodeEnd, NodeEndStreaming:
+		spanStatus := codes.Ok
+		spanErr := event.Err
+		if spanErr != nil {
+			spanStatus = codes.Error
+		}
+		spanAttrs := make([]attribute.KeyValue, 0, 2)
+		if event.Output != nil {
+			spanAttrs = append(spanAttrs, attribute.Int("coze.workflow.node.output_field_count", len(event.Output)))
+		}
+		if event.RawOutput != nil {
+			spanAttrs = append(spanAttrs, attribute.Int("coze.workflow.node.raw_output_field_count", len(event.RawOutput)))
+		}
+		defer func() {
+			finishNodeSpan(event.Context, event.Duration, spanStatus, spanErr, event.Token, spanAttrs...)
+		}()
 		nodeExec := &entity.NodeExecution{
 			ID:       event.NodeExecuteID,
 			Status:   entity.NodeSuccess,
@@ -500,22 +563,32 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if event.NodeCtx.ResumingEvent != nil {
 			firstIE, found, err := repo.GetFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
 			if err != nil {
+				spanErr = err
+				spanStatus = codes.Error
 				return noTerminate, err
 			}
 
 			if found && firstIE.ID == event.NodeCtx.ResumingEvent.ID {
 				deletedEvent, deleted, err := repo.PopFirstInterruptEvent(ctx, event.RootCtx.RootExecuteID)
 				if err != nil {
+					spanErr = err
+					spanStatus = codes.Error
 					return noTerminate, err
 				}
 
 				if !deleted {
-					return noTerminate, fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
+					err := fmt.Errorf("node end: interrupt events does not exist, wfExeID: %d", event.RootCtx.RootExecuteID)
+					spanErr = err
+					spanStatus = codes.Error
+					return noTerminate, err
 				}
 
 				if deletedEvent.ID != event.NodeCtx.ResumingEvent.ID {
-					return noTerminate, fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
+					err := fmt.Errorf("interrupt event id mismatch when deleting, expect: %d, actual: %d",
 						event.RootCtx.ResumeEvent.ID, deletedEvent.ID)
+					spanErr = err
+					spanStatus = codes.Error
+					return noTerminate, err
 				}
 			}
 		}
@@ -527,6 +600,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
+			spanErr = err
+			spanStatus = codes.Error
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 
@@ -614,6 +689,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}, nil)
 	case NodeStreamingInput:
+		if event.Input != nil {
+			addNodeSpanEvent(event.Context, "node.streaming_input", attribute.Int("coze.workflow.node.input_field_count", len(event.Input)))
+		}
 		nodeExec := &entity.NodeExecution{
 			ID:    event.NodeExecuteID,
 			Input: ptr.Of(mustMarshalToString(event.Input)),
@@ -623,6 +701,11 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 	case NodeError:
+		spanErr := event.Err
+		spanAttrs := make([]attribute.KeyValue, 0, 2)
+		defer func() {
+			finishNodeSpan(event.Context, event.Duration, codes.Error, spanErr, event.Token, spanAttrs...)
+		}()
 		var errorInfo, errorLevel string
 		var wfe vo.WorkflowError
 		if !errors.As(event.Err, &wfe) {
@@ -645,6 +728,10 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		errorInfo = wfe.Msg()[:min(1000, len(wfe.Msg()))]
 		errorLevel = string(wfe.Level())
+		spanAttrs = append(spanAttrs,
+			attribute.String("coze.workflow.node.error_level", errorLevel),
+			attribute.String("coze.workflow.node.error_message", errorInfo),
+		)
 
 		if event.Context == nil || event.Context.NodeCtx == nil {
 			return noTerminate, fmt.Errorf("nil event context")
@@ -662,6 +749,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 			},
 		}
 		if err = repo.UpdateNodeExecution(ctx, nodeExec); err != nil {
+			spanErr = err
 			return noTerminate, fmt.Errorf("failed to save node execution: %v", err)
 		}
 	case FunctionCall:
@@ -915,7 +1003,7 @@ func extractCardSelectorContent(output map[string]any) string {
 	if output == nil {
 		return ""
 	}
-	
+
 	// 从CardSelector的输出中提取可显示的内容
 	if outputValue, exists := output["output"]; exists {
 		if outputStr, ok := outputValue.(string); ok {
@@ -926,6 +1014,6 @@ func extractCardSelectorContent(output map[string]any) string {
 			return jsonBytes
 		}
 	}
-	
+
 	return ""
 }
