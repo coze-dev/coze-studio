@@ -19,6 +19,7 @@ package llm
 import (
 	"context"
 	"fmt"
+	"os"
 
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
@@ -32,6 +33,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"github.com/coze-dev/coze-studio/backend/pkg/urltobase64url"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 type prompts struct {
@@ -43,6 +46,7 @@ type prompts struct {
 type promptsWithChatHistory struct {
 	prompts *prompts
 	cfg     *vo.ChatHistorySetting
+	mwi     ModelWithInfo
 }
 
 func withReservedKeys(keys []string) func(tpl *promptTpl) {
@@ -131,11 +135,16 @@ func newPrompts(sp, up *promptTpl, model ModelWithInfo) *prompts {
 	}
 }
 
-func newPromptsWithChatHistory(prompts *prompts, cfg *vo.ChatHistorySetting) *promptsWithChatHistory {
+func newPromptsWithChatHistory(prompts *prompts, cfg *vo.ChatHistorySetting, model ModelWithInfo) *promptsWithChatHistory {
 	return &promptsWithChatHistory{
 		prompts: prompts,
 		cfg:     cfg,
+		mwi:     model,
 	}
+}
+
+func enableLocalFileToLLMWithBase64() bool {
+	return os.Getenv(consts.EnableLocalFileToLLMWithBase64) == "true"
 }
 
 func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
@@ -283,11 +292,23 @@ func transformMessagePart(part schema.ChatMessagePart, supportedModals map[model
 				Text: part.ImageURL.URL,
 			}
 		}
+		if enableLocalFileToLLMWithBase64() {
+			if fileData, err := urltobase64url.URLToBase64(part.ImageURL.URL); err == nil {
+				part.ImageURL.MIMEType = fileData.MimeType
+				part.ImageURL.URL = fileData.Base64Url
+			}
+		}
 	case schema.ChatMessagePartTypeAudioURL:
 		if _, ok := supportedModals[modelmgr.ModalAudio]; !ok {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.AudioURL.URL,
+			}
+		}
+		if enableLocalFileToLLMWithBase64() {
+			if fileData, err := urltobase64url.URLToBase64(part.AudioURL.URL); err == nil {
+				part.AudioURL.MIMEType = fileData.MimeType
+				part.AudioURL.URL = fileData.Base64Url
 			}
 		}
 	case schema.ChatMessagePartTypeVideoURL:
@@ -297,11 +318,23 @@ func transformMessagePart(part schema.ChatMessagePart, supportedModals map[model
 				Text: part.VideoURL.URL,
 			}
 		}
+		if enableLocalFileToLLMWithBase64() {
+			if fileData, err := urltobase64url.URLToBase64(part.VideoURL.URL); err == nil {
+				part.VideoURL.MIMEType = fileData.MimeType
+				part.VideoURL.URL = fileData.Base64Url
+			}
+		}
 	case schema.ChatMessagePartTypeFileURL:
 		if _, ok := supportedModals[modelmgr.ModalFile]; !ok {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.FileURL.URL,
+			}
+		}
+		if enableLocalFileToLLMWithBase64() {
+			if fileData, err := urltobase64url.URLToBase64(part.FileURL.URL); err == nil {
+				part.FileURL.MIMEType = fileData.MimeType
+				part.FileURL.URL = fileData.Base64Url
 			}
 		}
 	}
@@ -388,6 +421,20 @@ func (p *promptsWithChatHistory) Format(ctx context.Context, vs map[string]any, 
 
 	if len(historyMessages) == 0 {
 		return baseMessages, nil
+	}
+
+	supportedModal := map[modelmgr.Modal]bool{}
+	mInfo := p.mwi.Info(ctx)
+	if mInfo != nil {
+		for i := range mInfo.Meta.Capability.InputModal {
+			supportedModal[mInfo.Meta.Capability.InputModal[i]] = true
+		}
+	}
+
+	for _, msg := range historyMessages {
+		for i, part := range msg.MultiContent {
+			msg.MultiContent[i] = transformMessagePart(part, supportedModal)
+		}
 	}
 
 	finalMessages := make([]*schema.Message, 0, len(baseMessages)+len(historyMessages))

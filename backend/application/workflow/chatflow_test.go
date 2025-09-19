@@ -213,6 +213,7 @@ func Test_toConversationMessage(t *testing.T) {
 				UserID:         strconv.FormatInt(userID, 10),
 				RunID:          roundID,
 				ContentType:    messageentity.ContentTypeMix,
+				DisplayContent: `[{"type": "text", "text": "hello"}]`,
 				MultiContent: []*messageentity.InputMetaData{
 					{Type: messageentity.InputTypeText, Text: "hello"},
 				},
@@ -240,6 +241,7 @@ func Test_toConversationMessage(t *testing.T) {
 				UserID:         strconv.FormatInt(userID, 10),
 				RunID:          roundID,
 				ContentType:    messageentity.ContentTypeMix,
+				DisplayContent: `[{"type": "file", "file_id": "123"}]`,
 				MultiContent: []*messageentity.InputMetaData{
 					{
 						Type: "file",

@@ -80,6 +80,8 @@ struct AdditionalContent {
      2: optional string text
      3: optional string file_url
      4: optional i64 file_id (api.js_conv='true')
+     5: optional string name
+     6: optional i64 size (api.js_conv='true')
 }
 
 struct AgentRunRequest  {

@@ -430,7 +430,7 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.Up
 	objName := genObjName(fileHeader.Filename, randID)
 	resp.File.FileName = fileHeader.Filename
 	resp.File.URI = objName
-	err = u.oss.PutObject(ctx, objName, data)
+	err = u.oss.PutObject(ctx, objName, data, storage.WithContentType(fileHeader.Header.Get("Content-Type")))
 	if err != nil {
 		return nil, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", "file upload to oss failed"))
 	}

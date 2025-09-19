@@ -71,6 +71,38 @@ func (t *historyChatTemplate) Format(ctx context.Context, vs map[string]any, opt
 		return baseMessages, nil
 	}
 
+	for _, msg := range historyMessages {
+		processedParts := make([]schema.ChatMessagePart, 0, len(msg.MultiContent))
+		for _, part := range msg.MultiContent {
+			switch part.Type {
+			case schema.ChatMessagePartTypeText:
+				processedParts = append(processedParts, part)
+			case schema.ChatMessagePartTypeImageURL:
+				processedParts = append(processedParts, schema.ChatMessagePart{
+					Type: schema.ChatMessagePartTypeText,
+					Text: part.ImageURL.URL,
+				})
+			case schema.ChatMessagePartTypeAudioURL:
+				processedParts = append(processedParts, schema.ChatMessagePart{
+					Type: schema.ChatMessagePartTypeText,
+					Text: part.AudioURL.URL,
+				})
+			case schema.ChatMessagePartTypeVideoURL:
+				processedParts = append(processedParts, schema.ChatMessagePart{
+					Type: schema.ChatMessagePartTypeText,
+					Text: part.VideoURL.URL,
+				})
+			case schema.ChatMessagePartTypeFileURL:
+				processedParts = append(processedParts, schema.ChatMessagePart{
+					Type: schema.ChatMessagePartTypeText,
+					Text: part.FileURL.URL,
+				})
+			}
+		}
+		// Replace original multi-content with processed text-only parts
+		msg.MultiContent = processedParts
+	}
+
 	if len(historyMessages) == 0 {
 		return baseMessages, nil
 	}
