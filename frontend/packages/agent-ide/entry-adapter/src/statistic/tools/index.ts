@@ -25,5 +25,5 @@ export const getRowsCount = (itemHeight, minSize = 20) => {
   let pageSize = document.documentElement.clientHeight / itemHeight;
   pageSize = Math.max(pageSize, minSize);
 
-  return pageSize;
+  return ~~pageSize;
 };
