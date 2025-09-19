@@ -7063,10 +7063,10 @@ func (p *ListConversationMessageLogResponse) String() string {
 
 // ExportConversationMessageLog 导出会话消息日志请求
 type ExportConversationMessageLogRequest struct {
-	AgentID         int64   `thrift:"agent_id,1,required" form:"agent_id,required" json:"agent_id,string,required"`
-	FileName        string  `thrift:"file_name,2,required" form:"file_name,required" json:"file_name,required"`
-	ConversationIds []int64 `thrift:"conversation_ids,3,optional" form:"conversation_ids" json:"conversation_ids,string,omitempty"`
-	RunIds          []int64 `thrift:"run_ids,4,optional" form:"run_ids" json:"run_ids,string,omitempty"`
+	AgentID         int64    `thrift:"agent_id,1,required" form:"agent_id,required" json:"agent_id,string,required"`
+	FileName        string   `thrift:"file_name,2,required" form:"file_name,required" json:"file_name,required"`
+	ConversationIds []string `thrift:"conversation_ids,3,optional" form:"conversation_ids" json:"conversation_ids,omitempty"`
+	RunIds          []string `thrift:"run_ids,4,optional" form:"run_ids" json:"run_ids,omitempty"`
 	// 导出文件保存小时数，默认72小时
 	ExpireHours *int32 `thrift:"expire_hours,5,optional" form:"expire_hours" json:"expire_hours,omitempty"`
 }
@@ -7086,18 +7086,18 @@ func (p *ExportConversationMessageLogRequest) GetFileName() (v string) {
 	return p.FileName
 }
 
-var ExportConversationMessageLogRequest_ConversationIds_DEFAULT []int64
+var ExportConversationMessageLogRequest_ConversationIds_DEFAULT []string
 
-func (p *ExportConversationMessageLogRequest) GetConversationIds() (v []int64) {
+func (p *ExportConversationMessageLogRequest) GetConversationIds() (v []string) {
 	if !p.IsSetConversationIds() {
 		return ExportConversationMessageLogRequest_ConversationIds_DEFAULT
 	}
 	return p.ConversationIds
 }
 
-var ExportConversationMessageLogRequest_RunIds_DEFAULT []int64
+var ExportConversationMessageLogRequest_RunIds_DEFAULT []string
 
-func (p *ExportConversationMessageLogRequest) GetRunIds() (v []int64) {
+func (p *ExportConversationMessageLogRequest) GetRunIds() (v []string) {
 	if !p.IsSetRunIds() {
 		return ExportConversationMessageLogRequest_RunIds_DEFAULT
 	}
@@ -7262,11 +7262,11 @@ func (p *ExportConversationMessageLogRequest) ReadField3(iprot thrift.TProtocol)
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7285,11 +7285,11 @@ func (p *ExportConversationMessageLogRequest) ReadField4(iprot thrift.TProtocol)
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7396,11 +7396,11 @@ func (p *ExportConversationMessageLogRequest) writeField3(oprot thrift.TProtocol
 		if err = oprot.WriteFieldBegin("conversation_ids", thrift.LIST, 3); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.ConversationIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.ConversationIds)); err != nil {
 			return err
 		}
 		for _, v := range p.ConversationIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -7422,11 +7422,11 @@ func (p *ExportConversationMessageLogRequest) writeField4(oprot thrift.TProtocol
 		if err = oprot.WriteFieldBegin("run_ids", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.RunIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.RunIds)); err != nil {
 			return err
 		}
 		for _, v := range p.RunIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
