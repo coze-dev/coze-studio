@@ -37,6 +37,7 @@ type AgentRuntime struct {
 	AgentVersion     string
 	UserID           string
 	AgentID          int64
+	ConversationId   int64
 	IsDraft          bool
 	SpaceID          int64
 	ConnectorID      int64

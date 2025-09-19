@@ -19,6 +19,7 @@ package logs
 import (
 	"context"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"io"
 	"log"
 	"os"
@@ -192,7 +193,7 @@ func (ll *defaultLogger) logfCtx(ctx context.Context, lv Level, format *string, 
 		return
 	}
 	msg := lv.toString()
-	logID := ctx.Value("log-id")
+	logID := ctx.Value(consts.CtxLogIDKey)
 	if logID != nil {
 		msg += fmt.Sprintf("[log-id: %v] ", logID)
 	}

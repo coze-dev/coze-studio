@@ -80,6 +80,8 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, agentRuntim
 			}
 		}),
 		ResumeInfo: agentRuntime.ResumeInfo,
+
+		ConversationID: agentRuntime.ConversationId,
 	}
 }
 

@@ -38,6 +38,8 @@ type toolConfig struct {
 	userID        string
 	agentIdentity *entity.AgentIdentity
 	toolConf      []*bot_common.PluginInfo
+
+	conversationID int64
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
@@ -71,6 +73,9 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			isDraft:     conf.agentIdentity.IsDraft,
 			projectInfo: projectInfo,
 			toolInfo:    ti,
+
+			agentID:        conf.agentIdentity.AgentID,
+			conversationID: conf.conversationID,
 		})
 	}
 
@@ -82,6 +87,9 @@ type pluginInvokableTool struct {
 	isDraft     bool
 	toolInfo    *pluginEntity.ToolInfo
 	projectInfo *plugin.ProjectInfo
+
+	agentID        int64
+	conversationID int64
 }
 
 func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
@@ -124,6 +132,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
 		plugin.WithToolVersion(p.toolInfo.GetVersion()),
 		plugin.WithProjectInfo(p.projectInfo),
+		plugin.WithPluginHTTPHeader(p.agentID, p.conversationID),
 	}
 
 	resp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, opts...)

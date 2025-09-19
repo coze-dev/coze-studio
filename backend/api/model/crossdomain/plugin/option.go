@@ -24,6 +24,9 @@ type ExecuteToolOption struct {
 	ToolVersion                string
 	Operation                  *Openapi3Operation
 	InvalidRespProcessStrategy InvalidResponseProcessStrategy
+
+	AgentID        int64
+	ConversationID int64
 }
 
 type ExecuteToolOpt func(o *ExecuteToolOption)
@@ -63,5 +66,12 @@ func WithInvalidRespProcessStrategy(strategy InvalidResponseProcessStrategy) Exe
 func WithAutoGenRespSchema() ExecuteToolOpt {
 	return func(o *ExecuteToolOption) {
 		o.AutoGenRespSchema = true
+	}
+}
+
+func WithPluginHTTPHeader(agentID, conversationID int64) ExecuteToolOpt {
+	return func(o *ExecuteToolOption) {
+		o.AgentID = agentID
+		o.ConversationID = conversationID
 	}
 }

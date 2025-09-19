@@ -21,6 +21,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"io"
 	"net/http"
 	"net/url"
@@ -123,6 +125,8 @@ func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *ExecuteT
 	impl = &toolExecutor{
 		execScene:                  req.ExecScene,
 		userID:                     req.UserID,
+		agentID:                    execOpt.AgentID,
+		conversationID:             execOpt.ConversationID,
 		plugin:                     pl,
 		tool:                       tl,
 		projectInfo:                execOpt.ProjectInfo,
@@ -457,10 +461,13 @@ type ExecuteResponse struct {
 }
 
 type toolExecutor struct {
-	execScene model.ExecuteScene
-	userID    string
-	plugin    *entity.PluginInfo
-	tool      *entity.ToolInfo
+	execScene      model.ExecuteScene
+	userID         string
+	agentID        int64
+	conversationID int64
+
+	plugin *entity.PluginInfo
+	tool   *entity.ToolInfo
 
 	projectInfo                *entity.ProjectInfo
 	invalidRespProcessStrategy model.InvalidResponseProcessStrategy
@@ -737,6 +744,12 @@ func (t *toolExecutor) buildHTTPRequest(ctx context.Context, argMaps map[string]
 	if err != nil {
 		return nil, err
 	}
+
+	logId, _ := ctx.Value(consts.CtxLogIDKey).(string)
+	header.Set("X-Tt-Logid", logId)
+	header.Set("X-Aiplugin-Connector-Identifier", t.userID)
+	header.Set("X-AIPlugin-Bot-ID", conv.Int64ToStr(t.agentID))
+	header.Set("X-AIPlugin-Conversation-ID", conv.Int64ToStr(t.conversationID))
 
 	httpReq.Header = header
 
