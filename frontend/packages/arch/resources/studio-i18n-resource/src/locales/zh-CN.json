@@ -411,7 +411,7 @@
   "bot_build_title": "编排",
   "bot_statistic_log": "导出日志",
   "bot_static_log_export_failed": "导出失败",
-  "bot_static_log_export_success": "导出成功",
+  "bot_static_log_export_success": "日志导出成功",
   "bot_copy_id_error": "缺失bot_id信息",
   "bot_copy_info_error": "缺失智能体信息",
   "bot_copy_success": "智能体副本已创建",
