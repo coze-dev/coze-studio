@@ -10,7 +10,7 @@ export const BotStatistic: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { botId, spaceId } = useBotInfoStore(
+  const { botId, botInfo, spaceId } = useBotInfoStore(
     useShallow(s => ({
       description: s.description,
       botId: s.botId,
@@ -54,7 +54,7 @@ export const BotStatistic: React.FC = () => {
         ))}
       </div>
       <div className="flex-1 min-h-0 overflow-auto px-[24px]">
-        <Outlet context={{ botId, spaceId }} />
+        <Outlet context={{ botId, spaceId, botInfo }} />
       </div>
     </div>
   );

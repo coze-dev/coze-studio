@@ -44,7 +44,11 @@ export const MessageDrawer: FC<MessageDrawerProps> = ({
     request('/api/statistics/app/list_conversation_message_log', query)
       .then(({ statistics, data, pagination }) => {
         if (statistics) {
-          setStatistic(statistics);
+          setStatistic({
+            ...statistics,
+            latency_p50: Number((statistics.latency_p50 || 0).toFixed(3)),
+            latency_p99: Number((statistics.latency_p99 || 0).toFixed(3)),
+          });
         }
         const originData = data.map(e => ({
           raw: e,

@@ -3,10 +3,10 @@ import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { Banner, Empty, Button, Notification } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
-import {
-  IconCozCheckMarkCircleFill,
-  IconCozWarningCircleFill,
-} from '@coze-arch/coze-design/icons';
+// import {
+//   IconCozCheckMarkCircleFill,
+//   IconCozWarningCircleFill,
+// } from '@coze-arch/coze-design/icons';
 import { IconBotStatisticLog } from '@coze-arch/bot-icons';
 import { Table } from '@coze-arch/coze-design';
 import BotStatisticFilter, { getDateRangeByDays } from '../filter';
@@ -19,7 +19,7 @@ const dateRangeDays = '1';
 const defaultDateRange = getDateRangeByDays(Number(dateRangeDays));
 
 export const BotStatisticLog: React.FC = () => {
-  const { botId, spaceId } = useOutletContext();
+  const { botId, spaceId, botInfo } = useOutletContext();
   const [dateRange, setDateRange] = useState(defaultDateRange);
   const pageNum = useRef(1);
   const [hasMore, setHasMore] = useState(true);
@@ -35,8 +35,11 @@ export const BotStatisticLog: React.FC = () => {
   const size = useSize(wrapRef);
 
   const toggleDateMode = () => {
-    reset();
-    setDataMode(dataMode === 'cov' ? 'msg' : 'cov');
+    // 将所有状态更新都放在setTimeout中，确保在当前渲染周期完成后再执行
+    setTimeout(() => {
+      reset();
+      setDataMode(dataMode === 'cov' ? 'msg' : 'cov');
+    }, 0);
   };
 
   const onDateChange = range => {
@@ -115,7 +118,7 @@ export const BotStatisticLog: React.FC = () => {
   const exportSelectedRows = useCallback(() => {
     const params = {
       agent_id: botId,
-      file_name: `${botId}-${dataMode}-${Date.now()}.xlsx`,
+      file_name: `对话记录_${botInfo?.name}_${dataMode}_${Date.now()}.xlsx`,
     };
 
     if (dataMode === 'cov') {
@@ -138,12 +141,15 @@ export const BotStatisticLog: React.FC = () => {
           content: I18n.t('bot_static_log_export_failed'),
         });
       });
-  }, [botId, dataMode, selectedRows]);
+  }, [botId, botInfo, dataMode, selectedRows]);
 
   const onItemClick = (record, index) => {
     if (dataMode === 'cov') {
-      setCurrentItem(record);
-      setMessageDrawerVisible(true);
+      // 使用setTimeout确保异步更新状态，避免在渲染周期内触发新的状态更新
+      setTimeout(() => {
+        setCurrentItem(record);
+        setMessageDrawerVisible(true);
+      }, 0);
     }
   };
 
