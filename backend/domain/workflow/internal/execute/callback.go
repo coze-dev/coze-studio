@@ -999,7 +999,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				}
 
 				if c != nil {
-					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)))
+					payload := formatTracePayloadMap(fullOutput)
+					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)), attribute.String("content", payload))
 				}
 
 				if so.Error != nil {
@@ -1032,7 +1033,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 				e.extra.CurrentSubExecuteID = c.SubExecuteID
 			}
 
-			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)))
+			payload := formatTracePayloadMap(fullOutput)
+			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)), attribute.String("content", payload))
 
 			// TODO: hard-coded string
 			if _, ok := fullOutput["output"]; ok {
@@ -1132,7 +1134,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 						first = false
 					}
 					n.ch <- deltaEvent
-					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)))
+					payload := formatTracePayloadMap(fullOutput.Output)
+					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)), attribute.String("content", payload))
 				}
 			}
 
@@ -1145,7 +1148,8 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			n.ch <- e
-			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)))
+			payload := formatTracePayloadMap(fullOutput.Output)
+			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)), attribute.String("content", payload))
 		})
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
 		consumer := func(ctx context.Context) context.Context {

@@ -488,6 +488,9 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		if err = repo.CreateNodeExecution(ctx, nodeExec); err != nil {
 			return noTerminate, fmt.Errorf("failed to create node execution: %v", err)
 		}
+		if event.Input != nil {
+			addNodeSpanEvent(event.Context, "node.input.start", attribute.String("content", formatTracePayloadMap(event.Input)))
+		}
 	case NodeEnd, NodeEndStreaming:
 		spanStatus := codes.Ok
 		spanErr := event.Err
@@ -500,6 +503,23 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 		if event.RawOutput != nil {
 			spanAttrs = append(spanAttrs, attribute.Int("coze.workflow.node.raw_output_field_count", len(event.RawOutput)))
+		}
+		if event.Input != nil {
+			spanAttrs = append(spanAttrs, attribute.String("coze.workflow.node.input", formatTracePayloadMap(event.Input)))
+			addNodeSpanEvent(event.Context, "node.input.final", attribute.String("content", formatTracePayloadMap(event.Input)))
+		}
+		if event.Output != nil {
+			payload := formatTracePayloadMap(event.Output)
+			if payload != "" {
+				spanAttrs = append(spanAttrs, attribute.String("coze.workflow.node.output", payload))
+				addNodeSpanEvent(event.Context, "node.output.final", attribute.String("content", payload))
+			}
+		}
+		if event.RawOutput != nil {
+			payload := formatTracePayloadMap(event.RawOutput)
+			if payload != "" {
+				spanAttrs = append(spanAttrs, attribute.String("coze.workflow.node.raw_output", payload))
+			}
 		}
 		defer func() {
 			finishNodeSpan(event.Context, event.Duration, spanStatus, spanErr, event.Token, spanAttrs...)
@@ -690,7 +710,8 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}, nil)
 	case NodeStreamingInput:
 		if event.Input != nil {
-			addNodeSpanEvent(event.Context, "node.streaming_input", attribute.Int("coze.workflow.node.input_field_count", len(event.Input)))
+			content := formatTracePayloadMap(event.Input)
+			addNodeSpanEvent(event.Context, "node.streaming_input", attribute.Int("coze.workflow.node.input_field_count", len(event.Input)), attribute.String("content", content))
 		}
 		nodeExec := &entity.NodeExecution{
 			ID:    event.NodeExecuteID,
@@ -735,6 +756,11 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if event.Context == nil || event.Context.NodeCtx == nil {
 			return noTerminate, fmt.Errorf("nil event context")
+		}
+		if event.Input != nil {
+			payload := formatTracePayloadMap(event.Input)
+			spanAttrs = append(spanAttrs, attribute.String("coze.workflow.node.input", payload))
+			addNodeSpanEvent(event.Context, "node.input.error", attribute.String("content", payload))
 		}
 
 		nodeExec := &entity.NodeExecution{

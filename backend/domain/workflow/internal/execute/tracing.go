@@ -33,6 +33,17 @@ var (
 	workflowTracer = otel.Tracer("github.com/coze-dev/coze-studio/backend/domain/workflow/execute")
 )
 
+const (
+	tracePayloadLimit = 2048
+	spanTypeAttrKey   = "cozeloop.span_type"
+	spanTypeWorkflow  = "graph"
+	spanTypeModel     = "model"
+	spanTypePlugin    = "plugin"
+	spanTypeFunction  = "function"
+	spanTypeVector    = "vector_store"
+	spanTypeRetriever = "vector_retriever"
+)
+
 func startWorkflowSpan(ctx context.Context, c *Context, handler *WorkflowHandler, resumed bool, origin string, payload map[string]any, nodeCount int32) context.Context {
 	if c == nil {
 		return ctx
@@ -106,6 +117,7 @@ func startWorkflowSpan(ctx context.Context, c *Context, handler *WorkflowHandler
 	if resumed {
 		attrs = append(attrs, attribute.Bool("cozeloop.workflow.resumed", true))
 	}
+	attrs = append(attrs, attribute.String(spanTypeAttrKey, spanTypeWorkflow))
 
 	span.SetAttributes(attrs...)
 	eventName := "workflow.start"
@@ -212,6 +224,7 @@ func startNodeSpan(ctx context.Context, c *Context, nodeType entity.NodeType, re
 	if resumed {
 		attrs = append(attrs, attribute.Bool("cozeloop.workflow.node.resumed", true))
 	}
+	attrs = append(attrs, attribute.String(spanTypeAttrKey, spanTypeForNode(nodeType)))
 
 	span.SetAttributes(attrs...)
 	span.AddEvent("node.start", oteltrace.WithAttributes(attribute.String("cozeloop.workflow.origin", origin)))
@@ -288,4 +301,48 @@ func statusMessage(status codes.Code, err error) string {
 		return err.Error()
 	}
 	return status.String()
+}
+
+func spanTypeForNode(nodeType entity.NodeType) string {
+	switch nodeType {
+	case entity.NodeTypeLLM:
+		return spanTypeModel
+	case entity.NodeTypePlugin, entity.NodeTypeMcp:
+		return spanTypePlugin
+	case entity.NodeTypeSubWorkflow:
+		return spanTypeWorkflow
+	case entity.NodeTypeKnowledgeIndexer, entity.NodeTypeKnowledgeDeleter:
+		return spanTypeVector
+	case entity.NodeTypeKnowledgeRetriever:
+		return spanTypeRetriever
+	case entity.NodeTypeVariableAssigner, entity.NodeTypeVariableAggregator, entity.NodeTypeLambda, entity.NodeTypeCodeRunner, entity.NodeTypeLoop, entity.NodeTypeContinue, entity.NodeTypeBreak:
+		return spanTypeFunction
+	default:
+		return spanTypeFunction
+	}
+}
+
+func formatTracePayloadMap(data map[string]any) string {
+	if len(data) == 0 {
+		return ""
+	}
+	return truncateTracePayload(mustMarshalToString(data))
+}
+
+func formatTraceText(s string) string {
+	if s == "" {
+		return ""
+	}
+	return truncateTracePayload(s)
+}
+
+func truncateTracePayload(s string) string {
+	if len(s) <= tracePayloadLimit {
+		return s
+	}
+	r := []rune(s)
+	if len(r) <= tracePayloadLimit {
+		return s
+	}
+	return string(r[:tracePayloadLimit]) + "…"
 }
