@@ -1,12 +1,16 @@
 import { Typography } from '@coze-arch/bot-semi';
 
-export const getBaseColumns = (dataMode: String) => {
+export const getBaseColumns = (
+  dataMode: String,
+  itemClick?: (record) => void,
+  excludeKeys?: string[],
+) => {
   const cov = [
     {
       title: '时间',
       dataIndex: 'createTime',
       render: (_text, record) => (
-        <div>
+        <div onClick={() => itemClick?.(record)}>
           <div className="font-bold text-gray-600 text-[14px]">
             {record.createTime}
           </div>
@@ -86,5 +90,7 @@ export const getBaseColumns = (dataMode: String) => {
     },
   ];
 
-  return dataMode === 'cov' ? cov : msg;
+  return (dataMode === 'cov' ? cov : msg).filter(
+    item => !excludeKeys?.includes(item.dataIndex),
+  );
 };

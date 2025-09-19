@@ -1,7 +1,7 @@
 /* eslint-disable @coze-arch/max-line-per-function */
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { Banner, Empty, Button } from '@coze-arch/bot-semi';
+import { Banner, Empty, Button, Notification } from '@coze-arch/bot-semi';
 import { I18n } from '@coze-arch/i18n';
 import {
   IconCozCheckMarkCircleFill,
@@ -11,14 +11,12 @@ import { IconBotStatisticLog } from '@coze-arch/bot-icons';
 import { Table } from '@coze-arch/coze-design';
 import BotStatisticFilter, { getDateRangeByDays } from '../filter';
 import { useSize } from 'ahooks';
-import { request } from '../tools';
+import { request, getRowsCount } from '../tools';
 import { getBaseColumns } from './baseColumn';
+import { MessageDrawer } from './mesageDrawer';
 
 const dateRangeDays = '1';
 const defaultDateRange = getDateRangeByDays(Number(dateRangeDays));
-
-let pageSize = document.documentElement.clientHeight / 72;
-pageSize = Math.max(pageSize, 20);
 
 export const BotStatisticLog: React.FC = () => {
   const { botId, spaceId } = useOutletContext();
@@ -29,6 +27,8 @@ export const BotStatisticLog: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [dataSource, setDataSource] = useState([]);
   const [selectedRows, setSelectedRows] = useState([]);
+  const [currentItem, setCurrentItem] = useState();
+  const [messageDrawerVisible, setMessageDrawerVisible] = useState(false);
 
   const [dataMode, setDataMode] = useState('cov');
   const wrapRef = useRef(null);
@@ -67,7 +67,7 @@ export const BotStatisticLog: React.FC = () => {
         end_time: dateRange[1],
         agent_id: botId,
         page: pageNum.current,
-        page_size: pageSize,
+        page_size: getRowsCount(72),
       };
 
       setLoading(true);
@@ -85,16 +85,9 @@ export const BotStatisticLog: React.FC = () => {
             costTime: e.time_cost,
             message: e.message,
           }));
-          let allCount = originData.length || 0;
+          setDataSource(prev => [...prev, ...originData]);
 
-          setDataSource(prev => {
-            const list = [...prev, ...originData];
-            allCount = list.length;
-            return list;
-          });
-
-          const moreData =
-            (pagination?.total || 0) > allCount + originData.length;
+          const moreData = pagination?.total_pages > pageNum.current;
 
           if (moreData) {
             pageNum.current += 1;
@@ -119,7 +112,40 @@ export const BotStatisticLog: React.FC = () => {
     [selectedRows],
   );
 
-  const exportSelectedRows = useCallback(() => {}, []);
+  const exportSelectedRows = useCallback(() => {
+    const params = {
+      agent_id: botId,
+      file_name: `${botId}-${dataMode}-${Date.now()}.xlsx`,
+    };
+
+    if (dataMode === 'cov') {
+      params.conversation_ids = selectedRows.map(r => r.conversationId);
+    } else {
+      params.run_id = selectedRows.map(r => r.messageId);
+    }
+
+    request('/api/statistics/app/export_conversation_message_log', params)
+      .then(res => {
+        Notification.success({
+          title: I18n.t('bot_ide_knowledge_confirm_title'),
+          content: I18n.t('bot_static_log_export_success'),
+        });
+        setSelectedRows([]);
+      })
+      .catch(err => {
+        Notification.error({
+          title: I18n.t('bot_ide_knowledge_confirm_title'),
+          content: I18n.t('bot_static_log_export_failed'),
+        });
+      });
+  }, [botId, dataMode, selectedRows]);
+
+  const onItemClick = (record, index) => {
+    if (dataMode === 'cov') {
+      setCurrentItem(record);
+      setMessageDrawerVisible(true);
+    }
+  };
 
   useEffect(() => {
     reset();
@@ -160,7 +186,7 @@ export const BotStatisticLog: React.FC = () => {
             sticky: true,
             loading,
             dataSource,
-            columns: getBaseColumns(dataMode),
+            columns: getBaseColumns(dataMode, onItemClick),
             pagination: false,
             scroll: { y: size?.height - 40 },
             rowKey: record => record?.messageId || record?.conversationId,
@@ -190,6 +216,13 @@ export const BotStatisticLog: React.FC = () => {
           </Button>
         </div>
       ) : null}
+      <MessageDrawer
+        spaceId={spaceId}
+        botId={botId}
+        params={currentItem}
+        visible={messageDrawerVisible}
+        onClose={() => setMessageDrawerVisible(false)}
+      />
     </div>
   );
 };

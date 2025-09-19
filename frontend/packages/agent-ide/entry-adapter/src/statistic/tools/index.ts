@@ -20,3 +20,10 @@ export const request = (url, params?: {}, method?: string) =>
         return res;
       }
     });
+
+export const getRowsCount = (itemHeight, minSize = 20) => {
+  let pageSize = document.documentElement.clientHeight / itemHeight;
+  pageSize = Math.max(pageSize, minSize);
+
+  return pageSize;
+};
