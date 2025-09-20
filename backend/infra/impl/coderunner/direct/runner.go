@@ -87,9 +87,6 @@ func (r *runner) pythonCmdRun(_ context.Context, code string, params map[string]
 	if err != nil {
 		return nil, fmt.Errorf("failed to run python script err: %s, std err: %s", err.Error(), stderr.String())
 	}
-	if stderr.String() != "" {
-		return nil, fmt.Errorf("failed to run python script err: %s", stderr.String())
-	}
 
 	ret := make(map[string]any)
 	err = sonic.Unmarshal(stdout.Bytes(), &ret)
