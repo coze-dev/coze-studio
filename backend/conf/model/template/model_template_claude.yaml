@@ -74,6 +74,7 @@ meta:
         top_p: 1
         top_k: 0
         stop: []
+        enable_base64_url: false
         claude:
             by_bedrock: false
             access_key: ""

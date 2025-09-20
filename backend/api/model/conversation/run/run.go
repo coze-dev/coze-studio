@@ -1894,6 +1894,8 @@ type AdditionalContent struct {
 	Text    *string `thrift:"text,2,optional" form:"text" json:"text,omitempty" query:"text"`
 	FileURL *string `thrift:"file_url,3,optional" form:"file_url" json:"file_url,omitempty" query:"file_url"`
 	FileID  *int64  `thrift:"file_id,4,optional" form:"file_id" json:"file_id,string,omitempty" query:"file_id"`
+	Name    *string `thrift:"name,5,optional" form:"name" json:"name,omitempty" query:"name"`
+	Size    *int64  `thrift:"size,6,optional" form:"size" json:"size,string,omitempty" query:"size"`
 }
 
 func NewAdditionalContent() *AdditionalContent {
@@ -1934,11 +1936,31 @@ func (p *AdditionalContent) GetFileID() (v int64) {
 	return *p.FileID
 }
 
+var AdditionalContent_Name_DEFAULT string
+
+func (p *AdditionalContent) GetName() (v string) {
+	if !p.IsSetName() {
+		return AdditionalContent_Name_DEFAULT
+	}
+	return *p.Name
+}
+
+var AdditionalContent_Size_DEFAULT int64
+
+func (p *AdditionalContent) GetSize() (v int64) {
+	if !p.IsSetSize() {
+		return AdditionalContent_Size_DEFAULT
+	}
+	return *p.Size
+}
+
 var fieldIDToName_AdditionalContent = map[int16]string{
 	1: "type",
 	2: "text",
 	3: "file_url",
 	4: "file_id",
+	5: "name",
+	6: "size",
 }
 
 func (p *AdditionalContent) IsSetText() bool {
@@ -1951,6 +1973,14 @@ func (p *AdditionalContent) IsSetFileURL() bool {
 
 func (p *AdditionalContent) IsSetFileID() bool {
 	return p.FileID != nil
+}
+
+func (p *AdditionalContent) IsSetName() bool {
+	return p.Name != nil
+}
+
+func (p *AdditionalContent) IsSetSize() bool {
+	return p.Size != nil
 }
 
 func (p *AdditionalContent) Read(iprot thrift.TProtocol) (err error) {
@@ -2000,6 +2030,22 @@ func (p *AdditionalContent) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.I64 {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField5(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 6:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField6(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -2084,6 +2130,28 @@ func (p *AdditionalContent) ReadField4(iprot thrift.TProtocol) error {
 	p.FileID = _field
 	return nil
 }
+func (p *AdditionalContent) ReadField5(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *AdditionalContent) ReadField6(iprot thrift.TProtocol) error {
+
+	var _field *int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Size = _field
+	return nil
+}
 
 func (p *AdditionalContent) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -2105,6 +2173,14 @@ func (p *AdditionalContent) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
+			goto WriteFieldError
+		}
+		if err = p.writeField6(oprot); err != nil {
+			fieldId = 6
 			goto WriteFieldError
 		}
 	}
@@ -2194,6 +2270,42 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
+}
+func (p *AdditionalContent) writeField5(oprot thrift.TProtocol) (err error) {
+	if p.IsSetName() {
+		if err = oprot.WriteFieldBegin("name", thrift.STRING, 5); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Name); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
+func (p *AdditionalContent) writeField6(oprot thrift.TProtocol) (err error) {
+	if p.IsSetSize() {
+		if err = oprot.WriteFieldBegin("size", thrift.I64, 6); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteI64(*p.Size); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 6 end error: ", p), err)
 }
 
 func (p *AdditionalContent) String() string {

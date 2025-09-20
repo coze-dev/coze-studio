@@ -22,6 +22,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"fmt"
+
 	"github.com/apache/thrift/lib/go/thrift"
 )
 
@@ -15600,13 +15601,12 @@ func (p *ShortcutCommandComponent) String() string {
 }
 
 type ShortcutToolParam struct {
-	Name         string `thrift:"name,1" form:"name" json:"name" query:"name"`
-	IsRequired   bool   `thrift:"is_required,2" form:"is_required" json:"is_required" query:"is_required"`
-	Description  string `thrift:"description,3" form:"description" json:"description" query:"description"`
-	Type         string `thrift:"type,4" form:"type" json:"type" query:"type"`
-	DefaultValue string `thrift:"default_value,5" form:"default_value" json:"default_value" query:"default_value"`
-	// 是否是panel参数
-	IsReferComponent bool `thrift:"is_refer_component,6" form:"is_refer_component" json:"is_refer_component" query:"is_refer_component"`
+	Name             string `thrift:"name,1" form:"name" json:"name" query:"name"`
+	IsRequired       bool   `thrift:"is_required,2" form:"is_required" json:"is_required" query:"is_required"`
+	Description      string `thrift:"description,3" form:"description" json:"description" query:"description"`
+	Type             string `thrift:"type,4" form:"type" json:"type" query:"type"`
+	DefaultValue     string `thrift:"default_value,5" form:"default_value" json:"default_value" query:"default_value"`
+	IsReferComponent bool   `thrift:"is_refer_component,6" form:"is_refer_component" json:"is_refer_component" query:"is_refer_component"`
 }
 
 func NewShortcutToolParam() *ShortcutToolParam {
@@ -16413,9 +16413,9 @@ type ShortcutCommandInfo struct {
 	Tool *ShortcutCommandToolInfo `thrift:"tool,8,optional" form:"tool" json:"tool,omitempty" query:"tool"`
 	//When the multi instruction is executed by which node, it will not be returned without configuration
 	AgentID *int64 `thrift:"agent_id,9,optional" form:"agent_id" json:"agent_id,string,omitempty" query:"agent_id"`
-	// chatsdk 使用
+	// chatsdk used
 	SendType *ShortcutSendType `thrift:"send_type,10,optional" form:"send_type" json:"send_type,omitempty" query:"send_type"`
-	// chatsdk 使用，表单的schema
+	// chatsdk schema
 	CardSchema *string `thrift:"card_schema,11,optional" form:"card_schema" json:"card_schema,omitempty" query:"card_schema"`
 }
 
