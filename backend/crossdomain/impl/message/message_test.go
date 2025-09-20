@@ -68,6 +68,26 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 	sm8, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeText, Text: "hello"}, {Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_8"}}, {Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "file_id_9"}}}})
 	require.NoError(t, err)
 
+	qaCardData := map[string]interface{}{
+		"question_card_data": map[string]interface{}{
+			"Title": "card title",
+		},
+	}
+	prop, err := sonic.MarshalString(qaCardData)
+	require.NoError(t, err)
+	cardContent, err := sonic.MarshalString(map[string]interface{}{
+		"x_properties": map[string]string{
+			"workflow_card_info": prop,
+		},
+	})
+	require.NoError(t, err)
+
+	smAudio, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeAudioURL, AudioURL: &schema.ChatMessageAudioURL{URI: "audio_uri_1"}}}})
+	require.NoError(t, err)
+
+	smVideo, err := sonic.MarshalString(&schema.Message{MultiContent: []schema.ChatMessagePart{{Type: schema.ChatMessagePartTypeVideoURL, VideoURL: &schema.ChatMessageVideoURL{URI: "video_uri_1"}}}})
+	require.NoError(t, err)
+
 	type args struct {
 		msgs []*entity.Message
 	}
@@ -87,6 +107,7 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				msgs: []*entity.Message{
 					{
 						ID:           1,
+						Content:      "hello",
 						Role:         schema.User,
 						ContentType:  "text",
 						ModelContent: sm1,
@@ -234,12 +255,7 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 						Text:        ptr.Of(""),
 					},
 				},
-				schemaMsgs: []*schema.Message{
-					{
-						Role:    schema.User,
-						Content: "",
-					},
-				},
+				schemaMsgs: []*schema.Message{},
 			},
 		},
 		{
@@ -316,6 +332,7 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 				msgs: []*entity.Message{
 					{
 						ID:           8,
+						Content:      "hello",
 						Role:         schema.User,
 						ContentType:  "mix",
 						ModelContent: sm8,
@@ -342,6 +359,101 @@ func Test_convertToConvAndSchemaMessage(t *testing.T) {
 							{Type: schema.ChatMessagePartTypeText, Text: "hello"},
 							{Type: schema.ChatMessagePartTypeImageURL, ImageURL: &schema.ChatMessageImageURL{URI: "file_id_8", URL: "file_id_8"}},
 							{Type: schema.ChatMessagePartTypeFileURL, FileURL: &schema.ChatMessageFileURL{URI: "file_id_9", URL: "file_id_9"}},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "card",
+			args: args{
+				msgs: []*entity.Message{
+					{
+						ID:          9,
+						Role:        schema.User,
+						ContentType: "card",
+						Content:     cardContent,
+					},
+				},
+			},
+			want: want{
+				convMsgs: []*crossmessage.WfMessage{
+					{
+						ID:          9,
+						Role:        schema.User,
+						ContentType: "card",
+						Text:        ptr.Of(cardContent),
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role:    schema.User,
+						Content: "card title",
+					},
+				},
+			},
+		},
+		{
+			name: "audio",
+			args: args{
+				msgs: []*entity.Message{
+					{
+						ID:           10,
+						Role:         schema.User,
+						ContentType:  "audio",
+						ModelContent: smAudio,
+					},
+				},
+			},
+			want: want{
+				convMsgs: []*crossmessage.WfMessage{
+					{
+						ID:          10,
+						Role:        schema.User,
+						ContentType: "audio",
+						MultiContent: []*crossmessage.Content{
+							{Type: message.InputTypeAudio, Uri: ptr.Of("audio_uri_1"), Url: ptr.Of("audio_uri_1")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeAudioURL, AudioURL: &schema.ChatMessageAudioURL{URI: "audio_uri_1", URL: "audio_uri_1"}},
+						},
+					},
+				},
+			},
+		},
+		{
+			name: "video",
+			args: args{
+				msgs: []*entity.Message{
+					{
+						ID:           11,
+						Role:         schema.User,
+						ContentType:  "video",
+						ModelContent: smVideo,
+					},
+				},
+			},
+			want: want{
+				convMsgs: []*crossmessage.WfMessage{
+					{
+						ID:          11,
+						Role:        schema.User,
+						ContentType: "video",
+						MultiContent: []*crossmessage.Content{
+							{Type: message.InputTypeVideo, Uri: ptr.Of("video_uri_1"), Url: ptr.Of("video_uri_1")},
+						},
+					},
+				},
+				schemaMsgs: []*schema.Message{
+					{
+						Role: schema.User,
+						MultiContent: []schema.ChatMessagePart{
+							{Type: schema.ChatMessagePartTypeVideoURL, VideoURL: &schema.ChatMessageVideoURL{URI: "video_uri_1", URL: "video_uri_1"}},
 						},
 					},
 				},
