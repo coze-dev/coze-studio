@@ -1459,6 +1459,37 @@ func TestTestResumeWithInputNode(t *testing.T) {
 			resp := post[workflow.OpenAPIRunFlowResponse](r, syncRunReq)
 			assert.Equal(t, int64(errno.ErrOpenAPIInterruptNotSupported), resp.Code)
 		})
+
+		mockey.PatchConvey("test run, then sync resume", func() {
+			ctx := t.Context()
+			exeID := r.testRun(id, map[string]string{
+				"input": "unused initial input",
+			})
+			e := r.getProcess(id, exeID)
+			assert.NotNil(t, e.event) // interrupted
+
+			exeInt64ID, _ := strconv.ParseInt(exeID, 10, 64)
+			eventInt64ID, _ := strconv.ParseInt(e.event.ID, 10, 64)
+
+			result, _, err := appworkflow.GetWorkflowDomainSVC().SyncResume(ctx, &entity.ResumeRequest{
+				ExecuteID:  exeInt64ID,
+				EventID:    eventInt64ID,
+				ResumeData: userInputStr,
+			}, workflowModel.ExecuteConfig{
+				Operator:    123,
+				Mode:        workflowModel.ExecuteModeDebug,
+				BizType:     workflowModel.BizTypeWorkflow,
+				Cancellable: true,
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, map[string]any{
+				"input":    "user input",
+				"inputArr": nil,
+				"field1":   `["1","2"]`,
+			}, mustUnmarshalToMap(t, *result.Output))
+
+		})
+
 	})
 }
 
@@ -1823,64 +1854,173 @@ func TestInterruptWithinBatch(t *testing.T) {
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
-		id := r.load("batch/batch_with_inner_interrupt.json")
-		exeID := r.testRun(id, map[string]string{
-			"input_array":       `["a","b"]`,
-			"batch_concurrency": "2",
+		mockey.PatchConvey("test run with async resume", func() {
+			id := r.load("batch/batch_with_inner_interrupt.json")
+			exeID := r.testRun(id, map[string]string{
+				"input_array":       `["a","b"]`,
+				"batch_concurrency": "2",
+			})
+
+			e := r.getProcess(id, exeID)
+			assert.Equal(t, workflow.EventType_InputNode, e.event.Type)
+
+			exeIDInt, _ := strconv.ParseInt(exeID, 0, 64)
+			storeIEs, _ := workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
+			assert.Equal(t, 2, len(storeIEs))
+
+			r.testResume(id, exeID, e.event.ID, map[string]any{
+				"input": "input 1",
+			})
+
+			e2 := r.getProcess(id, exeID, withPreviousEventID(e.event.ID))
+			assert.Equal(t, workflow.EventType_InputNode, e2.event.Type)
+
+			storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
+			assert.Equal(t, 2, len(storeIEs))
+
+			r.testResume(id, exeID, e2.event.ID, map[string]any{
+				"input": "input 2",
+			})
+
+			e3 := r.getProcess(id, exeID, withPreviousEventID(e2.event.ID))
+			assert.Equal(t, workflow.EventType_Question, e3.event.Type)
+
+			storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
+			assert.Equal(t, 2, len(storeIEs))
+
+			r.testResume(id, exeID, e3.event.ID, "answer 1")
+
+			e4 := r.getProcess(id, exeID, withPreviousEventID(e3.event.ID))
+			assert.Equal(t, workflow.EventType_Question, e4.event.Type)
+
+			storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
+			assert.Equal(t, 1, len(storeIEs))
+
+			r.testResume(id, exeID, e4.event.ID, "answer 2")
+
+			e5 := r.getProcess(id, exeID, withPreviousEventID(e4.event.ID))
+
+			storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
+			assert.Equal(t, 0, len(storeIEs))
+			e5.assertSuccess()
+
+			outputMap := mustUnmarshalToMap(t, e5.output)
+
+			if !reflect.DeepEqual(outputMap, map[string]any{
+				"output": []any{"answer 1", "answer 2"},
+			}) && !reflect.DeepEqual(outputMap, map[string]any{
+				"output": []any{"answer 2", "answer 1"},
+			}) {
+				t.Errorf("output map not equal: %v", outputMap)
+			}
+		})
+		mockey.PatchConvey("test run with sync resume", func() {
+			id := r.load("batch/batch_with_inner_interrupt_for_debug_run.json")
+
+			exeID := r.testRun(id, map[string]string{
+				"input_array":       `["a","b"]`,
+				"batch_concurrency": "2",
+			})
+
+			e := r.getProcess(id, exeID)
+			assert.Equal(t, workflow.EventType_InputNode, e.event.Type)
+
+			data := map[string]any{
+				"input": "123",
+			}
+			bs, _ := sonic.Marshal(data)
+
+			exeInt64ID, _ := strconv.ParseInt(exeID, 10, 64)
+			eventInt64ID, _ := strconv.ParseInt(e.event.ID, 10, 64)
+
+			result, _, err := appworkflow.GetWorkflowDomainSVC().SyncResume(t.Context(), &entity.ResumeRequest{
+				ExecuteID:  exeInt64ID,
+				EventID:    eventInt64ID,
+				ResumeData: string(bs),
+			}, workflowModel.ExecuteConfig{
+				Operator:    123,
+				Mode:        workflowModel.ExecuteModeDebug,
+				BizType:     workflowModel.BizTypeWorkflow,
+				Cancellable: true,
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, result.Status, entity.WorkflowInterrupted)
+			assert.NotNil(t, result.InterruptEvents)
+			data = map[string]any{
+				"input": "456",
+			}
+			bs, _ = sonic.Marshal(data)
+
+			result, _, err = appworkflow.GetWorkflowDomainSVC().SyncResume(t.Context(), &entity.ResumeRequest{
+				ExecuteID:  exeInt64ID,
+				EventID:    result.InterruptEvents[0].ID,
+				ResumeData: string(bs),
+			}, workflowModel.ExecuteConfig{
+				Operator:    123,
+				Mode:        workflowModel.ExecuteModeDebug,
+				BizType:     workflowModel.BizTypeWorkflow,
+				Cancellable: true,
+			})
+			assert.NoError(t, err)
+
+			assert.Equal(t, map[string]any{
+				"output": []any{"123", "456"},
+			}, mustUnmarshalToMap(t, *result.Output))
+
+		})
+		mockey.PatchConvey("node debug run with sync resume", func() {
+			id := r.load("batch/batch_with_inner_interrupt_for_debug_run.json")
+
+			exeID := r.nodeDebug(id, "105709", withNDBatch(map[string]string{}))
+
+			e := r.getProcess(id, exeID)
+			assert.Equal(t, workflow.EventType_InputNode, e.event.Type)
+
+			data := map[string]any{
+				"input": "123",
+			}
+			bs, _ := sonic.Marshal(data)
+
+			exeInt64ID, _ := strconv.ParseInt(exeID, 10, 64)
+			eventInt64ID, _ := strconv.ParseInt(e.event.ID, 10, 64)
+
+			result, _, err := appworkflow.GetWorkflowDomainSVC().SyncResume(t.Context(), &entity.ResumeRequest{
+				ExecuteID:  exeInt64ID,
+				EventID:    eventInt64ID,
+				ResumeData: string(bs),
+			}, workflowModel.ExecuteConfig{
+				Operator:    123,
+				Mode:        workflowModel.ExecuteModeNodeDebug,
+				BizType:     workflowModel.BizTypeWorkflow,
+				Cancellable: true,
+			})
+			assert.NoError(t, err)
+			assert.Equal(t, result.Status, entity.WorkflowInterrupted)
+			assert.NotNil(t, result.InterruptEvents)
+			data = map[string]any{
+				"input": "456",
+			}
+			bs, _ = sonic.Marshal(data)
+
+			result, _, err = appworkflow.GetWorkflowDomainSVC().SyncResume(t.Context(), &entity.ResumeRequest{
+				ExecuteID:  exeInt64ID,
+				EventID:    result.InterruptEvents[0].ID,
+				ResumeData: string(bs),
+			}, workflowModel.ExecuteConfig{
+				Operator:    123,
+				Mode:        workflowModel.ExecuteModeNodeDebug,
+				BizType:     workflowModel.BizTypeWorkflow,
+				Cancellable: true,
+			})
+			assert.NoError(t, err)
+
+			assert.Equal(t, map[string]any{
+				"output": []any{"123", "456"},
+			}, mustUnmarshalToMap(t, *result.Output))
+			fmt.Println(result, err)
+
 		})
 
-		e := r.getProcess(id, exeID)
-		assert.Equal(t, workflow.EventType_InputNode, e.event.Type)
-
-		exeIDInt, _ := strconv.ParseInt(exeID, 0, 64)
-		storeIEs, _ := workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
-		assert.Equal(t, 2, len(storeIEs))
-
-		r.testResume(id, exeID, e.event.ID, map[string]any{
-			"input": "input 1",
-		})
-
-		e2 := r.getProcess(id, exeID, withPreviousEventID(e.event.ID))
-		assert.Equal(t, workflow.EventType_InputNode, e2.event.Type)
-
-		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
-		assert.Equal(t, 2, len(storeIEs))
-
-		r.testResume(id, exeID, e2.event.ID, map[string]any{
-			"input": "input 2",
-		})
-
-		e3 := r.getProcess(id, exeID, withPreviousEventID(e2.event.ID))
-		assert.Equal(t, workflow.EventType_Question, e3.event.Type)
-
-		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
-		assert.Equal(t, 2, len(storeIEs))
-
-		r.testResume(id, exeID, e3.event.ID, "answer 1")
-
-		e4 := r.getProcess(id, exeID, withPreviousEventID(e3.event.ID))
-		assert.Equal(t, workflow.EventType_Question, e4.event.Type)
-
-		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
-		assert.Equal(t, 1, len(storeIEs))
-
-		r.testResume(id, exeID, e4.event.ID, "answer 2")
-
-		e5 := r.getProcess(id, exeID, withPreviousEventID(e4.event.ID))
-
-		storeIEs, _ = workflow2.GetRepository().ListInterruptEvents(t.Context(), exeIDInt)
-		assert.Equal(t, 0, len(storeIEs))
-		e5.assertSuccess()
-
-		outputMap := mustUnmarshalToMap(t, e5.output)
-
-		if !reflect.DeepEqual(outputMap, map[string]any{
-			"output": []any{"answer 1", "answer 2"},
-		}) && !reflect.DeepEqual(outputMap, map[string]any{
-			"output": []any{"answer 2", "answer 1"},
-		}) {
-			t.Errorf("output map not equal: %v", outputMap)
-		}
 	})
 }
 
@@ -6292,3 +6432,5 @@ func TestChatFlowRun(t *testing.T) {
 
 	})
 }
+
+//
