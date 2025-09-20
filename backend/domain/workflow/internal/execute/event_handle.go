@@ -20,10 +20,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"

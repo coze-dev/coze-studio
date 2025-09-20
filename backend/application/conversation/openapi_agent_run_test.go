@@ -570,8 +570,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_InvalidRole(t *testing.T) {
 	assert.Contains(t, err.Error(), "additional message role only support user and assistant")
 }
 
-
-
 func TestOpenapiAgentRun_ParseAdditionalMessages_InvalidType(t *testing.T) {
 	app, _, _, _, mockConversation, mockSingleAgent, _ := setupMocks(t)
 	ctx := createTestContext()

@@ -19,10 +19,11 @@ package compose
 import (
 	"context"
 	"fmt"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"runtime/debug"
 	"strconv"
 	"strings"
+
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"

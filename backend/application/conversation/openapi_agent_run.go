@@ -111,7 +111,7 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 	}
 
 	if conversationData.CreatorID != userID {
-		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg","user not match"))
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
 	}
 
 	return conversationData, nil

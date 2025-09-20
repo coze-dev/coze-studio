@@ -25,7 +25,6 @@ type ExecuteToolOption struct {
 	Operation                  *Openapi3Operation
 	InvalidRespProcessStrategy InvalidResponseProcessStrategy
 
-	AgentID        int64
 	ConversationID int64
 }
 
@@ -69,9 +68,8 @@ func WithAutoGenRespSchema() ExecuteToolOpt {
 	}
 }
 
-func WithPluginHTTPHeader(agentID, conversationID int64) ExecuteToolOpt {
+func WithPluginHTTPHeader(conversationID int64) ExecuteToolOpt {
 	return func(o *ExecuteToolOption) {
-		o.AgentID = agentID
 		o.ConversationID = conversationID
 	}
 }
