@@ -21,6 +21,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -46,6 +47,7 @@ func ParseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 		if err != nil {
 			return nil, err
 		}
+
 
 		node := mdParser.Parse(text.NewReader(b))
 		cs := config.ChunkingStrategy
@@ -101,13 +103,118 @@ func ParseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 			return text
 		}
 
+		// validateImageURL 验证图片URL的安全性
+		validateImageURL := func(urlString string) error {
+			parsedURL, err := url.Parse(urlString)
+			if err != nil {
+				return err
+			}
+			
+			// 只允许HTTP/HTTPS
+			if parsedURL.Scheme != "http" && parsedURL.Scheme != "https" {
+				return fmt.Errorf("unsupported scheme: %s", parsedURL.Scheme)
+			}
+			
+			// 检查域名白名单
+			allowedDomains := []string{
+				"images.unsplash.com",
+				"cdn.example.com",
+				"github.com",
+				"githubusercontent.com",
+				// 可以根据需要添加其他受信任的域名
+			}
+			
+			hostname := parsedURL.Hostname()
+			for _, domain := range allowedDomains {
+				if hostname == domain || strings.HasSuffix(hostname, "."+domain) {
+					return nil
+				}
+			}
+			
+			return fmt.Errorf("domain not allowed: %s", hostname)
+		}
+
+		// isPrivateIPAddress 检查IP地址是否为私有地址
+		isPrivateIPAddress := func(ip net.IP) bool {
+			// 检查私有IP范围
+			privateRanges := []struct {
+				cidr string
+			}{
+				{"10.0.0.0/8"},
+				{"172.16.0.0/12"},
+				{"192.168.0.0/16"},
+				{"127.0.0.0/8"},
+				{"169.254.0.0/16"}, // 链路本地地址
+				{"::1/128"},        // IPv6 loopback
+				{"fc00::/7"},       // IPv6 私有地址
+			}
+			
+			for _, r := range privateRanges {
+				_, cidr, _ := net.ParseCIDR(r.cidr)
+				if cidr.Contains(ip) {
+					return true
+				}
+			}
+			
+			return false
+		}
+
+		// isPrivateIP 检查是否为私有IP地址
+		isPrivateIP := func(host string) bool {
+			ip := net.ParseIP(host)
+			if ip == nil {
+				// 可能是域名，需要解析
+				ips, err := net.LookupIP(host)
+				if err != nil {
+					return true // 解析失败，拒绝访问
+				}
+				
+				// 检查所有解析的IP
+				for _, resolvedIP := range ips {
+					if isPrivateIPAddress(resolvedIP) {
+						return true
+					}
+				}
+				return false
+			}
+			
+			return isPrivateIPAddress(ip)
+		}
+
 		downloadImage := func(ctx context.Context, url string) ([]byte, error) {
-			client := &http.Client{Timeout: 5 * time.Second}
+			// URL验证
+			if err := validateImageURL(url); err != nil {
+				return nil, fmt.Errorf("invalid URL: %w", err)
+			}
+			
+			// 使用安全的HTTP客户端
+			client := &http.Client{
+				Timeout: 5 * time.Second,
+				Transport: &http.Transport{
+					DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
+						// 禁止访问私有IP
+						host, _, err := net.SplitHostPort(addr)
+						if err != nil {
+							return nil, err
+						}
+						
+						if isPrivateIP(host) {
+							return nil, fmt.Errorf("access to private IP denied: %s", host)
+						}
+						
+						return (&net.Dialer{}).DialContext(ctx, network, addr)
+					},
+				},
+			}
+			
 			req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 			if err != nil {
 				return nil, fmt.Errorf("failed to create HTTP request: %w", err)
 			}
-
+			
+			// 添加安全头
+			req.Header.Set("User-Agent", "CozeStudio/1.0")
+			
 			resp, err := client.Do(req)
 			if err != nil {
 				return nil, fmt.Errorf("failed to download image: %w", err)
@@ -118,7 +225,11 @@ func ParseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 				return nil, fmt.Errorf("failed to download image, status code: %d", resp.StatusCode)
 			}
 
-			data, err := io.ReadAll(resp.Body)
+			// 限制响应大小
+			const maxImageSize = 10 * 1024 * 1024 // 10MB
+			limitedReader := io.LimitReader(resp.Body, maxImageSize)
+			
+			data, err := io.ReadAll(limitedReader)
 			if err != nil {
 				return nil, fmt.Errorf("failed to read image content: %w", err)
 			}
