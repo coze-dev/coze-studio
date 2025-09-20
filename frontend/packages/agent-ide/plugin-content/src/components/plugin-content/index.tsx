@@ -17,6 +17,7 @@
 import { type ReactNode, type FC, useMemo } from 'react';
 
 import copy from 'copy-to-clipboard';
+import axios from 'axios';
 import { ParametersPopover } from '@coze-studio/components/parameters-popover';
 import { type EnabledPluginApi } from '@coze-studio/bot-detail-store/skill-types';
 import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
@@ -25,7 +26,7 @@ import {
   REPORT_EVENTS as ReportEventNames,
 } from '@coze-arch/report-events';
 import { I18n } from '@coze-arch/i18n';
-import { IconCozTrashCan } from '@coze-arch/coze-design/icons';
+import { IconCozTrashCan, IconCozDownload } from '@coze-arch/coze-design/icons';
 import { IconButton, Tag, Toast } from '@coze-arch/coze-design';
 import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
 import { CustomError } from '@coze-arch/bot-error';
@@ -238,6 +239,28 @@ const Actions: FC<ActionsProps> = ({
     setIsForceShowAction(visible);
   };
 
+  const handleExport = async () => {
+    try {
+      const response = await axios.post(
+        '/api/workflow/export',
+        {
+          workflow_ids: [plugin.api.api_id],
+        },
+        { responseType: 'blob' },
+      );
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', `${plugin.api.name || 'workflow'}.json`);
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode?.removeChild(link);
+      Toast.success({ content: 'Export success', showClose: false });
+    } catch (e) {
+      Toast.error({ content: 'Export failed', showClose: false });
+    }
+  };
+
   return (
     <>
       {/* Icons - Info Tips */}
@@ -262,6 +285,15 @@ const Actions: FC<ActionsProps> = ({
       {!readonly && (
         <>
           {slot}
+          {/* Action Export */}
+          <IconButton
+            icon={<IconCozDownload />}
+            onClick={handleExport}
+            size="small"
+            title="导出"
+            data-testid="bot.editor.tool.plugin.export-button"
+            disabled={isBanned}
+          />
           {/* Action settings */}
           <PluginSettingEnter
             bindSubjectInfo={{

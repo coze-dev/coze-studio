@@ -444,9 +444,15 @@ func (r *RepositoryImpl) GetMeta(ctx context.Context, id int64) (_ *vo.Meta, err
 }
 
 func (r *RepositoryImpl) convertMeta(ctx context.Context, meta *model.WorkflowMeta) (*vo.Meta, error) {
-	url, err := r.tos.GetObjectUrl(ctx, meta.IconURI)
-	if err != nil {
-		logs.Warnf("failed to get url for workflow meta %v", err)
+	var url string
+	var err error
+
+	// 只有当 IconURI 不为空时才调用 GetObjectUrl
+	if meta.IconURI != "" {
+		url, err = r.tos.GetObjectUrl(ctx, meta.IconURI)
+		if err != nil {
+			logs.Warnf("failed to get url for workflow meta %v", err)
+		}
 	}
 	// Initialize the result entity
 	wfMeta := &vo.Meta{

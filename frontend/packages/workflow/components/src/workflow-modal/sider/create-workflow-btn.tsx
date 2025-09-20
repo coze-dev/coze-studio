@@ -22,6 +22,7 @@ import {
   IconCozWorkflow,
   IconCozChat,
   IconCozArrowDown,
+  IconCozUpload,
 } from '@coze-arch/coze-design/icons';
 import { Menu, Button } from '@coze-arch/coze-design';
 import { CustomError } from '@coze-arch/bot-error';
@@ -31,7 +32,9 @@ import { WorkflowModalFrom, type WorkFlowModalModeProps } from '../type';
 import { useI18nText } from '../hooks/use-i18n-text';
 import { CreateWorkflowModal } from '../../workflow-edit';
 import { wait } from '../../utils';
+import { useImportWorkflowModal } from '../../hooks/use-workflow-resource-action/use-import-workflow-modal';
 import { useOpenWorkflowDetail } from '../../hooks/use-open-workflow-detail';
+
 export const CreateWorkflowBtn: FC<
   Pick<
     WorkFlowModalModeProps,
@@ -43,7 +46,18 @@ export const CreateWorkflowBtn: FC<
   const context = useContext(WorkflowModalContext);
   const { i18nText, ModalI18nKey } = useI18nText();
   const openWorkflowDetailPage = useOpenWorkflowDetail();
-
+  const { openImportModal, importModal } = useImportWorkflowModal({
+    spaceId: context?.spaceId,
+    userId: context?.userId || '',
+    refreshPage: onCreateSuccess
+      ? () =>
+          onCreateSuccess({
+            spaceId: context?.spaceId || '',
+            workflowId: '',
+            flowMode: WorkflowMode.Workflow,
+          })
+      : undefined,
+  });
   const [createFlowMode, setCreateFlowMode] = useState(
     context?.flowMode ?? WorkflowMode.Workflow,
   );
@@ -76,6 +90,13 @@ export const CreateWorkflowBtn: FC<
       },
       icon: <IconCozChat />,
     },
+    {
+      label: I18n.t('workflow_import'),
+      handler: () => {
+        openImportModal();
+      },
+      icon: <IconCozUpload />,
+    },
   ];
 
   return (
@@ -106,7 +127,7 @@ export const CreateWorkflowBtn: FC<
               {menuConfig.map(item => (
                 <Menu.Item
                   key={item.label}
-                  onClick={(value, event) => {
+                  onClick={(_value, event) => {
                     event.stopPropagation();
                     item.handler();
                   }}
@@ -147,7 +168,9 @@ export const CreateWorkflowBtn: FC<
               'create workflow failed, no workflow id',
             );
           }
-          // Due to the delay in the synchronization of the main and standby data of the workflow created by the server level, if you jump directly after the creation, the workflowId may not be found, so the front-end delay reduces the probability of the problem triggering
+          // Due to the delay in the synchronization of the main and standby data of the workflow created by the
+          // server level, if you jump directly after the creation, the workflowId may not be found, so the
+          // front-end delay reduces the probability of the problem triggering
           await wait(500);
 
           if (onCreateSuccess) {
@@ -165,6 +188,7 @@ export const CreateWorkflowBtn: FC<
         }}
         nameValidators={nameValidators}
       />
+      {importModal}
     </>
   );
 };
