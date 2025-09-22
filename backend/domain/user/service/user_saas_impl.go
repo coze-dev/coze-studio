@@ -83,28 +83,52 @@ func (s *CozeUserService) GetUserInfo(ctx context.Context, userID int64) (*entit
 	}, nil
 }
 
-// GetUserBenefit calls the /v1/users/benefit endpoint
-func (s *CozeUserService) GetUserBenefit(ctx context.Context, userID int64) (*entity.UserBenefit, error) {
-	resp, err := s.client.Get(ctx, "/v1/users/benefit")
+// GetEnterpriseBenefit calls the /v1/commerce/benefit/benefits/get endpoint with query parameters
+func (s *CozeUserService) GetEnterpriseBenefit(ctx context.Context, req *entity.GetEnterpriseBenefitRequest) (*entity.GetEnterpriseBenefitResponse, error) {
+	// Build query parameters
+	queryParams := make(map[string]interface{})
+	if req.BenefitType != nil {
+		queryParams["benefit_type"] = int32(*req.BenefitType)
+	}
+	if req.ResourceID != nil {
+		queryParams["resource_id"] = *req.ResourceID
+	}
+
+	// Call API
+	resp, err := s.client.GetWithQuery(ctx, "/v1/commerce/benefit/benefits/get", queryParams)
 	if err != nil {
-		logs.CtxErrorf(ctx, "failed to call GetUserBenefit API: %v", err)
+		logs.CtxErrorf(ctx, "failed to call GetEnterpriseBenefit API: %v", err)
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "API call failed"))
 	}
 
-	// Parse the data field
-	var benefitData struct {
-		UserID int64 `json:"user_id"`
-		// Add more fields here when API response format is confirmed
-	}
-
-	if err := json.Unmarshal(resp.Data, &benefitData); err != nil {
+	// Parse response data
+	var benefitResp entity.GetEnterpriseBenefitResponse
+	if err := json.Unmarshal(resp.Data, &benefitResp.Data); err != nil {
 		logs.CtxErrorf(ctx, "failed to parse benefit data: %v", err)
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "data parse failed"))
 	}
 
-	// Map to entity.UserBenefit
+	// Set response basic information
+	benefitResp.Code = int32(resp.Code)
+	benefitResp.Message = resp.Msg
+
+	logs.CtxInfof(ctx, "successfully retrieved enterprise benefit data")
+
+	return &benefitResp, nil
+}
+
+// GetUserBenefit calls the /v1/users/benefit endpoint (legacy method, kept for backward compatibility)
+func (s *CozeUserService) GetUserBenefit(ctx context.Context, userID int64) (*entity.UserBenefit, error) {
+	// Use new enterprise benefit interface without query parameters
+	req := &entity.GetEnterpriseBenefitRequest{}
+	_, err := s.GetEnterpriseBenefit(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert to old UserBenefit format for backward compatibility
 	return &entity.UserBenefit{
-		UserID: benefitData.UserID,
+		UserID: userID,
 	}, nil
 }
 
@@ -127,4 +151,9 @@ func (u *userImpl) GetSaasUserInfo(ctx context.Context, userID int64) (*entity.U
 // GetUserBenefit implements SaasUserProvider.GetUserBenefit
 func (u *userImpl) GetUserBenefit(ctx context.Context, userID int64) (*entity.UserBenefit, error) {
 	return getCozeUserService().GetUserBenefit(ctx, userID)
+}
+
+// GetEnterpriseBenefit gets enterprise benefit with query parameters
+func (u *userImpl) GetEnterpriseBenefit(ctx context.Context, req *entity.GetEnterpriseBenefitRequest) (*entity.GetEnterpriseBenefitResponse, error) {
+	return getCozeUserService().GetEnterpriseBenefit(ctx, req)
 }

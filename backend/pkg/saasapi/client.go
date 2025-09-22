@@ -23,7 +23,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -61,6 +63,11 @@ func (c *CozeAPIClient) Get(ctx context.Context, path string) (*CozeAPIResponse,
 	return c.request(ctx, "GET", path, nil)
 }
 
+// GetWithQuery performs a GET request to the coze.cn API with query parameters
+func (c *CozeAPIClient) GetWithQuery(ctx context.Context, path string, queryParams map[string]interface{}) (*CozeAPIResponse, error) {
+	return c.requestWithQuery(ctx, "GET", path, nil, queryParams)
+}
+
 // Post performs a POST request to the coze.cn API
 func (c *CozeAPIClient) Post(ctx context.Context, path string, body interface{}) (*CozeAPIResponse, error) {
 	var bodyBytes []byte
@@ -87,6 +94,114 @@ func (c *CozeAPIClient) request(ctx context.Context, method, path string, body [
 		req, err = http.NewRequestWithContext(ctx, method, url, bytes.NewReader(body))
 	} else {
 		req, err = http.NewRequestWithContext(ctx, method, url, nil)
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Accept", "application/json")
+
+	// Add API key if available
+	if c.APIKey != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
+	}
+
+	// Make request with retries
+	var resp *http.Response
+	for i := 0; i <= c.MaxRetries; i++ {
+		resp, err = c.HTTPClient.Do(req)
+		if err == nil {
+			break
+		}
+
+		if i < c.MaxRetries {
+			logs.CtxWarnf(ctx, "coze API request failed, retrying (%d/%d): %v", i+1, c.MaxRetries, err)
+			time.Sleep(time.Duration(i+1) * time.Second)
+		}
+	}
+
+	if err != nil {
+		return nil, fmt.Errorf("request failed after %d retries: %w", c.MaxRetries, err)
+	}
+	defer resp.Body.Close()
+
+	// Read response body
+	respBody, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Check HTTP status code
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return nil, fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(respBody))
+	}
+
+	// Parse response
+	var apiResp CozeAPIResponse
+	if err := json.Unmarshal(respBody, &apiResp); err != nil {
+		return nil, fmt.Errorf("failed to parse API response: %w", err)
+	}
+
+	// Check API response code
+	if apiResp.Code != 0 {
+		return nil, fmt.Errorf("API returned error: code=%d, msg=%s", apiResp.Code, apiResp.Msg)
+	}
+
+	return &apiResp, nil
+}
+
+// requestWithQuery is the core method for making HTTP requests to coze.cn API with query parameters
+func (c *CozeAPIClient) requestWithQuery(ctx context.Context, method, path string, body []byte, queryParams map[string]interface{}) (*CozeAPIResponse, error) {
+	baseURL := fmt.Sprintf("%s%s", c.BaseURL, path)
+	
+	// Build query parameters
+	if queryParams != nil && len(queryParams) > 0 {
+		u, err := url.Parse(baseURL)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse URL: %w", err)
+		}
+		
+		q := u.Query()
+		for key, value := range queryParams {
+			if value != nil {
+				switch v := value.(type) {
+				case string:
+					if v != "" {
+						q.Set(key, v)
+					}
+				case int:
+					q.Set(key, strconv.Itoa(v))
+				case bool:
+					q.Set(key, strconv.FormatBool(v))
+				case *string:
+					if v != nil && *v != "" {
+						q.Set(key, *v)
+					}
+				case *int:
+					if v != nil {
+						q.Set(key, strconv.Itoa(*v))
+					}
+				case *bool:
+					if v != nil {
+						q.Set(key, strconv.FormatBool(*v))
+					}
+				}
+			}
+		}
+		u.RawQuery = q.Encode()
+		baseURL = u.String()
+	}
+
+	var req *http.Request
+	var err error
+
+	if body != nil {
+		req, err = http.NewRequestWithContext(ctx, method, baseURL, bytes.NewReader(body))
+	} else {
+		req, err = http.NewRequestWithContext(ctx, method, baseURL, nil)
 	}
 
 	if err != nil {

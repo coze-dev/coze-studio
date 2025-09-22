@@ -1570,3 +1570,18 @@ func _getonlineappdataMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _search0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publicsearchproductMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publicsearchsuggestMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

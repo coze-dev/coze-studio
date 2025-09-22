@@ -79,7 +79,7 @@ type PluginService interface {
 
 	GetOAuthStatus(ctx context.Context, userID, pluginID int64) (resp *dto.GetOAuthStatusResponse, err error)
 	GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*dto.AgentPluginOAuthStatus, err error)
-	//Saas Plugin
+	//Saas Plugin Product
 	ListSaasPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error)
 	GetSaasPluginInfo(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
 
