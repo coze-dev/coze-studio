@@ -15,7 +15,7 @@ services:
     profiles: ['middleware', 'mysql-setup', 'mysql']
     env_file: *env_file
     ports:
-      - '3306:3306'
+      - '127.0.0.1:3306:3306'
     volumes:
       - ./data/mysql:/var/lib/mysql
       - ./volumes/mysql/schema.sql:/docker-entrypoint-initdb.d/init.sql
@@ -95,7 +95,7 @@ services:
       - REDIS_IO_THREADS=${REDIS_IO_THREADS:-4}
       - ALLOW_EMPTY_PASSWORD=${ALLOW_EMPTY_PASSWORD:-yes}
     ports:
-      - '6379:6379'
+      - '127.0.0.1:6379:6379'
     volumes:
       - ./data/bitnami/redis:/bitnami/redis/data:rw,Z
     command: >
@@ -131,7 +131,7 @@ services:
   #   profiles: ['middleware']
   #   env_file: *env_file
   #   ports:
-  #     - '9876:9876'
+  #     - '127.0.0.1:9876:9876'
   #   volumes:
   #     - ./data/rocketmq/namesrv/logs:/home/rocketmq/logs:rw,Z
   #     - ./data/rocketmq/namesrv/store:/home/rocketmq/store:rw,Z
@@ -167,9 +167,9 @@ services:
   #   profiles: ['middleware']
   #   env_file: *env_file
   #   ports:
-  #     - '10909:10909'
-  #     - '10911:10911'
-  #     - '10912:10912'
+  #     - '127.0.0.1:10909:10909'
+  #     - '127.0.0.1:10911:10911'
+  #     - '127.0.0.1:10912:10912'
   #   volumes:
   #     - ./data/rocketmq/broker/logs:/home/rocketmq/logs:rw,Z
   #     - ./data/rocketmq/broker/store:/home/rocketmq/store:rw,Z
@@ -238,7 +238,7 @@ services:
       # Add Java certificate trust configuration
       # - ES_JAVA_OPTS=-Djdk.tls.client.protocols=TLSv1.2 -Dhttps.protocols=TLSv1.2 -Djavax.net.ssl.trustAll=true -Xms4096m -Xmx4096m
     ports:
-      - '9200:9200'
+      - '127.0.0.1:9200:9200'
     volumes:
       - ./data/bitnami/elasticsearch:/bitnami/elasticsearch/data
       - ./volumes/elasticsearch/elasticsearch.yml:/opt/bitnami/elasticsearch/config/my_elasticsearch.yml
@@ -340,8 +340,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    networks:
-      - coze-network
 
   etcd:
     image: bitnami/etcd:3.5
@@ -356,8 +354,8 @@ services:
       - ETCD_QUOTA_BACKEND_BYTES=4294967296
       - ALLOW_NONE_AUTHENTICATION=yes
     ports:
-      - 2379:2379
-      - 2380:2380
+      - '127.0.0.1:2379:2379'
+      - '127.0.0.1:2380:2380'
     volumes:
       - ./data/bitnami/etcd:/bitnami/etcd:rw,Z
       - ./volumes/etcd/etcd.conf.yml:/opt/bitnami/etcd/conf/etcd.conf.yml:ro,Z
@@ -413,8 +411,8 @@ services:
       retries: 10
       start_period: 10s
     ports:
-      - '19530:19530'
-      - '9091:9091'
+      - '127.0.0.1:19530:19530'
+      - '127.0.0.1:9091:9091'
     depends_on:
       etcd:
         condition: service_healthy
@@ -428,8 +426,8 @@ services:
     command: /nsqlookupd
     profiles: ['middleware']
     ports:
-      - '4160:4160'
-      - '4161:4161'
+      - '127.0.0.1:4160:4160'
+      - '127.0.0.1:4161:4161'
     networks:
       - coze-network
     healthcheck:
@@ -445,8 +443,8 @@ services:
     command: /nsqd --lookupd-tcp-address=coze-nsqlookupd:4160 --broadcast-address=coze-nsqd
     profiles: ['middleware']
     ports:
-      - '4150:4150'
-      - '4151:4151'
+      - '127.0.0.1:4150:4150'
+      - '127.0.0.1:4151:4151'
     depends_on:
       nsqlookupd:
         condition: service_healthy
@@ -465,7 +463,7 @@ services:
     command: /nsqadmin --lookupd-http-address=coze-nsqlookupd:4161
     profiles: ['middleware']
     ports:
-      - '4171:4171'
+      - '127.0.0.1:4171:4171'
     depends_on:
       nsqlookupd:
         condition: service_healthy
