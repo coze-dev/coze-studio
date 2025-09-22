@@ -40,6 +40,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/search"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/template"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 // PublicGetProductList .
@@ -269,6 +270,50 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 				return
 			}
 		}
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicSearchProduct .
+// @router /api/marketplace/product/search [GET]
+func PublicSearchProduct(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.SearchProductRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	// Call plugin application service
+	resp, err := plugin.PluginApplicationSVC.PublicSearchProduct(ctx, &req)
+	if err != nil {
+		logs.CtxErrorf(ctx, "PublicSearchProduct failed: %v", err)
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicSearchSuggest .
+// @router /api/marketplace/product/search/suggest [GET]
+func PublicSearchSuggest(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.SearchSuggestRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	// Call plugin application service
+	resp, err := plugin.PluginApplicationSVC.PublicSearchSuggest(ctx, &req)
+	if err != nil {
+		logs.CtxErrorf(ctx, "PublicSearchSuggest failed: %v", err)
+		internalServerErrorResponse(ctx, c, err)
+		return
 	}
 
 	c.JSON(consts.StatusOK, resp)

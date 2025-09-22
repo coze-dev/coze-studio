@@ -11,7 +11,72 @@ service PublicProductService {
     FavoriteProductResponse PublicFavoriteProduct(1: FavoriteProductRequest req)(api.post = "/api/marketplace/product/favorite", api.category = "PublicAPI")
     GetUserFavoriteListV2Response PublicGetUserFavoriteListV2(1: GetUserFavoriteListV2Request req)(api.get = "/api/marketplace/product/favorite/list.v2", api.category = "PublicAPI")
     DuplicateProductResponse PublicDuplicateProduct (1: DuplicateProductRequest req) (api.post = "/api/marketplace/product/duplicate", api.category = "PublicAPI")
+
+    SearchProductResponse PublicSearchProduct(1: SearchProductRequest req)(api.get = "/api/marketplace/product/search", api.category = "PublicAPI")
+    SearchSuggestResponse PublicSearchSuggest(1: SearchSuggestRequest req)(api.get = "/api/marketplace/product/search/suggest", api.category = "PublicAPI")
 }
+
+struct SearchProductRequest{
+    1  : required string                            Keyword            (api.query = "keyword")                                                     ,
+    2  : required i32                               PageNum            (api.query = "page_num")                                                    ,
+    3  : required i32                               PageSize           (api.query = "page_size")                                                   ,
+    4  : optional product_common.ProductEntityType  EntityType         (agw.key = "entity_type")                                                   ,
+    5  : optional product_common.SortType           SortType           (api.query = "sort_type")                                                   ,
+
+    11 : optional product_common.ProductPublishMode PublishMode        (agw.key = "publish_mode")                                                  , // Open/closed source
+    12 : optional list<i64>                         ModelIDs           (agw.js_conv="str",  agw.cli_conv="str", api.query = "model_ids")           , // Models used
+    13 : optional product_common.BotModType         BotModType         (agw.key = "bot_mod_type")                                                  , // Multimodal type
+    14 : optional list<product_common.Component>    Components         (agw.key = "components")                                                    , // Sub-attributes
+    15 : optional list<i64>                         PublishPlatformIDs (agw.js_conv="str",  agw.cli_conv="str", api.query = "publish_platform_ids"), // Publish platform IDs
+    16 : optional list<i64> CategoryIDs (agw.js_conv="str",  agw.cli_conv="str", api.query = "category_ids"), // Product category IDs
+    17 : optional bool IsOfficial (api.query = "is_official"), // Is official
+    18 : optional bool IsRecommend (api.query = "is_recommend"), // Is recommended
+
+    19 : optional list<product_common.ProductEntityType> EntityTypes ( api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
+    20 : optional product_common.PluginType PluginType (agw.key = "plugin_type"), // Plugin type
+    21 : optional product_common.ProductPaidType ProductPaidType (agw.key = "product_paid_type"), // Product paid type
+
+    255: optional base.Base                         Base                                                                                           ,
+}
+
+struct SearchProductResponse{
+    1  : required i32                       Code     (agw.key = "code")   ,
+    2  : required string                    Message  (agw.key = "message"),
+    3  : optional SearchProductResponseData Data     (agw.key = "data")   ,
+    255: optional base.BaseResp             BaseResp                      ,
+}
+
+struct SearchProductResponseData{
+    1: optional list<ProductInfo> Products (agw.key = "products"),
+    2: optional i32               Total    (agw.key = "total")   ,
+    3: optional bool              HasMore  (agw.key = "has_more"),
+    4: optional map<product_common.ProductEntityType, i32> EntityTotal (agw.key = "entity_total"), // Entity count
+}
+
+struct SearchSuggestResponse{
+    1  : required i32                       Code     (agw.key = "code")   ,
+    2  : required string                    Message  (agw.key = "message"),
+    3  : optional SearchSuggestResponseData Data     (agw.key = "data")   ,
+    255: optional base.BaseResp             BaseResp                      ,
+}
+
+struct SearchSuggestResponseData{
+    1: optional list<ProductMetaInfo> Suggestions (agw.key = "suggestions"), // Deprecated
+    2: optional bool HasMore (agw.key = "has_more"),
+    3: optional list<ProductInfo> SuggestionV2(agw.key = "suggestion_v2"),
+}
+
+
+struct SearchSuggestRequest {
+    1: optional string Keyword (api.query = "keyword"),
+    2: optional product_common.ProductEntityType EntityType (api.query = "entity_type"), // Optional, defaults to bot recommendation if not provided
+    3: optional i32 PageNum (api.query = "page_num"),
+    4: optional i32 PageSize (api.query = "page_size"),
+    5: optional list<product_common.ProductEntityType> EntityTypes (api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
+
+    255: optional base.Base                        Base                                  ,
+}
+
 
 struct FavoriteProductResponse {
     1  : required i32           Code            (agw.key = "code", api.body = "code")             ,
