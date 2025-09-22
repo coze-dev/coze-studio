@@ -159,7 +159,7 @@ struct ListConversationMessageLogRequest {
 
 struct MessageContent {
     1: required string query
-    2: optional string answer
+    2: optional list<string> answer
 }
 
 // ListConversationMessageLog 会话消息历史数据

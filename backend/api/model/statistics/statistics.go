@@ -5757,8 +5757,8 @@ func (p *ListConversationMessageLogRequest) String() string {
 }
 
 type MessageContent struct {
-	Query  string  `thrift:"query,1,required" form:"query,required" json:"query,required" query:"query,required"`
-	Answer *string `thrift:"answer,2,optional" form:"answer" json:"answer,omitempty" query:"answer"`
+	Query  string   `thrift:"query,1,required" form:"query,required" json:"query,required" query:"query,required"`
+	Answer []string `thrift:"answer,2,optional" form:"answer" json:"answer,omitempty" query:"answer"`
 }
 
 func NewMessageContent() *MessageContent {
@@ -5772,13 +5772,13 @@ func (p *MessageContent) GetQuery() (v string) {
 	return p.Query
 }
 
-var MessageContent_Answer_DEFAULT string
+var MessageContent_Answer_DEFAULT []string
 
-func (p *MessageContent) GetAnswer() (v string) {
+func (p *MessageContent) GetAnswer() (v []string) {
 	if !p.IsSetAnswer() {
 		return MessageContent_Answer_DEFAULT
 	}
-	return *p.Answer
+	return p.Answer
 }
 
 var fieldIDToName_MessageContent = map[int16]string{
@@ -5819,7 +5819,7 @@ func (p *MessageContent) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5873,12 +5873,24 @@ func (p *MessageContent) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 func (p *MessageContent) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
 		return err
-	} else {
-		_field = &v
+	}
+	_field := make([]string, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
 	}
 	p.Answer = _field
 	return nil
@@ -5934,10 +5946,18 @@ WriteFieldEndError:
 }
 func (p *MessageContent) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetAnswer() {
-		if err = oprot.WriteFieldBegin("answer", thrift.STRING, 2); err != nil {
+		if err = oprot.WriteFieldBegin("answer", thrift.LIST, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.Answer); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Answer)); err != nil {
+			return err
+		}
+		for _, v := range p.Answer {
+			if err := oprot.WriteString(v); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
