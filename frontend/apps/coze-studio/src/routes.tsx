@@ -76,6 +76,18 @@ const BotStatistic = lazy(() =>
   })),
 );
 
+const BotStatisticAnalysis = lazy(() =>
+  import('@coze-agent-ide/entry-adapter').then(res => ({
+    default: res.BotStatisticAnalysis,
+  })),
+);
+
+const BotStatisticLog = lazy(() =>
+  import('@coze-agent-ide/entry-adapter').then(res => ({
+    default: res.BotStatisticLog,
+  })),
+);
+
 const IDELayout = lazy(() =>
   import('@coze-project-ide/main').then(exps => ({
     default: exps.IDELayout,
@@ -328,6 +340,20 @@ export const router: ReturnType<typeof createBrowserRouter> =
                     {
                       path: 'statistic',
                       Component: BotStatistic,
+                      children: [
+                        {
+                          index: true,
+                          element: <Navigate to="analysis" replace />,
+                        },
+                        {
+                          path: 'analysis',
+                          Component: BotStatisticAnalysis,
+                        },
+                        {
+                          path: 'log',
+                          Component: BotStatisticLog,
+                        },
+                      ],
                     },
                     {
                       path: 'publish',

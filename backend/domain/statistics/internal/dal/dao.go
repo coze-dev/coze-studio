@@ -487,20 +487,30 @@ func (dao *StatisticsDAO) ListConversationMessageLog(ctx context.Context, agentI
 	var rawResults []*messageLogResult
 	dataSQL := `
 		SELECT
-			conversation_id,
-			run_id,
+			m.conversation_id,
+			m.run_id,
 			JSON_OBJECT(
-				'query', MAX(CASE WHEN message_type = 'question' THEN content END),
-				'answer', MAX(CASE WHEN message_type = 'answer' THEN content END)
+				'query', MAX(CASE WHEN m.message_type = 'question' THEN m.content END),
+				'answer', (
+					SELECT JSON_ARRAYAGG(sorted.content)
+					FROM (
+						SELECT sub.content
+						FROM message sub
+						WHERE sub.conversation_id = m.conversation_id
+						  AND sub.run_id = m.run_id
+						  AND sub.message_type = 'answer'
+						ORDER BY sub.created_at
+					) AS sorted
+				)
 			) AS result,
-			SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) AS token,
-			ROUND(SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)),2) AS time_cost,
-			DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') AS create_time
-		FROM message
-		WHERE message_type <> 'verbose'
-		AND agent_id = ? AND conversation_id = ?
-		GROUP BY conversation_id, run_id
-		ORDER BY MIN(created_at) DESC
+			SUM(IF(m.message_type = 'answer',JSON_EXTRACT(m.ext, '$.token'),0)) AS token,
+			ROUND(SUM(IF(m.message_type = 'answer',JSON_EXTRACT(m.ext, '$.time_cost'),0)),2) AS time_cost,
+			DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(m.created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') AS create_time
+		FROM message m
+		WHERE m.message_type <> 'verbose'
+		AND m.agent_id = ? AND m.conversation_id = ?
+		GROUP BY m.conversation_id, m.run_id
+		ORDER BY MIN(m.created_at) DESC
 		LIMIT ? OFFSET ?
 	`
 
@@ -524,10 +534,9 @@ func (dao *StatisticsDAO) ListConversationMessageLog(ctx context.Context, agentI
 			return nil, err
 		}
 
-		// 如果answer为null，设为空字符串
+		// 如果answer为null，设为空数组
 		if messageContent.Answer == nil {
-			emptyAnswer := ""
-			messageContent.Answer = &emptyAnswer
+			messageContent.Answer = []string{}
 		}
 
 		results = append(results, &entity.ListConversationMessageLogData{
@@ -761,21 +770,31 @@ func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID 
 			FROM user
 		) t2
 		ON t1.creator_id=t2.id
-		LEFT JOIN (
-			SELECT
-				conversation_id,
-				run_id,
-				JSON_OBJECT(
-					'query', MAX(CASE WHEN message_type = 'question' THEN content END),
-					'answer', MAX(CASE WHEN message_type = 'answer' THEN content END)
-				) AS result,
-				SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.token'),0)) as token,
-				ROUND(SUM(IF(message_type = 'answer',JSON_EXTRACT(ext, '$.time_cost'),0)),2) as time_cost,
-				DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') as CreateTime
-			FROM message
-			WHERE message_type <> 'verbose'
-			GROUP BY conversation_id, run_id
-		) t3
+	LEFT JOIN (
+		SELECT
+			m.conversation_id,
+			m.run_id,
+			JSON_OBJECT(
+				'query', MAX(CASE WHEN m.message_type = 'question' THEN m.content END),
+				'answer', (
+					SELECT JSON_ARRAYAGG(sorted.content)
+					FROM (
+						SELECT sub.content
+						FROM message sub
+						WHERE sub.conversation_id = m.conversation_id
+						  AND sub.run_id = m.run_id
+						  AND sub.message_type = 'answer'
+						ORDER BY sub.created_at
+					) AS sorted
+				)
+			) AS result,
+			SUM(IF(m.message_type = 'answer',JSON_EXTRACT(m.ext, '$.token'),0)) as token,
+			ROUND(SUM(IF(m.message_type = 'answer',JSON_EXTRACT(m.ext, '$.time_cost'),0)),2) as time_cost,
+			DATE_FORMAT(CONVERT_TZ(FROM_UNIXTIME(MIN(m.created_at) / 1000),'UTC','Asia/Shanghai'),'%Y-%m-%d %H:%i:%s') as CreateTime
+		FROM message m
+		WHERE m.message_type <> 'verbose'
+		GROUP BY m.conversation_id, m.run_id
+	) t3
 		ON t1.id=t3.conversation_id
 		WHERE t3.run_id IS NOT NULL
 		ORDER BY t1.created_at DESC
@@ -803,10 +822,9 @@ func (dao *StatisticsDAO) ListAppMessageWithConLog(ctx context.Context, agentID 
 			return nil, err
 		}
 
-		// 如果answer为null，设为空字符串
+		// 如果answer为null，设为空数组
 		if messageContent.Answer == nil {
-			emptyAnswer := ""
-			messageContent.Answer = &emptyAnswer
+			messageContent.Answer = []string{}
 		}
 
 		results = append(results, &entity.ListAppMessageWithConLogData{

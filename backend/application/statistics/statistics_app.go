@@ -22,6 +22,8 @@ import (
 	"errors"
 	"fmt"
 	"net/url"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -421,10 +423,18 @@ func (app *StatisticsApp) ExportConversationMessageLog(ctx context.Context, req 
 	}
 
 	if len(req.ConversationIds) > 0 {
-		domainReq.ConversationIDs = append(domainReq.ConversationIDs, req.ConversationIds...)
+		conversationIDs, err := parseStringIDs(req.ConversationIds)
+		if err != nil {
+			return nil, fmt.Errorf("invalid conversation_ids: %w", err)
+		}
+		domainReq.ConversationIDs = conversationIDs
 	}
 	if len(req.RunIds) > 0 {
-		domainReq.RunIDs = append(domainReq.RunIDs, req.RunIds...)
+		runIDs, err := parseStringIDs(req.RunIds)
+		if err != nil {
+			return nil, fmt.Errorf("invalid run_ids: %w", err)
+		}
+		domainReq.RunIDs = runIDs
 	}
 
 	result, err := app.statisticsService.ExportConversationMessageLog(ctx, domainReq)
@@ -516,6 +526,22 @@ func (app *StatisticsApp) ExportConversationMessageLog(ctx context.Context, req 
 	resp.ExportTaskID = &exportTaskID
 
 	return resp, nil
+}
+
+func parseStringIDs(values []string) ([]int64, error) {
+	ids := make([]int64, 0, len(values))
+	for _, value := range values {
+		trimmed := strings.TrimSpace(value)
+		if trimmed == "" {
+			return nil, fmt.Errorf("id cannot be empty")
+		}
+		id, err := strconv.ParseInt(trimmed, 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("%q is not a valid int64", value)
+		}
+		ids = append(ids, id)
+	}
+	return ids, nil
 }
 
 // ListExportConversationFiles 查看导出的会话消息日志文件列表

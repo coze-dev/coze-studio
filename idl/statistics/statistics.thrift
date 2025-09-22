@@ -159,7 +159,7 @@ struct ListConversationMessageLogRequest {
 
 struct MessageContent {
     1: required string query
-    2: optional string answer
+    2: optional list<string> answer
 }
 
 // ListConversationMessageLog 会话消息历史数据
@@ -194,8 +194,8 @@ struct ListConversationMessageLogResponse {
 struct ExportConversationMessageLogRequest {
     1: required i64 agent_id (api.body="agent_id", api.js_conv="true")
     2: required string file_name (api.body="file_name")
-    3: optional list<i64> conversation_ids (api.body="conversation_ids", api.js_conv="true")
-    4: optional list<i64> run_ids (api.body="run_ids", api.js_conv="true")
+    3: optional list<string> conversation_ids (api.body="conversation_ids")
+    4: optional list<string> run_ids (api.body="run_ids")
     5: optional i32 expire_hours (api.body="expire_hours") // 导出文件保存小时数，默认72小时
 }
 
