@@ -134,6 +134,7 @@ export const BotStatisticLog: React.FC = () => {
           content: I18n.t('bot_static_log_export_success'),
         });
         setSelectedRows([]);
+        setExportDrawerVisible(true);
       })
       .catch(err => {
         Notification.error({
