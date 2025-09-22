@@ -63,14 +63,27 @@ export const getBaseColumns = (
               问题：{record.message?.query || '-'}
             </Typography.Text>
           </div>
-          <div className="max-w-[320px]">
-            <Typography.Text
-              className="text-[12px]"
-              ellipsis={{ showTooltip: true }}
-            >
-              回答：{record.message?.answer || '-'}
-            </Typography.Text>
-          </div>
+          {Array.isArray(record.message?.answer) ? (
+            record.message?.answer?.map((item, index) => (
+              <div key={index} className="max-w-[320px]">
+                <Typography.Text
+                  className="text-[12px]"
+                  ellipsis={{ showTooltip: true }}
+                >
+                  回答{index + 1}：{JSON.stringify(item) || '-'}
+                </Typography.Text>
+              </div>
+            ))
+          ) : (
+            <div className="max-w-[320px]">
+              <Typography.Text
+                className="text-[12px]"
+                ellipsis={{ showTooltip: true }}
+              >
+                回答：{record.message?.answer || '-'}
+              </Typography.Text>
+            </div>
+          )}
         </>
       ),
     },
