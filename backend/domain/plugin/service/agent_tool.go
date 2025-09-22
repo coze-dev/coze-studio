@@ -71,7 +71,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 	for _, v := range req.VersionAgentTools {
 		toolIDs = append(toolIDs, v.ToolID)
 	}
-
+	// todo :: saas plugin or local plugin
 	existTools, err := p.toolRepo.MGetOnlineTools(ctx, toolIDs, repository.WithToolID())
 	if err != nil {
 		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", toolIDs)
@@ -109,10 +109,15 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 		}
 	}
 
+	//local plugin
 	tools, err = p.toolRepo.MGetVersionAgentTool(ctx, req.AgentID, vTools)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "MGetVersionAgentTool failed, agentID=%d, vTools=%v", req.AgentID, vTools)
 	}
+
+	// TODO::saas plugin
+
+	// TODO::merge saas plugin or local plugin
 
 	return tools, nil
 }

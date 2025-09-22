@@ -165,6 +165,9 @@ func Register(r *server.Hertz) {
 				_favorite := _product.Group("/favorite", _favoriteMw()...)
 				_favorite.GET("/list.v2", append(_publicgetuserfavoritelistv2Mw(), coze.PublicGetUserFavoriteListV2)...)
 				_product.GET("/list", append(_publicgetproductlistMw(), coze.PublicGetProductList)...)
+				_product.GET("/search", append(_publicsearchproductMw(), coze.PublicSearchProduct)...)
+				_search0 := _product.Group("/search", _search0Mw()...)
+				_search0.GET("/suggest", append(_publicsearchsuggestMw(), coze.PublicSearchSuggest)...)
 			}
 		}
 		{

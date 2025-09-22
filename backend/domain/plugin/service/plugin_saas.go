@@ -57,25 +57,15 @@ func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *Lis
 
 
 func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context) ([]*entity.PluginInfo, error) {
-	client := saasapi.NewCozeAPIClient()
-
-	resp, err := client.Get(ctx, "/v1/stores/plugins")
+	searchReq := &entity.SearchSaasPluginRequest{}
+	searchResp, err := p.searchSaasPlugin(ctx, searchReq)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "failed to call coze.cn API")
+		return nil, errorx.Wrapf(err, "failed to search SaaS plugins")
 	}
 
-	var pluginsData struct {
-		Plugins []CozePlugin `json:"plugins"`
-		Total   int64        `json:"total"`
-	}
-
-	if err := json.Unmarshal(resp.Data, &pluginsData); err != nil {
-		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
-	}
-
-	plugins := make([]*entity.PluginInfo, 0, len(pluginsData.Plugins))
-	for _, cozePlugin := range pluginsData.Plugins {
-		plugin := convertCozePluginToEntity(cozePlugin)
+	plugins := make([]*entity.PluginInfo, 0, len(searchResp.Data.Items))
+	for _, item := range searchResp.Data.Items {
+		plugin := convertSaasPluginItemToEntity(item)
 		plugins = append(plugins, plugin)
 	}
 
@@ -84,16 +74,60 @@ func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context) ([]*en
 	return plugins, nil
 }
 
+func convertSaasPluginItemToEntity(item *entity.SaasPluginItem) *entity.PluginInfo {
+	if item == nil || item.MetaInfo == nil {
+		return nil
+	}
+
+	metaInfo := item.MetaInfo
+	var pluginID int64
+	if id, err := strconv.ParseInt(metaInfo.ProductID, 10, 64); err == nil {
+		pluginID = id
+	} else {
+		// 如果ID不是数字，使用简单的hash算法生成ID
+		pluginID = int64(simpleHash(metaInfo.ProductID))
+	}
+
+	// 创建插件清单
+	manifest := &model.PluginManifest{
+		SchemaVersion:       "v1",
+		NameForModel:        metaInfo.Name,
+		NameForHuman:        metaInfo.Name,
+		DescriptionForModel: metaInfo.Description,
+		DescriptionForHuman: metaInfo.Description,
+		LogoURL:             metaInfo.IconURL,
+		Auth: &model.AuthV2{
+			Type: model.AuthzTypeOfNone,
+		},
+		API: model.APIDesc{
+			Type: "openapi",
+		},
+	}
+
+	pluginInfo := &model.PluginInfo{
+		ID:          pluginID,
+		PluginType:  pluginCommon.PluginType_PLUGIN,
+		SpaceID:     0,
+		DeveloperID: 0,
+		APPID:       nil,
+		IconURI:     &metaInfo.IconURL,
+		ServerURL:   ptr.Of(""),
+		CreatedAt:   metaInfo.ListedAt,
+		UpdatedAt:   metaInfo.ListedAt,
+		Manifest:    manifest,
+	}
+
+	return entity.NewPluginInfo(pluginInfo)
+}
+
 func convertCozePluginToEntity(cozePlugin CozePlugin) *entity.PluginInfo {
 	var pluginID int64
 	if id, err := strconv.ParseInt(cozePlugin.ID, 10, 64); err == nil {
 		pluginID = id
 	} else {
-		// 如果ID不是数字，使用简单的hash算法生成ID
 		pluginID = int64(simpleHash(cozePlugin.ID))
 	}
 
-	// 创建插件清单
 	manifest := &model.PluginManifest{
 		SchemaVersion:       "v1",
 		NameForModel:        cozePlugin.Name,
@@ -142,7 +176,6 @@ func (p *pluginServiceImpl) GetSaasPluginInfo(ctx context.Context, pluginID int6
 		return nil, errorx.Wrapf(err, "failed to call coze.cn API")
 	}
 
-	// 解析响应数据
 	var cozePlugin CozePlugin
 	if err := json.Unmarshal(resp.Data, &cozePlugin); err != nil {
 		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
@@ -153,4 +186,46 @@ func (p *pluginServiceImpl) GetSaasPluginInfo(ctx context.Context, pluginID int6
 	logs.CtxInfof(ctx, "fetched SaaS plugin info from coze.cn, pluginID: %d, name: %s", pluginID, plugin.GetName())
 
 	return plugin, nil
+}
+
+func (p *pluginServiceImpl) searchSaasPlugin(ctx context.Context, req *entity.SearchSaasPluginRequest) (resp *entity.SearchSaasPluginResponse, err error) {
+	client := saasapi.NewCozeAPIClient()
+
+	// 构建查询参数
+	queryParams := make(map[string]interface{})
+	if req.Keyword != nil {
+		queryParams["keyword"] = req.Keyword
+	}
+	if req.PageNum != nil {
+		queryParams["page_num"] = req.PageNum
+	}
+	if req.PageSize != nil {
+		queryParams["page_size"] = req.PageSize
+	}
+	if req.SortType != nil {
+		queryParams["sort_type"] = req.SortType
+	}
+	if req.CategoryID != nil {
+		queryParams["category_id"] = req.CategoryID
+	}
+	if req.IsOfficial != nil {
+		queryParams["is_official"] = req.IsOfficial
+	}
+
+	apiResp, err := client.GetWithQuery(ctx, "/v1/stores/plugins", queryParams)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "failed to call coze.cn search API")
+	}
+
+	var searchResp entity.SearchSaasPluginResponse
+	if err := json.Unmarshal(apiResp.Data, &searchResp.Data); err != nil {
+		return nil, errorx.Wrapf(err, "failed to parse coze.cn search API response")
+	}
+
+	searchResp.Code = apiResp.Code
+	searchResp.Msg = apiResp.Msg
+
+	logs.CtxInfof(ctx, "searched SaaS plugins from coze.cn, found %d items", len(searchResp.Data.Items))
+
+	return &searchResp, nil
 }

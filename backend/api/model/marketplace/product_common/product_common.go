@@ -26,6 +26,110 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/marketplace_common"
 )
 
+type BotModType int64
+
+const (
+	BotModType_SingleAgent BotModType = 1
+	BotModType_MultiAgent  BotModType = 2
+)
+
+func (p BotModType) String() string {
+	switch p {
+	case BotModType_SingleAgent:
+		return "SingleAgent"
+	case BotModType_MultiAgent:
+		return "MultiAgent"
+	}
+	return "<UNSET>"
+}
+
+func BotModTypeFromString(s string) (BotModType, error) {
+	switch s {
+	case "SingleAgent":
+		return BotModType_SingleAgent, nil
+	case "MultiAgent":
+		return BotModType_MultiAgent, nil
+	}
+	return BotModType(0), fmt.Errorf("not a valid BotModType string")
+}
+
+func BotModTypePtr(v BotModType) *BotModType { return &v }
+func (p *BotModType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = BotModType(result.Int64)
+	return
+}
+
+func (p *BotModType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
+type Component int64
+
+const (
+	Component_UsePlugin        Component = 1
+	Component_UseWorkFlow      Component = 2
+	Component_UseKnowledge     Component = 3
+	Component_UseVoice         Component = 4
+	Component_UseCard          Component = 5
+	Component_UseImageWorkflow Component = 6
+)
+
+func (p Component) String() string {
+	switch p {
+	case Component_UsePlugin:
+		return "UsePlugin"
+	case Component_UseWorkFlow:
+		return "UseWorkFlow"
+	case Component_UseKnowledge:
+		return "UseKnowledge"
+	case Component_UseVoice:
+		return "UseVoice"
+	case Component_UseCard:
+		return "UseCard"
+	case Component_UseImageWorkflow:
+		return "UseImageWorkflow"
+	}
+	return "<UNSET>"
+}
+
+func ComponentFromString(s string) (Component, error) {
+	switch s {
+	case "UsePlugin":
+		return Component_UsePlugin, nil
+	case "UseWorkFlow":
+		return Component_UseWorkFlow, nil
+	case "UseKnowledge":
+		return Component_UseKnowledge, nil
+	case "UseVoice":
+		return Component_UseVoice, nil
+	case "UseCard":
+		return Component_UseCard, nil
+	case "UseImageWorkflow":
+		return Component_UseImageWorkflow, nil
+	}
+	return Component(0), fmt.Errorf("not a valid Component string")
+}
+
+func ComponentPtr(v Component) *Component { return &v }
+func (p *Component) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = Component(result.Int64)
+	return
+}
+
+func (p *Component) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type ProductEntityType int64
 
 const (
