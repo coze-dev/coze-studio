@@ -340,6 +340,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
+    networks:
+      - coze-network
 
   etcd:
     image: bitnami/etcd:3.5
