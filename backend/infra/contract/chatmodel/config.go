@@ -29,15 +29,16 @@ type Config struct {
 	APIKey  string        `json:"api_key,omitempty" yaml:"api_key"`
 	Timeout time.Duration `json:"timeout,omitempty" yaml:"timeout"`
 
-	Model            string   `json:"model" yaml:"model"`
-	Temperature      *float32 `json:"temperature,omitempty" yaml:"temperature,omitempty"`
-	FrequencyPenalty *float32 `json:"frequency_penalty,omitempty" yaml:"frequency_penalty,omitempty"`
-	PresencePenalty  *float32 `json:"presence_penalty,omitempty" yaml:"presence_penalty,omitempty"`
-	MaxTokens        *int     `json:"max_tokens,omitempty" yaml:"max_tokens,omitempty"`
-	TopP             *float32 `json:"top_p,omitempty" yaml:"top_p"`
-	TopK             *int     `json:"top_k,omitempty" yaml:"top_k"`
-	Stop             []string `json:"stop,omitempty" yaml:"stop"`
-	EnableThinking   *bool    `json:"enable_thinking,omitempty" yaml:"enable_thinking,omitempty"`
+	Model               string   `json:"model" yaml:"model"`
+	Temperature         *float32 `json:"temperature,omitempty" yaml:"temperature,omitempty"`
+	FrequencyPenalty    *float32 `json:"frequency_penalty,omitempty" yaml:"frequency_penalty,omitempty"`
+	PresencePenalty     *float32 `json:"presence_penalty,omitempty" yaml:"presence_penalty,omitempty"`
+	MaxTokens           *int     `json:"max_tokens,omitempty" yaml:"max_tokens,omitempty"`
+	MaxCompletionTokens *int     `json:"max_completion_tokens,omitempty" yaml:"max_completion_tokens,omitempty"`
+	TopP                *float32 `json:"top_p,omitempty" yaml:"top_p"`
+	TopK                *int     `json:"top_k,omitempty" yaml:"top_k"`
+	Stop                []string `json:"stop,omitempty" yaml:"stop"`
+	EnableThinking      *bool    `json:"enable_thinking,omitempty" yaml:"enable_thinking,omitempty"`
 
 	OpenAI   *OpenAIConfig   `json:"open_ai,omitempty" yaml:"openai"`
 	Claude   *ClaudeConfig   `json:"claude,omitempty" yaml:"claude"`

@@ -95,6 +95,9 @@ func openAIBuilder(ctx context.Context, config *chatmodel.Config) (chatmodel.Too
 		PresencePenalty:  config.PresencePenalty,
 		FrequencyPenalty: config.FrequencyPenalty,
 	}
+	if config.MaxCompletionTokens != nil {
+		cfg.MaxCompletionTokens = config.MaxCompletionTokens
+	}
 	if config.OpenAI != nil {
 		cfg.ByAzure = config.OpenAI.ByAzure
 		cfg.APIVersion = config.OpenAI.APIVersion

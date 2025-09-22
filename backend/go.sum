@@ -236,10 +236,14 @@ github.com/cloudwego/eino-ext/components/model/ollama v0.1.0 h1:FW067iMfg3EZbUaZ
 github.com/cloudwego/eino-ext/components/model/ollama v0.1.0/go.mod h1:+qA5kkUCM0mIrXGSNzxLcjxh6K1AghPNigtEyyMdkOc=
 github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250715055739-0d0e28441a2f h1:ovS39vuN2JW+C/O9jtEmOUuLEY4fw0yYh8//yhMfJNM=
 github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250715055739-0d0e28441a2f/go.mod h1:2mFQQnlhJrNgbW6YX1MOUUfXkGSbTz9Ylx37fbR0xBo=
+github.com/cloudwego/eino-ext/components/model/openai v0.1.1 h1:VRdUDcnfi/T8F0jcuovhdADU9Io/oMqiKpY2ZJTBc1o=
+github.com/cloudwego/eino-ext/components/model/openai v0.1.1/go.mod h1:VwAXEY1ik2K9KFPZvymnkfBQQKgLHbpg90yg+7hrTt8=
 github.com/cloudwego/eino-ext/components/model/qwen v0.0.0-20250612061754-5a3deb091dc5 h1:4zAZiNo/PkeVc0Gw8YLpzpbR8zDzccL7H5PLqTuGhv4=
 github.com/cloudwego/eino-ext/components/model/qwen v0.0.0-20250612061754-5a3deb091dc5/go.mod h1:vgQ3m0LtrdQbnganW9y3j3aTJpVgJnCLp9y80tTM9hA=
 github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250626133421-3c142631c961 h1:fGE3RFHaAsrLjA+2fkE0YMsPrkFI6pEKKZmbhD42L7E=
 github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250626133421-3c142631c961/go.mod h1:iB0W8l+OqKNL5LtJQ9JaGYXekhsxVxrDMfnfD9L+5gc=
+github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250918130948-16e3a249e721 h1:5Hd8GxNEmu+ppTGCRBU6kLKfCQNXPMwi31xA83PzEqo=
+github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250918130948-16e3a249e721/go.mod h1:fHn/6OqPPY1iLLx9wzz+MEVT5Dl9gwuZte1oLEnCoYw=
 github.com/cloudwego/gopkg v0.1.4 h1:EoQiCG4sTonTPHxOGE0VlQs+sQR+Hsi2uN0qqwu8O50=
 github.com/cloudwego/gopkg v0.1.4/go.mod h1:FQuXsRWRsSqJLsMVd5SYzp8/Z1y5gXKnVvRrWUOsCMI=
 github.com/cloudwego/hertz v0.6.2/go.mod h1:2em2hGREvCBawsTQcQxyWBGVlCeo+N1pp2q0HkkbwR0=
@@ -796,6 +800,8 @@ github.com/matttproud/golang_protobuf_extensions v1.0.1/go.mod h1:D8He9yQNgCq6Z5
 github.com/mediocregopher/radix/v3 v3.4.2/go.mod h1:8FL3F6UQRXHXIBSPUs5h0RybMF8i4n7wVopoX3x7Bv8=
 github.com/meguminnnnnnnnn/go-openai v0.0.0-20250620092828-0d508a1dcdde h1:pq2I0uxUR4lfr4OmqvE8QdHj9UML9b1jZu8L3dI2eu8=
 github.com/meguminnnnnnnnn/go-openai v0.0.0-20250620092828-0d508a1dcdde/go.mod h1:CqSFsV6AkkL2fixd25WYjRAolns+gQrY1x/Cz9c30v8=
+github.com/meguminnnnnnnnn/go-openai v0.0.0-20250821095446-07791bea23a0 h1:nIohpHs1ViKR0SVgW/cbBstHjmnqFZDM9RqgX9m9Xu8=
+github.com/meguminnnnnnnnn/go-openai v0.0.0-20250821095446-07791bea23a0/go.mod h1:qs96ysDmxhE4BZoU45I43zcyfnaYxU3X+aRzLko/htY=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b h1:j7+1HpAFS1zy5+Q4qx1fWh90gTKwiN4QCGoY9TWyyO4=
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/microcosm-cc/bluemonday v1.0.2/go.mod h1:iVP4YcDBq+n/5fb23BhYFvIMq/leAFZyRl6bYmGDlGc=
