@@ -163,6 +163,7 @@ const (
 	NodeTypeConversationHistory        NodeType = "ConversationHistory"
 	NodeTypeComment                    NodeType = "Comment"
 	NodeTypeMcp                        NodeType = "Mcp"
+	NodeTypeAgent                      NodeType = "Agent"
 )
 
 const (
@@ -225,6 +226,11 @@ var Categories = []Category{
 		Key:      "message",
 		Name:     "消息",
 		EnUSName: "Message",
+	},
+	{
+		Key:      "ai",
+		Name:     "智能体",
+		EnUSName: "AI",
 	},
 }
 
@@ -971,6 +977,23 @@ var NodeTypeMetas = map[NodeType]*NodeTypeMeta{
 		},
 		EnUSName:        "MCP Tool",
 		EnUSDescription: "Call MCP (Model Context Protocol) tools",
+	},
+	NodeTypeAgent: {
+		ID:           100,
+		Key:          NodeTypeAgent,
+		DisplayKey:   "Agent",
+		Name:         "智能体",
+		Category:     "ai",
+		Desc:         "调用第三方智能体平台的对话接口，支持Hiagent、Dify、Coze等平台，实现跨平台智能体集成",
+		Color:        "#FF6B35",
+		IconURL:      "https://lf3-static.bytednsdoc.com/obj/eden-cn/dvsmryvd_avi_dvsm/ljhwZthlaukjlkulzlp/icon/icon-Agent-v2.jpg",
+		SupportBatch: false,
+		ExecutableMeta: ExecutableMeta{
+			PreFillZero: true,
+			PostFillNil: true,
+		},
+		EnUSName:        "Agent",
+		EnUSDescription: "Call third-party agent platform APIs for conversations, supports Hiagent, Dify, Coze and other platforms",
 	},
 }
 

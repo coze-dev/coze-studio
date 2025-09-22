@@ -144,6 +144,7 @@ type Inputs struct {
 	*Batch              // exclusive configurations for NodeTypeBatch
 	*Comment            // exclusive configurations for NodeTypeComment
 	*InputReceiver      // exclusive configurations for NodeTypeInputReceiver
+	*Agent              // exclusive configurations for NodeTypeAgent
 }
 
 type OutputEmitter struct {
@@ -161,6 +162,16 @@ type LLM struct {
 
 type CardSelector struct {
 	FilterType string `json:"filterType,omitempty"` // 筛选类型：all, text, image, video, link
+}
+
+type Agent struct {
+	Platform   string            `json:"platform,omitempty"`
+	AgentURL   string            `json:"agent_url,omitempty"`
+	AgentKey   string            `json:"agent_key,omitempty"`
+	Query      *BlockInput       `json:"query,omitempty"`
+	Inputs     map[string]string `json:"inputs,omitempty"`
+	Timeout    int               `json:"timeout,omitempty"`
+	RetryCount int               `json:"retry_count,omitempty"`
 }
 
 type Loop struct {

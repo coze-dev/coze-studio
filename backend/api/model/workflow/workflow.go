@@ -499,6 +499,7 @@ const (
 	NodeType_DatasetDelete       NodeType = 60
 	NodeType_Mcp                 NodeType = 61
 	NodeType_CardSelector        NodeType = 99
+	NodeType_Agent               NodeType = 100
 )
 
 func (p NodeType) String() string {
@@ -573,6 +574,8 @@ func (p NodeType) String() string {
 		return "CardSelector"
 	case NodeType_Mcp:
 		return "Mcp"
+	case NodeType_Agent:
+		return "Agent"
 	}
 	return "<UNSET>"
 }
@@ -649,6 +652,8 @@ func NodeTypeFromString(s string) (NodeType, error) {
 		return NodeType_CardSelector, nil
 	case "Mcp":
 		return NodeType_Mcp, nil
+	case "Agent":
+		return NodeType_Agent, nil
 	}
 	return NodeType(0), fmt.Errorf("not a valid NodeType string")
 }
@@ -712,6 +717,7 @@ const (
 	NodeTemplateType_DatasetDelete       NodeTemplateType = 60
 	NodeTemplateType_Mcp                 NodeTemplateType = 61
 	NodeTemplateType_CardSelector        NodeTemplateType = 99
+	NodeTemplateType_Agent               NodeTemplateType = 100
 )
 
 func (p NodeTemplateType) String() string {
@@ -796,6 +802,8 @@ func (p NodeTemplateType) String() string {
 		return "CardSelector"
 	case NodeTemplateType_Mcp:
 		return "Mcp"
+	case NodeTemplateType_Agent:
+		return "Agent"
 	}
 	return "<UNSET>"
 }
@@ -882,6 +890,8 @@ func NodeTemplateTypeFromString(s string) (NodeTemplateType, error) {
 		return NodeTemplateType_CardSelector, nil
 	case "Mcp":
 		return NodeTemplateType_Mcp, nil
+	case "Agent":
+		return NodeTemplateType_Agent, nil
 	}
 	return NodeTemplateType(0), fmt.Errorf("not a valid NodeTemplateType string")
 }

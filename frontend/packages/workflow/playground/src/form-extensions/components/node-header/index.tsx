@@ -301,7 +301,7 @@ export const NodeHeader: React.FC<NodeHeaderProps> = ({
             className={styles.logo}
             nodeId={node.id}
             size={24}
-            alt="logo"
+            alt=""
           />
           {
             <ValidationErrorWrapper

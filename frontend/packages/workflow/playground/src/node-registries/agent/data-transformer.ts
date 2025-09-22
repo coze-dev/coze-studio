@@ -15,7 +15,13 @@
  */
 
 import { get } from 'lodash-es';
+import { nanoid } from 'nanoid';
+import { type NodeFormContext } from '@flowgram-adapter/free-layout-editor';
+import { variableUtils } from '@coze-workflow/variable';
 import {
+  ValueExpressionType,
+  ViewVariableType,
+  type InputValueDTO,
   type InputValueVO,
   type NodeDataDTO,
   VariableTypeDTO,
@@ -35,15 +41,15 @@ const EMPTY_NODE_DATA: NodeDataDTO = {
   inputs: {},
   nodeMeta: {
     description: '',
-    icon: '',
+    icon: 'icon-Agent-v2.png',
     subTitle: '',
-    title: '',
+    title: 'Agent',
     mainColor: '',
   },
   outputs: [],
 };
 
-const extractQuery = (rawQuery: unknown): string => {
+const extractQueryLiteral = (rawQuery: unknown): string => {
   if (typeof rawQuery === 'string') {
     return rawQuery;
   }
@@ -56,9 +62,6 @@ const extractQuery = (rawQuery: unknown): string => {
 
 const isAgentPlatformValue = (value: unknown): value is AgentPlatformValue =>
   PLATFORM_OPTIONS.some(option => option.value === value);
-
-const isInputValueVOArray = (value: unknown): value is InputValueVO[] =>
-  Array.isArray(value);
 
 const buildInputs = (
   rawInputs: NodeDataDTO['inputs'],
@@ -76,35 +79,133 @@ const buildInputs = (
     typeof rawInputs.retry_count === 'number'
       ? rawInputs.retry_count
       : DEFAULT_RETRY_COUNT;
-  const dynamicInputs = isInputValueVOArray(rawInputs.dynamicInputs)
-    ? rawInputs.dynamicInputs
-    : [];
-
   return {
     ...rawInputs,
     platform,
     agent_url: agentUrl,
     agent_key: agentKey,
-    query: extractQuery(rawInputs.query),
-    dynamicInputs,
+    query: extractQueryLiteral(rawInputs.query),
     timeout,
     retry_count: retryCount,
   };
 };
 
-export const transformOnInit = (value?: NodeDataDTO): AgentFormData => {
+const createQueryParamVO = (
+  query: InputValueVO | undefined,
+  fallback: string,
+): InputValueVO => ({
+  name: 'query',
+  key: query?.key ?? nanoid(),
+  input:
+    query?.input && Object.keys(query.input).length
+      ? query.input
+      : {
+          type: ValueExpressionType.LITERAL,
+          content: fallback,
+        },
+});
+
+const isPresent = <T>(value: T | undefined | null): value is T => Boolean(value);
+
+const convertInputParametersToVO = (
+  value: AgentFormData | NodeDataDTO | undefined,
+  context: NodeFormContext,
+): { query: InputValueVO; others: InputValueVO[] } => {
+  const rawList = (value?.inputs?.inputParameters ?? []) as InputValueDTO[];
+  const { variableService } = context.playgroundContext;
+
+  const voList = rawList
+    .map(param => variableUtils.inputValueToVO(param, variableService))
+    .filter(isPresent);
+
+  const queryFromExisting = voList.find(item => item.name === 'query');
+  const queryLiteral = extractQueryLiteral(value?.inputs?.query);
+  const ensuredQuery = createQueryParamVO(queryFromExisting, queryLiteral);
+
+  const others = voList.filter(item => item.name !== 'query');
+  return { query: ensuredQuery, others };
+};
+
+const convertDynamicInputsToVO = (
+  value: unknown,
+  context: NodeFormContext,
+): InputValueVO[] => {
+  const list = Array.isArray(value) ? value : [];
+  const { variableService } = context.playgroundContext;
+  return list
+    .map(item => {
+      if (!item || typeof item !== 'object') {
+        return undefined;
+      }
+      const maybeDTO = item as InputValueDTO;
+      if (maybeDTO.input && 'value' in maybeDTO.input) {
+        return variableUtils.inputValueToVO(maybeDTO, variableService);
+      }
+      const maybeVO = item as InputValueVO;
+      if (maybeVO.input) {
+        return {
+          ...maybeVO,
+          key: maybeVO.key ?? nanoid(),
+        };
+      }
+      return undefined;
+    })
+    .filter(isPresent);
+};
+
+export const transformOnInit = (
+  value: NodeDataDTO | undefined,
+  context: NodeFormContext,
+): AgentFormData => {
   const baseNodeData = value ?? EMPTY_NODE_DATA;
-  const normalizedInputs = buildInputs(baseNodeData.inputs);
+  const rawInputs = baseNodeData.inputs ?? {};
+  const normalizedInputs = buildInputs(rawInputs);
+  const { query: queryParam, others: paramOthers } =
+    convertInputParametersToVO(baseNodeData, context);
+  const dynamicFromConfig = convertDynamicInputsToVO(
+    rawInputs.dynamicInputs,
+    context,
+  );
+  const dynamicInputs = paramOthers.length > 0 ? paramOthers : dynamicFromConfig;
+  const outputs =
+    baseNodeData.outputs && baseNodeData.outputs.length > 0
+      ? baseNodeData.outputs
+      : [
+          {
+            key: nanoid(),
+            name: 'answer',
+            type: ViewVariableType.String,
+          },
+        ];
+  const nodeMeta = {
+    ...EMPTY_NODE_DATA.nodeMeta,
+    ...(baseNodeData.nodeMeta ?? {}),
+    title: baseNodeData.nodeMeta?.title || 'Agent',
+    icon: baseNodeData.nodeMeta?.icon || 'icon-Agent-v2.png',
+  };
+
 
   const normalizedNode: AgentFormData = {
     ...baseNodeData,
-    inputs: normalizedInputs,
+    inputs: {
+      ...normalizedInputs,
+      inputParameters: [queryParam],
+      dynamicInputs,
+    },
+    nodeMeta,
+    outputs,
   };
 
   return normalizedNode;
 };
 
-export const transformOnSubmit = (formData: AgentFormData): NodeDataDTO => {
+export const transformOnSubmit = (
+  formData: AgentFormData,
+  context: NodeFormContext,
+): NodeDataDTO => {
+  const { variableService } = context.playgroundContext;
+  const { node } = context;
+
   const { inputs, ...rest } = formData;
   const {
     agent_url,
@@ -114,6 +215,7 @@ export const transformOnSubmit = (formData: AgentFormData): NodeDataDTO => {
     timeout,
     retry_count,
     platform,
+    inputParameters = [],
     ...otherInputs
   } = inputs;
 
@@ -121,22 +223,38 @@ export const transformOnSubmit = (formData: AgentFormData): NodeDataDTO => {
   const trimmedKey = agent_key?.trim() ?? '';
   const trimmedQuery = query.trim();
 
+  const inputParametersDTO = (inputParameters ?? [])
+    .map(param =>
+      variableUtils.inputValueToDTO(param, variableService, { node }),
+    )
+    .filter(Boolean) as InputValueDTO[];
+
+  const queryParamDTO = inputParametersDTO.find(param => param.name === 'query');
+  const queryDTO = queryParamDTO?.input ?? {
+    type: VariableTypeDTO.string,
+    value: {
+      type: 'literal',
+      content: trimmedQuery,
+    },
+  };
+
+  const dynamicInputsDTO = (dynamicInputs ?? [])
+    .map(input =>
+      variableUtils.inputValueToDTO(input, variableService, { node }),
+    )
+    .filter(Boolean) as InputValueDTO[];
+
   const nextInputs: Record<string, unknown> = {
     ...otherInputs,
     platform,
     agent_url: trimmedUrl,
-    dynamicInputs: Array.isArray(dynamicInputs) ? dynamicInputs : [],
+    dynamicInputs: dynamicInputsDTO,
     timeout: Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT,
     retry_count: Number.isFinite(retry_count)
       ? retry_count
       : DEFAULT_RETRY_COUNT,
-    query: {
-      type: VariableTypeDTO.string,
-      value: {
-        type: 'literal',
-        content: trimmedQuery,
-      },
-    },
+    query: queryDTO,
+    inputParameters: dynamicInputsDTO,
   };
 
   if (trimmedKey) {

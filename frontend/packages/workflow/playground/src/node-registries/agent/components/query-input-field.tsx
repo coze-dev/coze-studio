@@ -14,35 +14,48 @@
  * limitations under the License.
  */
 
+import { Field, type FieldRenderProps, useForm } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 
-import { FieldLayout, Section, TextareaField } from '@/form';
+import { CopyButton } from '@/components/copy-button';
+import { FormCard } from '@/form-extensions/components/form-card';
+import { ExpressionEditor } from '@/nodes-v2/components/expression-editor';
+import { FormItemFeedback } from '@/nodes-v2/components/form-item-feedback';
+import { useReadonly } from '@/nodes-v2/hooks/use-readonly';
+
+import { DYNAMIC_INPUTS_PATH } from '../constants';
 
 interface QueryInputFieldProps {
   name: string;
-  title?: string;
-  tooltip?: string;
 }
 
-export function QueryInputField({
-  name,
-  title = I18n.t('查询内容'),
-  tooltip = I18n.t('填写发送给智能体的查询内容，支持变量引用'),
-}: QueryInputFieldProps) {
+export function QueryInputField({ name }: QueryInputFieldProps) {
+  const form = useForm();
+  const readonly = useReadonly();
+
   return (
-    <Section title={title} tooltip={tooltip}>
-      <FieldLayout
-        label={I18n.t('Query')}
-        required
-        tooltip={I18n.t('支持模板变量，例如 {{inputs.user_query}}')}
-      >
-        <TextareaField
-          name={name}
-          placeholder={I18n.t('请输入智能体查询内容')}
-          minRows={3}
-          maxRows={6}
-        />
-      </FieldLayout>
-    </Section>
+    <Field name={name} defaultValue="">
+      {({ field, fieldState }: FieldRenderProps<string>) => {
+        const dynamicInputs = form.getValueIn(DYNAMIC_INPUTS_PATH) ?? [];
+        return (
+          <FormCard
+            header={I18n.t('用户提示词')}
+            tooltip={I18n.t('定义发送给智能体的提示词内容，支持引用动态参数变量。此内容将传递给 HiAgent 的 Query 字段')}
+            required
+            actionButton={readonly ? [<CopyButton value={field.value ?? ''} />] : []}
+          >
+            <ExpressionEditor
+              {...field}
+              placeholder={I18n.t('请输入提示词内容，可使用 {{参数名}} 引用动态参数')}
+              inputParameters={dynamicInputs}
+              isError={!!fieldState?.errors?.length}
+              maxLength={5000}
+            />
+            <FormItemFeedback errors={fieldState?.errors} />
+          </FormCard>
+        );
+      }}
+    </Field>
   );
 }
+

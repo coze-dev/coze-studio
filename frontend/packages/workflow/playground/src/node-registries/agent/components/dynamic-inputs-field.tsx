@@ -27,7 +27,7 @@ export function DynamicInputsField({ name }: DynamicInputsFieldProps) {
     <InputsParametersField
       name={name}
       title={I18n.t('动态参数')}
-      tooltip={I18n.t('可根据智能体需求动态传入额外参数，支持变量引用')}
+      tooltip={I18n.t('可根据智能体需求动态传入额外参数，支持变量引用。这些参数将传递给 HiAgent 的 Inputs 对象')}
       inputPlaceholder={I18n.t('请输入参数值或引用变量')}
     />
   );

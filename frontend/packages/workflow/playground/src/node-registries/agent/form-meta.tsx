@@ -52,7 +52,7 @@ export const AGENT_FORM_META: FormMetaV2<AgentFormData> = {
       }
     },
     [QUERY_PATH]: ({ value }) => {
-      if (!value || !String(value).trim()) {
+      if (typeof value !== 'string' || value.trim() === '') {
         return I18n.t('查询内容不能为空');
       }
     },
@@ -62,11 +62,18 @@ export const AGENT_FORM_META: FormMetaV2<AgentFormData> = {
     outputs: provideNodeOutputVariablesEffect,
   },
   defaultValues: () => ({
+    nodeMeta: {
+      title: I18n.t('Agent'),
+      subTitle: '',
+      description: '',
+      icon: 'icon-Agent-v2.png',
+    },
     inputs: {
       platform: 'hiagent',
       agent_url: '',
       agent_key: '',
       query: '',
+      inputParameters: [{ name: 'query' }],
       dynamicInputs: [],
       timeout: DEFAULT_TIMEOUT,
       retry_count: DEFAULT_RETRY_COUNT,

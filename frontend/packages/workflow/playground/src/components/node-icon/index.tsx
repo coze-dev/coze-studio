@@ -32,6 +32,7 @@ interface NodeIconProps {
 }
 import cardSelectorIcon from './icon-CardSelector-v2.png';
 import LLM_V2Icon from './icon-LLM-v2.png';
+import AgentIcon from './icon-Agent-v2.png';
 
 export const iconCustomerReplacer = (src) => {
   let iconSrc = src;
@@ -39,6 +40,8 @@ export const iconCustomerReplacer = (src) => {
     iconSrc = cardSelectorIcon;
   } else if (src.includes('icon-LLM-v2')) {
     iconSrc = LLM_V2Icon;
+  } else if (src.includes('icon-Agent-v2')) {
+    iconSrc = AgentIcon;
   }
   return iconSrc;
 }

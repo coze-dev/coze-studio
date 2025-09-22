@@ -14,14 +14,17 @@
  * limitations under the License.
  */
 
+import { I18n } from '@coze-arch/i18n';
+
+import { OutputsField } from '@/node-registries/common/fields';
 import { withNodeConfigForm } from '@/node-registries/common/hocs';
 
 import {
   PLATFORM_PATH,
-  QUERY_PATH,
   DYNAMIC_INPUTS_PATH,
   TIMEOUT_PATH,
   RETRY_COUNT_PATH,
+  QUERY_PATH,
 } from './constants';
 import {
   PlatformSelectorField,
@@ -40,6 +43,15 @@ export const FormRender = withNodeConfigForm(() => (
     <AdvancedSettingsField
       timeoutPath={TIMEOUT_PATH}
       retryPath={RETRY_COUNT_PATH}
+    />
+    <OutputsField
+      name="outputs"
+      title={I18n.t('输出')}
+      tooltip={I18n.t('展示智能体返回的结果，字段不可编辑')}
+      customReadonly
+      topLevelReadonly
+      withDescription={false}
+      allowDeleteLast={false}
     />
   </>
 ));

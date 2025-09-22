@@ -142,6 +142,7 @@ enum NodeType{
     JsonDeserialization = 59,
     DatasetDelete       = 60,
     CardSelector        = 99,
+    Agent               = 100,
     Mcp                 = 61,
     TestNN                 = 71,
 }
@@ -186,6 +187,7 @@ enum NodeTemplateType{
     Mcp                 = 61,
     TestNN              = 71,
     CardSelector        = 99,
+    Agent             = 100,
 }
 
 enum IfConditionRelation {
@@ -314,6 +316,27 @@ struct NodeDesc{
     3: string icon_url     , // This type of icon
     4: i32    support_batch, // Whether to support batch, 1 does not support, 2 supports
     5: i32    link_limit   , // Connection requirements 1 or so can be connected 2 only support the right side
+}
+
+enum AgentPlatformType {
+    Hiagent = 1,
+    Dify    = 2,
+    Coze    = 3,
+}
+
+struct AgentInputs {
+    1: required string agent_url,
+    2: optional string agent_key,
+    3: required string query,
+    4: optional map<string, string> inputs,
+    5: optional AgentPlatformType platform,
+    6: optional i32 timeout,
+    7: optional i32 retry_count,
+}
+
+struct AgentOutputs {
+    1: required string answer,
+    2: optional map<string, string> metadata,
 }
 struct OpenAPI{
     1: list<Parameter> input_list ,
@@ -2289,6 +2312,8 @@ struct GetCardDetailResponse {
     253: required i64                code,
     254: required string             msg,
     255: required base.BaseResp      BaseResp,
+}
+
 // Workflow Export Request
 struct ExportWorkflowRequest {
     1  : required list<string> workflow_ids       (go.tag="json:\"workflow_ids\""),

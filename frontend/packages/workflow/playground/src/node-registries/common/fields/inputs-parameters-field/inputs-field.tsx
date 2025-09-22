@@ -52,6 +52,7 @@ interface InputsFieldProps extends FieldProps<InputValueVO[]> {
   inputProps?: ValueExpressionInputProps;
   customReadonly?: boolean;
   testId?: string;
+  allowAppend?: boolean;
 }
 
 export const InputsField = ({
@@ -71,6 +72,7 @@ export const InputsField = ({
   inputProps = {},
   customReadonly,
   testId,
+  allowAppend = true,
 }: InputsFieldProps) => {
   const formReadonly = useReadonly();
   const readonly = formReadonly || customReadonly;
@@ -86,7 +88,7 @@ export const InputsField = ({
             title={title}
             tooltip={tooltip}
             actions={
-              !readonly
+              allowAppend && !readonly
                 ? [
                     <AddButton
                       dataTestId={`${testId}.add-button`}
