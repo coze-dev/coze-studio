@@ -34,7 +34,6 @@ import (
 	taskAPI "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/task"
 	connectorModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	pluginModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
@@ -46,11 +45,13 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/memory"
 	"github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/workflow"
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/app/service"
 	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
@@ -790,7 +791,7 @@ func pluginCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, res 
 	}
 }
 
-func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (resp *plugin.CopyPluginResponse, err error) {
+func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (resp *dto.CopyPluginResponse, err error) {
 	var copyScene pluginModel.CopyScene
 	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource:
@@ -805,7 +806,7 @@ func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resourc
 		return nil, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}
 
-	resp, err = plugin.PluginApplicationSVC.CopyPlugin(ctx, &plugin.CopyPluginRequest{
+	resp, err = plugin.PluginApplicationSVC.CopyPlugin(ctx, &dto.CopyPluginRequest{
 		CopyScene:   copyScene,
 		PluginID:    res.ResID,
 		UserID:      metaInfo.userID,

@@ -20,17 +20,15 @@ import (
 	"context"
 	"encoding/json"
 
+	"github.com/cloudwego/eino/schema"
 	"github.com/google/uuid"
 
-	"github.com/cloudwego/eino/schema"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
@@ -53,26 +51,26 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 		switch item.Type {
 		case agentrun.ToolTypePlugin:
 
-			etr := &service.ExecuteToolRequest{
+			etr := &model.ExecuteToolRequest{
 				UserID:          ar.UserID,
 				ExecDraftTool:   false,
 				PluginID:        item.PluginID,
 				ToolID:          item.ToolID,
 				ArgumentsInJson: item.Arguments,
-				ExecScene: func(isDraft bool) plugin.ExecuteScene {
+				ExecScene: func(isDraft bool) model.ExecuteScene {
 					if isDraft {
-						return plugin.ExecSceneOfDraftAgent
+						return model.ExecSceneOfDraftAgent
 					} else {
-						return plugin.ExecSceneOfOnlineAgent
+						return model.ExecSceneOfOnlineAgent
 					}
 				}(ar.Identity.IsDraft),
 			}
 
 			opts := []pluginEntity.ExecuteToolOpt{
-				plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
-				plugin.WithProjectInfo(&plugin.ProjectInfo{
+				model.WithInvalidRespProcessStrategy(model.InvalidResponseProcessStrategyOfReturnDefault),
+				model.WithProjectInfo(&model.ProjectInfo{
 					ProjectID:      ar.Identity.AgentID,
-					ProjectType:    plugin.ProjectTypeOfAgent,
+					ProjectType:    model.ProjectTypeOfAgent,
 					ProjectVersion: ptr.Of(ar.Identity.Version),
 				}),
 			}

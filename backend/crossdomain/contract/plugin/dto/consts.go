@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package plugin
+package dto
 
 import "github.com/getkin/kin-openapi/openapi3"
 

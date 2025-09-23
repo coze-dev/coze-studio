@@ -24,7 +24,8 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -64,7 +65,7 @@ func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID
 	return draftAgentTool, nil
 }
 
-func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error) {
+func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error) {
 	toolIDs := make([]int64, 0, len(req.VersionAgentTools))
 	for _, v := range req.VersionAgentTools {
 		toolIDs = append(toolIDs, v.ToolID)
@@ -129,7 +130,7 @@ func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, agentID int64
 	return nil
 }
 
-func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error) {
+func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *dto.UpdateBotDefaultParamsRequest) (err error) {
 	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
 	if err != nil {
 		return errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)

@@ -33,8 +33,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	appEntity "github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 )

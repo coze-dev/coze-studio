@@ -17,7 +17,7 @@
 package vo
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 )
 
 type ExternalResourceRelated struct {

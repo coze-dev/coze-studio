@@ -21,12 +21,13 @@ import (
 	"fmt"
 	"sort"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -92,7 +93,7 @@ func (p *pluginServiceImpl) MGetVersionTools(ctx context.Context, versionTools [
 	return tools, nil
 }
 
-func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error) {
+func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *dto.ListPluginProductsRequest) (resp *dto.ListPluginProductsResponse, err error) {
 	plugins := slices.Transform(pluginConf.GetAllPluginProducts(), func(p *pluginConf.PluginInfo) *entity.PluginInfo {
 		return entity.NewPluginInfo(p.Info)
 	})
@@ -100,7 +101,7 @@ func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPlu
 		return plugins[i].GetRefProductID() < plugins[j].GetRefProductID()
 	})
 
-	return &ListPluginProductsResponse{
+	return &dto.ListPluginProductsResponse{
 		Plugins: plugins,
 		Total:   int64(len(plugins)),
 	}, nil
@@ -186,7 +187,7 @@ func (p *pluginServiceImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID
 	return plugins, total, nil
 }
 
-func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error) {
+func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *model.MGetPluginLatestVersionResponse, err error) {
 	plugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs,
 		repository.WithPluginID(),
 		repository.WithPluginVersion())
@@ -199,14 +200,14 @@ func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginI
 		versions[pl.ID] = pl.GetVersion()
 	}
 
-	resp = &MGetPluginLatestVersionResponse{
+	resp = &model.MGetPluginLatestVersionResponse{
 		Versions: versions,
 	}
 
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (resp *CopyPluginResponse, err error) {
+func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *dto.CopyPluginRequest) (resp *dto.CopyPluginResponse, err error) {
 	err = p.checkCanCopyPlugin(ctx, req.PluginID, req.CopyScene)
 	if err != nil {
 		return nil, err
@@ -232,7 +233,7 @@ func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginReque
 		return nil, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d", req.PluginID)
 	}
 
-	resp = &CopyPluginResponse{
+	resp = &dto.CopyPluginResponse{
 		Plugin: plugin,
 		Tools:  toolMap,
 	}
@@ -240,7 +241,7 @@ func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginReque
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *CopyPluginRequest, plugin *entity.PluginInfo, tools []*entity.ToolInfo) {
+func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *dto.CopyPluginRequest, plugin *entity.PluginInfo, tools []*entity.ToolInfo) {
 	plugin.Version = nil
 	plugin.VersionDesc = nil
 

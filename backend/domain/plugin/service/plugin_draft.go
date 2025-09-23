@@ -28,12 +28,13 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"gopkg.in/yaml.v3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/openapi"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
@@ -44,7 +45,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDraftPluginRequest) (pluginID int64, err error) {
+func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *dto.CreateDraftPluginRequest) (pluginID int64, err error) {
 	mf := entity.NewDefaultPluginManifest()
 	mf.CommonParams = map[model.HTTPParamLocation][]*plugin_develop_common.CommonParamSchema{}
 	mf.NameForHuman = req.Name
@@ -54,7 +55,7 @@ func (p *pluginServiceImpl) CreateDraftPlugin(ctx context.Context, req *CreateDr
 	mf.API.Type, _ = model.ToPluginType(req.PluginType)
 	mf.LogoURL = req.IconURI
 
-	authV2, err := req.AuthInfo.toAuthV2()
+	authV2, err := req.AuthInfo.ToAuthV2()
 	if err != nil {
 		return 0, err
 	}
@@ -130,7 +131,7 @@ func (p *pluginServiceImpl) MGetDraftPlugins(ctx context.Context, pluginIDs []in
 	return plugins, nil
 }
 
-func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraftPluginsRequest) (resp *ListDraftPluginsResponse, err error) {
+func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *dto.ListDraftPluginsRequest) (resp *dto.ListDraftPluginsResponse, err error) {
 	if req.PageInfo.Name == nil || *req.PageInfo.Name == "" {
 		res, err := p.pluginRepo.ListDraftPlugins(ctx, &repository.ListDraftPluginsRequest{
 			SpaceID:  req.SpaceID,
@@ -141,7 +142,7 @@ func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraft
 			return nil, errorx.Wrapf(err, "ListDraftPlugins failed, spaceID=%d, appID=%d", req.SpaceID, req.APPID)
 		}
 
-		return &ListDraftPluginsResponse{
+		return &dto.ListDraftPluginsResponse{
 			Plugins: res.Plugins,
 			Total:   res.Total,
 		}, nil
@@ -186,13 +187,13 @@ func (p *pluginServiceImpl) ListDraftPlugins(ctx context.Context, req *ListDraft
 		total = *res.TotalHits
 	}
 
-	return &ListDraftPluginsResponse{
+	return &dto.ListDraftPluginsResponse{
 		Plugins: plugins,
 		Total:   total,
 	}, nil
 }
 
-func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *CreateDraftPluginWithCodeRequest) (resp *CreateDraftPluginWithCodeResponse, err error) {
+func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *dto.CreateDraftPluginWithCodeRequest) (resp *dto.CreateDraftPluginWithCodeResponse, err error) {
 	err = req.OpenapiDoc.Validate(ctx)
 	if err != nil {
 		return nil, err
@@ -213,7 +214,7 @@ func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *
 		return nil, errorx.Wrapf(err, "CreateDraftPluginWithCode failed")
 	}
 
-	resp = &CreateDraftPluginWithCodeResponse{
+	resp = &dto.CreateDraftPluginWithCodeResponse{
 		Plugin: res.Plugin,
 		Tools:  res.Tools,
 	}
@@ -221,7 +222,7 @@ func (p *pluginServiceImpl) CreateDraftPluginWithCode(ctx context.Context, req *
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *UpdateDraftPluginWithCodeRequest) (err error) {
+func (p *pluginServiceImpl) UpdateDraftPluginWithCode(ctx context.Context, req *dto.UpdateDraftPluginWithCodeRequest) (err error) {
 	doc := req.OpenapiDoc
 	mf := req.Manifest
 
@@ -451,7 +452,7 @@ func isJsonSchemaEqual(nsc, osc *openapi3.Schema) bool {
 	return true
 }
 
-func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDraftPluginRequest) (err error) {
+func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *dto.UpdateDraftPluginRequest) (err error) {
 	oldPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
@@ -494,7 +495,7 @@ func (p *pluginServiceImpl) UpdateDraftPlugin(ctx context.Context, req *UpdateDr
 	return nil
 }
 
-func updatePluginOpenapiDoc(_ context.Context, doc *model.Openapi3T, req *UpdateDraftPluginRequest) (*model.Openapi3T, error) {
+func updatePluginOpenapiDoc(_ context.Context, doc *model.Openapi3T, req *dto.UpdateDraftPluginRequest) (*model.Openapi3T, error) {
 	if req.Name != nil {
 		doc.Info.Title = *req.Name
 	}
@@ -518,7 +519,7 @@ func updatePluginOpenapiDoc(_ context.Context, doc *model.Openapi3T, req *Update
 	return doc, nil
 }
 
-func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *UpdateDraftPluginRequest) (*entity.PluginManifest, error) {
+func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *dto.UpdateDraftPluginRequest) (*entity.PluginManifest, error) {
 	if req.Name != nil {
 		mf.NameForHuman = *req.Name
 		mf.NameForModel = *req.Name
@@ -554,7 +555,7 @@ func updatePluginManifest(_ context.Context, mf *entity.PluginManifest, req *Upd
 	}
 
 	if req.AuthInfo != nil {
-		authV2, err := req.AuthInfo.toAuthV2()
+		authV2, err := req.AuthInfo.ToAuthV2()
 		if err != nil {
 			return nil, err
 		}
@@ -578,7 +579,7 @@ func (p *pluginServiceImpl) MGetDraftTools(ctx context.Context, toolIDs []int64)
 	return tools, nil
 }
 
-func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateDraftToolRequest) (err error) {
+func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *dto.UpdateDraftToolRequest) (err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
@@ -602,7 +603,7 @@ func (p *pluginServiceImpl) UpdateDraftTool(ctx context.Context, req *UpdateDraf
 	return p.updateDraftTool(ctx, req, draftTool)
 }
 
-func (p *pluginServiceImpl) updateDraftTool(ctx context.Context, req *UpdateDraftToolRequest, draftTool *entity.ToolInfo) (err error) {
+func (p *pluginServiceImpl) updateDraftTool(ctx context.Context, req *dto.UpdateDraftToolRequest, draftTool *entity.ToolInfo) (err error) {
 	if req.Method != nil && req.SubURL != nil {
 		api := entity.UniqueToolAPI{
 			SubURL: ptr.FromOrDefault(req.SubURL, ""),
@@ -778,7 +779,7 @@ func (p *pluginServiceImpl) updateDraftToolDebugExample(ctx context.Context, dra
 	return nil
 }
 
-func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *ConvertToOpenapi3DocRequest) (resp *ConvertToOpenapi3DocResponse) {
+func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *dto.ConvertToOpenapi3DocRequest) (resp *dto.ConvertToOpenapi3DocResponse) {
 	var err error
 	defer func() {
 		if err != nil {
@@ -793,7 +794,7 @@ func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *Conve
 		}
 	}()
 
-	resp = &ConvertToOpenapi3DocResponse{}
+	resp = &dto.ConvertToOpenapi3DocResponse{}
 
 	cvt, format, err := getConvertFunc(ctx, req.RawInput)
 	if err != nil {
@@ -813,7 +814,7 @@ func (p *pluginServiceImpl) ConvertToOpenapi3Doc(ctx context.Context, req *Conve
 		return resp
 	}
 
-	return &ConvertToOpenapi3DocResponse{
+	return &dto.ConvertToOpenapi3DocResponse{
 		OpenapiDoc: doc,
 		Manifest:   mf,
 		Format:     format,
@@ -856,7 +857,7 @@ func getConvertFunc(ctx context.Context, rawInput string) (convertFunc, common.P
 	return nil, 0, fmt.Errorf("invalid schema")
 }
 
-func validateConvertResult(ctx context.Context, req *ConvertToOpenapi3DocRequest, doc *model.Openapi3T, mf *entity.PluginManifest) error {
+func validateConvertResult(ctx context.Context, req *dto.ConvertToOpenapi3DocRequest, doc *model.Openapi3T, mf *entity.PluginManifest) error {
 	if req.PluginServerURL != nil {
 		if doc.Servers[0].URL != *req.PluginServerURL {
 			return errorx.New(errno.ErrPluginConvertProtocolFailed, errorx.KV(errno.PluginMsgKey, "inconsistent API URL prefix"))
@@ -876,7 +877,7 @@ func validateConvertResult(ctx context.Context, req *ConvertToOpenapi3DocRequest
 	return nil
 }
 
-func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *CreateDraftToolsWithCodeRequest) (resp *CreateDraftToolsWithCodeResponse, err error) {
+func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *dto.CreateDraftToolsWithCodeRequest) (resp *dto.CreateDraftToolsWithCodeResponse, err error) {
 	err = req.OpenapiDoc.Validate(ctx)
 	if err != nil {
 		return nil, err
@@ -908,7 +909,7 @@ func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *C
 	}
 
 	if !req.ConflictAndUpdate && len(duplicatedTools) > 0 {
-		return &CreateDraftToolsWithCodeResponse{
+		return &dto.CreateDraftToolsWithCodeResponse{
 			DuplicatedTools: duplicatedTools,
 		}, nil
 	}
@@ -932,7 +933,7 @@ func (p *pluginServiceImpl) CreateDraftToolsWithCode(ctx context.Context, req *C
 		return nil, errorx.Wrapf(err, "UpsertDraftTools failed, pluginID=%d", req.PluginID)
 	}
 
-	resp = &CreateDraftToolsWithCodeResponse{}
+	resp = &dto.CreateDraftToolsWithCodeResponse{}
 
 	return resp, nil
 }

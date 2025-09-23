@@ -14,9 +14,9 @@ import (
 	reflect "reflect"
 
 	schema "github.com/cloudwego/eino/schema"
-	plugin "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflow "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	plugin0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	gomock "go.uber.org/mock/gomock"
 )
 

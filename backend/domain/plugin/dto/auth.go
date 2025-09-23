@@ -14,21 +14,30 @@
  * limitations under the License.
  */
 
-package plugin
+package dto
 
 import (
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 )
 
-type CopyPluginRequest struct {
-	PluginID    int64
-	UserID      int64
-	CopyScene   model.CopyScene
-	TargetAPPID *int64
+type GetOAuthStatusResponse struct {
+	IsOauth  bool
+	Status   common.OAuthStatus
+	OAuthURL string
 }
 
-type CopyPluginResponse struct {
-	Plugin *entity.PluginInfo
-	Tools  map[int64]*entity.ToolInfo // old tool id -> new tool id
+type AgentPluginOAuthStatus struct {
+	PluginID      int64
+	PluginName    string
+	PluginIconURL string
+	Status        common.OAuthStatus
+}
+
+type GetAccessTokenRequest struct {
+	UserID    string
+	PluginID  *int64
+	Mode      model.AuthzSubType
+	OAuthInfo *entity.OAuthInfo
 }

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package plugin
+package dto
 
 import (
 	"fmt"
@@ -22,12 +22,13 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/getkin/kin-openapi/openapi3"
+	gonanoid "github.com/matoous/go-nanoid"
+
 	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/getkin/kin-openapi/openapi3"
-	gonanoid "github.com/matoous/go-nanoid"
 )
 
 type ToolInfo struct {
@@ -397,7 +398,7 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 				continue
 			}
 			f, ok := AssistTypeToThriftFormat(APIFileAssistType(_v))
-			if ok {
+			if !ok {
 				return nil, fmt.Errorf("the assist type '%s' of field '%s' is invalid", _v, paramVal.Name)
 			}
 			assistType = ptr.Of(f)

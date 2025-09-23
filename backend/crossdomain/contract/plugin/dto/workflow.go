@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package plugin
+package dto
 
 import (
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"

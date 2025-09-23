@@ -25,8 +25,8 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	plugindto "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -49,7 +49,7 @@ type PluginDAO struct {
 type pluginPO model.Plugin
 
 func (p pluginPO) ToDO() *entity.PluginInfo {
-	return entity.NewPluginInfo(&plugin.PluginInfo{
+	return entity.NewPluginInfo(&plugindto.PluginInfo{
 		ID:          p.ID,
 		SpaceID:     p.SpaceID,
 		DeveloperID: p.DeveloperID,
@@ -174,56 +174,56 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 	return plugins, total, nil
 }
 
-func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
+func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, pluginInfo *entity.PluginInfo) (err error) {
 	table := tx.Plugin
-	_, err = table.WithContext(ctx).Select(table.ID).Where(table.ID.Eq(plugin.ID)).First()
+	_, err = table.WithContext(ctx).Select(table.ID).Where(table.ID.Eq(pluginInfo.ID)).First()
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 
 		m := &model.Plugin{
-			ID:          plugin.ID,
-			SpaceID:     plugin.SpaceID,
-			DeveloperID: plugin.DeveloperID,
-			AppID:       plugin.GetAPPID(),
-			Manifest:    plugin.Manifest,
-			OpenapiDoc:  plugin.OpenapiDoc,
-			PluginType:  int32(plugin.PluginType),
-			IconURI:     plugin.GetIconURI(),
-			ServerURL:   plugin.GetServerURL(),
-			Version:     plugin.GetVersion(),
-			VersionDesc: plugin.GetVersionDesc(),
+			ID:          pluginInfo.ID,
+			SpaceID:     pluginInfo.SpaceID,
+			DeveloperID: pluginInfo.DeveloperID,
+			AppID:       pluginInfo.GetAPPID(),
+			Manifest:    pluginInfo.Manifest,
+			OpenapiDoc:  pluginInfo.OpenapiDoc,
+			PluginType:  int32(pluginInfo.PluginType),
+			IconURI:     pluginInfo.GetIconURI(),
+			ServerURL:   pluginInfo.GetServerURL(),
+			Version:     pluginInfo.GetVersion(),
+			VersionDesc: pluginInfo.GetVersionDesc(),
 		}
 
 		return table.WithContext(ctx).Create(m)
 	}
 
 	updateMap := map[string]any{}
-	if plugin.APPID != nil {
-		updateMap[table.AppID.ColumnName().String()] = *plugin.APPID
+	if pluginInfo.APPID != nil {
+		updateMap[table.AppID.ColumnName().String()] = *pluginInfo.APPID
 	}
-	if plugin.IconURI != nil {
-		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI
+	if pluginInfo.IconURI != nil {
+		updateMap[table.IconURI.ColumnName().String()] = *pluginInfo.IconURI
 	}
-	if plugin.Version != nil {
-		updateMap[table.Version.ColumnName().String()] = *plugin.Version
+	if pluginInfo.Version != nil {
+		updateMap[table.Version.ColumnName().String()] = *pluginInfo.Version
 	}
-	if plugin.VersionDesc != nil {
-		updateMap[table.VersionDesc.ColumnName().String()] = *plugin.VersionDesc
+	if pluginInfo.VersionDesc != nil {
+		updateMap[table.VersionDesc.ColumnName().String()] = *pluginInfo.VersionDesc
 	}
-	if plugin.ServerURL != nil {
-		updateMap[table.ServerURL.ColumnName().String()] = *plugin.ServerURL
+	if pluginInfo.ServerURL != nil {
+		updateMap[table.ServerURL.ColumnName().String()] = *pluginInfo.ServerURL
 	}
-	if plugin.Manifest != nil {
-		b, err := json.Marshal(plugin.Manifest)
+	if pluginInfo.Manifest != nil {
+		b, err := json.Marshal(pluginInfo.Manifest)
 		if err != nil {
 			return err
 		}
 		updateMap[table.Manifest.ColumnName().String()] = b
 	}
-	if plugin.OpenapiDoc != nil {
-		b, err := json.Marshal(plugin.OpenapiDoc)
+	if pluginInfo.OpenapiDoc != nil {
+		b, err := json.Marshal(pluginInfo.OpenapiDoc)
 		if err != nil {
 			return err
 		}
@@ -231,7 +231,7 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin 
 	}
 
 	_, err = table.WithContext(ctx).
-		Where(table.ID.Eq(plugin.ID)).
+		Where(table.ID.Eq(pluginInfo.ID)).
 		Updates(updateMap)
 	if err != nil {
 		return err

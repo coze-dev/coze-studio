@@ -24,8 +24,8 @@ import (
 
 	"golang.org/x/mod/semver"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -64,7 +64,7 @@ func (p *pluginServiceImpl) GetPluginNextVersion(ctx context.Context, pluginID i
 	return nextVersion, nil
 }
 
-func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPluginRequest) (err error) {
+func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *model.PublishPluginRequest) (err error) {
 	draftPlugin, exist, err := p.pluginRepo.GetDraftPlugin(ctx, req.PluginID)
 	if err != nil {
 		return errorx.Wrapf(err, "GetDraftPlugin failed, pluginID=%d", req.PluginID)
@@ -101,8 +101,8 @@ func (p *pluginServiceImpl) PublishPlugin(ctx context.Context, req *PublishPlugi
 	return nil
 }
 
-func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *PublishAPPPluginsRequest) (resp *PublishAPPPluginsResponse, err error) {
-	resp = &PublishAPPPluginsResponse{}
+func (p *pluginServiceImpl) PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (resp *model.PublishAPPPluginsResponse, err error) {
+	resp = &model.PublishAPPPluginsResponse{}
 
 	draftPlugins, err := p.pluginRepo.GetAPPAllDraftPlugins(ctx, req.APPID)
 	if err != nil {

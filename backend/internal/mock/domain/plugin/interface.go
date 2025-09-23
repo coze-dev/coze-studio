@@ -13,8 +13,9 @@ import (
 	context "context"
 	reflect "reflect"
 
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	dto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	entity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	service "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -22,6 +23,7 @@ import (
 type MockPluginService struct {
 	ctrl     *gomock.Controller
 	recorder *MockPluginServiceMockRecorder
+	isgomock struct{}
 }
 
 // MockPluginServiceMockRecorder is the mock recorder for MockPluginService.
@@ -70,10 +72,10 @@ func (mr *MockPluginServiceMockRecorder) CheckPluginToolsDebugStatus(ctx, plugin
 }
 
 // ConvertToOpenapi3Doc mocks base method.
-func (m *MockPluginService) ConvertToOpenapi3Doc(ctx context.Context, req *service.ConvertToOpenapi3DocRequest) *service.ConvertToOpenapi3DocResponse {
+func (m *MockPluginService) ConvertToOpenapi3Doc(ctx context.Context, req *dto.ConvertToOpenapi3DocRequest) *dto.ConvertToOpenapi3DocResponse {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConvertToOpenapi3Doc", ctx, req)
-	ret0, _ := ret[0].(*service.ConvertToOpenapi3DocResponse)
+	ret0, _ := ret[0].(*dto.ConvertToOpenapi3DocResponse)
 	return ret0
 }
 
@@ -84,10 +86,10 @@ func (mr *MockPluginServiceMockRecorder) ConvertToOpenapi3Doc(ctx, req any) *gom
 }
 
 // CopyPlugin mocks base method.
-func (m *MockPluginService) CopyPlugin(ctx context.Context, req *service.CopyPluginRequest) (*service.CopyPluginResponse, error) {
+func (m *MockPluginService) CopyPlugin(ctx context.Context, req *dto.CopyPluginRequest) (*dto.CopyPluginResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CopyPlugin", ctx, req)
-	ret0, _ := ret[0].(*service.CopyPluginResponse)
+	ret0, _ := ret[0].(*dto.CopyPluginResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -99,7 +101,7 @@ func (mr *MockPluginServiceMockRecorder) CopyPlugin(ctx, req any) *gomock.Call {
 }
 
 // CreateDraftPlugin mocks base method.
-func (m *MockPluginService) CreateDraftPlugin(ctx context.Context, req *service.CreateDraftPluginRequest) (int64, error) {
+func (m *MockPluginService) CreateDraftPlugin(ctx context.Context, req *dto.CreateDraftPluginRequest) (int64, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateDraftPlugin", ctx, req)
 	ret0, _ := ret[0].(int64)
@@ -114,10 +116,10 @@ func (mr *MockPluginServiceMockRecorder) CreateDraftPlugin(ctx, req any) *gomock
 }
 
 // CreateDraftPluginWithCode mocks base method.
-func (m *MockPluginService) CreateDraftPluginWithCode(ctx context.Context, req *service.CreateDraftPluginWithCodeRequest) (*service.CreateDraftPluginWithCodeResponse, error) {
+func (m *MockPluginService) CreateDraftPluginWithCode(ctx context.Context, req *dto.CreateDraftPluginWithCodeRequest) (*dto.CreateDraftPluginWithCodeResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateDraftPluginWithCode", ctx, req)
-	ret0, _ := ret[0].(*service.CreateDraftPluginWithCodeResponse)
+	ret0, _ := ret[0].(*dto.CreateDraftPluginWithCodeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -129,10 +131,10 @@ func (mr *MockPluginServiceMockRecorder) CreateDraftPluginWithCode(ctx, req any)
 }
 
 // CreateDraftToolsWithCode mocks base method.
-func (m *MockPluginService) CreateDraftToolsWithCode(ctx context.Context, req *service.CreateDraftToolsWithCodeRequest) (*service.CreateDraftToolsWithCodeResponse, error) {
+func (m *MockPluginService) CreateDraftToolsWithCode(ctx context.Context, req *dto.CreateDraftToolsWithCodeRequest) (*dto.CreateDraftToolsWithCodeResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CreateDraftToolsWithCode", ctx, req)
-	ret0, _ := ret[0].(*service.CreateDraftToolsWithCodeResponse)
+	ret0, _ := ret[0].(*dto.CreateDraftToolsWithCodeResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -187,14 +189,14 @@ func (mr *MockPluginServiceMockRecorder) DuplicateDraftAgentTools(ctx, fromAgent
 }
 
 // ExecuteTool mocks base method.
-func (m *MockPluginService) ExecuteTool(ctx context.Context, req *service.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (*service.ExecuteToolResponse, error) {
+func (m *MockPluginService) ExecuteTool(ctx context.Context, req *plugin.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (*plugin.ExecuteToolResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, req}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ExecuteTool", varargs...)
-	ret0, _ := ret[0].(*service.ExecuteToolResponse)
+	ret0, _ := ret[0].(*plugin.ExecuteToolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -237,10 +239,10 @@ func (mr *MockPluginServiceMockRecorder) GetAccessToken(ctx, oa any) *gomock.Cal
 }
 
 // GetAgentPluginsOAuthStatus mocks base method.
-func (m *MockPluginService) GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) ([]*service.AgentPluginOAuthStatus, error) {
+func (m *MockPluginService) GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) ([]*dto.AgentPluginOAuthStatus, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAgentPluginsOAuthStatus", ctx, userID, agentID)
-	ret0, _ := ret[0].([]*service.AgentPluginOAuthStatus)
+	ret0, _ := ret[0].([]*dto.AgentPluginOAuthStatus)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -282,10 +284,10 @@ func (mr *MockPluginServiceMockRecorder) GetDraftPlugin(ctx, pluginID any) *gomo
 }
 
 // GetOAuthStatus mocks base method.
-func (m *MockPluginService) GetOAuthStatus(ctx context.Context, userID, pluginID int64) (*service.GetOAuthStatusResponse, error) {
+func (m *MockPluginService) GetOAuthStatus(ctx context.Context, userID, pluginID int64) (*dto.GetOAuthStatusResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetOAuthStatus", ctx, userID, pluginID)
-	ret0, _ := ret[0].(*service.GetOAuthStatusResponse)
+	ret0, _ := ret[0].(*dto.GetOAuthStatusResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -373,10 +375,10 @@ func (mr *MockPluginServiceMockRecorder) ListCustomOnlinePlugins(ctx, spaceID, p
 }
 
 // ListDraftPlugins mocks base method.
-func (m *MockPluginService) ListDraftPlugins(ctx context.Context, req *service.ListDraftPluginsRequest) (*service.ListDraftPluginsResponse, error) {
+func (m *MockPluginService) ListDraftPlugins(ctx context.Context, req *dto.ListDraftPluginsRequest) (*dto.ListDraftPluginsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListDraftPlugins", ctx, req)
-	ret0, _ := ret[0].(*service.ListDraftPluginsResponse)
+	ret0, _ := ret[0].(*dto.ListDraftPluginsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -388,10 +390,10 @@ func (mr *MockPluginServiceMockRecorder) ListDraftPlugins(ctx, req any) *gomock.
 }
 
 // ListPluginProducts mocks base method.
-func (m *MockPluginService) ListPluginProducts(ctx context.Context, req *service.ListPluginProductsRequest) (*service.ListPluginProductsResponse, error) {
+func (m *MockPluginService) ListPluginProducts(ctx context.Context, req *dto.ListPluginProductsRequest) (*dto.ListPluginProductsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListPluginProducts", ctx, req)
-	ret0, _ := ret[0].(*service.ListPluginProductsResponse)
+	ret0, _ := ret[0].(*dto.ListPluginProductsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -403,7 +405,7 @@ func (mr *MockPluginServiceMockRecorder) ListPluginProducts(ctx, req any) *gomoc
 }
 
 // MGetAgentTools mocks base method.
-func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *service.MGetAgentToolsRequest) ([]*entity.ToolInfo, error) {
+func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) ([]*entity.ToolInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetAgentTools", ctx, req)
 	ret0, _ := ret[0].([]*entity.ToolInfo)
@@ -478,10 +480,10 @@ func (mr *MockPluginServiceMockRecorder) MGetOnlineTools(ctx, toolIDs any) *gomo
 }
 
 // MGetPluginLatestVersion mocks base method.
-func (m *MockPluginService) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (*service.MGetPluginLatestVersionResponse, error) {
+func (m *MockPluginService) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (*plugin.MGetPluginLatestVersionResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetPluginLatestVersion", ctx, pluginIDs)
-	ret0, _ := ret[0].(*service.MGetPluginLatestVersionResponse)
+	ret0, _ := ret[0].(*plugin.MGetPluginLatestVersionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -552,10 +554,10 @@ func (mr *MockPluginServiceMockRecorder) OAuthCode(ctx, code, state any) *gomock
 }
 
 // PublishAPPPlugins mocks base method.
-func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *service.PublishAPPPluginsRequest) (*service.PublishAPPPluginsResponse, error) {
+func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *plugin.PublishAPPPluginsRequest) (*plugin.PublishAPPPluginsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishAPPPlugins", ctx, req)
-	ret0, _ := ret[0].(*service.PublishAPPPluginsResponse)
+	ret0, _ := ret[0].(*plugin.PublishAPPPluginsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -581,7 +583,7 @@ func (mr *MockPluginServiceMockRecorder) PublishAgentTools(ctx, agentID, agentVe
 }
 
 // PublishPlugin mocks base method.
-func (m *MockPluginService) PublishPlugin(ctx context.Context, req *service.PublishPluginRequest) error {
+func (m *MockPluginService) PublishPlugin(ctx context.Context, req *plugin.PublishPluginRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishPlugin", ctx, req)
 	ret0, _ := ret[0].(error)
@@ -609,7 +611,7 @@ func (mr *MockPluginServiceMockRecorder) RevokeAccessToken(ctx, meta any) *gomoc
 }
 
 // UpdateBotDefaultParams mocks base method.
-func (m *MockPluginService) UpdateBotDefaultParams(ctx context.Context, req *service.UpdateBotDefaultParamsRequest) error {
+func (m *MockPluginService) UpdateBotDefaultParams(ctx context.Context, req *dto.UpdateBotDefaultParamsRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateBotDefaultParams", ctx, req)
 	ret0, _ := ret[0].(error)
@@ -623,21 +625,21 @@ func (mr *MockPluginServiceMockRecorder) UpdateBotDefaultParams(ctx, req any) *g
 }
 
 // UpdateDraftPlugin mocks base method.
-func (m *MockPluginService) UpdateDraftPlugin(ctx context.Context, plugin *service.UpdateDraftPluginRequest) error {
+func (m *MockPluginService) UpdateDraftPlugin(ctx context.Context, arg1 *dto.UpdateDraftPluginRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateDraftPlugin", ctx, plugin)
+	ret := m.ctrl.Call(m, "UpdateDraftPlugin", ctx, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateDraftPlugin indicates an expected call of UpdateDraftPlugin.
-func (mr *MockPluginServiceMockRecorder) UpdateDraftPlugin(ctx, plugin any) *gomock.Call {
+func (mr *MockPluginServiceMockRecorder) UpdateDraftPlugin(ctx, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDraftPlugin", reflect.TypeOf((*MockPluginService)(nil).UpdateDraftPlugin), ctx, plugin)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDraftPlugin", reflect.TypeOf((*MockPluginService)(nil).UpdateDraftPlugin), ctx, arg1)
 }
 
 // UpdateDraftPluginWithCode mocks base method.
-func (m *MockPluginService) UpdateDraftPluginWithCode(ctx context.Context, req *service.UpdateDraftPluginWithCodeRequest) error {
+func (m *MockPluginService) UpdateDraftPluginWithCode(ctx context.Context, req *dto.UpdateDraftPluginWithCodeRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDraftPluginWithCode", ctx, req)
 	ret0, _ := ret[0].(error)
@@ -651,7 +653,7 @@ func (mr *MockPluginServiceMockRecorder) UpdateDraftPluginWithCode(ctx, req any)
 }
 
 // UpdateDraftTool mocks base method.
-func (m *MockPluginService) UpdateDraftTool(ctx context.Context, req *service.UpdateDraftToolRequest) error {
+func (m *MockPluginService) UpdateDraftTool(ctx context.Context, req *dto.UpdateDraftToolRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateDraftTool", ctx, req)
 	ret0, _ := ret[0].(error)

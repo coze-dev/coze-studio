@@ -28,8 +28,8 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service/tool"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -39,7 +39,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *ExecuteToolResponse, err error) {
+func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error) {
 	opt := &model.ExecuteToolOption{}
 	for _, fn := range opts {
 		fn(opt)
@@ -79,7 +79,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 		}
 	}
 
-	resp = &ExecuteToolResponse{
+	resp = &model.ExecuteToolResponse{
 		Tool:        executor.tool,
 		Request:     result.Request,
 		RawResp:     result.RawResp,
@@ -90,7 +90,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) acquireAccessTokenIfNeed(ctx context.Context, req *ExecuteToolRequest, authInfo *model.AuthV2,
+func (p *pluginServiceImpl) acquireAccessTokenIfNeed(ctx context.Context, req *model.ExecuteToolRequest, authInfo *model.AuthV2,
 	schema *model.Openapi3Operation) (accessToken string, authURL string, err error) {
 	if authInfo.Type == model.AuthzTypeOfNone {
 		return "", "", nil
@@ -132,7 +132,7 @@ func (p *pluginServiceImpl) acquireAccessTokenIfNeed(ctx context.Context, req *E
 	return accessToken, authURL, nil
 }
 
-func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *ExecuteToolRequest, opt *model.ExecuteToolOption) (impl *toolExecutor, err error) {
+func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *model.ExecuteToolRequest, opt *model.ExecuteToolOption) (impl *toolExecutor, err error) {
 	if req.UserID == "" {
 		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KV(errno.PluginMsgKey, "userID is required"))
 	}
@@ -175,7 +175,7 @@ func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *ExecuteT
 	return impl, nil
 }
 
-func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (onlinePlugin *entity.PluginInfo, onlineTool *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {
@@ -227,7 +227,7 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *Ex
 	return onlinePlugin, onlineTool, nil
 }
 
-func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (onlinePlugin *entity.PluginInfo, onlineTool *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {
@@ -283,7 +283,7 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *E
 	return onlinePlugin, onlineTool, nil
 }
 
-func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {
@@ -351,7 +351,7 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 	return pl, tl, nil
 }
 
-func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	_ *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {

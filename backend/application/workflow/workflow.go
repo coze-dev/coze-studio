@@ -32,8 +32,6 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
@@ -48,7 +46,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	plugindto "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	domainWorkflow "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -976,22 +976,22 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 		return 0, nil, err
 	}
 
-	pluginMap := make(map[int64]*plugin.PluginEntity)
+	pluginMap := make(map[int64]*plugindto.PluginEntity)
 	pluginToolMap := make(map[int64]int64)
 
 	if len(ds.PluginIDs) > 0 {
 		for idx := range ds.PluginIDs {
 			id := ds.PluginIDs[idx]
-			response, err := appplugin.PluginApplicationSVC.CopyPlugin(ctx, &appplugin.CopyPluginRequest{
+			response, err := appplugin.PluginApplicationSVC.CopyPlugin(ctx, &dto.CopyPluginRequest{
 				PluginID:  id,
 				UserID:    ctxutil.MustGetUIDFromCtx(ctx),
-				CopyScene: pluginmodel.CopySceneOfToLibrary,
+				CopyScene: plugindto.CopySceneOfToLibrary,
 			})
 			if err != nil {
 				return 0, nil, err
 			}
 			pInfo := response.Plugin
-			pluginMap[id] = &plugin.PluginEntity{
+			pluginMap[id] = &plugindto.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
 			}
@@ -1109,9 +1109,9 @@ func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sour
 		}
 	}()
 
-	pluginMap := make(map[int64]*plugin.PluginEntity)
+	pluginMap := make(map[int64]*plugindto.PluginEntity)
 	for o, n := range externalResource.PluginMap {
-		pluginMap[o] = &plugin.PluginEntity{
+		pluginMap[o] = &plugindto.PluginEntity{
 			PluginID: n,
 		}
 	}
@@ -1209,7 +1209,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 		return 0, nil, err
 	}
 
-	pluginMap := make(map[int64]*plugin.PluginEntity)
+	pluginMap := make(map[int64]*plugindto.PluginEntity)
 	if len(ds.PluginIDs) > 0 {
 		for idx := range ds.PluginIDs {
 			id := ds.PluginIDs[idx]
@@ -1217,7 +1217,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 			if err != nil {
 				return 0, nil, err
 			}
-			pluginMap[id] = &plugin.PluginEntity{
+			pluginMap[id] = &plugindto.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
 			}
@@ -2650,8 +2650,8 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		return nil, err
 	}
 
-	toolInfoResponse, err := crossplugin.DefaultSVC().GetPluginToolsInfo(ctx, &plugin.ToolsInfoRequest{
-		PluginEntity: plugin.PluginEntity{
+	toolInfoResponse, err := crossplugin.DefaultSVC().GetPluginToolsInfo(ctx, &plugindto.ToolsInfoRequest{
+		PluginEntity: plugindto.PluginEntity{
 			PluginID:      pluginID,
 			PluginVersion: req.PluginVersion,
 		},
@@ -2718,7 +2718,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 
 	var (
 		pluginSvc           = crossplugin.DefaultSVC()
-		pluginToolsInfoReqs = make(map[int64]*plugin.ToolsInfoRequest)
+		pluginToolsInfoReqs = make(map[int64]*plugindto.ToolsInfoRequest)
 		pluginDetailMap     = make(map[string]*workflow.PluginDetail)
 		toolsDetailInfo     = make(map[string]*workflow.APIDetail)
 		workflowDetailMap   = make(map[string]*workflow.WorkflowDetail)
@@ -2740,8 +2740,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 			if r, ok := pluginToolsInfoReqs[pluginID]; ok {
 				r.ToolIDs = append(r.ToolIDs, toolID)
 			} else {
-				pluginToolsInfoReqs[pluginID] = &plugin.ToolsInfoRequest{
-					PluginEntity: plugin.PluginEntity{
+				pluginToolsInfoReqs[pluginID] = &plugindto.ToolsInfoRequest{
+					PluginEntity: plugindto.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: pl.PluginVersion,
 					},
@@ -2940,8 +2940,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 			return nil, err
 		}
 
-		pluginReq := &plugin.ToolsInfoRequest{
-			PluginEntity: plugin.PluginEntity{
+		pluginReq := &plugindto.ToolsInfoRequest{
+			PluginEntity: plugindto.PluginEntity{
 				PluginID: pluginID,
 			},
 			ToolIDs: []int64{toolID},

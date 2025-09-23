@@ -25,8 +25,8 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	plugindto "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
@@ -60,7 +60,7 @@ func (t toolDraftPO) ToDO() *entity.ToolInfo {
 		Method:          ptr.Of(t.Method),
 		Operation:       t.Operation,
 		DebugStatus:     ptr.Of(common.APIDebugStatus(t.DebugStatus)),
-		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
+		ActivatedStatus: ptr.Of(plugindto.ActivatedStatus(t.ActivatedStatus)),
 	}
 }
 

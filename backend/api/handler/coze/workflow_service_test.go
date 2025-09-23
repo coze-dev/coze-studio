@@ -56,8 +56,6 @@ import (
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	plugin2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
@@ -81,6 +79,7 @@ import (
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	pluginmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/pluginmock"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
@@ -90,6 +89,7 @@ import (
 	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	entity4 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	entity3 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	entity5 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
@@ -2961,16 +2961,16 @@ func TestLLMWithSkills(t *testing.T) {
 		}
 		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
 
-		r.plugin.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).Return(&plugin2.ExecuteToolResponse{
+		r.plugin.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).Return(&pluginmodel.ExecuteToolResponse{
 			TrimmedResp: `{"data":"ok","err_msg":"error","data_structural":{"content":"ok","title":"title","weburl":"weburl"}}`,
 		}, nil).AnyTimes()
 
 		r.plugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*entity3.PluginInfo{
-			{PluginInfo: &plugin2.PluginInfo{ID: 7509353177339133952}},
+			{PluginInfo: &pluginmodel.PluginInfo{ID: 7509353177339133952}},
 		}, nil).AnyTimes()
 
 		r.plugin.EXPECT().MGetDraftPlugins(gomock.Any(), gomock.Any()).Return([]*entity3.PluginInfo{{
-			PluginInfo: &plugin2.PluginInfo{ID: 7509353177339133952},
+			PluginInfo: &pluginmodel.PluginInfo{ID: 7509353177339133952},
 		}}, nil).AnyTimes()
 
 		operationString := `{
@@ -3041,7 +3041,7 @@ func TestLLMWithSkills(t *testing.T) {
   }
 }`
 
-		operation := &plugin2.Openapi3Operation{}
+		operation := &pluginmodel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 
 		r.plugin.EXPECT().MGetOnlineTools(gomock.Any(), gomock.Any()).Return([]*entity3.ToolInfo{
@@ -3569,7 +3569,7 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
     }
   }
 }`
-		operation := &plugin2.Openapi3Operation{}
+		operation := &pluginmodel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 
 		r := newWfTestRunner(t)
@@ -3577,11 +3577,11 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
 
 		r.plugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*entity3.PluginInfo{
 			{
-				PluginInfo: &plugin2.PluginInfo{
+				PluginInfo: &pluginmodel.PluginInfo{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
-					Manifest: &plugin2.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
+					Manifest: &pluginmodel.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
 				},
 			},
 		}, nil).AnyTimes()
@@ -3687,18 +3687,18 @@ func TestGetLLMNodeFCSettingsDetailAndMerged(t *testing.T) {
   }
 }`
 
-		operation := &plugin2.Openapi3Operation{}
+		operation := &pluginmodel.Openapi3Operation{}
 		_ = sonic.UnmarshalString(operationString, operation)
 		r := newWfTestRunner(t)
 		defer r.closeFn()
 
 		r.plugin.EXPECT().MGetOnlinePlugins(gomock.Any(), gomock.Any()).Return([]*entity3.PluginInfo{
 			{
-				PluginInfo: &plugin2.PluginInfo{
+				PluginInfo: &pluginmodel.PluginInfo{
 					ID:       123,
 					SpaceID:  123,
 					Version:  ptr.Of("v0.0.1"),
-					Manifest: &plugin2.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
+					Manifest: &pluginmodel.PluginManifest{NameForHuman: "p1", DescriptionForHuman: "desc"},
 				},
 			},
 		}, nil).AnyTimes()
@@ -4347,7 +4347,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 		defer mockey.Mock((*appmemory.DatabaseApplicationService).CopyDatabase).To(mockCopyDatabase).Build().UnPatch()
 
-		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&appplugin.CopyPluginResponse{
+		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&dto.CopyPluginResponse{
 			Plugin: &entity5.PluginInfo{
 				PluginInfo: &pluginmodel.PluginInfo{
 					ID:      100100,
@@ -4450,7 +4450,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 		defer mockey.Mock((*appmemory.DatabaseApplicationService).CopyDatabase).To(mockCopyDatabase).Build().UnPatch()
 
-		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&appplugin.CopyPluginResponse{
+		defer mockey.Mock((*appplugin.PluginApplicationService).CopyPlugin).Return(&dto.CopyPluginResponse{
 			Plugin: &entity5.PluginInfo{
 				PluginInfo: &pluginmodel.PluginInfo{
 					ID:      time.Now().Unix(),

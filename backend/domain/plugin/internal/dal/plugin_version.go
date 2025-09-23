@@ -24,8 +24,8 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -48,7 +48,7 @@ type PluginVersionDAO struct {
 type pluginVersionPO model.PluginVersion
 
 func (p pluginVersionPO) ToDO() *entity.PluginInfo {
-	return entity.NewPluginInfo(&plugin.PluginInfo{
+	return entity.NewPluginInfo(&dto.PluginInfo{
 		ID:          p.PluginID,
 		SpaceID:     p.SpaceID,
 		APPID:       &p.AppID,

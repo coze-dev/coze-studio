@@ -26,12 +26,12 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/exp/maps"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/pluginutil"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	plugin "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
@@ -355,7 +355,7 @@ func (s *impl) ExecutePlugin(ctx context.Context, input map[string]any, pe *mode
 		uID = conv.Int64ToStr(cfg.Operator)
 	}
 
-	req := &service.ExecuteToolRequest{
+	req := &model.ExecuteToolRequest{
 		UserID:          uID,
 		PluginID:        pe.PluginID,
 		ToolID:          toolID,
@@ -449,7 +449,7 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (_ *schema.ToolInfo, err er
 }
 
 func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg workflowModel.ExecuteConfig) (string, error) {
-	req := &service.ExecuteToolRequest{
+	req := &model.ExecuteToolRequest{
 		UserID:          conv.Int64ToStr(cfg.Operator),
 		PluginID:        p.pluginEntity.PluginID,
 		ToolID:          p.toolInfo.ID,

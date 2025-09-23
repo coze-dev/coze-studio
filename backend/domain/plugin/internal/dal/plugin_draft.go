@@ -25,8 +25,8 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	pluginModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
