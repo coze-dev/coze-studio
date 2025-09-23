@@ -14,6 +14,11 @@ service PublicProductService {
 
     SearchProductResponse PublicSearchProduct(1: SearchProductRequest req)(api.get = "/api/marketplace/product/search", api.category = "PublicAPI")
     SearchSuggestResponse PublicSearchSuggest(1: SearchSuggestRequest req)(api.get = "/api/marketplace/product/search/suggest", api.category = "PublicAPI")
+
+    GetProductCategoryListResponse PublicGetProductCategoryList(1: GetProductCategoryListRequest req)(api.get = "/api/marketplace/product/category/list", api.category = "PublicAPI")
+
+    GetProductCallInfoResponse PublicGetProductCallInfo(1: GetProductCallInfoRequest req)(api.get = "/api/marketplace/product/call_info")
+
 }
 
 struct SearchProductRequest{
@@ -631,4 +636,78 @@ struct DuplicateProductData {
     // New ID after copy
     1: i64 NewEntityID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_entity_id")
     2: optional i64 NewPluginID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_plugin_id") // Plugin ID for workflow
+}
+
+
+struct GetProductCategoryListRequest {
+    1  :          product_common.ProductEntityType EntityType        (api.query = "entity_type")        ,
+    2  : optional bool                             NeedEmptyCategory (api.query = "need_empty_category"), // 上架的时候需要获取全量的 category 列表，用于区分上架场景和主页场景
+    3  : optional string                           Lang (api.query = "lang"),
+
+    255: optional base.Base                        Base                                                 ,
+}
+
+struct GetProductCategoryListData{
+    1: required product_common.ProductEntityType EntityType (agw.key = "entity_type"),
+    2: optional list<ProductCategory>            Categories (agw.key = "categories") ,
+}
+
+struct GetProductCategoryListResponse {
+    1  : required i32                        Code     (agw.key = "code")   ,
+    2  : required string                     Message  (agw.key = "message"),
+    3  :          GetProductCategoryListData Data     (agw.key = "data")   ,
+
+    255: optional base.BaseResp              BaseResp                      ,
+}
+
+struct GetProductCallInfoRequest {
+    1  : product_common.ProductEntityType  EntityType   (api.query="entity_type")                                       ,
+    2  : optional i64                      EntityID     (agw.js_conv="str", agw.cli_conv="str", api.query = "entity_id"),
+    3  : optional string                   EnterpriseID (api.query = "enterprise_id"),
+
+    255: optional base.Base Base,
+}
+
+enum UserLevel {
+    Free          = 0  , // 免费版。
+
+// 海外
+    PremiumLite   = 10 , // PremiumLite
+    Premium       = 15 , // Premium
+    PremiumPlus   = 20 ,
+
+// 国内
+    V1ProInstance = 100, // V1火山专业版
+
+    ProPersonal   = 110, // 个人旗舰版
+    Team          = 120, // 团队版
+    Enterprise    = 130, // 企业版
+}
+
+struct ProductCallCountLimit {
+    1: bool is_unlimited, // 插件是否调用 tool 次数无限制
+    2: i32 used_count, // 插件已调用 tool 次数
+    3: i32 total_count, // 插件总调用 tool 次数
+    4: i64 reset_datetime, // 插件调用 tool 次数重置时间
+    5: map<UserLevel, ProductCallCountLimit> call_count_limit_by_user_level, // 插件调用 tool 次数限制，按付费等级分
+}
+
+struct ProductCallRateLimit {
+    1: i32 qps, // qps
+    2: map<UserLevel, ProductCallRateLimit> call_rate_limit_by_user_level, // 插件调用 tool 速率限制，按付费等级分
+}
+
+struct GetProductCallInfoData {
+    1: string mcp_json, // mcp 配置 json 字符串
+    2: UserLevel user_level, // 付费等级
+    3: ProductCallCountLimit call_count_limit, // 插件调用 tool 次数限制
+    4: ProductCallRateLimit call_rate_limit, // 插件调用 tool 速率限制
+}
+
+struct GetProductCallInfoResponse {
+    1  : required i32                        Code     (agw.key = "code")   ,
+    2  : required string                     Message  (agw.key = "message"),
+    3  : optional GetProductCallInfoData    Data     (agw.key = "data")   ,
+
+    255: optional base.BaseResp      BaseResp
 }
