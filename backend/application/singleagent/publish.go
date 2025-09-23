@@ -235,7 +235,7 @@ func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, pub
 
 func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
 	logs.CtxInfof(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
-	if agent.ShortcutCommand == nil || len(agent.ShortcutCommand) == 0 {
+	if len(agent.ShortcutCommand) == 0 {
 		return agent, nil
 	}
 	cmdIDs := slices.Transform(agent.ShortcutCommand, func(a string) int64 {

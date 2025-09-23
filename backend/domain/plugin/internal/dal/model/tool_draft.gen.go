@@ -4,21 +4,21 @@
 
 package model
 
-import "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+import "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 
 const TableNameToolDraft = "tool_draft"
 
 // ToolDraft Draft Tool
 type ToolDraft struct {
-	ID              int64                  `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                        // Tool ID
-	PluginID        int64                  `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
-	CreatedAt       int64                  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
-	UpdatedAt       int64                  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
-	SubURL          string                 `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
-	Method          string                 `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
-	Operation       *dto.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
-	DebugStatus     int32                  `gorm:"column:debug_status;not null;comment:0:not pass; 1:pass" json:"debug_status"`                           // 0:not pass; 1:pass
-	ActivatedStatus int32                  `gorm:"column:activated_status;not null;comment:0:activated; 1:deactivated" json:"activated_status"`           // 0:activated; 1:deactivated
+	ID              int64                    `gorm:"column:id;primaryKey;comment:Tool ID" json:"id"`                                                        // Tool ID
+	PluginID        int64                    `gorm:"column:plugin_id;not null;comment:Plugin ID" json:"plugin_id"`                                          // Plugin ID
+	CreatedAt       int64                    `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
+	UpdatedAt       int64                    `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
+	SubURL          string                   `gorm:"column:sub_url;not null;comment:Sub URL Path" json:"sub_url"`                                           // Sub URL Path
+	Method          string                   `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
+	Operation       *model.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
+	DebugStatus     int32                    `gorm:"column:debug_status;not null;comment:0:not pass; 1:pass" json:"debug_status"`                           // 0:not pass; 1:pass
+	ActivatedStatus int32                    `gorm:"column:activated_status;not null;comment:0:activated; 1:deactivated" json:"activated_status"`           // 0:activated; 1:deactivated
 }
 
 // TableName ToolDraft's table name

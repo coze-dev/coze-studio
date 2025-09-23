@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package pluginutil
+package api
 
 import (
 	"net/http"
@@ -22,10 +22,10 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -56,7 +56,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 
 		var mType *openapi3.MediaType
 		if hasSetReqBody {
-			mType = op.RequestBody.Value.Content[plugin.MediaTypeJson]
+			mType = op.RequestBody.Value.Content[consts.MediaTypeJson]
 		} else {
 			hasSetReqBody = true
 			mType = &openapi3.MediaType{
@@ -70,7 +70,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 			op.RequestBody = &openapi3.RequestBodyRef{
 				Value: &openapi3.RequestBody{
 					Content: map[string]*openapi3.MediaType{
-						plugin.MediaTypeJson: mType,
+						consts.MediaTypeJson: mType,
 					},
 				},
 			}
@@ -94,7 +94,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 			op.Parameters = []*openapi3.ParameterRef{}
 		}
 		if !hasSetReqBody {
-			op.RequestBody = entity.DefaultOpenapi3RequestBody()
+			op.RequestBody = model.DefaultOpenapi3RequestBody()
 		}
 	}
 
@@ -107,7 +107,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 				strconv.Itoa(http.StatusOK): {
 					Value: &openapi3.Response{
 						Content: map[string]*openapi3.MediaType{
-							plugin.MediaTypeJson: {
+							consts.MediaTypeJson: {
 								Schema: &openapi3.SchemaRef{
 									Value: &openapi3.Schema{
 										Type:       openapi3.TypeObject,
@@ -127,7 +127,7 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 		}
 
 		resp, _ := op.Responses[strconv.Itoa(http.StatusOK)]
-		mType, _ := resp.Value.Content[plugin.MediaTypeJson] // only support application/json
+		mType, _ := resp.Value.Content[consts.MediaTypeJson] // only support application/json
 		mType.Schema.Value.Properties[apiParam.Name] = &openapi3.SchemaRef{
 			Value: _apiParam,
 		}
@@ -138,14 +138,14 @@ func APIParamsToOpenapiOperation(reqParams, respParams []*common.APIParameter) (
 	}
 
 	if respParams != nil && !hasSetRespBody {
-		op.Responses = entity.DefaultOpenapi3Responses()
+		op.Responses = model.DefaultOpenapi3Responses()
 	}
 
 	return op, nil
 }
 
 func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, error) {
-	paramType, ok := plugin.ToOpenapiParamType(apiParam.Type)
+	paramType, ok := convert.ToOpenapiParamType(apiParam.Type)
 	if !ok {
 		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 			errorx.KVf(errno.PluginMsgKey, "the type '%s' of field '%s' is invalid", apiParam.Type, apiParam.Name))
@@ -160,7 +160,7 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 		Type:    paramType,
 		Default: apiParam.GlobalDefault,
 		Extensions: map[string]interface{}{
-			plugin.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
+			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
 
@@ -175,7 +175,7 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 		}
 
 		arrayItem := apiParam.SubParameters[0]
-		arrayItemType, ok := plugin.ToOpenapiParamType(arrayItem.Type)
+		arrayItemType, ok := convert.ToOpenapiParamType(arrayItem.Type)
 		if !ok {
 			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 				errorx.KVf(errno.PluginMsgKey, "the item type '%s' of field '%s' is invalid", arrayItemType, apiParam.Name))
@@ -193,13 +193,13 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 		}
 
 		if arrayItem.GetAssistType() > 0 {
-			aType, ok := plugin.ToAPIAssistType(arrayItem.GetAssistType())
+			aType, ok := convert.ToAPIAssistType(arrayItem.GetAssistType())
 			if !ok {
 				return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 					errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", arrayItem.GetAssistType(), apiParam.Name))
 			}
-			itemSchema.Extensions[plugin.APISchemaExtendAssistType] = aType
-			format, ok := plugin.AssistTypeToFormat(aType)
+			itemSchema.Extensions[consts.APISchemaExtendAssistType] = aType
+			format, ok := convert.AssistTypeToFormat(aType)
 			if !ok {
 				return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 					errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", aType, apiParam.Name))
@@ -216,20 +216,20 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 		paramSchema.Default = apiParam.LocalDefault
 	}
 	if apiParam.LocalDisable {
-		paramSchema.Extensions[plugin.APISchemaExtendLocalDisable] = true
+		paramSchema.Extensions[consts.APISchemaExtendLocalDisable] = true
 	}
 	if apiParam.VariableRef != nil && *apiParam.VariableRef != "" {
-		paramSchema.Extensions[plugin.APISchemaExtendVariableRef] = apiParam.VariableRef
+		paramSchema.Extensions[consts.APISchemaExtendVariableRef] = apiParam.VariableRef
 	}
 
 	if apiParam.GetAssistType() > 0 {
-		aType, ok := plugin.ToAPIAssistType(apiParam.GetAssistType())
+		aType, ok := convert.ToAPIAssistType(apiParam.GetAssistType())
 		if !ok {
 			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", apiParam.GetAssistType(), apiParam.Name))
 		}
-		paramSchema.Extensions[plugin.APISchemaExtendAssistType] = aType
-		format, ok := plugin.AssistTypeToFormat(aType)
+		paramSchema.Extensions[consts.APISchemaExtendAssistType] = aType
+		format, ok := convert.AssistTypeToFormat(aType)
 		if !ok {
 			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", aType, apiParam.Name))
@@ -237,7 +237,7 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 		paramSchema.Format = format
 	}
 
-	loc, ok := plugin.ToHTTPParamLocation(apiParam.Location)
+	loc, ok := convert.ToHTTPParamLocation(apiParam.Location)
 	if !ok {
 		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 			errorx.KVf(errno.PluginMsgKey, "the location '%s' of field '%s' is invalid ", apiParam.Location, apiParam.Name))
@@ -257,7 +257,7 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 }
 
 func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
-	paramType, ok := plugin.ToOpenapiParamType(apiParam.Type)
+	paramType, ok := convert.ToOpenapiParamType(apiParam.Type)
 	if !ok {
 		return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 			errorx.KVf(errno.PluginMsgKey, "the type '%s' of field '%s' is invalid", apiParam.Type, apiParam.Name))
@@ -268,27 +268,27 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 		Type:        paramType,
 		Default:     apiParam.GlobalDefault,
 		Extensions: map[string]interface{}{
-			plugin.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
+			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
 	if apiParam.LocalDefault != nil && *apiParam.LocalDefault != "" {
 		sc.Default = apiParam.LocalDefault
 	}
 	if apiParam.LocalDisable {
-		sc.Extensions[plugin.APISchemaExtendLocalDisable] = true
+		sc.Extensions[consts.APISchemaExtendLocalDisable] = true
 	}
 	if apiParam.VariableRef != nil && *apiParam.VariableRef != "" {
-		sc.Extensions[plugin.APISchemaExtendVariableRef] = apiParam.VariableRef
+		sc.Extensions[consts.APISchemaExtendVariableRef] = apiParam.VariableRef
 	}
 
 	if apiParam.GetAssistType() > 0 {
-		aType, ok := plugin.ToAPIAssistType(apiParam.GetAssistType())
+		aType, ok := convert.ToAPIAssistType(apiParam.GetAssistType())
 		if !ok {
 			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", apiParam.GetAssistType(), apiParam.Name))
 		}
-		sc.Extensions[plugin.APISchemaExtendAssistType] = aType
-		format, ok := plugin.AssistTypeToFormat(aType)
+		sc.Extensions[consts.APISchemaExtendAssistType] = aType
+		format, ok := convert.AssistTypeToFormat(aType)
 		if !ok {
 			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 				errorx.KVf(errno.PluginMsgKey, "the assist type '%s' of field '%s' is invalid", aType, apiParam.Name))
@@ -321,7 +321,7 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 		}
 
 		arrayItem := apiParam.SubParameters[0]
-		itemType, ok := plugin.ToOpenapiParamType(arrayItem.Type)
+		itemType, ok := convert.ToOpenapiParamType(arrayItem.Type)
 		if !ok {
 			return nil, errorx.New(errno.ErrPluginInvalidParamCode,
 				errorx.KVf(errno.PluginMsgKey, "the item type '%s' of field '%s' is invalid", itemType, apiParam.Name))

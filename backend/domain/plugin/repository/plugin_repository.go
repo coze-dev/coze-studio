@@ -19,7 +19,8 @@ package repository
 import (
 	"context"
 
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 )
 
@@ -35,14 +36,14 @@ type PluginRepository interface {
 	UpdateDraftPluginWithCode(ctx context.Context, req *UpdatePluginDraftWithCode) (err error)
 	DeleteDraftPlugin(ctx context.Context, pluginID int64) (err error)
 	DeleteAPPAllPlugins(ctx context.Context, appID int64) (pluginIDs []int64, err error)
-	UpdateDebugExample(ctx context.Context, pluginID int64, openapiDoc *plugin.Openapi3T) (err error)
+	UpdateDebugExample(ctx context.Context, pluginID int64, openapiDoc *model.Openapi3T) (err error)
 
 	GetOnlinePlugin(ctx context.Context, pluginID int64, opts ...PluginSelectedOptions) (plugin *entity.PluginInfo, exist bool, err error)
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error)
-	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
+	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo dto.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
-	GetVersionPlugin(ctx context.Context, vPlugin entity.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error)
-	MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin, opts ...PluginSelectedOptions) (plugin []*entity.PluginInfo, err error)
+	GetVersionPlugin(ctx context.Context, vPlugin model.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error)
+	MGetVersionPlugins(ctx context.Context, vPlugins []model.VersionPlugin, opts ...PluginSelectedOptions) (plugin []*entity.PluginInfo, err error)
 
 	PublishPlugin(ctx context.Context, draftPlugin *entity.PluginInfo) (err error)
 	PublishPlugins(ctx context.Context, draftPlugins []*entity.PluginInfo) (err error)
@@ -53,8 +54,8 @@ type PluginRepository interface {
 
 type UpdatePluginDraftWithCode struct {
 	PluginID   int64
-	OpenapiDoc *plugin.Openapi3T
-	Manifest   *entity.PluginManifest
+	OpenapiDoc *model.Openapi3T
+	Manifest   *model.PluginManifest
 
 	UpdatedTools  []*entity.ToolInfo
 	NewDraftTools []*entity.ToolInfo
@@ -64,8 +65,8 @@ type CreateDraftPluginWithCodeRequest struct {
 	SpaceID     int64
 	DeveloperID int64
 	ProjectID   *int64
-	Manifest    *entity.PluginManifest
-	OpenapiDoc  *plugin.Openapi3T
+	Manifest    *model.PluginManifest
+	OpenapiDoc  *model.Openapi3T
 }
 
 type CreateDraftPluginWithCodeResponse struct {
@@ -76,7 +77,7 @@ type CreateDraftPluginWithCodeResponse struct {
 type ListDraftPluginsRequest struct {
 	SpaceID  int64
 	APPID    int64
-	PageInfo entity.PageInfo
+	PageInfo dto.PageInfo
 }
 
 type ListDraftPluginsResponse struct {

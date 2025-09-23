@@ -22,10 +22,6 @@ import (
 	"strconv"
 	"time"
 
-	shortcutCmd "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
-
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
@@ -39,31 +35,33 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	singleagent "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/service"
 	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
-	shortcutEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
-
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
+	shortcutEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
+	shortcutCmd "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 type SingleAgentApplicationService struct {
 	appContext     *ServiceComponents
 	DomainSVC      singleagent.SingleAgent
-	ShortcutCMDSVC shortcutCmd.ShortcutCmd
+	ShortcutCmdSvc shortcutCmd.ShortcutCmd
 }
 
 func newApplicationService(s *ServiceComponents, domain singleagent.SingleAgent) *SingleAgentApplicationService {
 	return &SingleAgentApplicationService{
 		appContext:     s,
 		DomainSVC:      domain,
-		ShortcutCMDSVC: s.ShortcutCMDDomainSVC,
+		ShortcutCmdSvc: s.ShortcutCMDDomainSVC,
 	}
 }
 
@@ -158,7 +156,7 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	}
 
 	if len(draft.Database) == 0 {
-		return nil, fmt.Errorf("agent %d has no database", agentID) // TODO (@fanlv): error code
+		return nil, fmt.Errorf("agent %d has no database", agentID)
 	}
 
 	dbInfos := draft.Database
@@ -172,7 +170,7 @@ func (s *SingleAgentApplicationService) UpdatePromptDisable(ctx context.Context,
 	}
 
 	if !found {
-		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID) // TODO (@fanlv): error code
+		return nil, fmt.Errorf("database %d not found in agent %d", req.GetDatabaseID(), agentID)
 	}
 
 	draft.Database = dbInfos
@@ -355,7 +353,7 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		target.BackgroundImageInfoList = patch.BackgroundImageInfoList
 	}
 
-	if patch.Agents != nil && len(patch.Agents) > 0 && patch.Agents[0].JumpConfig != nil {
+	if len(patch.Agents) > 0 && patch.Agents[0].JumpConfig != nil {
 		target.JumpConfig = patch.Agents[0].JumpConfig
 	}
 
@@ -469,10 +467,10 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 		return false
 	}
 	globalDisable, localDisable := false, false
-	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendLocalDisable]; ok {
+	if v, ok := schemaVal.Extensions[pluginConsts.APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
-	if v, ok := schemaVal.Extensions[plugin.APISchemaExtendGlobalDisable]; ok {
+	if v, ok := schemaVal.Extensions[pluginConsts.APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
 	return globalDisable || localDisable
@@ -614,7 +612,7 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 				Name:      creator.Name,
 				AvatarURL: creator.IconURL,
 				Self:      uid == v.CreatorID,
-				// UserUniqueName: creator. UserUniqueName,//TODO (@fanlv): Change the user domain after it is completed
+				// UserUniqueName: creator. UserUniqueName,
 				// UserLabel TODO
 			},
 			PublishID: &v.PublishID,
@@ -701,7 +699,7 @@ func (s *SingleAgentApplicationService) getAgentInfo(ctx context.Context, botID 
 	}
 
 	if len(agentInfo.ShortcutCommand) > 0 {
-		shortcutInfos, err := s.ShortcutCMDSVC.ListCMD(ctx, &shortcutEntity.ListMeta{
+		shortcutInfos, err := s.ShortcutCmdSvc.ListCMD(ctx, &shortcutEntity.ListMeta{
 			ObjectID: agentInfo.AgentID,
 			IsOnline: 1,
 			CommandIDs: slices.Transform(agentInfo.ShortcutCommand, func(s string) int64 {

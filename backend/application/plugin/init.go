@@ -24,7 +24,6 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
-	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
@@ -45,7 +44,7 @@ type ServiceComponents struct {
 }
 
 func InitService(ctx context.Context, components *ServiceComponents) (*PluginApplicationService, error) {
-	err := pluginConf.InitConfig(ctx)
+	err := conf.InitConfig(ctx)
 	if err != nil {
 		return nil, err
 	}

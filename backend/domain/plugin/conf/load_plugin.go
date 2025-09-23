@@ -29,21 +29,23 @@ import (
 	"gopkg.in/yaml.v3"
 
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type pluginProductMeta struct {
-	PluginID       int64                  `yaml:"plugin_id" validate:"required"`
-	ProductID      int64                  `yaml:"product_id" validate:"required"`
-	Deprecated     bool                   `yaml:"deprecated"`
-	Version        string                 `yaml:"version" validate:"required"`
-	PluginType     common.PluginType      `yaml:"plugin_type" validate:"required"`
-	OpenapiDocFile string                 `yaml:"openapi_doc_file" validate:"required"`
-	Manifest       *entity.PluginManifest `yaml:"manifest" validate:"required"`
-	Tools          []*toolProductMeta     `yaml:"tools" validate:"required"`
+	PluginID       int64                 `yaml:"plugin_id" validate:"required"`
+	ProductID      int64                 `yaml:"product_id" validate:"required"`
+	Deprecated     bool                  `yaml:"deprecated"`
+	Version        string                `yaml:"version" validate:"required"`
+	PluginType     common.PluginType     `yaml:"plugin_type" validate:"required"`
+	OpenapiDocFile string                `yaml:"openapi_doc_file" validate:"required"`
+	Manifest       *model.PluginManifest `yaml:"manifest" validate:"required"`
+	Tools          []*toolProductMeta    `yaml:"tools" validate:"required"`
 }
 
 type toolProductMeta struct {
@@ -195,10 +197,10 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 
 		pluginProducts[m.PluginID] = pi
 
-		apis := make(map[entity.UniqueToolAPI]*model.Openapi3Operation, len(doc.Paths))
+		apis := make(map[dto.UniqueToolAPI]*model.Openapi3Operation, len(doc.Paths))
 		for subURL, pathItem := range doc.Paths {
 			for method, op := range pathItem.Operations() {
-				api := entity.UniqueToolAPI{
+				api := dto.UniqueToolAPI{
 					SubURL: subURL,
 					Method: strings.ToUpper(method),
 				}
@@ -217,7 +219,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 				continue
 			}
 
-			api := entity.UniqueToolAPI{
+			api := dto.UniqueToolAPI{
 				SubURL: t.SubURL,
 				Method: strings.ToUpper(t.Method),
 			}
@@ -242,7 +244,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 					Method:          ptr.Of(t.Method),
 					SubURL:          ptr.Of(t.SubURL),
 					Operation:       op,
-					ActivatedStatus: ptr.Of(model.ActivateTool),
+					ActivatedStatus: ptr.Of(consts.ActivateTool),
 					DebugStatus:     ptr.Of(common.APIDebugStatus_DebugPassed),
 				},
 			}

@@ -31,13 +31,15 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/tidwall/sjson"
 
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/encoder"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
+
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -66,7 +68,7 @@ func (h *httpCallImpl) Do(ctx context.Context, args *InvocationArgs) (request st
 
 	if errMsg != "" {
 		event := &model.ToolInterruptEvent{
-			Event: model.InterruptEventTypeOfToolNeedOAuth,
+			Event: pluginConsts.InterruptEventTypeOfToolNeedOAuth,
 			ToolNeedOAuth: &model.ToolNeedOAuthInterruptEvent{
 				Message: errMsg,
 			},
@@ -154,15 +156,15 @@ func (h *httpCallImpl) buildHTTPRequest(ctx context.Context, args *InvocationArg
 
 func (h *httpCallImpl) injectAuthInfo(ctx context.Context, httpReq *http.Request, args *InvocationArgs) (errMsg string, err error) {
 
-	if args.AuthInfo.MetaInfo.Type == model.AuthzTypeOfNone {
+	if args.AuthInfo.MetaInfo.Type == pluginConsts.AuthzTypeOfNone {
 		return "", nil
 	}
 
-	if args.AuthInfo.MetaInfo.Type == model.AuthzTypeOfService {
+	if args.AuthInfo.MetaInfo.Type == pluginConsts.AuthzTypeOfService {
 		return h.injectServiceAPIToken(ctx, httpReq, args.AuthInfo.MetaInfo)
 	}
 
-	if args.AuthInfo.MetaInfo.Type == model.AuthzTypeOfOAuth {
+	if args.AuthInfo.MetaInfo.Type == pluginConsts.AuthzTypeOfOAuth {
 		return h.injectOAuthAccessToken(ctx, httpReq, args)
 	}
 
@@ -278,7 +280,7 @@ func (h *httpCallImpl) buildRequestBody(ctx context.Context, op *model.Openapi3O
 }
 
 func (h *httpCallImpl) injectServiceAPIToken(ctx context.Context, httpReq *http.Request, authInfo *model.AuthV2) (errMsg string, err error) {
-	if authInfo.SubType == model.AuthzSubTypeOfServiceAPIToken {
+	if authInfo.SubType == pluginConsts.AuthzSubTypeOfServiceAPIToken {
 		authOfAPIToken := authInfo.AuthOfAPIToken
 		if authOfAPIToken == nil {
 			return "", fmt.Errorf("auth of api token is nil")
@@ -304,20 +306,20 @@ func (h *httpCallImpl) injectServiceAPIToken(ctx context.Context, httpReq *http.
 }
 
 func (h *httpCallImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http.Request, args *InvocationArgs) (errMsg string, err error) {
-	authMode := model.ToolAuthModeOfRequired
-	if tmp, ok := args.Tool.Operation.Extensions[model.APISchemaExtendAuthMode].(string); ok {
-		authMode = model.ToolAuthMode(tmp)
+	authMode := pluginConsts.ToolAuthModeOfRequired
+	if tmp, ok := args.Tool.Operation.Extensions[pluginConsts.APISchemaExtendAuthMode].(string); ok {
+		authMode = pluginConsts.ToolAuthMode(tmp)
 	}
 
-	if authMode == model.ToolAuthModeOfDisabled {
+	if authMode == pluginConsts.ToolAuthModeOfDisabled {
 		return "", nil
 	}
 
 	accessToken := args.AccessToken
 	authInfo := args.AuthInfo.MetaInfo
 
-	if authInfo.SubType == model.AuthzSubTypeOfOAuthAuthorizationCode &&
-		accessToken == "" && authMode != model.ToolAuthModeOfSupported {
+	if authInfo.SubType == pluginConsts.AuthzSubTypeOfOAuthAuthorizationCode &&
+		accessToken == "" && authMode != pluginConsts.ToolAuthModeOfSupported {
 		errMsg = authCodeInvalidTokenErrMsg[i18n.GetLocale(ctx)]
 		if errMsg == "" {
 			errMsg = authCodeInvalidTokenErrMsg[i18n.LocaleEN]

@@ -45,7 +45,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/memory"
 	"github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/workflow"
-	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/app/service"
@@ -792,16 +792,16 @@ func pluginCopyDispatchHandler(ctx context.Context, metaInfo *copyMetaInfo, res 
 }
 
 func copyPlugin(ctx context.Context, metaInfo *copyMetaInfo, res *entity.Resource) (resp *dto.CopyPluginResponse, err error) {
-	var copyScene pluginModel.CopyScene
+	var copyScene pluginConsts.CopyScene
 	switch metaInfo.scene {
 	case resourceCommon.ResourceCopyScene_CopyProjectResource:
-		copyScene = pluginModel.CopySceneOfDuplicate
+		copyScene = pluginConsts.CopySceneOfDuplicate
 	case resourceCommon.ResourceCopyScene_CopyResourceToLibrary:
-		copyScene = pluginModel.CopySceneOfToLibrary
+		copyScene = pluginConsts.CopySceneOfToLibrary
 	case resourceCommon.ResourceCopyScene_CopyResourceFromLibrary:
-		copyScene = pluginModel.CopySceneOfToAPP
+		copyScene = pluginConsts.CopySceneOfToAPP
 	case resourceCommon.ResourceCopyScene_CopyProject:
-		copyScene = pluginModel.CopySceneOfAPPDuplicate
+		copyScene = pluginConsts.CopySceneOfAPPDuplicate
 	default:
 		return nil, fmt.Errorf("unsupported copy scene '%s'", metaInfo.scene)
 	}

@@ -34,15 +34,15 @@ import (
 	postman "github.com/rbretecher/go-postman-collection"
 	"gopkg.in/yaml.v3"
 
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func CurlToOpenapi3Doc(ctx context.Context, rawCURL string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
+func CurlToOpenapi3Doc(ctx context.Context, rawCURL string) (doc *model.Openapi3T, mf *model.PluginManifest, err error) {
 	curlReq, err := parseCURL(ctx, rawCURL)
 	if err != nil {
 		return nil, nil, err
@@ -55,7 +55,7 @@ func CurlToOpenapi3Doc(ctx context.Context, rawCURL string) (doc *model.Openapi3
 		return nil, nil, err
 	}
 
-	doc = entity.NewDefaultOpenapiDoc()
+	doc = model.NewDefaultOpenapiDoc()
 	doc.Servers = append(doc.Servers, &openapi3.Server{
 		URL: urlSchema.Scheme + "://" + urlSchema.Host,
 	})
@@ -68,7 +68,7 @@ func CurlToOpenapi3Doc(ctx context.Context, rawCURL string) (doc *model.Openapi3
 		OperationID: operationID,
 		Summary:     curlReq.Method + ":" + urlSchema.Path,
 		Parameters:  openapi3.Parameters{},
-		Responses:   entity.DefaultOpenapi3Responses(),
+		Responses:   model.DefaultOpenapi3Responses(),
 	}
 
 	if len(curlReq.Header) > 0 {
@@ -99,7 +99,7 @@ func CurlToOpenapi3Doc(ctx context.Context, rawCURL string) (doc *model.Openapi3
 
 	fillNecessaryInfoForOpenapi3Doc(doc)
 
-	mf = entity.NewDefaultPluginManifest()
+	mf = model.NewDefaultPluginManifest()
 	fillManifestWithOpenapiDoc(mf, doc)
 
 	return doc, mf, nil
@@ -278,26 +278,26 @@ func (c *curlRequest) parseCURLData(curIdx int, lines []string) (nxtIdx int, err
 	if len(ct) > 0 {
 		mediaType = ct[0]
 	} else {
-		mediaType = model.MediaTypeFormURLEncoded
+		mediaType = consts.MediaTypeFormURLEncoded
 		c.Header["Content-Type"] = append(c.Header["Content-Type"], mediaType)
 	}
 
 	data := lines[curIdx+1]
 
 	switch mediaType {
-	case model.MediaTypeFormURLEncoded:
+	case consts.MediaTypeFormURLEncoded:
 		err = c.decodeFormUrlEncodedDataBody(data)
 		if err != nil {
 			return 0, err
 		}
 
-	case model.MediaTypeJson, model.MediaTypeProblemJson:
+	case consts.MediaTypeJson, consts.MediaTypeProblemJson:
 		err = c.decodeJsonDataBody(data)
 		if err != nil {
 			return 0, err
 		}
 
-	case model.MediaTypeYaml, model.MediaTypeXYaml:
+	case consts.MediaTypeYaml, consts.MediaTypeXYaml:
 		err = c.decodeYamlDataBody(data)
 		if err != nil {
 			return 0, err
@@ -574,7 +574,7 @@ func curlBodyToOpenAPI(ctx context.Context, mediaType string, bodyValue any, op 
 	}
 
 	if mediaType == "" {
-		mediaType = model.MediaTypeJson
+		mediaType = consts.MediaTypeJson
 	}
 
 	op.RequestBody = &openapi3.RequestBodyRef{
@@ -590,7 +590,7 @@ func curlBodyToOpenAPI(ctx context.Context, mediaType string, bodyValue any, op 
 	return op, nil
 }
 
-func PostmanToOpenapi3Doc(ctx context.Context, rawPostman string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
+func PostmanToOpenapi3Doc(ctx context.Context, rawPostman string) (doc *model.Openapi3T, mf *model.PluginManifest, err error) {
 	collection, err := postman.ParseCollection(bytes.NewBufferString(rawPostman))
 	if err != nil {
 		return nil, nil, errorx.New(errno.ErrPluginConvertProtocolFailed,
@@ -616,7 +616,7 @@ func PostmanToOpenapi3Doc(ctx context.Context, rawPostman string) (doc *model.Op
 			"invalid request url '%s', url must start with 'http://' or 'https://'", rawURL))
 	}
 
-	doc = entity.NewDefaultOpenapiDoc()
+	doc = model.NewDefaultOpenapiDoc()
 	doc.Servers = append(doc.Servers, &openapi3.Server{
 		URL: urlSchema.Scheme + "://" + urlSchema.Host,
 	})
@@ -636,7 +636,7 @@ func PostmanToOpenapi3Doc(ctx context.Context, rawPostman string) (doc *model.Op
 			OperationID: item.Name,
 			Summary:     item.Description,
 			Parameters:  openapi3.Parameters{},
-			Responses:   entity.DefaultOpenapi3Responses(),
+			Responses:   model.DefaultOpenapi3Responses(),
 		}
 
 		var mediaType string
@@ -683,7 +683,7 @@ func PostmanToOpenapi3Doc(ctx context.Context, rawPostman string) (doc *model.Op
 
 	fillNecessaryInfoForOpenapi3Doc(doc)
 
-	mf = entity.NewDefaultPluginManifest()
+	mf = model.NewDefaultPluginManifest()
 	fillManifestWithOpenapiDoc(mf, doc)
 
 	return doc, mf, nil
@@ -772,27 +772,27 @@ func postmanBodyToOpenAPI(ctx context.Context, mediaType string, body *postman.B
 	}
 
 	if mediaType == "" {
-		mediaType = model.MediaTypeJson
+		mediaType = consts.MediaTypeJson
 		if body.Mode == "urlencoded" {
-			mediaType = model.MediaTypeFormURLEncoded
+			mediaType = consts.MediaTypeFormURLEncoded
 		}
 	}
 
 	var valMap map[string]any
 	switch mediaType {
-	case model.MediaTypeJson, model.MediaTypeProblemJson:
+	case consts.MediaTypeJson, consts.MediaTypeProblemJson:
 		valMap, err = decodeRequestJsonBody(body.Raw)
 		if err != nil {
 			return nil, err
 		}
 
-	case model.MediaTypeYaml, model.MediaTypeXYaml:
+	case consts.MediaTypeYaml, consts.MediaTypeXYaml:
 		valMap, err = decodeRequestYamlBody(body.Raw)
 		if err != nil {
 			return nil, err
 		}
 
-	case model.MediaTypeFormURLEncoded:
+	case consts.MediaTypeFormURLEncoded:
 		valMap, err = decodePostmanRequestFormURLEncodedBody(body.URLEncoded)
 		if err != nil {
 			return nil, err
@@ -891,7 +891,7 @@ func decodePostmanRequestFormURLEncodedBody(rawBody any) (body map[string]any, e
 	return body, nil
 }
 
-func SwaggerToOpenapi3Doc(_ context.Context, rawSwagger string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
+func SwaggerToOpenapi3Doc(_ context.Context, rawSwagger string) (doc *model.Openapi3T, mf *model.PluginManifest, err error) {
 	doc2 := &openapi2.T{}
 	if err = json.Unmarshal([]byte(rawSwagger), doc2); err != nil {
 		err = yaml.Unmarshal([]byte(rawSwagger), doc2)
@@ -909,13 +909,13 @@ func SwaggerToOpenapi3Doc(_ context.Context, rawSwagger string) (doc *model.Open
 	doc = ptr.Of(model.Openapi3T(*doc3))
 	fillNecessaryInfoForOpenapi3Doc(doc)
 
-	mf = entity.NewDefaultPluginManifest()
+	mf = model.NewDefaultPluginManifest()
 	fillManifestWithOpenapiDoc(mf, doc)
 
 	return doc, mf, nil
 }
 
-func ToOpenapi3Doc(_ context.Context, rawOpenAPI string) (doc *model.Openapi3T, mf *entity.PluginManifest, err error) {
+func ToOpenapi3Doc(_ context.Context, rawOpenAPI string) (doc *model.Openapi3T, mf *model.PluginManifest, err error) {
 	loader := openapi3.NewLoader()
 	doc3, err := loader.LoadFromData([]byte(rawOpenAPI))
 	if err != nil {
@@ -926,13 +926,13 @@ func ToOpenapi3Doc(_ context.Context, rawOpenAPI string) (doc *model.Openapi3T, 
 	doc = ptr.Of(model.Openapi3T(*doc3))
 	fillNecessaryInfoForOpenapi3Doc(doc)
 
-	mf = entity.NewDefaultPluginManifest()
+	mf = model.NewDefaultPluginManifest()
 	fillManifestWithOpenapiDoc(mf, doc)
 
 	return doc, mf, nil
 }
 
-func fillManifestWithOpenapiDoc(mf *entity.PluginManifest, doc *model.Openapi3T) {
+func fillManifestWithOpenapiDoc(mf *model.PluginManifest, doc *model.Openapi3T) {
 	if doc.Info == nil {
 		return
 	}
@@ -981,14 +981,14 @@ func fillNecessaryInfoForOpenapi3Doc(doc *model.Openapi3T) {
 			}
 
 			if op.Responses != nil {
-				defaultResp := entity.DefaultOpenapi3Responses()
+				defaultResp := model.DefaultOpenapi3Responses()
 				respRef := op.Responses[strconv.Itoa(http.StatusOK)]
 				if respRef == nil || respRef.Value == nil || respRef.Value.Content == nil {
 					op.Responses = defaultResp
 					respRef = op.Responses[strconv.Itoa(http.StatusOK)]
 				}
-				if respRef.Value.Content[model.MediaTypeJson] == nil {
-					respRef.Value.Content[model.MediaTypeJson] = defaultResp[strconv.Itoa(http.StatusOK)].Value.Content[model.MediaTypeJson]
+				if respRef.Value.Content[consts.MediaTypeJson] == nil {
+					respRef.Value.Content[consts.MediaTypeJson] = defaultResp[strconv.Itoa(http.StatusOK)].Value.Content[consts.MediaTypeJson]
 				}
 			}
 		}

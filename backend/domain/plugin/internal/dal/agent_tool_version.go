@@ -24,6 +24,7 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -94,7 +95,7 @@ func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int6
 	return tool, true, nil
 }
 
-func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
+func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentTool pluginModel.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolVersion
 
 	conds := []gen.Condition{
@@ -131,12 +132,12 @@ func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentToo
 	return tool, true, nil
 }
 
-func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTools []pluginModel.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(vAgentTools))
 
 	table := at.query.AgentToolVersion
 	chunks := slices.Chunks(vAgentTools, 20)
-	noVersion := make([]entity.VersionAgentTool, 0, len(vAgentTools))
+	noVersion := make([]pluginModel.VersionAgentTool, 0, len(vAgentTools))
 
 	for _, chunk := range chunks {
 		var q query.IAgentToolVersionDo
@@ -198,9 +199,9 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64, a
 			return fmt.Errorf("invalid tool version")
 		}
 
-		id, err := at.idGen.GenID(ctx)
-		if err != nil {
-			return err
+		id, mErr := at.idGen.GenID(ctx)
+		if mErr != nil {
+			return mErr
 		}
 
 		tls = append(tls, &model.AgentToolVersion{

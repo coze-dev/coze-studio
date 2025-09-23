@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package dto
+package model
 
 import (
 	"encoding/json"
@@ -23,6 +23,7 @@ import (
 	"strings"
 
 	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -31,15 +32,15 @@ import (
 )
 
 type PluginManifest struct {
-	SchemaVersion       string                                         `json:"schema_version" yaml:"schema_version"`
-	NameForModel        string                                         `json:"name_for_model" yaml:"name_for_model"`
-	NameForHuman        string                                         `json:"name_for_human" yaml:"name_for_human"`
-	DescriptionForModel string                                         `json:"description_for_model" yaml:"description_for_model"`
-	DescriptionForHuman string                                         `json:"description_for_human" yaml:"description_for_human"`
-	Auth                *AuthV2                                        `json:"auth" yaml:"auth"`
-	LogoURL             string                                         `json:"logo_url" yaml:"logo_url"`
-	API                 APIDesc                                        `json:"api" yaml:"api"`
-	CommonParams        map[HTTPParamLocation][]*api.CommonParamSchema `json:"common_params" yaml:"common_params"`
+	SchemaVersion       string                                                `json:"schema_version" yaml:"schema_version"`
+	NameForModel        string                                                `json:"name_for_model" yaml:"name_for_model"`
+	NameForHuman        string                                                `json:"name_for_human" yaml:"name_for_human"`
+	DescriptionForModel string                                                `json:"description_for_model" yaml:"description_for_model"`
+	DescriptionForHuman string                                                `json:"description_for_human" yaml:"description_for_human"`
+	Auth                *AuthV2                                               `json:"auth" yaml:"auth"`
+	LogoURL             string                                                `json:"logo_url" yaml:"logo_url"`
+	API                 APIDesc                                               `json:"api" yaml:"api"`
+	CommonParams        map[consts.HTTPParamLocation][]*api.CommonParamSchema `json:"common_params" yaml:"common_params"`
 }
 
 func (mf *PluginManifest) Copy() (*PluginManifest, error) {
@@ -111,7 +112,7 @@ func (mf *PluginManifest) Validate(skipAuthPayload bool) (err error) {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 			"description for human is required"))
 	}
-	if mf.API.Type != PluginTypeOfCloud {
+	if mf.API.Type != consts.PluginTypeOfCloud {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid api type '%s'", mf.API.Type))
 	}
@@ -122,10 +123,10 @@ func (mf *PluginManifest) Validate(skipAuthPayload bool) (err error) {
 	}
 
 	for loc := range mf.CommonParams {
-		if loc != ParamInBody &&
-			loc != ParamInHeader &&
-			loc != ParamInQuery &&
-			loc != ParamInPath {
+		if loc != consts.ParamInBody &&
+			loc != consts.ParamInHeader &&
+			loc != consts.ParamInQuery &&
+			loc != consts.ParamInPath {
 			return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 				"invalid location '%s' in common params", loc))
 		}
@@ -154,14 +155,14 @@ func (mf *PluginManifest) validateAuthInfo(skipAuthPayload bool) (err error) {
 			"auth type is required"))
 	}
 
-	if mf.Auth.Type != AuthzTypeOfNone &&
-		mf.Auth.Type != AuthzTypeOfOAuth &&
-		mf.Auth.Type != AuthzTypeOfService {
+	if mf.Auth.Type != consts.AuthzTypeOfNone &&
+		mf.Auth.Type != consts.AuthzTypeOfOAuth &&
+		mf.Auth.Type != consts.AuthzTypeOfService {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid auth type '%s'", mf.Auth.Type))
 	}
 
-	if mf.Auth.Type == AuthzTypeOfNone {
+	if mf.Auth.Type == consts.AuthzTypeOfNone {
 		return nil
 	}
 
@@ -171,11 +172,11 @@ func (mf *PluginManifest) validateAuthInfo(skipAuthPayload bool) (err error) {
 	}
 
 	switch mf.Auth.SubType {
-	case AuthzSubTypeOfServiceAPIToken:
+	case consts.AuthzSubTypeOfServiceAPIToken:
 		err = mf.validateServiceToken(skipAuthPayload)
 	//case AuthzSubTypeOfOAuthClientCredentials:
 	//	err = mf.validateClientCredentials()
-	case AuthzSubTypeOfOAuthAuthorizationCode:
+	case consts.AuthzSubTypeOfOAuthAuthorizationCode:
 		err = mf.validateAuthCode(skipAuthPayload)
 	default:
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
@@ -212,8 +213,8 @@ func (mf *PluginManifest) validateServiceToken(skipAuthPayload bool) (err error)
 			"key is required"))
 	}
 
-	loc := HTTPParamLocation(strings.ToLower(string(apiToken.Location)))
-	if loc != ParamInHeader && loc != ParamInQuery {
+	loc := consts.HTTPParamLocation(strings.ToLower(string(apiToken.Location)))
+	if loc != consts.ParamInHeader && loc != consts.ParamInQuery {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid location '%s'", apiToken.Location))
 	}
@@ -281,7 +282,7 @@ func (mf *PluginManifest) validateAuthCode(skipAuthPayload bool) (err error) {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 			"client secret is required"))
 	}
-	if authCode.AuthorizationContentType != MediaTypeJson {
+	if authCode.AuthorizationContentType != consts.MediaTypeJson {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 			"authorization content type must be 'application/json'"))
 	}
@@ -335,9 +336,9 @@ type Auth struct {
 }
 
 type AuthV2 struct {
-	Type    AuthzType    `json:"type" yaml:"type"`
-	SubType AuthzSubType `json:"sub_type" yaml:"sub_type"`
-	Payload string       `json:"payload" yaml:"payload"`
+	Type    consts.AuthzType    `json:"type" yaml:"type"`
+	SubType consts.AuthzSubType `json:"sub_type" yaml:"sub_type"`
+	Payload string              `json:"payload" yaml:"payload"`
 	// service
 	AuthOfAPIToken *AuthOfAPIToken `json:"-"`
 
@@ -354,8 +355,8 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 			"invalid plugin manifest json"))
 	}
 
-	au.Type = AuthzType(auth.Type)
-	au.SubType = AuthzSubType(auth.SubType)
+	au.Type = consts.AuthzType(auth.Type)
+	au.SubType = consts.AuthzSubType(auth.SubType)
 
 	if au.Type == "" {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
@@ -368,17 +369,17 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 			secret = encrypt.DefaultAuthSecret
 		}
 
-		payload_, err := encrypt.DecryptByAES(auth.Payload, secret)
-		if err == nil {
+		payload_, eErr := encrypt.DecryptByAES(auth.Payload, secret)
+		if eErr == nil {
 			auth.Payload = string(payload_)
 		}
 	}
 
 	switch au.Type {
-	case AuthzTypeOfNone:
-	case AuthzTypeOfOAuth:
+	case consts.AuthzTypeOfNone:
+	case consts.AuthzTypeOfOAuth:
 		err = au.unmarshalOAuth(auth)
-	case AuthzTypeOfService:
+	case consts.AuthzTypeOfService:
 		err = au.unmarshalService(auth)
 	default:
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
@@ -393,15 +394,15 @@ func (au *AuthV2) UnmarshalJSON(data []byte) error {
 
 func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
 	if au.SubType == "" && au.Payload == "" { // Compatible with old data
-		au.SubType = AuthzSubTypeOfServiceAPIToken
+		au.SubType = consts.AuthzSubTypeOfServiceAPIToken
 	}
 
 	var payload []byte
 
-	if au.SubType == AuthzSubTypeOfServiceAPIToken {
+	if au.SubType == consts.AuthzSubTypeOfServiceAPIToken {
 		if len(auth.ServiceToken) > 0 {
 			au.AuthOfAPIToken = &AuthOfAPIToken{
-				Location:     HTTPParamLocation(strings.ToLower(auth.Location)),
+				Location:     consts.HTTPParamLocation(strings.ToLower(auth.Location)),
 				Key:          auth.Key,
 				ServiceToken: auth.ServiceToken,
 			}
@@ -433,12 +434,12 @@ func (au *AuthV2) unmarshalService(auth *Auth) (err error) {
 
 func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
 	if au.SubType == "" { // Compatible with old data
-		au.SubType = AuthzSubTypeOfOAuthAuthorizationCode
+		au.SubType = consts.AuthzSubTypeOfOAuthAuthorizationCode
 	}
 
 	var payload []byte
 
-	if au.SubType == AuthzSubTypeOfOAuthAuthorizationCode {
+	if au.SubType == consts.AuthzSubTypeOfOAuthAuthorizationCode {
 		if len(auth.ClientSecret) > 0 {
 			au.AuthOfOAuthAuthorizationCode = &OAuthAuthorizationCodeConfig{
 				ClientID:                 auth.ClientID,
@@ -464,7 +465,7 @@ func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
 		}
 	}
 
-	if au.SubType == AuthzSubTypeOfOAuthClientCredentials {
+	if au.SubType == consts.AuthzSubTypeOfOAuthClientCredentials {
 		oauth := &OAuthClientCredentialsConfig{}
 		err = json.Unmarshal([]byte(auth.Payload), oauth)
 		if err != nil {
@@ -492,7 +493,7 @@ func (au *AuthV2) unmarshalOAuth(auth *Auth) (err error) {
 type AuthOfAPIToken struct {
 	// Location is the location of the parameter.
 	// It can be "header" or "query".
-	Location HTTPParamLocation `json:"location"`
+	Location consts.HTTPParamLocation `json:"location"`
 	// Key is the name of the parameter.
 	Key string `json:"key"`
 	// ServiceToken is the simple authorization information for the service.
@@ -520,5 +521,5 @@ type OAuthClientCredentialsConfig struct {
 }
 
 type APIDesc struct {
-	Type PluginType `json:"type" validate:"required"`
+	Type consts.PluginType `json:"type" validate:"required"`
 }

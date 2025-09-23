@@ -18,7 +18,8 @@ package dto
 
 import (
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 )
 
@@ -39,7 +40,7 @@ type UpdateDraftPluginWithCodeRequest struct {
 	UserID     int64
 	PluginID   int64
 	OpenapiDoc *model.Openapi3T
-	Manifest   *entity.PluginManifest
+	Manifest   *model.PluginManifest
 }
 
 type UpdateDraftPluginRequest struct {
@@ -55,8 +56,25 @@ type UpdateDraftPluginRequest struct {
 type ListDraftPluginsRequest struct {
 	SpaceID  int64
 	APPID    int64
-	PageInfo entity.PageInfo
+	PageInfo PageInfo
 }
+
+type PageInfo struct {
+	Name       *string
+	Page       int
+	Size       int
+	SortBy     *SortField
+	OrderByACS *bool
+}
+
+type SortField string
+
+const (
+	SortByCreatedAt SortField = "created_at"
+	SortByUpdatedAt SortField = "updated_at"
+)
+
+type OAuthProvider string
 
 type ListDraftPluginsResponse struct {
 	Plugins []*entity.PluginInfo
@@ -67,7 +85,7 @@ type CreateDraftPluginWithCodeRequest struct {
 	SpaceID     int64
 	DeveloperID int64
 	ProjectID   *int64
-	Manifest    *entity.PluginManifest
+	Manifest    *model.PluginManifest
 	OpenapiDoc  *model.Openapi3T
 }
 
@@ -86,7 +104,7 @@ type ListPluginProductsResponse struct {
 type CopyPluginRequest struct {
 	UserID    int64
 	PluginID  int64
-	CopyScene model.CopyScene
+	CopyScene consts.CopyScene
 
 	TargetAPPID *int64
 }

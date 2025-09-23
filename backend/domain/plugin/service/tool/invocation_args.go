@@ -29,7 +29,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -65,7 +67,7 @@ type InvocationArgs struct {
 	ServerURL        string
 
 	UserID      string
-	ProjectInfo *entity.ProjectInfo
+	ProjectInfo *model.ProjectInfo
 	AccessToken string
 	AuthURL     string
 
@@ -78,7 +80,7 @@ type InvocationArgs struct {
 
 type InvocationArgsBuilder struct {
 	ArgsInJson     string
-	ProjectInfo    *entity.ProjectInfo
+	ProjectInfo    *model.ProjectInfo
 	UserID         string
 	AccessToken    string
 	AuthURL        string
@@ -221,7 +223,7 @@ func (i *InvocationArgs) groupedRequestArgs(ctx context.Context, args map[string
 	i.Body = bodyArgs
 }
 
-func (i *InvocationArgs) setCommonParams(ctx context.Context, commonParams map[model.HTTPParamLocation][]*api.CommonParamSchema) {
+func (i *InvocationArgs) setCommonParams(ctx context.Context, commonParams map[consts.HTTPParamLocation][]*api.CommonParamSchema) {
 	for location, params := range commonParams {
 		for _, param := range params {
 			if param.Name == "" {
@@ -230,13 +232,13 @@ func (i *InvocationArgs) setCommonParams(ctx context.Context, commonParams map[m
 
 			var dic map[string]any
 			switch location {
-			case model.ParamInHeader:
+			case consts.ParamInHeader:
 				dic = i.Header
-			case model.ParamInPath:
+			case consts.ParamInPath:
 				dic = i.Path
-			case model.ParamInQuery:
+			case consts.ParamInQuery:
 				dic = i.Query
-			case model.ParamInBody:
+			case consts.ParamInBody:
 				dic = i.Body
 			default:
 				logs.CtxWarnf(ctx, "unsupported common parameter location '%s' in api schema, name=%s", location, param.Name)
@@ -250,7 +252,7 @@ func (i *InvocationArgs) setCommonParams(ctx context.Context, commonParams map[m
 	}
 }
 
-func (i *InvocationArgs) setDefaultValues(ctx context.Context, projectInfo *entity.ProjectInfo, userID string) (err error) {
+func (i *InvocationArgs) setDefaultValues(ctx context.Context, projectInfo *model.ProjectInfo, userID string) (err error) {
 	groupedKeysSchema := i.groupedKeySchema
 
 	i.Header, err = setParameterDefaultValues(ctx, i.Header, groupedKeysSchema.HeaderKeys, projectInfo, userID)
@@ -282,7 +284,7 @@ func (i *InvocationArgs) setDefaultValues(ctx context.Context, projectInfo *enti
 	return nil
 }
 
-func setParameterDefaultValues(ctx context.Context, dic map[string]any, paramSchema map[string]*openapi3.Parameter, projectInfo *entity.ProjectInfo, userID string) (map[string]any, error) {
+func setParameterDefaultValues(ctx context.Context, dic map[string]any, paramSchema map[string]*openapi3.Parameter, projectInfo *model.ProjectInfo, userID string) (map[string]any, error) {
 	for key, valueSchema := range paramSchema {
 		if valueSchema.Schema == nil || valueSchema.Schema.Value == nil {
 			logs.CtxWarnf(ctx, "[setParameterDefaultValues] parameter '%s' schema is nil", key)
@@ -311,7 +313,7 @@ func setParameterDefaultValues(ctx context.Context, dic map[string]any, paramSch
 	return dic, nil
 }
 
-func setBodyDefaultValues(ctx context.Context, dic map[string]any, sc *openapi3.Schema, projectInfo *entity.ProjectInfo, userID string) (map[string]any, error) {
+func setBodyDefaultValues(ctx context.Context, dic map[string]any, sc *openapi3.Schema, projectInfo *model.ProjectInfo, userID string) (map[string]any, error) {
 	required := slices.ToMap(sc.Required, func(e string) (string, bool) {
 		return e, true
 	})
@@ -367,8 +369,8 @@ func setBodyDefaultValues(ctx context.Context, dic map[string]any, sc *openapi3.
 	return newVals, nil
 }
 
-func getDefaultValue(ctx context.Context, schema *openapi3.Schema, info *entity.ProjectInfo, userID string) (any, error) {
-	vn, exist := schema.Extensions[model.APISchemaExtendVariableRef]
+func getDefaultValue(ctx context.Context, schema *openapi3.Schema, info *model.ProjectInfo, userID string) (any, error) {
+	vn, exist := schema.Extensions[consts.APISchemaExtendVariableRef]
 	if !exist {
 		return schema.Default, nil
 	}
@@ -491,7 +493,7 @@ func isFileSchema(valueSchema *openapi3.Schema) bool {
 	}
 
 	// file schema x-assist-type must not nil
-	assistTypeObj := valueSchema.Extensions[model.APISchemaExtendAssistType]
+	assistTypeObj := valueSchema.Extensions[consts.APISchemaExtendAssistType]
 	if assistTypeObj == nil {
 		// it is not a file value
 		return false
@@ -502,7 +504,7 @@ func isFileSchema(valueSchema *openapi3.Schema) bool {
 		return false
 	}
 
-	if !model.IsValidAPIAssistType(model.APIFileAssistType(assistType)) {
+	if !convert.IsValidAPIAssistType(consts.APIFileAssistType(assistType)) {
 		return false
 	}
 

@@ -15,8 +15,7 @@ import (
 
 	schema "github.com/cloudwego/eino/schema"
 	workflow "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	plugin0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -58,58 +57,15 @@ func (mr *MockPluginServiceMockRecorder) BindAgentTools(ctx, agentID, toolIDs an
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BindAgentTools", reflect.TypeOf((*MockPluginService)(nil).BindAgentTools), ctx, agentID, toolIDs)
 }
 
-// DeleteDraftPlugin mocks base method.
-func (m *MockPluginService) DeleteDraftPlugin(ctx context.Context, PluginID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DeleteDraftPlugin", ctx, PluginID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DeleteDraftPlugin indicates an expected call of DeleteDraftPlugin.
-func (mr *MockPluginServiceMockRecorder) DeleteDraftPlugin(ctx, PluginID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDraftPlugin", reflect.TypeOf((*MockPluginService)(nil).DeleteDraftPlugin), ctx, PluginID)
-}
-
-// DuplicateDraftAgentTools mocks base method.
-func (m *MockPluginService) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DuplicateDraftAgentTools", ctx, fromAgentID, toAgentID)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// DuplicateDraftAgentTools indicates an expected call of DuplicateDraftAgentTools.
-func (mr *MockPluginServiceMockRecorder) DuplicateDraftAgentTools(ctx, fromAgentID, toAgentID any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DuplicateDraftAgentTools", reflect.TypeOf((*MockPluginService)(nil).DuplicateDraftAgentTools), ctx, fromAgentID, toAgentID)
-}
-
-// ExecutePlugin mocks base method.
-func (m *MockPluginService) ExecutePlugin(ctx context.Context, input map[string]any, pe *plugin.PluginEntity, toolID int64, cfg workflow.ExecuteConfig) (map[string]any, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ExecutePlugin", ctx, input, pe, toolID, cfg)
-	ret0, _ := ret[0].(map[string]any)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// ExecutePlugin indicates an expected call of ExecutePlugin.
-func (mr *MockPluginServiceMockRecorder) ExecutePlugin(ctx, input, pe, toolID, cfg any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ExecutePlugin", reflect.TypeOf((*MockPluginService)(nil).ExecutePlugin), ctx, input, pe, toolID, cfg)
-}
-
 // ExecuteTool mocks base method.
-func (m *MockPluginService) ExecuteTool(ctx context.Context, req *plugin.ExecuteToolRequest, opts ...plugin.ExecuteToolOpt) (*plugin.ExecuteToolResponse, error) {
+func (m *MockPluginService) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (*model.ExecuteToolResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, req}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ExecuteTool", varargs...)
-	ret0, _ := ret[0].(*plugin.ExecuteToolResponse)
+	ret0, _ := ret[0].(*model.ExecuteToolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -122,10 +78,10 @@ func (mr *MockPluginServiceMockRecorder) ExecuteTool(ctx, req any, opts ...any) 
 }
 
 // GetAPPAllPlugins mocks base method.
-func (m *MockPluginService) GetAPPAllPlugins(ctx context.Context, appID int64) ([]*plugin.PluginInfo, error) {
+func (m *MockPluginService) GetAPPAllPlugins(ctx context.Context, appID int64) ([]*model.PluginInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAPPAllPlugins", ctx, appID)
-	ret0, _ := ret[0].([]*plugin.PluginInfo)
+	ret0, _ := ret[0].([]*model.PluginInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -136,41 +92,11 @@ func (mr *MockPluginServiceMockRecorder) GetAPPAllPlugins(ctx, appID any) *gomoc
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAPPAllPlugins", reflect.TypeOf((*MockPluginService)(nil).GetAPPAllPlugins), ctx, appID)
 }
 
-// GetPluginInvokableTools mocks base method.
-func (m *MockPluginService) GetPluginInvokableTools(ctx context.Context, req *plugin.ToolsInvokableRequest) (map[int64]plugin0.InvokableTool, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPluginInvokableTools", ctx, req)
-	ret0, _ := ret[0].(map[int64]plugin0.InvokableTool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPluginInvokableTools indicates an expected call of GetPluginInvokableTools.
-func (mr *MockPluginServiceMockRecorder) GetPluginInvokableTools(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginInvokableTools", reflect.TypeOf((*MockPluginService)(nil).GetPluginInvokableTools), ctx, req)
-}
-
-// GetPluginToolsInfo mocks base method.
-func (m *MockPluginService) GetPluginToolsInfo(ctx context.Context, req *plugin.ToolsInfoRequest) (*plugin.ToolsInfoResponse, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetPluginToolsInfo", ctx, req)
-	ret0, _ := ret[0].(*plugin.ToolsInfoResponse)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetPluginToolsInfo indicates an expected call of GetPluginToolsInfo.
-func (mr *MockPluginServiceMockRecorder) GetPluginToolsInfo(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetPluginToolsInfo", reflect.TypeOf((*MockPluginService)(nil).GetPluginToolsInfo), ctx, req)
-}
-
 // MGetAgentTools mocks base method.
-func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *plugin.MGetAgentToolsRequest) ([]*plugin.ToolInfo, error) {
+func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) ([]*model.ToolInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetAgentTools", ctx, req)
-	ret0, _ := ret[0].([]*plugin.ToolInfo)
+	ret0, _ := ret[0].([]*model.ToolInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -181,26 +107,71 @@ func (mr *MockPluginServiceMockRecorder) MGetAgentTools(ctx, req any) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetAgentTools", reflect.TypeOf((*MockPluginService)(nil).MGetAgentTools), ctx, req)
 }
 
-// MGetPluginLatestVersion mocks base method.
-func (m *MockPluginService) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (*plugin.MGetPluginLatestVersionResponse, error) {
+// MGetDraftPlugins mocks base method.
+func (m *MockPluginService) MGetDraftPlugins(ctx context.Context, pluginIDs []int64) ([]*model.PluginInfo, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MGetPluginLatestVersion", ctx, pluginIDs)
-	ret0, _ := ret[0].(*plugin.MGetPluginLatestVersionResponse)
+	ret := m.ctrl.Call(m, "MGetDraftPlugins", ctx, pluginIDs)
+	ret0, _ := ret[0].([]*model.PluginInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// MGetPluginLatestVersion indicates an expected call of MGetPluginLatestVersion.
-func (mr *MockPluginServiceMockRecorder) MGetPluginLatestVersion(ctx, pluginIDs any) *gomock.Call {
+// MGetDraftPlugins indicates an expected call of MGetDraftPlugins.
+func (mr *MockPluginServiceMockRecorder) MGetDraftPlugins(ctx, pluginIDs any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetPluginLatestVersion", reflect.TypeOf((*MockPluginService)(nil).MGetPluginLatestVersion), ctx, pluginIDs)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDraftPlugins", reflect.TypeOf((*MockPluginService)(nil).MGetDraftPlugins), ctx, pluginIDs)
+}
+
+// MGetDraftTools mocks base method.
+func (m *MockPluginService) MGetDraftTools(ctx context.Context, pluginIDs []int64) ([]*model.ToolInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetDraftTools", ctx, pluginIDs)
+	ret0, _ := ret[0].([]*model.ToolInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetDraftTools indicates an expected call of MGetDraftTools.
+func (mr *MockPluginServiceMockRecorder) MGetDraftTools(ctx, pluginIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDraftTools", reflect.TypeOf((*MockPluginService)(nil).MGetDraftTools), ctx, pluginIDs)
+}
+
+// MGetOnlinePlugins mocks base method.
+func (m *MockPluginService) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) ([]*model.PluginInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetOnlinePlugins", ctx, pluginIDs)
+	ret0, _ := ret[0].([]*model.PluginInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetOnlinePlugins indicates an expected call of MGetOnlinePlugins.
+func (mr *MockPluginServiceMockRecorder) MGetOnlinePlugins(ctx, pluginIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetOnlinePlugins", reflect.TypeOf((*MockPluginService)(nil).MGetOnlinePlugins), ctx, pluginIDs)
+}
+
+// MGetOnlineTools mocks base method.
+func (m *MockPluginService) MGetOnlineTools(ctx context.Context, pluginIDs []int64) ([]*model.ToolInfo, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetOnlineTools", ctx, pluginIDs)
+	ret0, _ := ret[0].([]*model.ToolInfo)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetOnlineTools indicates an expected call of MGetOnlineTools.
+func (mr *MockPluginServiceMockRecorder) MGetOnlineTools(ctx, pluginIDs any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetOnlineTools", reflect.TypeOf((*MockPluginService)(nil).MGetOnlineTools), ctx, pluginIDs)
 }
 
 // MGetVersionPlugins mocks base method.
-func (m *MockPluginService) MGetVersionPlugins(ctx context.Context, versionPlugins []plugin.VersionPlugin) ([]*plugin.PluginInfo, error) {
+func (m *MockPluginService) MGetVersionPlugins(ctx context.Context, versionPlugins []model.VersionPlugin) ([]*model.PluginInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetVersionPlugins", ctx, versionPlugins)
-	ret0, _ := ret[0].([]*plugin.PluginInfo)
+	ret0, _ := ret[0].([]*model.PluginInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -212,10 +183,10 @@ func (mr *MockPluginServiceMockRecorder) MGetVersionPlugins(ctx, versionPlugins 
 }
 
 // MGetVersionTools mocks base method.
-func (m *MockPluginService) MGetVersionTools(ctx context.Context, versionTools []plugin.VersionTool) ([]*plugin.ToolInfo, error) {
+func (m *MockPluginService) MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) ([]*model.ToolInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetVersionTools", ctx, versionTools)
-	ret0, _ := ret[0].([]*plugin.ToolInfo)
+	ret0, _ := ret[0].([]*model.ToolInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -227,10 +198,10 @@ func (mr *MockPluginServiceMockRecorder) MGetVersionTools(ctx, versionTools any)
 }
 
 // PublishAPPPlugins mocks base method.
-func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *plugin.PublishAPPPluginsRequest) (*plugin.PublishAPPPluginsResponse, error) {
+func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (*model.PublishAPPPluginsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishAPPPlugins", ctx, req)
-	ret0, _ := ret[0].(*plugin.PublishAPPPluginsResponse)
+	ret0, _ := ret[0].(*model.PublishAPPPluginsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -239,34 +210,6 @@ func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *plugin.P
 func (mr *MockPluginServiceMockRecorder) PublishAPPPlugins(ctx, req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishAPPPlugins", reflect.TypeOf((*MockPluginService)(nil).PublishAPPPlugins), ctx, req)
-}
-
-// PublishAgentTools mocks base method.
-func (m *MockPluginService) PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishAgentTools", ctx, agentID, agentVersion)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PublishAgentTools indicates an expected call of PublishAgentTools.
-func (mr *MockPluginServiceMockRecorder) PublishAgentTools(ctx, agentID, agentVersion any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishAgentTools", reflect.TypeOf((*MockPluginService)(nil).PublishAgentTools), ctx, agentID, agentVersion)
-}
-
-// PublishPlugin mocks base method.
-func (m *MockPluginService) PublishPlugin(ctx context.Context, req *plugin.PublishPluginRequest) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublishPlugin", ctx, req)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PublishPlugin indicates an expected call of PublishPlugin.
-func (mr *MockPluginServiceMockRecorder) PublishPlugin(ctx, req any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishPlugin", reflect.TypeOf((*MockPluginService)(nil).PublishPlugin), ctx, req)
 }
 
 // MockInvokableTool is a mock of InvokableTool interface.

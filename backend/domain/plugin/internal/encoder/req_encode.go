@@ -27,16 +27,16 @@ import (
 	"github.com/shopspring/decimal"
 	"gopkg.in/yaml.v3"
 
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 )
 
 func EncodeBodyWithContentType(contentType string, body map[string]any) ([]byte, error) {
 	switch contentType {
-	case plugin.MediaTypeJson, plugin.MediaTypeProblemJson:
+	case consts.MediaTypeJson, consts.MediaTypeProblemJson:
 		return jsonBodyEncoder(body)
-	case plugin.MediaTypeFormURLEncoded:
+	case consts.MediaTypeFormURLEncoded:
 		return urlencodedBodyEncoder(body)
-	case plugin.MediaTypeYaml, plugin.MediaTypeXYaml:
+	case consts.MediaTypeYaml, consts.MediaTypeXYaml:
 		return yamlBodyEncoder(body)
 	default:
 		return nil, fmt.Errorf("[EncodeBodyWithContentType] unsupported contentType=%s", contentType)

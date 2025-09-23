@@ -21,9 +21,10 @@ import (
 
 	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino/schema"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/urltobase64url"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestTransformMessagePart(t *testing.T) {

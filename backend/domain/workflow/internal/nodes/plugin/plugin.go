@@ -24,8 +24,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
@@ -116,7 +114,7 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 	if ctxExeCfg := execute.GetExeCtx(ctx); ctxExeCfg != nil {
 		exeCfg = ctxExeCfg.ExeCfg
 	}
-	result, err := crossplugin.DefaultSVC().ExecutePlugin(ctx, parameters, &model.PluginEntity{
+	result, err := ExecutePlugin(ctx, parameters, &vo.PluginEntity{
 		PluginID:      p.pluginID,
 		PluginVersion: ptr.Of(p.pluginVersion),
 	}, p.toolID, exeCfg)

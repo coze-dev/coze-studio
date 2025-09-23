@@ -25,8 +25,8 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
@@ -42,7 +42,7 @@ func NewPluginOAuthAuthDAO(db *gorm.DB, idGen idgen.IDGenerator) *PluginOAuthAut
 
 type pluginOAuthAuthPO model.PluginOauthAuth
 
-func (p pluginOAuthAuthPO) ToDO() *entity.AuthorizationCodeInfo {
+func (p pluginOAuthAuthPO) ToDO() *dto.AuthorizationCodeInfo {
 	secret := os.Getenv(encrypt.OAuthTokenSecretEnv)
 	if secret == "" {
 		secret = encrypt.DefaultOAuthTokenSecret
@@ -61,9 +61,9 @@ func (p pluginOAuthAuthPO) ToDO() *entity.AuthorizationCodeInfo {
 		}
 	}
 
-	return &entity.AuthorizationCodeInfo{
+	return &dto.AuthorizationCodeInfo{
 		RecordID: p.ID,
-		Meta: &entity.AuthorizationCodeMeta{
+		Meta: &dto.AuthorizationCodeMeta{
 			UserID:   p.UserID,
 			PluginID: p.PluginID,
 			IsDraft:  p.IsDraft,
@@ -82,7 +82,7 @@ type PluginOAuthAuthDAO struct {
 	query *query.Query
 }
 
-func (p *PluginOAuthAuthDAO) Get(ctx context.Context, meta *entity.AuthorizationCodeMeta) (info *entity.AuthorizationCodeInfo, exist bool, err error) {
+func (p *PluginOAuthAuthDAO) Get(ctx context.Context, meta *dto.AuthorizationCodeMeta) (info *dto.AuthorizationCodeInfo, exist bool, err error) {
 	table := p.query.PluginOauthAuth
 	res, err := table.WithContext(ctx).
 		Where(
@@ -103,7 +103,7 @@ func (p *PluginOAuthAuthDAO) Get(ctx context.Context, meta *entity.Authorization
 	return info, true, nil
 }
 
-func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *entity.AuthorizationCodeInfo) (err error) {
+func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *dto.AuthorizationCodeInfo) (err error) {
 	if info.Meta == nil || info.Meta.UserID == "" || info.Meta.PluginID <= 0 {
 		return fmt.Errorf("meta info is required")
 	}
@@ -141,7 +141,8 @@ func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *entity.Authorizat
 			return err
 		}
 
-		id, err := p.idGen.GenID(ctx)
+		var id int64
+		id, err = p.idGen.GenID(ctx)
 		if err != nil {
 			return err
 		}
@@ -179,9 +180,9 @@ func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *entity.Authorizat
 		updateMap[table.LastActiveAt.ColumnName().String()] = info.LastActiveAtMS
 	}
 	if info.Config != nil {
-		b, err := json.Marshal(info.Config)
-		if err != nil {
-			return err
+		b, mErr := json.Marshal(info.Config)
+		if mErr != nil {
+			return mErr
 		}
 		updateMap[table.OauthConfig.ColumnName().String()] = b
 	}
@@ -197,7 +198,7 @@ func (p *PluginOAuthAuthDAO) Upsert(ctx context.Context, info *entity.Authorizat
 	return err
 }
 
-func (p *PluginOAuthAuthDAO) UpdateLastActiveAt(ctx context.Context, meta *entity.AuthorizationCodeMeta, lastActiveAtMs int64) (err error) {
+func (p *PluginOAuthAuthDAO) UpdateLastActiveAt(ctx context.Context, meta *dto.AuthorizationCodeMeta, lastActiveAtMs int64) (err error) {
 	po := &model.PluginOauthAuth{
 		LastActiveAt: lastActiveAtMs,
 	}
@@ -214,11 +215,11 @@ func (p *PluginOAuthAuthDAO) UpdateLastActiveAt(ctx context.Context, meta *entit
 	return err
 }
 
-func (p *PluginOAuthAuthDAO) GetRefreshTokenList(ctx context.Context, nextRefreshAt int64, limit int) (infos []*entity.AuthorizationCodeInfo, err error) {
+func (p *PluginOAuthAuthDAO) GetRefreshTokenList(ctx context.Context, nextRefreshAt int64, limit int) (infos []*dto.AuthorizationCodeInfo, err error) {
 	const size = 50
 	table := p.query.PluginOauthAuth
 
-	infos = make([]*entity.AuthorizationCodeInfo, 0, limit)
+	infos = make([]*dto.AuthorizationCodeInfo, 0, limit)
 
 	for limit > 0 {
 		res, err := table.WithContext(ctx).
@@ -233,7 +234,7 @@ func (p *PluginOAuthAuthDAO) GetRefreshTokenList(ctx context.Context, nextRefres
 			return nil, err
 		}
 
-		infos = make([]*entity.AuthorizationCodeInfo, 0, len(res))
+		infos = make([]*dto.AuthorizationCodeInfo, 0, len(res))
 		for _, v := range res {
 			infos = append(infos, pluginOAuthAuthPO(*v).ToDO())
 		}
@@ -265,7 +266,7 @@ func (p *PluginOAuthAuthDAO) BatchDeleteByIDs(ctx context.Context, ids []int64) 
 	return nil
 }
 
-func (p *PluginOAuthAuthDAO) Delete(ctx context.Context, meta *entity.AuthorizationCodeMeta) (err error) {
+func (p *PluginOAuthAuthDAO) Delete(ctx context.Context, meta *dto.AuthorizationCodeMeta) (err error) {
 	table := p.query.PluginOauthAuth
 	_, err = table.WithContext(ctx).
 		Where(

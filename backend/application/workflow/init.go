@@ -34,6 +34,8 @@ import (
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 	plugin "github.com/coze-dev/coze-studio/backend/domain/plugin/service"
+	wrapPlugin "github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
+
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
@@ -97,6 +99,7 @@ func InitService(_ context.Context, components *ServiceComponents) (*Application
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
+	wrapPlugin.SetOSS(components.Tos)
 
 	code.SetCodeRunner(components.CodeRunner)
 	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())

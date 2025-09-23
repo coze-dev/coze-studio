@@ -26,8 +26,11 @@ import (
 	"gorm.io/gorm"
 
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -223,11 +226,11 @@ func (p *pluginRepoImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int6
 	return plugins, nil
 }
 
-func (p *pluginRepoImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *pluginRepoImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo dto.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	return p.pluginDAO.List(ctx, spaceID, pageInfo)
 }
 
-func (p *pluginRepoImpl) GetVersionPlugin(ctx context.Context, vPlugin entity.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error) {
+func (p *pluginRepoImpl) GetVersionPlugin(ctx context.Context, vPlugin model.VersionPlugin) (plugin *entity.PluginInfo, exist bool, err error) {
 	pi, exist := pluginConf.GetPluginProduct(vPlugin.PluginID)
 	if exist {
 		return entity.NewPluginInfo(pi.Info), true, nil
@@ -236,7 +239,7 @@ func (p *pluginRepoImpl) GetVersionPlugin(ctx context.Context, vPlugin entity.Ve
 	return p.pluginVersionDAO.Get(ctx, vPlugin.PluginID, vPlugin.Version)
 }
 
-func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []entity.VersionPlugin, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error) {
+func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []model.VersionPlugin, opts ...PluginSelectedOptions) (plugins []*entity.PluginInfo, err error) {
 	pluginIDs := make([]int64, 0, len(vPlugins))
 	for _, vPlugin := range vPlugins {
 		pluginIDs = append(pluginIDs, vPlugin.PluginID)
@@ -250,7 +253,7 @@ func (p *pluginRepoImpl) MGetVersionPlugins(ctx context.Context, vPlugins []enti
 		return plugin.Info.ID, true
 	})
 
-	vCustomPlugins := make([]entity.VersionPlugin, 0, len(pluginIDs))
+	vCustomPlugins := make([]model.VersionPlugin, 0, len(pluginIDs))
 	for _, v := range vPlugins {
 		_, ok := productPluginIDs[v.PluginID]
 		if ok {
@@ -285,7 +288,7 @@ func (p *pluginRepoImpl) PublishPlugin(ctx context.Context, draftPlugin *entity.
 
 	activatedTools := make([]*entity.ToolInfo, 0, len(draftTools))
 	for _, tool := range draftTools {
-		if tool.GetActivatedStatus() == model.DeactivateTool {
+		if tool.IsDeactivated() {
 			continue
 		}
 
@@ -354,14 +357,14 @@ func (p *pluginRepoImpl) PublishPlugins(ctx context.Context, draftPlugins []*ent
 
 	pluginTools := make(map[int64][]*entity.ToolInfo, len(draftPlugins))
 	for _, draftPlugin := range draftPlugins {
-		draftTools, err := p.toolDraftDAO.GetAll(ctx, draftPlugin.ID, nil)
-		if err != nil {
-			return err
+		draftTools, mErr := p.toolDraftDAO.GetAll(ctx, draftPlugin.ID, nil)
+		if mErr != nil {
+			return mErr
 		}
 
 		activatedTools := make([]*entity.ToolInfo, 0, len(draftTools))
 		for _, tool := range draftTools {
-			if tool.GetActivatedStatus() == model.DeactivateTool {
+			if tool.IsDeactivated() {
 				continue
 			}
 
@@ -619,7 +622,7 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 	doc := req.OpenapiDoc
 	mf := req.Manifest
 
-	pluginType, _ := model.ToThriftPluginType(mf.API.Type)
+	pluginType, _ := convert.ToThriftPluginType(mf.API.Type)
 
 	pl := entity.NewPluginInfo(&model.PluginInfo{
 		PluginType:  pluginType,
@@ -636,7 +639,7 @@ func (p *pluginRepoImpl) CreateDraftPluginWithCode(ctx context.Context, req *Cre
 	for subURL, pathItem := range doc.Paths {
 		for method, op := range pathItem.Operations() {
 			tools = append(tools, &entity.ToolInfo{
-				ActivatedStatus: ptr.Of(model.ActivateTool),
+				ActivatedStatus: ptr.Of(consts.ActivateTool),
 				DebugStatus:     ptr.Of(common.APIDebugStatus_DebugWaiting),
 				SubURL:          ptr.Of(subURL),
 				Method:          ptr.Of(method),
@@ -746,8 +749,8 @@ func (p *pluginRepoImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest)
 	// publish plugin
 	filteredTools := make([]*entity.ToolInfo, 0, len(tools))
 	for _, tool := range tools {
-		if tool.GetActivatedStatus() == model.DeactivateTool ||
-			tool.GetDebugStatus() == common.APIDebugStatus_DebugWaiting {
+		if tool.IsDeactivated() ||
+			tool.IsDebugging() {
 			continue
 		}
 		filteredTools = append(filteredTools, tool)

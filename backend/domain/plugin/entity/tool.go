@@ -16,10 +16,6 @@
 
 package entity
 
-type PageInfo struct {
-	Name       *string
-	Page       int
-	Size       int
-	SortBy     *SortField
-	OrderByACS *bool
-}
+import "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+
+type ToolInfo = model.ToolInfo

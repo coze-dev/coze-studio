@@ -29,7 +29,9 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service/tool"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
@@ -39,7 +41,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error) {
+func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error) {
 	opt := &model.ExecuteToolOption{}
 	for _, fn := range opts {
 		fn(opt)
@@ -61,7 +63,7 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *model.ExecuteT
 		return nil, errorx.Wrapf(err, "execute tool failed")
 	}
 
-	if req.ExecScene == model.ExecSceneOfToolDebug {
+	if req.ExecScene == consts.ExecSceneOfToolDebug {
 		err = p.toolRepo.UpdateDraftTool(ctx, &entity.ToolInfo{
 			ID:          req.ToolID,
 			DebugStatus: ptr.Of(common.APIDebugStatus_DebugPassed),
@@ -92,30 +94,30 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *model.ExecuteT
 
 func (p *pluginServiceImpl) acquireAccessTokenIfNeed(ctx context.Context, req *model.ExecuteToolRequest, authInfo *model.AuthV2,
 	schema *model.Openapi3Operation) (accessToken string, authURL string, err error) {
-	if authInfo.Type == model.AuthzTypeOfNone {
+	if authInfo.Type == consts.AuthzTypeOfNone {
 		return "", "", nil
 	}
 
-	authMode := model.ToolAuthModeOfRequired
-	if tmp, ok := schema.Extensions[model.APISchemaExtendAuthMode].(string); ok {
-		authMode = model.ToolAuthMode(tmp)
+	authMode := consts.ToolAuthModeOfRequired
+	if tmp, ok := schema.Extensions[consts.APISchemaExtendAuthMode].(string); ok {
+		authMode = consts.ToolAuthMode(tmp)
 	}
 
-	if authMode == model.ToolAuthModeOfDisabled {
+	if authMode == consts.ToolAuthModeOfDisabled {
 		return "", "", nil
 	}
 
-	if authInfo.SubType == model.AuthzSubTypeOfOAuthAuthorizationCode {
-		authorizationCode := &entity.AuthorizationCodeInfo{
-			Meta: &entity.AuthorizationCodeMeta{
+	if authInfo.SubType == consts.AuthzSubTypeOfOAuthAuthorizationCode {
+		authorizationCode := &dto.AuthorizationCodeInfo{
+			Meta: &dto.AuthorizationCodeMeta{
 				UserID:   req.UserID,
 				PluginID: req.PluginID,
-				IsDraft:  req.ExecScene == model.ExecSceneOfToolDebug,
+				IsDraft:  req.ExecScene == consts.ExecSceneOfToolDebug,
 			},
 			Config: authInfo.AuthOfOAuthAuthorizationCode,
 		}
 
-		accessToken, err = p.GetAccessToken(ctx, &entity.OAuthInfo{
+		accessToken, err = p.GetAccessToken(ctx, &dto.OAuthInfo{
 			OAuthMode:         authInfo.SubType,
 			AuthorizationCode: authorizationCode,
 		})
@@ -142,13 +144,13 @@ func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *model.Ex
 		tl *entity.ToolInfo
 	)
 	switch req.ExecScene {
-	case model.ExecSceneOfOnlineAgent:
+	case consts.ExecSceneOfOnlineAgent:
 		pl, tl, err = p.getOnlineAgentPluginInfo(ctx, req, opt)
-	case model.ExecSceneOfDraftAgent:
+	case consts.ExecSceneOfDraftAgent:
 		pl, tl, err = p.getDraftAgentPluginInfo(ctx, req, opt)
-	case model.ExecSceneOfToolDebug:
+	case consts.ExecSceneOfToolDebug:
 		pl, tl, err = p.getToolDebugPluginInfo(ctx, req, opt)
-	case model.ExecSceneOfWorkflow:
+	case consts.ExecSceneOfWorkflow:
 		pl, tl, err = p.getWorkflowPluginInfo(ctx, req, opt)
 	default:
 		return nil, fmt.Errorf("invalid execute scene '%s'", req.ExecScene)
@@ -207,7 +209,7 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *mo
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 		}
 	} else {
-		onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+		onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
 			PluginID: req.PluginID,
 			Version:  execOpt.ToolVersion,
 		})
@@ -242,7 +244,7 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	agentTool, exist, err := p.toolRepo.GetVersionAgentTool(ctx, execOpt.ProjectInfo.ProjectID, entity.VersionAgentTool{
+	agentTool, exist, err := p.toolRepo.GetVersionAgentTool(ctx, execOpt.ProjectInfo.ProjectID, model.VersionAgentTool{
 		ToolID:       req.ToolID,
 		AgentVersion: execOpt.ProjectInfo.ProjectVersion,
 	})
@@ -263,7 +265,7 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 		}
 	} else {
-		onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+		onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
 			PluginID: req.PluginID,
 			Version:  execOpt.ToolVersion,
 		})
@@ -324,7 +326,7 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *mode
 			}
 
 		} else {
-			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
 				PluginID: req.PluginID,
 				Version:  execOpt.ToolVersion,
 			})
@@ -335,7 +337,7 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *mode
 				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 			}
 
-			tl, exist, err = p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
+			tl, exist, err = p.toolRepo.GetVersionTool(ctx, model.VersionTool{
 				ToolID:  req.ToolID,
 				Version: execOpt.ToolVersion,
 			})
@@ -355,9 +357,9 @@ func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *mod
 	_ *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {
-		tl, exist, err := p.toolRepo.GetDraftTool(ctx, req.ToolID)
-		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetDraftTool failed, toolID=%d", req.ToolID)
+		tool, exist, mErr := p.toolRepo.GetDraftTool(ctx, req.ToolID)
+		if mErr != nil {
+			return nil, nil, errorx.Wrapf(mErr, "GetDraftTool failed, toolID=%d", req.ToolID)
 		}
 		if !exist {
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
@@ -371,11 +373,11 @@ func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *mod
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 		}
 
-		if tl.GetActivatedStatus() != model.ActivateTool {
-			return nil, nil, errorx.New(errno.ErrPluginDeactivatedTool, errorx.KV(errno.PluginMsgKey, tl.GetName()))
+		if tool.GetActivatedStatus() != consts.ActivateTool {
+			return nil, nil, errorx.New(errno.ErrPluginDeactivatedTool, errorx.KV(errno.PluginMsgKey, tool.GetName()))
 		}
 
-		return pl, tl, nil
+		return pl, tool, nil
 	}
 
 	tl, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
@@ -405,14 +407,14 @@ func (p *pluginServiceImpl) genToolResponseSchema(ctx context.Context, rawResp s
 			"the type of response only supports json map"))
 	}
 
-	resp := entity.DefaultOpenapi3Responses()
+	resp := model.DefaultOpenapi3Responses()
 
 	respSchema := parseResponseToBodySchemaRef(ctx, valMap)
 	if respSchema == nil {
 		return resp, nil
 	}
 
-	resp[strconv.Itoa(http.StatusOK)].Value.Content[model.MediaTypeJson].Schema = respSchema
+	resp[strconv.Itoa(http.StatusOK)].Value.Content[consts.MediaTypeJson].Schema = respSchema
 
 	return resp, nil
 }
@@ -495,26 +497,26 @@ type ExecuteResponse struct {
 }
 
 type toolExecutor struct {
-	execScene      model.ExecuteScene
+	execScene      consts.ExecuteScene
 	userID         string
 	conversationID int64
 
 	plugin *entity.PluginInfo
 	tool   *entity.ToolInfo
 
-	projectInfo                *entity.ProjectInfo
-	invalidRespProcessStrategy model.InvalidResponseProcessStrategy
+	projectInfo                *model.ProjectInfo
+	invalidRespProcessStrategy consts.InvalidResponseProcessStrategy
 
 	oss storage.Storage
 }
 
 func newToolInvocation(t *toolExecutor) tool.Invocation {
 	switch t.plugin.Manifest.API.Type {
-	case model.PluginTypeOfCloud:
+	case consts.PluginTypeOfCloud:
 		return tool.NewHttpCallImpl(t.conversationID)
-	case model.PluginTypeOfMCP:
+	case consts.PluginTypeOfMCP:
 		return tool.NewMcpCallImpl()
-	case model.PluginTypeOfCustom:
+	case consts.PluginTypeOfCustom:
 		return tool.NewCustomCallImpl()
 	default: // default to http call
 		return tool.NewHttpCallImpl(t.conversationID)
@@ -549,7 +551,7 @@ func (t *toolExecutor) execute(ctx context.Context, argumentsInJson, accessToken
 		return nil, err
 	}
 
-	if t.execScene != model.ExecSceneOfToolDebug { // debug
+	if t.execScene != consts.ExecSceneOfToolDebug { // debug
 		// only assemble file uri to url in debug scene
 		err = invocation.AssembleFileURIToURL(ctx, t.oss)
 		if err != nil {
@@ -598,9 +600,9 @@ func (t *toolExecutor) processResponse(ctx context.Context, rawResp string) (tri
 	if !ok {
 		return "", fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 	}
-	mType, ok := resp.Value.Content[model.MediaTypeJson] // only support application/json
+	mType, ok := resp.Value.Content[consts.MediaTypeJson] // only support application/json
 	if !ok {
-		return "", fmt.Errorf("the '%s' media type is not defined in response", model.MediaTypeJson)
+		return "", fmt.Errorf("the '%s' media type is not defined in response", consts.MediaTypeJson)
 	}
 
 	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
@@ -619,19 +621,19 @@ func (t *toolExecutor) processResponse(ctx context.Context, rawResp string) (tri
 
 	var trimmedRespMap map[string]any
 	switch t.invalidRespProcessStrategy {
-	case model.InvalidResponseProcessStrategyOfReturnRaw:
+	case consts.InvalidResponseProcessStrategyOfReturnRaw:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
 		}
 
-	case model.InvalidResponseProcessStrategyOfReturnDefault:
+	case consts.InvalidResponseProcessStrategyOfReturnDefault:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
 		}
 
-	case model.InvalidResponseProcessStrategyOfReturnErr:
+	case consts.InvalidResponseProcessStrategyOfReturnErr:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnErr(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
@@ -892,10 +894,10 @@ func (t *toolExecutor) disabledParam(schemaVal *openapi3.Schema) bool {
 		return false
 	}
 	globalDisable, localDisable := false, false
-	if v, ok := schemaVal.Extensions[model.APISchemaExtendLocalDisable]; ok {
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
-	if v, ok := schemaVal.Extensions[model.APISchemaExtendGlobalDisable]; ok {
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
 	return globalDisable || localDisable

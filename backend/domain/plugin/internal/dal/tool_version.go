@@ -22,6 +22,7 @@ import (
 
 	"gorm.io/gorm"
 
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -56,7 +57,7 @@ func (t toolVersionPO) ToDO() *entity.ToolInfo {
 	}
 }
 
-func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *ToolVersionDAO) Get(ctx context.Context, vTool pluginModel.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.ToolVersion
 
 	if vTool.Version == "" {
@@ -78,7 +79,7 @@ func (t *ToolVersionDAO) Get(ctx context.Context, vTool entity.VersionTool) (too
 	return tool, true, nil
 }
 
-func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
+func (t *ToolVersionDAO) MGet(ctx context.Context, vTools []pluginModel.VersionTool) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(vTools))
 
 	table := t.query.ToolVersion
@@ -124,9 +125,9 @@ func (t *ToolVersionDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryT
 			return fmt.Errorf("invalid tool version")
 		}
 
-		id, err := t.idGen.GenID(ctx)
-		if err != nil {
-			return err
+		id, mErr := t.idGen.GenID(ctx)
+		if mErr != nil {
+			return mErr
 		}
 
 		tls = append(tls, &model.ToolVersion{

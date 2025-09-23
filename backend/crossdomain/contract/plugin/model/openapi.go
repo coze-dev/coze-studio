@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package dto
+package model
 
 import (
 	"context"
@@ -23,15 +23,15 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/cloudwego/eino/schema"
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
-
-	"github.com/cloudwego/eino/schema"
 )
 
 type Openapi3T openapi3.T
@@ -336,7 +336,7 @@ func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {
 			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
 				"parameter location is required"))
 		}
-		if paramVal.In == string(ParamInBody) {
+		if paramVal.In == string(consts.ParamInBody) {
 			return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KVf(errno.PluginMsgKey,
 				"the location of parameter '%s' cannot be 'body'", paramVal.Name))
 		}
@@ -360,20 +360,13 @@ func validateOpenapi3Parameters(params openapi3.Parameters) (err error) {
 }
 
 // MIME Type
-const (
-	MediaTypeJson           = "application/json"
-	MediaTypeProblemJson    = "application/problem+json"
-	MediaTypeFormURLEncoded = "application/x-www-form-urlencoded"
-	MediaTypeXYaml          = "application/x-yaml"
-	MediaTypeYaml           = "application/yaml"
-)
 
 var mediaTypeArray = []string{
-	MediaTypeJson,
-	MediaTypeProblemJson,
-	MediaTypeFormURLEncoded,
-	MediaTypeXYaml,
-	MediaTypeYaml,
+	consts.MediaTypeJson,
+	consts.MediaTypeProblemJson,
+	consts.MediaTypeFormURLEncoded,
+	consts.MediaTypeXYaml,
+	consts.MediaTypeYaml,
 }
 
 func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
@@ -406,7 +399,7 @@ func validateOpenapi3Responses(responses openapi3.Responses) (err error) {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
 			"response only supports 'application/json' media type"))
 	}
-	mType, ok := resp.Value.Content[MediaTypeJson]
+	mType, ok := resp.Value.Content[consts.MediaTypeJson]
 	if !ok || mType == nil {
 		return errorx.New(errno.ErrPluginInvalidOpenapi3Doc, errorx.KV(errno.PluginMsgKey,
 			"response only supports 'application/json' media type"))
@@ -436,11 +429,11 @@ func disabledParam(schemaVal *openapi3.Schema) bool {
 	}
 
 	globalDisable, localDisable := false, false
-	if v, ok := schemaVal.Extensions[APISchemaExtendLocalDisable]; ok {
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
 
-	if v, ok := schemaVal.Extensions[APISchemaExtendGlobalDisable]; ok {
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
 
@@ -453,11 +446,11 @@ func (op *Openapi3Operation) GetReqBodySchema() (string, *openapi3.SchemaRef) {
 	}
 
 	var contentTypeArray = []string{
-		MediaTypeJson,
-		MediaTypeProblemJson,
-		MediaTypeFormURLEncoded,
-		MediaTypeXYaml,
-		MediaTypeYaml,
+		consts.MediaTypeJson,
+		consts.MediaTypeProblemJson,
+		consts.MediaTypeFormURLEncoded,
+		consts.MediaTypeXYaml,
+		consts.MediaTypeYaml,
 	}
 
 	for _, ct := range contentTypeArray {

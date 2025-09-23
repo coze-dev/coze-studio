@@ -26,9 +26,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
-	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
@@ -57,20 +57,20 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 				PluginID:        item.PluginID,
 				ToolID:          item.ToolID,
 				ArgumentsInJson: item.Arguments,
-				ExecScene: func(isDraft bool) model.ExecuteScene {
+				ExecScene: func(isDraft bool) consts.ExecuteScene {
 					if isDraft {
-						return model.ExecSceneOfDraftAgent
+						return consts.ExecSceneOfDraftAgent
 					} else {
-						return model.ExecSceneOfOnlineAgent
+						return consts.ExecSceneOfOnlineAgent
 					}
 				}(ar.Identity.IsDraft),
 			}
 
-			opts := []pluginEntity.ExecuteToolOpt{
-				model.WithInvalidRespProcessStrategy(model.InvalidResponseProcessStrategyOfReturnDefault),
+			opts := []model.ExecuteToolOpt{
+				model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
 				model.WithProjectInfo(&model.ProjectInfo{
 					ProjectID:      ar.Identity.AgentID,
-					ProjectType:    model.ProjectTypeOfAgent,
+					ProjectType:    consts.ProjectTypeOfAgent,
 					ProjectVersion: ptr.Of(ar.Identity.Version),
 				}),
 			}

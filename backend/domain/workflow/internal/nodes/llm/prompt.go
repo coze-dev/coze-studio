@@ -149,17 +149,17 @@ func enableLocalFileToLLMWithBase64(minfo *modelmgr.Model) bool {
 }
 
 func getModelProcessingInfo(ctx context.Context, mwi ModelWithInfo) (map[modelmgr.Modal]bool, bool) {
-    mInfo := mwi.Info(ctx)
+	mInfo := mwi.Info(ctx)
 
-    supportedModal := make(map[modelmgr.Modal]bool)
-    if mInfo != nil {
-        for i := range mInfo.Meta.Capability.InputModal {
-            supportedModal[mInfo.Meta.Capability.InputModal[i]] = true
-        }
-    }
+	supportedModal := make(map[modelmgr.Modal]bool)
+	if mInfo != nil {
+		for i := range mInfo.Meta.Capability.InputModal {
+			supportedModal[mInfo.Meta.Capability.InputModal[i]] = true
+		}
+	}
 
-    enableTransferBase64 := enableLocalFileToLLMWithBase64(mInfo)
-    return supportedModal, enableTransferBase64
+	enableTransferBase64 := enableLocalFileToLLMWithBase64(mInfo)
+	return supportedModal, enableTransferBase64
 }
 
 func (pl *promptTpl) render(ctx context.Context, vs map[string]any,

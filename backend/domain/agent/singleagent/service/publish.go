@@ -125,9 +125,6 @@ func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID i
 			c.BindType = developer_api.BindType_WebSDKBind
 		} else if v.ID == consts.APIConnectorID {
 			c.BindType = developer_api.BindType_ApiBind
-			// c.BindInfo = map[string]string{
-			// 	"sdk_version": "1.2.0 -beta.6",//TODO (@fanlv): Where to check the version?
-			// }
 			c.AuthLoginInfo = &developer_api.AuthLoginInfo{}
 		}
 

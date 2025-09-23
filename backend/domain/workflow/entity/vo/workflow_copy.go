@@ -16,12 +16,13 @@
 
 package vo
 
-import (
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
-)
+type PluginEntity struct {
+	PluginID      int64
+	PluginVersion *string // nil or "0" means draft, "" means latest/online version, otherwise is specific version
+}
 
 type ExternalResourceRelated struct {
-	PluginMap     map[int64]*plugin.PluginEntity
+	PluginMap     map[int64]*PluginEntity
 	PluginToolMap map[int64]int64
 
 	KnowledgeMap map[int64]int64

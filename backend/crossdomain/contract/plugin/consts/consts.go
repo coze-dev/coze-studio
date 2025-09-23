@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package dto
+package consts
 
 import "github.com/getkin/kin-openapi/openapi3"
 
@@ -126,4 +126,13 @@ type InterruptEventType string
 
 const (
 	InterruptEventTypeOfToolNeedOAuth InterruptEventType = "tool_need_oauth"
+)
+
+// MIME Type
+const (
+	MediaTypeJson           = "application/json"
+	MediaTypeProblemJson    = "application/problem+json"
+	MediaTypeFormURLEncoded = "application/x-www-form-urlencoded"
+	MediaTypeXYaml          = "application/x-yaml"
+	MediaTypeYaml           = "application/yaml"
 )

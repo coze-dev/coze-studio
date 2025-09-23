@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package dto
+package model
 
 import (
 	"fmt"
@@ -27,6 +27,8 @@ import (
 
 	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
@@ -38,7 +40,7 @@ type ToolInfo struct {
 	UpdatedAt int64
 	Version   *string
 
-	ActivatedStatus *ActivatedStatus
+	ActivatedStatus *consts.ActivatedStatus
 	DebugStatus     *common.APIDebugStatus
 
 	Method    *string
@@ -64,8 +66,16 @@ func (t ToolInfo) GetVersion() string {
 	return ptr.FromOrDefault(t.Version, "")
 }
 
-func (t ToolInfo) GetActivatedStatus() ActivatedStatus {
-	return ptr.FromOrDefault(t.ActivatedStatus, ActivateTool)
+func (t ToolInfo) GetActivatedStatus() consts.ActivatedStatus {
+	return ptr.FromOrDefault(t.ActivatedStatus, consts.ActivateTool)
+}
+
+func (t *ToolInfo) IsDeactivated() bool {
+	return t.GetActivatedStatus() == consts.DeactivateTool
+}
+
+func (t ToolInfo) IsDebugging() bool {
+	return t.GetDebugStatus() == common.APIDebugStatus_DebugWaiting
 }
 
 func (t ToolInfo) GetSubURL() string {
@@ -91,9 +101,9 @@ func (t ToolInfo) GetResponseOpenapiSchema() (*openapi3.Schema, error) {
 		return nil, fmt.Errorf("response status '200' not found")
 	}
 
-	mType, ok := resp.Value.Content[MediaTypeJson] // only support application/json
+	mType, ok := resp.Value.Content[consts.MediaTypeJson] // only support application/json
 	if !ok || mType == nil || mType.Schema == nil || mType.Schema.Value == nil {
-		return nil, fmt.Errorf("media type '%s' not found in response", MediaTypeJson)
+		return nil, fmt.Errorf("media type '%s' not found in response", consts.MediaTypeJson)
 	}
 
 	return mType.Schema.Value, nil
@@ -134,7 +144,7 @@ func (t ToolInfo) ToRespAPIParameter() ([]*common.APIParameter, error) {
 		paramMeta := paramMetaInfo{
 			name:     subParamName,
 			desc:     prop.Value.Description,
-			location: string(ParamInBody),
+			location: string(consts.ParamInBody),
 			required: required[subParamName],
 		}
 		apiParam, err := toAPIParameter(paramMeta, prop.Value)
@@ -220,7 +230,7 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 			paramMeta := paramMetaInfo{
 				name:     subParamName,
 				desc:     prop.Value.Description,
-				location: string(ParamInBody),
+				location: string(consts.ParamInBody),
 				required: required[subParamName],
 			}
 			apiParam, err := toAPIParameter(paramMeta, prop.Value)
@@ -239,14 +249,14 @@ func (t ToolInfo) ToReqAPIParameter() ([]*common.APIParameter, error) {
 
 func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIParameter, error) {
 	if sc == nil {
-		return nil, fmt.Errorf("schema is requred")
+		return nil, fmt.Errorf("schema is required")
 	}
 
-	apiType, ok := ToThriftParamType(strings.ToLower(sc.Type))
+	apiType, ok := convert.ToThriftParamType(strings.ToLower(sc.Type))
 	if !ok {
 		return nil, fmt.Errorf("the type '%s' of filed '%s' is invalid", sc.Type, paramMeta.name)
 	}
-	location, ok := ToThriftHTTPParamLocation(HTTPParamLocation(paramMeta.location))
+	location, ok := convert.ToThriftHTTPParamLocation(consts.HTTPParamLocation(paramMeta.location))
 	if !ok {
 		return nil, fmt.Errorf("the location '%s' of field '%s' is invalid", paramMeta.location, paramMeta.name)
 	}
@@ -267,28 +277,28 @@ func toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.APIPa
 	}
 
 	if sc.Format != "" {
-		aType, ok := FormatToAssistType(sc.Format)
+		aType, ok := convert.FormatToAssistType(sc.Format)
 		if !ok {
 			return nil, fmt.Errorf("the format '%s' of field '%s' is invalid", sc.Format, paramMeta.name)
 		}
-		_aType, ok := ToThriftAPIAssistType(aType)
+		_aType, ok := convert.ToThriftAPIAssistType(aType)
 		if !ok {
 			return nil, fmt.Errorf("assist type '%s' of field '%s' is invalid", aType, paramMeta.name)
 		}
 		apiParam.AssistType = ptr.Of(_aType)
 	}
 
-	if v, ok := sc.Extensions[APISchemaExtendGlobalDisable]; ok {
+	if v, ok := sc.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
 		if disable, ok := v.(bool); ok {
 			apiParam.GlobalDisable = disable
 		}
 	}
-	if v, ok := sc.Extensions[APISchemaExtendLocalDisable]; ok {
+	if v, ok := sc.Extensions[consts.APISchemaExtendLocalDisable]; ok {
 		if disable, ok := v.(bool); ok {
 			apiParam.LocalDisable = disable
 		}
 	}
-	if v, ok := sc.Extensions[APISchemaExtendVariableRef]; ok {
+	if v, ok := sc.Extensions[consts.APISchemaExtendVariableRef]; ok {
 		if ref, ok := v.(string); ok {
 			apiParam.VariableRef = ptr.Of(ref)
 			apiParam.DefaultParamSource = ptr.Of(common.DefaultParamSource_Variable)
@@ -392,12 +402,12 @@ func (t ToolInfo) ToPluginParameters() ([]*common.PluginParameter, error) {
 		}
 
 		var assistType *common.PluginParamTypeFormat
-		if v, ok := schemaVal.Extensions[APISchemaExtendAssistType]; ok {
+		if v, ok := schemaVal.Extensions[consts.APISchemaExtendAssistType]; ok {
 			_v, ok := v.(string)
 			if !ok {
 				continue
 			}
-			f, ok := AssistTypeToThriftFormat(APIFileAssistType(_v))
+			f, ok := convert.AssistTypeToThriftFormat(consts.APIFileAssistType(_v))
 			if !ok {
 				return nil, fmt.Errorf("the assist type '%s' of field '%s' is invalid", _v, paramVal.Name)
 			}
@@ -468,9 +478,9 @@ func toPluginParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (*common.Pl
 	}
 
 	var assistType *common.PluginParamTypeFormat
-	if v, ok := sc.Extensions[APISchemaExtendAssistType]; ok {
+	if v, ok := sc.Extensions[consts.APISchemaExtendAssistType]; ok {
 		if _v, ok := v.(string); ok {
-			f, ok := AssistTypeToThriftFormat(APIFileAssistType(_v))
+			f, ok := convert.AssistTypeToThriftFormat(consts.APIFileAssistType(_v))
 			if !ok {
 				return nil, fmt.Errorf("the assist type '%s' of field '%s' is invalid", _v, paramMeta.name)
 			}
@@ -555,7 +565,7 @@ func (t ToolInfo) ToToolParameters() ([]*productAPI.ToolParameter, error) {
 	toToolParams = func(apiParams []*common.APIParameter) ([]*productAPI.ToolParameter, error) {
 		params := make([]*productAPI.ToolParameter, 0, len(apiParams))
 		for _, apiParam := range apiParams {
-			typ, _ := ToOpenapiParamType(apiParam.Type)
+			typ, _ := convert.ToOpenapiParamType(apiParam.Type)
 			toolParam := &productAPI.ToolParameter{
 				Name:         apiParam.Name,
 				Description:  apiParam.Desc,
@@ -579,4 +589,52 @@ func (t ToolInfo) ToToolParameters() ([]*productAPI.ToolParameter, error) {
 	}
 
 	return toToolParams(apiParams)
+}
+
+type VersionTool struct {
+	ToolID  int64
+	Version string
+}
+
+type VersionAgentTool struct {
+	ToolName *string
+	ToolID   int64
+
+	AgentVersion *string
+}
+
+type MGetAgentToolsRequest struct {
+	AgentID int64
+	SpaceID int64
+	IsDraft bool
+
+	VersionAgentTools []VersionAgentTool
+}
+
+type ExecuteToolRequest struct {
+	UserID        string
+	PluginID      int64
+	ToolID        int64
+	ExecDraftTool bool // if true, execute draft tool
+	ExecScene     consts.ExecuteScene
+
+	ArgumentsInJson string
+}
+
+type ExecuteToolResponse struct {
+	Tool        *ToolInfo
+	Request     string
+	TrimmedResp string
+	RawResp     string
+
+	RespSchema openapi3.Responses
+}
+
+type ToolInterruptEvent struct {
+	Event         consts.InterruptEventType
+	ToolNeedOAuth *ToolNeedOAuthInterruptEvent
+}
+
+type ToolNeedOAuthInterruptEvent struct {
+	Message string
 }

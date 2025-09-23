@@ -13,50 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package dto
+package service
 
 import (
 	"fmt"
 	"strings"
 
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-type PluginAuthInfo struct {
-	AuthzType    *model.AuthzType
-	Location     *model.HTTPParamLocation
-	Key          *string
-	ServiceToken *string
-	OAuthInfo    *string
-	AuthzSubType *model.AuthzSubType
-	AuthzPayload *string
+type pluginAuthConverter struct {
+	PluginAuthInfo *dto.PluginAuthInfo
 }
 
-// TODO(@fanlv): change to DTO + Service
-func (p PluginAuthInfo) ToAuthV2() (*model.AuthV2, error) {
+func newPluginAuthConverter(pluginAuthInfo *dto.PluginAuthInfo) *pluginAuthConverter {
+	return &pluginAuthConverter{
+		PluginAuthInfo: pluginAuthInfo,
+	}
+}
+
+func (s *pluginAuthConverter) ToAuthV2() (*model.AuthV2, error) {
+	p := s.PluginAuthInfo
 	if p.AuthzType == nil {
 		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, "auth type is required"))
 	}
 
 	switch *p.AuthzType {
-	case model.AuthzTypeOfNone:
+	case consts.AuthzTypeOfNone:
 		return &model.AuthV2{
-			Type: model.AuthzTypeOfNone,
+			Type: consts.AuthzTypeOfNone,
 		}, nil
 
-	case model.AuthzTypeOfOAuth:
-		m, err := p.authOfOAuthToAuthV2()
+	case consts.AuthzTypeOfOAuth:
+		m, err := s.authOfOAuthToAuthV2()
 		if err != nil {
 			return nil, err
 		}
 		return m, nil
 
-	case model.AuthzTypeOfService:
-		m, err := p.authOfServiceToAuthV2()
+	case consts.AuthzTypeOfService:
+		m, err := s.authOfServiceToAuthV2()
 		if err != nil {
 			return nil, err
 		}
@@ -68,7 +69,8 @@ func (p PluginAuthInfo) ToAuthV2() (*model.AuthV2, error) {
 	}
 }
 
-func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
+func (s *pluginAuthConverter) authOfOAuthToAuthV2() (*model.AuthV2, error) {
+	p := s.PluginAuthInfo
 	if p.AuthzSubType == nil {
 		return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, "sub-auth type is required"))
 	}
@@ -83,7 +85,7 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		return nil, errorx.WrapByCode(err, errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey, "invalid oauth info"))
 	}
 
-	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthClientCredentials {
+	if *p.AuthzSubType == consts.AuthzSubTypeOfOAuthClientCredentials {
 		_oauthInfo := &model.OAuthClientCredentialsConfig{
 			ClientID:     oauthInfo["client_id"],
 			ClientSecret: oauthInfo["client_secret"],
@@ -96,16 +98,16 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		}
 
 		return &model.AuthV2{
-			Type:                         model.AuthzTypeOfOAuth,
-			SubType:                      model.AuthzSubTypeOfOAuthClientCredentials,
+			Type:                         consts.AuthzTypeOfOAuth,
+			SubType:                      consts.AuthzSubTypeOfOAuthClientCredentials,
 			Payload:                      str,
 			AuthOfOAuthClientCredentials: _oauthInfo,
 		}, nil
 	}
 
-	if *p.AuthzSubType == model.AuthzSubTypeOfOAuthAuthorizationCode {
+	if *p.AuthzSubType == consts.AuthzSubTypeOfOAuthAuthorizationCode {
 		contentType := oauthInfo["authorization_content_type"]
-		if contentType != model.MediaTypeJson { // only support application/json
+		if contentType != consts.MediaTypeJson { // only support application/json
 			return nil, errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 				"the type '%s' of authorization content is invalid", contentType))
 		}
@@ -125,8 +127,8 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		}
 
 		return &model.AuthV2{
-			Type:                         model.AuthzTypeOfOAuth,
-			SubType:                      model.AuthzSubTypeOfOAuthAuthorizationCode,
+			Type:                         consts.AuthzTypeOfOAuth,
+			SubType:                      consts.AuthzSubTypeOfOAuthAuthorizationCode,
 			Payload:                      str,
 			AuthOfOAuthAuthorizationCode: _oauthInfo,
 		}, nil
@@ -136,12 +138,13 @@ func (p PluginAuthInfo) authOfOAuthToAuthV2() (*model.AuthV2, error) {
 		"the type '%s' of sub-auth is invalid", *p.AuthzSubType))
 }
 
-func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
+func (s *pluginAuthConverter) authOfServiceToAuthV2() (*model.AuthV2, error) {
+	p := s.PluginAuthInfo
 	if p.AuthzSubType == nil {
 		return nil, fmt.Errorf("sub-auth type is required")
 	}
 
-	if *p.AuthzSubType == model.AuthzSubTypeOfServiceAPIToken {
+	if *p.AuthzSubType == consts.AuthzSubTypeOfServiceAPIToken {
 		if p.Location == nil {
 			return nil, fmt.Errorf("'Location' of sub-auth is required")
 		}
@@ -154,7 +157,7 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 
 		tokenAuth := &model.AuthOfAPIToken{
 			ServiceToken: *p.ServiceToken,
-			Location:     model.HTTPParamLocation(strings.ToLower(string(*p.Location))),
+			Location:     consts.HTTPParamLocation(strings.ToLower(string(*p.Location))),
 			Key:          *p.Key,
 		}
 
@@ -164,8 +167,8 @@ func (p PluginAuthInfo) authOfServiceToAuthV2() (*model.AuthV2, error) {
 		}
 
 		return &model.AuthV2{
-			Type:           model.AuthzTypeOfService,
-			SubType:        model.AuthzSubTypeOfServiceAPIToken,
+			Type:           consts.AuthzTypeOfService,
+			SubType:        consts.AuthzSubTypeOfServiceAPIToken,
 			Payload:        str,
 			AuthOfAPIToken: tokenAuth,
 		}, nil

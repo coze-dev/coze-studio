@@ -19,7 +19,7 @@ package service
 import (
 	"context"
 
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 )
@@ -45,8 +45,8 @@ type PluginService interface {
 	MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *model.MGetPluginLatestVersionResponse, err error)
 	GetPluginNextVersion(ctx context.Context, pluginID int64) (version string, err error)
-	MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error)
-	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
+	MGetVersionPlugins(ctx context.Context, versionPlugins []model.VersionPlugin) (plugins []*entity.PluginInfo, err error)
+	ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo dto.PageInfo) (plugins []*entity.PluginInfo, total int64, err error)
 
 	// Draft Tool
 	MGetDraftTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
@@ -58,7 +58,7 @@ type PluginService interface {
 	// Online Tool
 	GetOnlineTool(ctx context.Context, toolID int64) (tool *entity.ToolInfo, err error)
 	MGetOnlineTools(ctx context.Context, toolIDs []int64) (tools []*entity.ToolInfo, err error)
-	MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error)
+	MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) (tools []*entity.ToolInfo, err error)
 	CopyPlugin(ctx context.Context, req *dto.CopyPluginRequest) (resp *dto.CopyPluginResponse, err error)
 	MoveAPPPluginToLibrary(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
 
@@ -71,7 +71,7 @@ type PluginService interface {
 
 	PublishAgentTools(ctx context.Context, agentID int64, agentVersion string) (err error)
 
-	ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error)
+	ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error)
 
 	// Product
 	ListPluginProducts(ctx context.Context, req *dto.ListPluginProductsRequest) (resp *dto.ListPluginProductsResponse, err error)
@@ -79,7 +79,7 @@ type PluginService interface {
 
 	GetOAuthStatus(ctx context.Context, userID, pluginID int64) (resp *dto.GetOAuthStatusResponse, err error)
 	GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*dto.AgentPluginOAuthStatus, err error)
-	OAuthCode(ctx context.Context, code string, state *entity.OAuthState) (err error)
-	GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (accessToken string, err error)
-	RevokeAccessToken(ctx context.Context, meta *entity.AuthorizationCodeMeta) (err error)
+	OAuthCode(ctx context.Context, code string, state *dto.OAuthState) (err error)
+	GetAccessToken(ctx context.Context, oa *dto.OAuthInfo) (accessToken string, err error)
+	RevokeAccessToken(ctx context.Context, meta *dto.AuthorizationCodeMeta) (err error)
 }

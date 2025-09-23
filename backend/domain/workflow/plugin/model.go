@@ -14,21 +14,17 @@
  * limitations under the License.
  */
 
-package dto
+package plugin
 
 import (
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )
 
 type ToolsInfoRequest struct {
-	PluginEntity PluginEntity
+	PluginEntity vo.PluginEntity
 	ToolIDs      []int64
 	IsDraft      bool
-}
-
-type PluginEntity struct {
-	PluginID      int64
-	PluginVersion *string // nil or "0" means draft, "" means latest/online version, otherwise is specific version
 }
 
 type ToolsInfoResponse struct {
@@ -61,7 +57,7 @@ type DebugExample struct {
 }
 
 type ToolsInvokableRequest struct {
-	PluginEntity       PluginEntity
+	PluginEntity       vo.PluginEntity
 	ToolsInvokableInfo map[int64]*ToolsInvokableInfo
 	IsDraft            bool
 }

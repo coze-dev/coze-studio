@@ -22,7 +22,7 @@ import (
 
 	resourceCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"

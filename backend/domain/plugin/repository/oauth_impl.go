@@ -21,7 +21,7 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 )
@@ -41,15 +41,15 @@ type oauthRepoImpl struct {
 	oauthAuth *dal.PluginOAuthAuthDAO
 }
 
-func (o *oauthRepoImpl) GetAuthorizationCode(ctx context.Context, meta *entity.AuthorizationCodeMeta) (info *entity.AuthorizationCodeInfo, exist bool, err error) {
+func (o *oauthRepoImpl) GetAuthorizationCode(ctx context.Context, meta *dto.AuthorizationCodeMeta) (info *dto.AuthorizationCodeInfo, exist bool, err error) {
 	return o.oauthAuth.Get(ctx, meta)
 }
 
-func (o *oauthRepoImpl) UpsertAuthorizationCode(ctx context.Context, info *entity.AuthorizationCodeInfo) (err error) {
+func (o *oauthRepoImpl) UpsertAuthorizationCode(ctx context.Context, info *dto.AuthorizationCodeInfo) (err error) {
 	return o.oauthAuth.Upsert(ctx, info)
 }
 
-func (o *oauthRepoImpl) UpdateAuthorizationCodeLastActiveAt(ctx context.Context, meta *entity.AuthorizationCodeMeta, lastActiveAtMs int64) (err error) {
+func (o *oauthRepoImpl) UpdateAuthorizationCodeLastActiveAt(ctx context.Context, meta *dto.AuthorizationCodeMeta, lastActiveAtMs int64) (err error) {
 	return o.oauthAuth.UpdateLastActiveAt(ctx, meta, lastActiveAtMs)
 }
 
@@ -57,11 +57,11 @@ func (o *oauthRepoImpl) BatchDeleteAuthorizationCodeByIDs(ctx context.Context, i
 	return o.oauthAuth.BatchDeleteByIDs(ctx, ids)
 }
 
-func (o *oauthRepoImpl) DeleteAuthorizationCode(ctx context.Context, meta *entity.AuthorizationCodeMeta) (err error) {
+func (o *oauthRepoImpl) DeleteAuthorizationCode(ctx context.Context, meta *dto.AuthorizationCodeMeta) (err error) {
 	return o.oauthAuth.Delete(ctx, meta)
 }
 
-func (o *oauthRepoImpl) GetAuthorizationCodeRefreshTokens(ctx context.Context, nextRefreshAt int64, limit int) (infos []*entity.AuthorizationCodeInfo, err error) {
+func (o *oauthRepoImpl) GetAuthorizationCodeRefreshTokens(ctx context.Context, nextRefreshAt int64, limit int) (infos []*dto.AuthorizationCodeInfo, err error) {
 	return o.oauthAuth.GetRefreshTokenList(ctx, nextRefreshAt, limit)
 }
 

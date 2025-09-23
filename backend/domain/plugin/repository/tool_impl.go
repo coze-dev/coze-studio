@@ -23,7 +23,9 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -66,8 +68,8 @@ func (t *toolRepoImpl) CreateDraftTool(ctx context.Context, tool *entity.ToolInf
 }
 
 func (t *toolRepoImpl) UpsertDraftTools(ctx context.Context, pluginID int64, tools []*entity.ToolInfo) (err error) {
-	apis := slices.Transform(tools, func(tool *entity.ToolInfo) entity.UniqueToolAPI {
-		return entity.UniqueToolAPI{
+	apis := slices.Transform(tools, func(tool *entity.ToolInfo) dto.UniqueToolAPI {
+		return dto.UniqueToolAPI{
 			SubURL: tool.GetSubURL(),
 			Method: tool.GetMethod(),
 		}
@@ -102,7 +104,7 @@ func (t *toolRepoImpl) UpsertDraftTools(ctx context.Context, pluginID int64, too
 	updatedTools := make([]*entity.ToolInfo, 0, len(existTools))
 
 	for _, tool := range tools {
-		existTool, exist := existTools[entity.UniqueToolAPI{
+		existTool, exist := existTools[dto.UniqueToolAPI{
 			SubURL: tool.GetSubURL(),
 			Method: tool.GetMethod(),
 		}]
@@ -182,15 +184,15 @@ func (t *toolRepoImpl) GetPluginAllOnlineTools(ctx context.Context, pluginID int
 	return tools, nil
 }
 
-func (t *toolRepoImpl) ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
+func (t *toolRepoImpl) ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo dto.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
 	return t.toolDraftDAO.List(ctx, pluginID, pageInfo)
 }
 
-func (t *toolRepoImpl) GetDraftToolWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *toolRepoImpl) GetDraftToolWithAPI(ctx context.Context, pluginID int64, api dto.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
 	return t.toolDraftDAO.GetWithAPI(ctx, pluginID, api)
 }
 
-func (t *toolRepoImpl) MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI, opts ...ToolSelectedOptions) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
+func (t *toolRepoImpl) MGetDraftToolWithAPI(ctx context.Context, pluginID int64, apis []dto.UniqueToolAPI, opts ...ToolSelectedOptions) (tools map[dto.UniqueToolAPI]*entity.ToolInfo, err error) {
 	var opt *dal.ToolSelectedOption
 	if len(opts) > 0 {
 		opt = &dal.ToolSelectedOption{}
@@ -251,7 +253,7 @@ func (t *toolRepoImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64, opt
 	return tools, nil
 }
 
-func (t *toolRepoImpl) GetVersionTool(ctx context.Context, vTool entity.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *toolRepoImpl) GetVersionTool(ctx context.Context, vTool model.VersionTool) (tool *entity.ToolInfo, exist bool, err error) {
 	ti, exist := pluginConf.GetToolProduct(vTool.ToolID)
 	if exist {
 		return ti.Info, true, nil
@@ -260,7 +262,7 @@ func (t *toolRepoImpl) GetVersionTool(ctx context.Context, vTool entity.VersionT
 	return t.toolVersionDAO.Get(ctx, vTool)
 }
 
-func (t *toolRepoImpl) MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
+func (t *toolRepoImpl) MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) (tools []*entity.ToolInfo, err error) {
 	tools, err = t.toolVersionDAO.MGet(ctx, versionTools)
 	if err != nil {
 		return nil, err
@@ -411,7 +413,7 @@ func (t *toolRepoImpl) GetSpaceAllDraftAgentTools(ctx context.Context, agentID i
 	return t.agentToolDraftDAO.GetAll(ctx, agentID, nil)
 }
 
-func (t *toolRepoImpl) GetVersionAgentTool(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *toolRepoImpl) GetVersionAgentTool(ctx context.Context, agentID int64, vAgentTool model.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
 	return t.agentToolVersionDAO.Get(ctx, agentID, vAgentTool)
 }
 
@@ -419,7 +421,7 @@ func (t *toolRepoImpl) GetVersionAgentToolWithToolName(ctx context.Context, req 
 	return t.agentToolVersionDAO.GetWithToolName(ctx, req.AgentID, req.ToolName, req.AgentVersion)
 }
 
-func (t *toolRepoImpl) MGetVersionAgentTool(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
+func (t *toolRepoImpl) MGetVersionAgentTool(ctx context.Context, agentID int64, vAgentTools []model.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
 	return t.agentToolVersionDAO.MGet(ctx, agentID, vAgentTools)
 }
 

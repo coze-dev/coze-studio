@@ -25,7 +25,7 @@ import (
 	"golang.org/x/mod/semver"
 
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -207,7 +207,7 @@ func (p *pluginServiceImpl) checkToolsDebugStatus(ctx context.Context, pluginID 
 
 	activatedTools := make([]*entity.ToolInfo, 0, len(res))
 	for _, tool := range res {
-		if tool.GetActivatedStatus() == model.DeactivateTool {
+		if tool.IsDeactivated() {
 			continue
 		}
 		activatedTools = append(activatedTools, tool)

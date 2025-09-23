@@ -20,8 +20,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 )
 
 type CreateDraftToolsWithCodeRequest struct {
@@ -32,7 +31,7 @@ type CreateDraftToolsWithCodeRequest struct {
 }
 
 type CreateDraftToolsWithCodeResponse struct {
-	DuplicatedTools []entity.UniqueToolAPI
+	DuplicatedTools []UniqueToolAPI
 }
 
 type UpdateDraftToolRequest struct {
@@ -58,7 +57,7 @@ type ConvertToOpenapi3DocRequest struct {
 
 type ConvertToOpenapi3DocResponse struct {
 	OpenapiDoc *model.Openapi3T
-	Manifest   *entity.PluginManifest
+	Manifest   *model.PluginManifest
 	Format     common.PluginDataFormat
 	ErrMsg     string
 }
@@ -70,4 +69,8 @@ type UpdateBotDefaultParamsRequest struct {
 	Parameters  openapi3.Parameters
 	RequestBody *openapi3.RequestBodyRef
 	Responses   openapi3.Responses
+}
+type UniqueToolAPI struct {
+	SubURL string
+	Method string
 }

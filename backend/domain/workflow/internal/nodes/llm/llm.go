@@ -41,8 +41,6 @@ import (
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -50,6 +48,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	wrapPlugin "github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -461,7 +460,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		}
 
 		if fcParams.PluginFCParam != nil {
-			pluginToolsInvokableReq := make(map[int64]*plugin.ToolsInvokableRequest)
+			pluginToolsInvokableReq := make(map[int64]*wrapPlugin.ToolsInvokableRequest)
 			for _, p := range fcParams.PluginFCParam.PluginList {
 				pid, err := strconv.ParseInt(p.PluginID, 10, 64)
 				if err != nil {
@@ -482,18 +481,18 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 				}
 
 				if req, ok := pluginToolsInvokableReq[pid]; ok {
-					req.ToolsInvokableInfo[toolID] = &plugin.ToolsInvokableInfo{
+					req.ToolsInvokableInfo[toolID] = &wrapPlugin.ToolsInvokableInfo{
 						ToolID:                      toolID,
 						RequestAPIParametersConfig:  requestParameters,
 						ResponseAPIParametersConfig: responseParameters,
 					}
 				} else {
-					pluginToolsInfoRequest := &plugin.ToolsInvokableRequest{
-						PluginEntity: plugin.PluginEntity{
+					pluginToolsInfoRequest := &wrapPlugin.ToolsInvokableRequest{
+						PluginEntity: vo.PluginEntity{
 							PluginID:      pid,
 							PluginVersion: ptr.Of(p.PluginVersion),
 						},
-						ToolsInvokableInfo: map[int64]*plugin.ToolsInvokableInfo{
+						ToolsInvokableInfo: map[int64]*wrapPlugin.ToolsInvokableInfo{
 							toolID: {
 								ToolID:                      toolID,
 								RequestAPIParametersConfig:  requestParameters,
@@ -507,7 +506,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 			}
 			inInvokableTools := make([]tool.BaseTool, 0, len(fcParams.PluginFCParam.PluginList))
 			for _, req := range pluginToolsInvokableReq {
-				toolMap, err := crossplugin.DefaultSVC().GetPluginInvokableTools(ctx, req)
+				toolMap, err := wrapPlugin.GetPluginInvokableTools(ctx, req)
 				if err != nil {
 					return nil, err
 				}

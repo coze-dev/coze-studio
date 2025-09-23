@@ -24,7 +24,8 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
@@ -101,7 +102,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 		return tools, nil
 	}
 
-	vTools := make([]entity.VersionAgentTool, 0, len(existMap))
+	vTools := make([]model.VersionAgentTool, 0, len(existMap))
 	for _, v := range req.VersionAgentTools {
 		if existMap[v.ToolID] {
 			vTools = append(vTools, v)
@@ -162,17 +163,17 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *dto
 	}
 
 	if req.RequestBody != nil {
-		mType, ok := req.RequestBody.Value.Content[model.MediaTypeJson]
+		mType, ok := req.RequestBody.Value.Content[consts.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in request body", model.MediaTypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in request body", consts.MediaTypeJson)
 		}
 		if op.RequestBody == nil || op.RequestBody.Value == nil {
-			op.RequestBody = entity.DefaultOpenapi3RequestBody()
+			op.RequestBody = model.DefaultOpenapi3RequestBody()
 		}
 		if op.RequestBody.Value.Content == nil {
 			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
 		}
-		op.RequestBody.Value.Content[model.MediaTypeJson] = mType
+		op.RequestBody.Value.Content[consts.MediaTypeJson] = mType
 	}
 
 	if req.Responses != nil {
@@ -180,18 +181,18 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *dto
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
-		newMIMEType, ok := newRespRef.Value.Content[model.MediaTypeJson]
+		newMIMEType, ok := newRespRef.Value.Content[consts.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in responses", model.MediaTypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in responses", consts.MediaTypeJson)
 		}
 
 		if op.Responses == nil {
-			op.Responses = entity.DefaultOpenapi3Responses()
+			op.Responses = model.DefaultOpenapi3Responses()
 		}
 
 		oldRespRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
-			oldRespRef = entity.DefaultOpenapi3Responses()[strconv.Itoa(http.StatusOK)]
+			oldRespRef = model.DefaultOpenapi3Responses()[strconv.Itoa(http.StatusOK)]
 			op.Responses[strconv.Itoa(http.StatusOK)] = oldRespRef
 		}
 
@@ -199,7 +200,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *dto
 			oldRespRef.Value.Content = map[string]*openapi3.MediaType{}
 		}
 
-		oldRespRef.Value.Content[model.MediaTypeJson] = newMIMEType
+		oldRespRef.Value.Content[consts.MediaTypeJson] = newMIMEType
 	}
 
 	updatedTool := &entity.ToolInfo{
@@ -272,12 +273,12 @@ func mergeParameters(ctx context.Context, dest, src openapi3.Parameters) (openap
 			dv.Extensions = make(map[string]any)
 		}
 
-		if v, ok := sv.Extensions[model.APISchemaExtendLocalDisable]; ok {
-			dv.Extensions[model.APISchemaExtendLocalDisable] = v
+		if v, ok := sv.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+			dv.Extensions[consts.APISchemaExtendLocalDisable] = v
 		}
 
-		if v, ok := sv.Extensions[model.APISchemaExtendVariableRef]; ok {
-			dv.Extensions[model.APISchemaExtendVariableRef] = v
+		if v, ok := sv.Extensions[consts.APISchemaExtendVariableRef]; ok {
+			dv.Extensions[consts.APISchemaExtendVariableRef] = v
 		}
 
 		dv.Default = sv.Default
@@ -312,11 +313,11 @@ func mergeMediaSchema(ctx context.Context, dest, src *openapi3.Schema) (*openapi
 	if dest.Extensions == nil {
 		dest.Extensions = map[string]any{}
 	}
-	if v, ok := src.Extensions[model.APISchemaExtendLocalDisable]; ok {
-		dest.Extensions[model.APISchemaExtendLocalDisable] = v
+	if v, ok := src.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+		dest.Extensions[consts.APISchemaExtendLocalDisable] = v
 	}
-	if v, ok := src.Extensions[model.APISchemaExtendVariableRef]; ok {
-		dest.Extensions[model.APISchemaExtendVariableRef] = v
+	if v, ok := src.Extensions[consts.APISchemaExtendVariableRef]; ok {
+		dest.Extensions[consts.APISchemaExtendVariableRef] = v
 	}
 
 	dest.Default = src.Default

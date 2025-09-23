@@ -25,8 +25,6 @@ import (
 	einoCompose "github.com/cloudwego/eino/compose"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -35,6 +33,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
+	wrapPlugin "github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
@@ -297,8 +296,8 @@ func llmToolCallbackOptions(ctx context.Context, ns *schema2.NodeSchema, eventCh
 					return nil, err
 				}
 
-				toolInfoResponse, err := crossplugin.DefaultSVC().GetPluginToolsInfo(ctx, &plugin.ToolsInfoRequest{
-					PluginEntity: plugin.PluginEntity{
+				toolInfoResponse, err := wrapPlugin.GetPluginToolsInfo(ctx, &wrapPlugin.ToolsInfoRequest{
+					PluginEntity: vo.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: ptr.Of(p.PluginVersion),
 					},

@@ -34,7 +34,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	appEntity "github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 )

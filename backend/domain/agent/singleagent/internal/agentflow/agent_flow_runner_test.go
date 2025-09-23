@@ -101,7 +101,7 @@ func TestAgentRunner_preHandlerInput(t *testing.T) {
 				},
 			},
 			expectedResult: &schema.Message{
-				Role: schema.User,
+				Role:    schema.User,
 				Content: "",
 				MultiContent: []schema.ChatMessagePart{
 					{
@@ -350,16 +350,16 @@ func TestAgentRunner_preHandlerInput(t *testing.T) {
 
 func TestAgentRunner_concatContentString(t *testing.T) {
 	tests := []struct {
-		name               string
-		textContent        string
-		unSupportTypeURL   []schema.ChatMessagePart
-		expectedResult     string
+		name             string
+		textContent      string
+		unSupportTypeURL []schema.ChatMessagePart
+		expectedResult   string
 	}{
 		{
-			name:               "empty unsupported types should return original text",
-			textContent:        "original text",
-			unSupportTypeURL:   []schema.ChatMessagePart{},
-			expectedResult:     "original text",
+			name:             "empty unsupported types should return original text",
+			textContent:      "original text",
+			unSupportTypeURL: []schema.ChatMessagePart{},
+			expectedResult:   "original text",
 		},
 		{
 			name:        "single image URL should be appended",

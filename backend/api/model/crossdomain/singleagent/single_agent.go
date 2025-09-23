@@ -22,7 +22,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	plugindto "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 )
 
@@ -95,7 +95,7 @@ const (
 )
 
 type InterruptInfo struct {
-	AllToolInterruptData map[string]*plugindto.ToolInterruptEvent
+	AllToolInterruptData map[string]*model.ToolInterruptEvent
 	AllWfInterruptData   map[string]*crossworkflow.ToolInterruptEvent
 	ToolCallID           string
 	InterruptType        InterruptEventType

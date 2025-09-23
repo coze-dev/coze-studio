@@ -25,7 +25,8 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -46,8 +47,8 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		SpaceID: conf.spaceID,
 		AgentID: conf.agentIdentity.AgentID,
 		IsDraft: conf.agentIdentity.IsDraft,
-		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
-			return pluginEntity.VersionAgentTool{
+		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) model.VersionAgentTool {
+			return model.VersionAgentTool{
 				ToolID:       a.GetApiId(),
 				AgentVersion: ptr.Of(conf.agentIdentity.Version),
 			}
@@ -60,7 +61,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 
 	projectInfo := &model.ProjectInfo{
 		ProjectID:      conf.agentIdentity.AgentID,
-		ProjectType:    model.ProjectTypeOfAgent,
+		ProjectType:    consts.ProjectTypeOfAgent,
 		ProjectVersion: ptr.Of(conf.agentIdentity.Version),
 		ConnectorID:    conf.agentIdentity.ConnectorID,
 	}
@@ -117,16 +118,16 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		ToolID:          p.toolInfo.ID,
 		ExecDraftTool:   false,
 		ArgumentsInJson: argumentsInJSON,
-		ExecScene: func() model.ExecuteScene {
+		ExecScene: func() consts.ExecuteScene {
 			if p.isDraft {
-				return model.ExecSceneOfDraftAgent
+				return consts.ExecSceneOfDraftAgent
 			}
-			return model.ExecSceneOfOnlineAgent
+			return consts.ExecSceneOfOnlineAgent
 		}(),
 	}
 
-	opts := []pluginEntity.ExecuteToolOpt{
-		model.WithInvalidRespProcessStrategy(model.InvalidResponseProcessStrategyOfReturnDefault),
+	opts := []model.ExecuteToolOpt{
+		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
 		model.WithToolVersion(p.toolInfo.GetVersion()),
 		model.WithProjectInfo(p.projectInfo),
 		model.WithPluginHTTPHeader(p.conversationID),

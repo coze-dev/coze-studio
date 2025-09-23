@@ -18,8 +18,9 @@ package dto
 
 import (
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
 type GetOAuthStatusResponse struct {
@@ -38,6 +39,52 @@ type AgentPluginOAuthStatus struct {
 type GetAccessTokenRequest struct {
 	UserID    string
 	PluginID  *int64
-	Mode      model.AuthzSubType
-	OAuthInfo *entity.OAuthInfo
+	Mode      consts.AuthzSubType
+	OAuthInfo *OAuthInfo
+}
+
+type PluginAuthInfo struct {
+	AuthzType    *consts.AuthzType
+	Location     *consts.HTTPParamLocation
+	Key          *string
+	ServiceToken *string
+	OAuthInfo    *string
+	AuthzSubType *consts.AuthzSubType
+	AuthzPayload *string
+}
+
+type OAuthInfo struct {
+	OAuthMode         consts.AuthzSubType
+	AuthorizationCode *AuthorizationCodeInfo
+}
+
+type OAuthState struct {
+	ClientName OAuthProvider `json:"client_name"`
+	UserID     string        `json:"user_id"`
+	PluginID   int64         `json:"plugin_id"`
+	IsDraft    bool          `json:"is_draft"`
+}
+
+type AuthorizationCodeMeta struct {
+	UserID   string
+	PluginID int64
+	IsDraft  bool
+}
+
+type AuthorizationCodeInfo struct {
+	RecordID             int64
+	Meta                 *AuthorizationCodeMeta
+	Config               *model.OAuthAuthorizationCodeConfig
+	AccessToken          string
+	RefreshToken         string
+	TokenExpiredAtMS     int64
+	NextTokenRefreshAtMS *int64
+	LastActiveAtMS       int64
+}
+
+func (a *AuthorizationCodeInfo) GetNextTokenRefreshAtMS() int64 {
+	if a == nil {
+		return 0
+	}
+	return ptr.FromOrDefault(a.NextTokenRefreshAtMS, 0)
 }

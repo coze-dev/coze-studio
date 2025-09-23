@@ -26,7 +26,8 @@ import (
 	"gorm.io/gorm"
 
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	plugindto "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
@@ -49,7 +50,7 @@ type PluginDAO struct {
 type pluginPO model.Plugin
 
 func (p pluginPO) ToDO() *entity.PluginInfo {
-	return entity.NewPluginInfo(&plugindto.PluginInfo{
+	return entity.NewPluginInfo(&pluginModel.PluginInfo{
 		ID:          p.ID,
 		SpaceID:     p.SpaceID,
 		DeveloperID: p.DeveloperID,
@@ -132,7 +133,7 @@ func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64, opt *PluginSele
 	return plugins, nil
 }
 
-func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo dto.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
 	}
@@ -141,13 +142,13 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 	table := p.query.Plugin
 
 	switch *pageInfo.SortBy {
-	case entity.SortByCreatedAt:
+	case dto.SortByCreatedAt:
 		if *pageInfo.OrderByACS {
 			orderExpr = table.CreatedAt.Asc()
 		} else {
 			orderExpr = table.CreatedAt.Desc()
 		}
-	case entity.SortByUpdatedAt:
+	case dto.SortByUpdatedAt:
 		if *pageInfo.OrderByACS {
 			orderExpr = table.UpdatedAt.Asc()
 		} else {
@@ -216,16 +217,16 @@ func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, pluginI
 		updateMap[table.ServerURL.ColumnName().String()] = *pluginInfo.ServerURL
 	}
 	if pluginInfo.Manifest != nil {
-		b, err := json.Marshal(pluginInfo.Manifest)
-		if err != nil {
-			return err
+		b, mErr := json.Marshal(pluginInfo.Manifest)
+		if mErr != nil {
+			return mErr
 		}
 		updateMap[table.Manifest.ColumnName().String()] = b
 	}
 	if pluginInfo.OpenapiDoc != nil {
-		b, err := json.Marshal(pluginInfo.OpenapiDoc)
-		if err != nil {
-			return err
+		b, mErr := json.Marshal(pluginInfo.OpenapiDoc)
+		if mErr != nil {
+			return mErr
 		}
 		updateMap[table.OpenapiDoc.ColumnName().String()] = b
 	}

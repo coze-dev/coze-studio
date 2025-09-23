@@ -206,9 +206,9 @@ func (at *AgentToolDraftDAO) batchCreateWithTX(ctx context.Context, tx *query.Qu
 
 	tls := make([]*model.AgentToolDraft, 0, len(tools))
 	for _, tl := range tools {
-		id, err := at.idGen.GenID(ctx)
-		if err != nil {
-			return err
+		id, gErr := at.idGen.GenID(ctx)
+		if gErr != nil {
+			return gErr
 		}
 		m := &model.AgentToolDraft{
 			ID:          id,
