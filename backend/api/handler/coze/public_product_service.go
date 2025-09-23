@@ -318,3 +318,35 @@ func PublicSearchSuggest(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// PublicGetProductCategoryList .
+// @router /api/marketplace/product/category/list [GET]
+func PublicGetProductCategoryList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetProductCategoryListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(product_public_api.GetProductCategoryListResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicGetProductCallInfo .
+// @router /api/marketplace/product/call_info [GET]
+func PublicGetProductCallInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetProductCallInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(product_public_api.GetProductCallInfoResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
