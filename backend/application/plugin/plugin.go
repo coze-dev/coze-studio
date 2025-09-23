@@ -1752,7 +1752,7 @@ func convertPluginsToProductInfos(plugins []*entity.PluginInfo) []*productAPI.Pr
 
 // getSaasPluginList is a common method to get SaaS plugin list from domain service
 func (t *PluginApplicationService) getSaasPluginList(ctx context.Context) ([]*entity.PluginInfo, int64, error) {
-	domainReq := &service.ListPluginProductsRequest{}
+	domainReq := &dto.ListPluginProductsRequest{}
 	domainResp, err := t.DomainSVC.ListSaasPluginProducts(ctx, domainReq)
 	if err != nil {
 		return nil, 0, err

@@ -22,8 +22,9 @@ import (
 	"fmt"
 	"strconv"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	domainDto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -42,14 +43,14 @@ type CozePlugin struct {
 }
 
 
-func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error) {
+func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *domainDto.ListPluginProductsRequest) (resp *domainDto.ListPluginProductsResponse, err error) {
 
 	plugins, err := p.fetchSaasPluginsFromCoze(ctx)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "fetchSaasPluginsFromCoze failed")
 	}
 
-	return &ListPluginProductsResponse{
+	return &domainDto.ListPluginProductsResponse{
 		Plugins: plugins,
 		Total:   int64(len(plugins)),
 	}, nil
@@ -89,22 +90,22 @@ func convertSaasPluginItemToEntity(item *entity.SaasPluginItem) *entity.PluginIn
 	}
 
 	// 创建插件清单
-	manifest := &model.PluginManifest{
+	manifest := &dto.PluginManifest{
 		SchemaVersion:       "v1",
 		NameForModel:        metaInfo.Name,
 		NameForHuman:        metaInfo.Name,
 		DescriptionForModel: metaInfo.Description,
 		DescriptionForHuman: metaInfo.Description,
 		LogoURL:             metaInfo.IconURL,
-		Auth: &model.AuthV2{
-			Type: model.AuthzTypeOfNone,
+		Auth: &dto.AuthV2{
+			Type: dto.AuthzTypeOfNone,
 		},
-		API: model.APIDesc{
+		API: dto.APIDesc{
 			Type: "openapi",
 		},
 	}
 
-	pluginInfo := &model.PluginInfo{
+	pluginInfo := &dto.PluginInfo{
 		ID:          pluginID,
 		PluginType:  pluginCommon.PluginType_PLUGIN,
 		SpaceID:     0,
@@ -128,22 +129,22 @@ func convertCozePluginToEntity(cozePlugin CozePlugin) *entity.PluginInfo {
 		pluginID = int64(simpleHash(cozePlugin.ID))
 	}
 
-	manifest := &model.PluginManifest{
+	manifest := &dto.PluginManifest{
 		SchemaVersion:       "v1",
 		NameForModel:        cozePlugin.Name,
 		NameForHuman:        cozePlugin.Name,
 		DescriptionForModel: cozePlugin.Description,
 		DescriptionForHuman: cozePlugin.Description,
 		LogoURL:             cozePlugin.IconURL,
-		Auth: &model.AuthV2{
-			Type: model.AuthzTypeOfNone,
+		Auth: &dto.AuthV2{
+			Type: dto.AuthzTypeOfNone,
 		},
-		API: model.APIDesc{
+		API: dto.APIDesc{
 			Type: "openapi",
 		},
 	}
 
-	pluginInfo := &model.PluginInfo{
+	pluginInfo := &dto.PluginInfo{
 		ID:          pluginID,
 		PluginType:  pluginCommon.PluginType_PLUGIN,
 		SpaceID:     0,
