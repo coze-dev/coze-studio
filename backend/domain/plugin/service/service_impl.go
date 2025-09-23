@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 
-	"github.com/go-resty/resty/v2"
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
@@ -44,7 +43,6 @@ func NewService(components *Components) PluginService {
 		pluginRepo: components.PluginRepo,
 		toolRepo:   components.ToolRepo,
 		oauthRepo:  components.OAuthRepo,
-		httpCli:    resty.New(),
 	}
 
 	initOnce.Do(func() {
@@ -63,5 +61,4 @@ type pluginServiceImpl struct {
 	pluginRepo repository.PluginRepository
 	toolRepo   repository.ToolRepository
 	oauthRepo  repository.OAuthRepository
-	httpCli    *resty.Client
 }

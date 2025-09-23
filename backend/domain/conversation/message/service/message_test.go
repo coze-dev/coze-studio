@@ -503,9 +503,8 @@ func TestBatchCreate(t *testing.T) {
 	assert.NoError(t, err)
 
 	components := &Components{
-			MessageRepo: repository.NewMessageRepo(mockDB, nil),
-		}
-
+		MessageRepo: repository.NewMessageRepo(mockDB, nil),
+	}
 
 	t.Run("success_single_message", func(t *testing.T) {
 		ctrl := gomock.NewController(t)

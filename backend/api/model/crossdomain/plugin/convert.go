@@ -89,6 +89,8 @@ var apiAssistTypes = map[common.AssistParameterType]APIFileAssistType{
 	common.AssistParameterType_TXT:     AssistTypeTXT,
 }
 
+// TODO(fanlv): move to other package
+
 func ToAPIAssistType(typ common.AssistParameterType) (APIFileAssistType, bool) {
 	_typ, ok := apiAssistTypes[typ]
 	return _typ, ok
