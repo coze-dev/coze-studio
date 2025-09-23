@@ -436,10 +436,10 @@ func (mr *MockPluginServiceMockRecorder) ListPluginProducts(ctx, req any) *gomoc
 }
 
 // ListSaasPluginProducts mocks base method.
-func (m *MockPluginService) ListSaasPluginProducts(ctx context.Context, req *service.ListPluginProductsRequest) (*service.ListPluginProductsResponse, error) {
+func (m *MockPluginService) ListSaasPluginProducts(ctx context.Context, req *dto.ListPluginProductsRequest) (*dto.ListPluginProductsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListSaasPluginProducts", ctx, req)
-	ret0, _ := ret[0].(*service.ListPluginProductsResponse)
+	ret0, _ := ret[0].(*dto.ListPluginProductsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

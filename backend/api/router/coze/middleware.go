@@ -1585,3 +1585,18 @@ func _publicsearchsuggestMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _publicgetproductcallinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _categoryMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _publicgetproductcategorylistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
