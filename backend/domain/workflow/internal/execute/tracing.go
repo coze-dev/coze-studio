@@ -34,14 +34,17 @@ var (
 )
 
 const (
-	tracePayloadLimit = 2048
-	spanTypeAttrKey   = "cozeloop.span_type"
-	spanTypeWorkflow  = "graph"
-	spanTypeModel     = "model"
-	spanTypePlugin    = "plugin"
-	spanTypeFunction  = "function"
-	spanTypeVector    = "vector_store"
-	spanTypeRetriever = "vector_retriever"
+	tracePayloadLimit     = 4096
+	spanTypeWorkflow      = "Workflow"
+	spanTypeModel         = "model"
+	spanTypeLLMCall       = "LLMCall"
+	spanTypePlugin        = "plugin"
+	spanTypeFunction      = "function"
+	spanTypeVector        = "vector_store"
+	spanTypeRetriever     = "vector_retriever"
+	spanTypeOutputEmitter = "WorkflowMessage"
+	spanTypeExit          = "WorkflowEnd"
+	spanTypeEntry         = "WorkflowStart"
 )
 
 func startWorkflowSpan(ctx context.Context, c *Context, handler *WorkflowHandler, resumed bool, origin string, payload map[string]any, nodeCount int32) context.Context {
@@ -70,61 +73,71 @@ func startWorkflowSpan(ctx context.Context, c *Context, handler *WorkflowHandler
 		version = wfBasic.Version
 	}
 
-	spanName := fmt.Sprintf("workflow.%d", workflowID)
+	spanName := normalizedWorkflowName(wfBasic)
 	if workflowKind == "subworkflow" && c.RootCtx.RootWorkflowBasic != nil {
-		spanName = fmt.Sprintf("workflow.%d.sub.%d", c.RootCtx.RootWorkflowBasic.ID, workflowID)
+		spanName = fmt.Sprintf(
+			"workflow.%s.sub.%s",
+			normalizedWorkflowName(c.RootCtx.RootWorkflowBasic),
+			normalizedWorkflowName(wfBasic),
+		)
 	}
 
 	ctxWithSpan, span := workflowTracer.Start(ctx, spanName, oteltrace.WithSpanKind(oteltrace.SpanKindInternal))
 
 	attrs := []attribute.KeyValue{
-		attribute.Int64("cozeloop.workflow.execute_id", executeID),
-		attribute.Int64("cozeloop.workflow.root_execute_id", c.RootCtx.RootExecuteID),
-		attribute.Int64("cozeloop.workflow.id", workflowID),
-		attribute.String("cozeloop.workflow.version", version),
-		attribute.Int64("cozeloop.workflow.space_id", spaceID),
-		attribute.String("cozeloop.workflow.kind", workflowKind),
-		attribute.String("cozeloop.workflow.execute_mode", string(c.RootCtx.ExeCfg.Mode)),
-		attribute.String("cozeloop.workflow.task_type", string(c.RootCtx.ExeCfg.TaskType)),
-		attribute.String("cozeloop.workflow.sync_pattern", string(c.RootCtx.ExeCfg.SyncPattern)),
-		attribute.Bool("cozeloop.workflow.cancellable", c.RootCtx.ExeCfg.Cancellable),
+		attribute.Int64("execute_id", executeID),
+		attribute.Int64("root_execute_id", c.RootCtx.RootExecuteID),
+		attribute.Int64("id", workflowID),
+		attribute.String("version", version),
+		attribute.Int64("cozeloop.workspace_id", spaceID),
+		attribute.String("kind", workflowKind),
+		attribute.String("execute_mode", string(c.RootCtx.ExeCfg.Mode)),
+		attribute.String("task_type", string(c.RootCtx.ExeCfg.TaskType)),
+		attribute.String("sync_pattern", string(c.RootCtx.ExeCfg.SyncPattern)),
+		attribute.Bool("cancellable", c.RootCtx.ExeCfg.Cancellable),
+	}
+
+	if wfBasic != nil {
+		if wfName := strings.TrimSpace(wfBasic.Name); wfName != "" {
+			attrs = append(attrs, attribute.String("name", wfName))
+		}
 	}
 
 	if c.RootCtx.ExeCfg.WorkflowMode != 0 {
-		attrs = append(attrs, attribute.String("cozeloop.workflow.workflow_mode", fmt.Sprintf("%d", c.RootCtx.ExeCfg.WorkflowMode)))
+		attrs = append(attrs, attribute.String("workflow_mode", fmt.Sprintf("%d", c.RootCtx.ExeCfg.WorkflowMode)))
 	}
 	if c.RootCtx.ExeCfg.AppID != nil {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.app_id", *c.RootCtx.ExeCfg.AppID))
+		attrs = append(attrs, attribute.Int64("app_id", *c.RootCtx.ExeCfg.AppID))
 	}
 	if c.RootCtx.ExeCfg.AgentID != nil {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.agent_id", *c.RootCtx.ExeCfg.AgentID))
+		attrs = append(attrs, attribute.Int64("agent_id", *c.RootCtx.ExeCfg.AgentID))
 	}
 	if c.RootCtx.ExeCfg.ConnectorID != 0 {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.connector_id", c.RootCtx.ExeCfg.ConnectorID))
+		attrs = append(attrs, attribute.Int64("connector_id", c.RootCtx.ExeCfg.ConnectorID))
 	}
 	if c.RootCtx.ExeCfg.RoundID != nil {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.round_id", *c.RootCtx.ExeCfg.RoundID))
+		attrs = append(attrs, attribute.Int64("round_id", *c.RootCtx.ExeCfg.RoundID))
 	}
 	if c.RootCtx.ExeCfg.ConversationID != nil {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.conversation_id", *c.RootCtx.ExeCfg.ConversationID))
+		attrs = append(attrs, attribute.Int64("conversation_id", *c.RootCtx.ExeCfg.ConversationID))
 	}
 	if nodeCount > 0 {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.node_count", int64(nodeCount)))
+		attrs = append(attrs, attribute.Int64("node_count", int64(nodeCount)))
 	}
 	if payload != nil {
-		attrs = append(attrs, attribute.Int("cozeloop.workflow.input_field_count", len(payload)))
+		attrs = append(attrs, attribute.Int("input_field_count", len(payload)))
 	}
 	if resumed {
-		attrs = append(attrs, attribute.Bool("cozeloop.workflow.resumed", true))
+		attrs = append(attrs, attribute.Bool("resumed", true))
 	}
-	attrs = append(attrs, attribute.String(spanTypeAttrKey, spanTypeWorkflow))
+	attrs = append(attrs, attribute.String("cozeloop.span_type", spanTypeWorkflow))
 
 	span.SetAttributes(attrs...)
 	eventName := "workflow.start"
 	if resumed {
 		eventName = "workflow.resume"
 	}
-	span.AddEvent(eventName, oteltrace.WithAttributes(attribute.String("cozeloop.workflow.origin", origin)))
+	span.AddEvent(eventName, oteltrace.WithAttributes(attribute.String("origin", origin)))
 
 	c.workflowSpan = span
 	return ctxWithSpan
@@ -143,12 +156,12 @@ func finishWorkflowSpan(c *Context, duration time.Duration, status codes.Code, e
 		duration = time.Since(time.UnixMilli(c.StartTime))
 	}
 
-	baseAttrs := []attribute.KeyValue{attribute.Float64("cozeloop.workflow.duration_ms", milliseconds(duration))}
+	baseAttrs := []attribute.KeyValue{attribute.Float64("duration_ms", milliseconds(duration))}
 	baseAttrs = append(baseAttrs, tokenAttributes(token)...)
 	baseAttrs = append(baseAttrs, attrs...)
 
 	span.SetAttributes(baseAttrs...)
-	span.AddEvent("workflow.finish", oteltrace.WithAttributes(attribute.String("cozeloop.workflow.finish.status", status.String())))
+	span.AddEvent("workflow.finish", oteltrace.WithAttributes(attribute.String("finish.status", status.String())))
 	if err != nil {
 		span.RecordError(err)
 	}
@@ -175,6 +188,7 @@ func startNodeSpan(ctx context.Context, c *Context, nodeType entity.NodeType, re
 	if c.nodeSpan != nil && c.nodeSpan.SpanContext().IsValid() {
 		return ctx
 	}
+	c.llmSpan = nil
 
 	nodeKey := "unknown"
 	nodeName := ""
@@ -183,53 +197,71 @@ func startNodeSpan(ctx context.Context, c *Context, nodeType entity.NodeType, re
 		nodeName = c.NodeCtx.NodeName
 	}
 
-	spanName := fmt.Sprintf("workflow.node.%s", nodeKey)
+	spanName := nodeName
 	ctxWithSpan, span := workflowTracer.Start(ctx, spanName, oteltrace.WithSpanKind(oteltrace.SpanKindInternal))
 
 	attrs := []attribute.KeyValue{
-		attribute.Int64("cozeloop.workflow.execute_id", c.RootCtx.RootExecuteID),
-		attribute.String("cozeloop.workflow.node.id", nodeKey),
-		attribute.String("cozeloop.workflow.node.name", nodeName),
-		attribute.String("cozeloop.workflow.node.type", string(nodeType)),
+		attribute.Int64("execute_id", c.RootCtx.RootExecuteID),
+		attribute.String("node.id", nodeKey),
+		attribute.String("node.name", nodeName),
+		attribute.String("node.type", string(nodeType)),
 	}
 
 	if c.NodeCtx != nil {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.node.execute_id", c.NodeCtx.NodeExecuteID))
+		attrs = append(attrs, attribute.Int64("node.execute_id", c.NodeCtx.NodeExecuteID))
 		if len(c.NodeCtx.NodePath) > 0 {
-			attrs = append(attrs, attribute.String("cozeloop.workflow.node.path", strings.Join(c.NodeCtx.NodePath, ".")))
+			attrs = append(attrs, attribute.String("node.path", strings.Join(c.NodeCtx.NodePath, ".")))
 		}
 		if c.NodeCtx.TerminatePlan != nil {
-			attrs = append(attrs, attribute.String("cozeloop.workflow.node.terminate_plan", string(*c.NodeCtx.TerminatePlan)))
+			attrs = append(attrs, attribute.String("node.terminate_plan", string(*c.NodeCtx.TerminatePlan)))
 		}
 	}
 
 	if c.SubWorkflowCtx != nil {
-		attrs = append(attrs, attribute.Int64("cozeloop.workflow.sub_execute_id", c.SubWorkflowCtx.SubExecuteID))
+		attrs = append(attrs, attribute.Int64("sub_execute_id", c.SubWorkflowCtx.SubExecuteID))
 		if c.SubWorkflowCtx.SubWorkflowBasic != nil {
-			attrs = append(attrs, attribute.Int64("cozeloop.workflow.sub_workflow_id", c.SubWorkflowCtx.SubWorkflowBasic.ID))
+			attrs = append(attrs, attribute.Int64("sub_workflow_id", c.SubWorkflowCtx.SubWorkflowBasic.ID))
 		}
 	}
 
 	if c.BatchInfo != nil {
 		attrs = append(attrs,
-			attribute.Bool("cozeloop.workflow.node.batch", true),
-			attribute.Int("cozeloop.workflow.node.batch.index", c.BatchInfo.Index),
-			attribute.Int("cozeloop.workflow.node.batch.item_count", len(c.BatchInfo.Items)),
+			attribute.Bool("node.batch", true),
+			attribute.Int("node.batch.index", c.BatchInfo.Index),
+			attribute.Int("node.batch.item_count", len(c.BatchInfo.Items)),
 		)
 	}
 
 	if payload != nil {
-		attrs = append(attrs, attribute.Int("cozeloop.workflow.node.input_field_count", len(payload)))
+		attrs = append(attrs, attribute.Int("node.input_field_count", len(payload)))
 	}
 	if resumed {
-		attrs = append(attrs, attribute.Bool("cozeloop.workflow.node.resumed", true))
+		attrs = append(attrs, attribute.Bool("node.resumed", true))
 	}
-	attrs = append(attrs, attribute.String(spanTypeAttrKey, spanTypeForNode(nodeType)))
+	attrs = append(attrs, attribute.String("cozeloop.span_type", spanTypeForNode(nodeType)))
 
 	span.SetAttributes(attrs...)
-	span.AddEvent("node.start", oteltrace.WithAttributes(attribute.String("cozeloop.workflow.origin", origin)))
+	span.AddEvent("node.start", oteltrace.WithAttributes(attribute.String("origin", origin)))
 
 	c.nodeSpan = span
+
+	if nodeType == entity.NodeTypeLLM {
+		clearLLMCallMetadata(c)
+		callSpanName := fmt.Sprintf("workflow.node.%s.llm", nodeKey)
+		callCtx, callSpan := workflowTracer.Start(ctxWithSpan, callSpanName, oteltrace.WithSpanKind(oteltrace.SpanKindInternal))
+		callAttrs := []attribute.KeyValue{
+			attribute.Int64("node.execute_id", c.NodeCtx.NodeExecuteID),
+			attribute.String("node.id", nodeKey),
+			attribute.String("cozeloop.span_type", spanTypeModel),
+		}
+		if nodeName != "" {
+			callAttrs = append(callAttrs, attribute.String("node.name", nodeName))
+		}
+		callSpan.SetAttributes(callAttrs...)
+		callSpan.AddEvent("llm.call.start", oteltrace.WithAttributes(attribute.String("origin", origin)))
+		c.llmSpan = callSpan
+		ctxWithSpan = callCtx
+	}
 	return ctxWithSpan
 }
 
@@ -246,19 +278,20 @@ func finishNodeSpan(c *Context, duration time.Duration, status codes.Code, err e
 		duration = time.Since(time.UnixMilli(c.StartTime))
 	}
 
-	baseAttrs := []attribute.KeyValue{attribute.Float64("cozeloop.workflow.node.duration_ms", milliseconds(duration))}
+	baseAttrs := []attribute.KeyValue{attribute.Float64("node.duration_ms", milliseconds(duration))}
 	baseAttrs = append(baseAttrs, tokenAttributes(token)...)
 	if c.BatchInfo != nil {
 		baseAttrs = append(baseAttrs,
-			attribute.Bool("cozeloop.workflow.node.batch", true),
-			attribute.Int("cozeloop.workflow.node.batch.index", c.BatchInfo.Index),
-			attribute.Int("cozeloop.workflow.node.batch.item_count", len(c.BatchInfo.Items)),
+			attribute.Bool("node.batch", true),
+			attribute.Int("node.batch.index", c.BatchInfo.Index),
+			attribute.Int("node.batch.item_count", len(c.BatchInfo.Items)),
 		)
 	}
 	baseAttrs = append(baseAttrs, attrs...)
+	finishLLMCallSpan(c, duration, status, err, token, attrs...)
 
 	span.SetAttributes(baseAttrs...)
-	span.AddEvent("node.finish", oteltrace.WithAttributes(attribute.String("cozeloop.workflow.node.finish.status", status.String())))
+	span.AddEvent("node.finish", oteltrace.WithAttributes(attribute.String("node.finish.status", status.String())))
 	if err != nil {
 		span.RecordError(err)
 	}
@@ -276,6 +309,69 @@ func addNodeSpanEvent(c *Context, name string, attrs ...attribute.KeyValue) {
 		return
 	}
 	span.AddEvent(name, oteltrace.WithAttributes(attrs...))
+}
+
+func addLLMCallSpanEvent(c *Context, name string, attrs ...attribute.KeyValue) {
+	if c == nil {
+		return
+	}
+	span := c.llmSpan
+	if span == nil || !span.SpanContext().IsValid() {
+		return
+	}
+	span.AddEvent(name, oteltrace.WithAttributes(attrs...))
+}
+
+func finishLLMCallSpan(c *Context, duration time.Duration, status codes.Code, err error, token *TokenInfo, attrs ...attribute.KeyValue) {
+	if c == nil {
+		return
+	}
+	span := c.llmSpan
+	if span == nil || !span.SpanContext().IsValid() {
+		return
+	}
+
+	if duration <= 0 && c.StartTime > 0 {
+		duration = time.Since(time.UnixMilli(c.StartTime))
+	}
+
+	baseAttrs := []attribute.KeyValue{
+		attribute.Float64("llm_call.duration_ms", milliseconds(duration)),
+		attribute.String("cozeloop.span_type", spanTypeModel),
+	}
+	baseAttrs = append(baseAttrs, tokenAttributes(token)...)
+
+	if meta := getLLMCallMetadata(c); meta != nil {
+		if meta.ModelID != 0 {
+			baseAttrs = append(baseAttrs, attribute.Int64("llm.model.id", meta.ModelID))
+		}
+		if meta.ModelName != "" {
+			baseAttrs = append(baseAttrs, attribute.String("gen_ai.request.model", meta.ModelName))
+		}
+		if meta.ModelDisplayName != "" {
+			baseAttrs = append(baseAttrs, attribute.String("llm.model.display_name", meta.ModelDisplayName))
+		}
+		if meta.ModelProvider != "" {
+			baseAttrs = append(baseAttrs, attribute.String("gen_ai.system", meta.ModelProvider))
+		}
+		if meta.ModelDeployedName != "" {
+			baseAttrs = append(baseAttrs, attribute.String("llm.model.deployed", meta.ModelDeployedName))
+		}
+		if meta.UsingFallback {
+			baseAttrs = append(baseAttrs, attribute.Bool("llm.model.using_fallback", true))
+		}
+	}
+	baseAttrs = append(baseAttrs, attrs...)
+
+	span.SetAttributes(baseAttrs...)
+	span.AddEvent("llm.call.finish", oteltrace.WithAttributes(attribute.String("llm_call.status", status.String())))
+	if err != nil {
+		span.RecordError(err)
+	}
+	span.SetStatus(status, statusMessage(status, err))
+	span.End()
+	c.llmSpan = nil
+	clearLLMCallMetadata(c)
 }
 
 func tokenAttributes(token *TokenInfo) []attribute.KeyValue {
@@ -306,8 +402,8 @@ func statusMessage(status codes.Code, err error) string {
 func spanTypeForNode(nodeType entity.NodeType) string {
 	switch nodeType {
 	case entity.NodeTypeLLM:
-		return spanTypeModel
-	case entity.NodeTypePlugin, entity.NodeTypeMcp:
+		return spanTypeLLMCall
+	case entity.NodeTypePlugin, entity.NodeTypeMcp, entity.NodeTypeHTTPRequester:
 		return spanTypePlugin
 	case entity.NodeTypeSubWorkflow:
 		return spanTypeWorkflow
@@ -317,6 +413,12 @@ func spanTypeForNode(nodeType entity.NodeType) string {
 		return spanTypeRetriever
 	case entity.NodeTypeVariableAssigner, entity.NodeTypeVariableAggregator, entity.NodeTypeLambda, entity.NodeTypeCodeRunner, entity.NodeTypeLoop, entity.NodeTypeContinue, entity.NodeTypeBreak:
 		return spanTypeFunction
+	case entity.NodeTypeOutputEmitter:
+		return spanTypeOutputEmitter
+	case entity.NodeTypeExit:
+		return spanTypeExit
+	case entity.NodeTypeEntry:
+		return spanTypeEntry
 	default:
 		return spanTypeFunction
 	}
@@ -329,11 +431,17 @@ func formatTracePayloadMap(data map[string]any) string {
 	return truncateTracePayload(mustMarshalToString(data))
 }
 
-func formatTraceText(s string) string {
-	if s == "" {
-		return ""
+func normalizedWorkflowName(wb *entity.WorkflowBasic) string {
+	if wb == nil {
+		return "unknown"
 	}
-	return truncateTracePayload(s)
+
+	fallback := "unknown"
+	if wb.ID != 0 {
+		fallback = fmt.Sprintf("id-%d", wb.ID)
+	}
+
+	return sanitizeSpanSegment(wb.Name, fallback)
 }
 
 func truncateTracePayload(s string) string {
@@ -344,5 +452,8 @@ func truncateTracePayload(s string) string {
 	if len(r) <= tracePayloadLimit {
 		return s
 	}
-	return string(r[:tracePayloadLimit]) + "…"
+	if tracePayloadLimit <= 1 {
+		return string(r[:tracePayloadLimit])
+	}
+	return string(r[:tracePayloadLimit-1]) + "…"
 }

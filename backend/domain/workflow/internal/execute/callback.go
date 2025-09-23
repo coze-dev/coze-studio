@@ -491,7 +491,7 @@ func (w *WorkflowHandler) OnStartWithStreamInput(ctx context.Context, info *call
 		}
 	}
 	c := GetExeCtx(newCtx)
-	addWorkflowSpanEvent(c, "workflow.input.stream_collected", attribute.Int("coze.workflow.input_field_count", len(fullInput)))
+	addWorkflowSpanEvent(c, "workflow.input.stream_collected", attribute.Int("input_field_count", len(fullInput)))
 	w.ch <- &Event{
 		Type:      WorkflowStart,
 		Context:   c,
@@ -537,7 +537,7 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 			}
 
 			if baseCtx != nil {
-				addWorkflowSpanEvent(baseCtx, "workflow.output.stream_chunk", attribute.Int("coze.workflow.output_field_count", len(fullOutput)))
+				addWorkflowSpanEvent(baseCtx, "workflow.output.stream_chunk", attribute.Int("output_field_count", len(fullOutput)))
 			}
 		}
 
@@ -564,7 +564,7 @@ func (w *WorkflowHandler) OnEndWithStreamOutput(ctx context.Context, info *callb
 			}
 		}
 		w.ch <- e
-		addWorkflowSpanEvent(currentCtx, "workflow.output.stream_complete", attribute.Int("coze.workflow.output_field_count", len(fullOutput)))
+		addWorkflowSpanEvent(currentCtx, "workflow.output.stream_complete", attribute.Int("output_field_count", len(fullOutput)))
 	})
 
 	return ctx
@@ -1000,7 +1000,10 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 				if c != nil {
 					payload := formatTracePayloadMap(fullOutput)
-					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)), attribute.String("content", payload))
+					countAttr := attribute.Int("node.output_field_count", len(fullOutput))
+					contentAttr := attribute.String("content", payload)
+					addNodeSpanEvent(c, "node.streaming_output.chunk", countAttr, contentAttr)
+					addLLMCallSpanEvent(c, "node.streaming_output.chunk", countAttr, contentAttr)
 				}
 
 				if so.Error != nil {
@@ -1034,7 +1037,10 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 			}
 
 			payload := formatTracePayloadMap(fullOutput)
-			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput)), attribute.String("content", payload))
+			countAttr := attribute.Int("node.output_field_count", len(fullOutput))
+			contentAttr := attribute.String("content", payload)
+			addNodeSpanEvent(c, "node.streaming_output.complete", countAttr, contentAttr)
+			addLLMCallSpanEvent(c, "node.streaming_output.complete", countAttr, contentAttr)
 
 			// TODO: hard-coded string
 			if _, ok := fullOutput["output"]; ok {
@@ -1135,7 +1141,10 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 					}
 					n.ch <- deltaEvent
 					payload := formatTracePayloadMap(fullOutput.Output)
-					addNodeSpanEvent(c, "node.streaming_output.chunk", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)), attribute.String("content", payload))
+					countAttr := attribute.Int("node.output_field_count", len(fullOutput.Output))
+					contentAttr := attribute.String("content", payload)
+					addNodeSpanEvent(c, "node.streaming_output.chunk", countAttr, contentAttr)
+					addLLMCallSpanEvent(c, "node.streaming_output.chunk", countAttr, contentAttr)
 				}
 			}
 
@@ -1149,7 +1158,10 @@ func (n *NodeHandler) OnEndWithStreamOutput(ctx context.Context, info *callbacks
 
 			n.ch <- e
 			payload := formatTracePayloadMap(fullOutput.Output)
-			addNodeSpanEvent(c, "node.streaming_output.complete", attribute.Int("coze.workflow.node.output_field_count", len(fullOutput.Output)), attribute.String("content", payload))
+			countAttr := attribute.Int("node.output_field_count", len(fullOutput.Output))
+			contentAttr := attribute.String("content", payload)
+			addNodeSpanEvent(c, "node.streaming_output.complete", countAttr, contentAttr)
+			addLLMCallSpanEvent(c, "node.streaming_output.complete", countAttr, contentAttr)
 		})
 	case entity.NodeTypeExit, entity.NodeTypeOutputEmitter, entity.NodeTypeSubWorkflow:
 		consumer := func(ctx context.Context) context.Context {
