@@ -52,6 +52,7 @@ func (art *AgentRuntime) AgentStreamExecute(ctx context.Context, imagex imagex.I
 		ConversationId:   art.GetRunMeta().ConversationID,
 		ConnectorID:      art.GetRunMeta().ConnectorID,
 		PreRetrieveTools: art.GetRunMeta().PreRetrieveTools,
+		CustomVariables:  art.GetRunMeta().CustomVariables,
 		Input:            transMessageToSchemaMessage(ctx, []*msgEntity.Message{art.GetInput()}, imagex)[0],
 		HistoryMsg:       transMessageToSchemaMessage(ctx, historyPairs(art.GetHistory()), imagex),
 		ResumeInfo:       parseResumeInfo(ctx, art.GetHistory()),

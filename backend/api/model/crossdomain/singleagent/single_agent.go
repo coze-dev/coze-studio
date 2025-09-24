@@ -113,6 +113,8 @@ type ExecuteRequest struct {
 	ResumeInfo   *InterruptInfo
 	PreCallTools []*agentrun.ToolsRetriever
 
+	CustomVariables  map[string]string
+
 	ConversationID int64
 }
 

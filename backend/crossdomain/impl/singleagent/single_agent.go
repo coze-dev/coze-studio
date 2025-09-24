@@ -62,6 +62,7 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, agentRuntim
 		Input:    agentRuntime.Input,
 		History:  agentRuntime.HistoryMsg,
 		UserID:   agentRuntime.UserID,
+		CustomVariables: agentRuntime.CustomVariables,
 		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *agentrun.Tool) *agentrun.ToolsRetriever {
 			return &agentrun.ToolsRetriever{
 				PluginID:  tool.PluginID,

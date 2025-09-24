@@ -78,7 +78,8 @@ func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) 
 		executeConfig.RoundID = &art.RunRecord.ID
 		executeConfig.UserMessage = transMessageToSchemaMessage(ctx, []*msgEntity.Message{art.GetInput()}, imagex)[0]
 		executeConfig.MaxHistoryRounds = ptr.Of(getAgentHistoryRounds(art.GetAgentInfo()))
-		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig, map[string]any{
+
+		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig,  map[string]any{
 			"USER_INPUT": concatWfInput(art),
 		})
 	}

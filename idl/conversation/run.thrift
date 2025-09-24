@@ -146,7 +146,6 @@ struct ShortcutCommandDetail {
     2: map<string,string> parameters  // Key = parameter name value = value object_string JSON String after object array serialization
 }
 
-
 struct ChatV3Request {
     1: required i64 BotID (api.body = "bot_id",api.js_conv='true'), //agent_id
     2: optional i64 ConversationID (api.query = "conversation_id", api.js_conv='true'), //conversation_id

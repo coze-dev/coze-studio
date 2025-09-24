@@ -42,6 +42,7 @@ type AgentRuntime struct {
 	SpaceID          int64
 	ConnectorID      int64
 	PreRetrieveTools []*agentrun.Tool
+	CustomVariables  map[string]string
 
 	HistoryMsg []*schema.Message
 	Input      *schema.Message
