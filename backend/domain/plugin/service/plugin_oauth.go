@@ -28,9 +28,9 @@ import (
 	"golang.org/x/oauth2"
 
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/env"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/encrypt"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -475,7 +475,7 @@ func getStanderOAuthConfig(config *model.OAuthAuthorizationCodeConfig) *oauth2.C
 			TokenURL: config.AuthorizationURL,
 			AuthURL:  config.ClientURL,
 		},
-		RedirectURL: fmt.Sprintf("%s/api/oauth/authorization_code", conf.GetServerHost()),
+		RedirectURL: fmt.Sprintf("%s/api/oauth/authorization_code", env.GetServerHost()),
 		Scopes:      strings.Split(config.Scope, " "),
 	}
 }
