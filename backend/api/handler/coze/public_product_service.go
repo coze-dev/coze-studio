@@ -326,12 +326,20 @@ func PublicGetProductCategoryList(ctx context.Context, c *app.RequestContext) {
 	var req product_public_api.GetProductCategoryListRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
-	resp := new(product_public_api.GetProductCategoryListResponse)
+	var resp *product_public_api.GetProductCategoryListResponse
 
+	switch req.GetEntityType() {
+	case product_common.ProductEntityType_SaasPlugin:
+		resp, err = plugin.PluginApplicationSVC.GetSaasProductCategoryList(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+	}
 	c.JSON(consts.StatusOK, resp)
 }
 
@@ -346,7 +354,11 @@ func PublicGetProductCallInfo(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(product_public_api.GetProductCallInfoResponse)
+	resp, err := plugin.PluginApplicationSVC.GetProductCallInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
 	c.JSON(consts.StatusOK, resp)
 }

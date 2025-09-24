@@ -641,7 +641,7 @@ struct DuplicateProductData {
 
 struct GetProductCategoryListRequest {
     1  :          product_common.ProductEntityType EntityType        (api.query = "entity_type")        ,
-    2  : optional bool                             NeedEmptyCategory (api.query = "need_empty_category"), // 上架的时候需要获取全量的 category 列表，用于区分上架场景和主页场景
+    2  : optional bool                             NeedEmptyCategory (api.query = "need_empty_category"), // When listing, need to get the full category list to distinguish between listing and homepage scenarios
     3  : optional string                           Lang (api.query = "lang"),
 
     255: optional base.Base                        Base                                                 ,
@@ -669,39 +669,39 @@ struct GetProductCallInfoRequest {
 }
 
 enum UserLevel {
-    Free          = 0  , // 免费版。
+    Free          = 0  , // Free version
 
-// 海外
+// Overseas
     PremiumLite   = 10 , // PremiumLite
     Premium       = 15 , // Premium
     PremiumPlus   = 20 ,
 
-// 国内
-    V1ProInstance = 100, // V1火山专业版
+// Domestic
+    V1ProInstance = 100, // V1 Volcano Professional Edition
 
-    ProPersonal   = 110, // 个人旗舰版
-    Team          = 120, // 团队版
-    Enterprise    = 130, // 企业版
+    ProPersonal   = 110, // Personal flagship edition
+    Team          = 120, // Team edition
+    Enterprise    = 130, // Enterprise edition
 }
 
 struct ProductCallCountLimit {
-    1: bool is_unlimited, // 插件是否调用 tool 次数无限制
-    2: i32 used_count, // 插件已调用 tool 次数
-    3: i32 total_count, // 插件总调用 tool 次数
-    4: i64 reset_datetime, // 插件调用 tool 次数重置时间
-    5: map<UserLevel, ProductCallCountLimit> call_count_limit_by_user_level, // 插件调用 tool 次数限制，按付费等级分
+    1: bool is_unlimited, // Whether plugin tool calls are unlimited
+    2: i32 used_count, // Plugin tool calls used
+    3: i32 total_count, // Plugin total tool calls
+    4: i64 reset_datetime, // Plugin tool call count reset time
+    5: map<UserLevel, ProductCallCountLimit> call_count_limit_by_user_level, // Plugin tool call count limit by user level
 }
 
 struct ProductCallRateLimit {
     1: i32 qps, // qps
-    2: map<UserLevel, ProductCallRateLimit> call_rate_limit_by_user_level, // 插件调用 tool 速率限制，按付费等级分
+    2: map<UserLevel, ProductCallRateLimit> call_rate_limit_by_user_level, // Plugin tool call rate limit by user level
 }
 
 struct GetProductCallInfoData {
-    1: string mcp_json, // mcp 配置 json 字符串
-    2: UserLevel user_level, // 付费等级
-    3: ProductCallCountLimit call_count_limit, // 插件调用 tool 次数限制
-    4: ProductCallRateLimit call_rate_limit, // 插件调用 tool 速率限制
+    1: string mcp_json, // mcp configuration json string
+    2: UserLevel user_level, // Payment level
+    3: ProductCallCountLimit call_count_limit, // Plugin tool call count limit
+    4: ProductCallRateLimit call_rate_limit, // Plugin tool call rate limit
 }
 
 struct GetProductCallInfoResponse {

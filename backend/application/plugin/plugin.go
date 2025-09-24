@@ -506,3 +506,91 @@ func (t *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req 
 		},
 	}, nil
 }
+
+func (t *PluginApplicationService) GetSaasProductCategoryList(ctx context.Context, req *productAPI.GetProductCategoryListRequest) (resp *productAPI.GetProductCategoryListResponse, err error) {
+	// 构建 domain 层请求
+	domainReq := &dto.ListPluginCategoriesRequest{}
+
+	// 根据请求参数设置查询条件
+	if req.GetEntityType() == productCommon.ProductEntityType_SaasPlugin {
+		domainReq.EntityType = ptr.Of("plugin")
+	}
+
+	// 调用 domain 层服务
+	domainResp, err := t.DomainSVC.ListSaasPluginCategories(ctx, domainReq)
+	if err != nil {
+		logs.CtxErrorf(ctx, "ListSaasPluginCategories failed: %v", err)
+		return &productAPI.GetProductCategoryListResponse{
+			Code:    -1,
+			Message: "Failed to get SaaS plugin categories",
+		}, nil
+	}
+
+	// 转换响应数据
+	categories := make([]*productAPI.ProductCategory, 0)
+	if domainResp.Data != nil && domainResp.Data.Items != nil {
+		for _, item := range domainResp.Data.Items {
+			// 将字符串 ID 转换为 int64
+			categoryID, _ := strconv.ParseInt(item.ID, 10, 64)
+			categories = append(categories, &productAPI.ProductCategory{
+				ID:   categoryID,
+				Name: item.Name,
+			})
+		}
+	}
+
+	return &productAPI.GetProductCategoryListResponse{
+		Code:    0,
+		Message: "success",
+		Data: &productAPI.GetProductCategoryListData{
+			EntityType: req.GetEntityType(),
+			Categories: categories,
+		},
+	}, nil
+}
+
+func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *productAPI.GetProductCallInfoRequest) (resp *productAPI.GetProductCallInfoResponse, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return &productAPI.GetProductCallInfoResponse{
+			Code:    -1,
+			Message: "User not authenticated",
+		}, nil
+	}
+
+	// Call GetSaasUserInfo
+	_, err = t.userSVC.GetSaasUserInfo(ctx, *userID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
+		return &productAPI.GetProductCallInfoResponse{
+			Code:    -1,
+			Message: "Failed to get user info",
+		}, nil
+	}
+
+	// Call GetUserBenefit
+	_, err = t.userSVC.GetUserBenefit(ctx, *userID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
+		return &productAPI.GetProductCallInfoResponse{
+			Code:    -1,
+			Message: "Failed to get user benefit",
+		}, nil
+	}
+
+	// Build response data
+	data := &productAPI.GetProductCallInfoData{
+		McpJSON:   "", // TODO: Set appropriate MCP JSON based on requirements
+		UserLevel: productAPI.UserLevel_Free, // TODO: Map from userBenefit to appropriate UserLevel
+	}
+
+	// TODO: Set CallCountLimit and CallRateLimit based on userBenefit
+	// data.CallCountLimit = &productAPI.ProductCallCountLimit{...}
+	// data.CallRateLimit = &productAPI.ProductCallRateLimit{...}
+
+	return &productAPI.GetProductCallInfoResponse{
+		Code:    0,
+		Message: "success",
+		Data:    data,
+	}, nil
+}
