@@ -30,6 +30,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
 	"github.com/cloudwego/hertz/pkg/protocol/sse"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/base"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -639,9 +640,22 @@ func ListRootSpans(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.ListRootSpansResponse)
+	resp, err := appworkflow.SVC.ListRootSpans(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	if resp.BaseResp == nil {
+		resp.BaseResp = base.NewBaseResp()
+	}
+
+	c.JSON(consts.StatusOK, map[string]any{
+		"code":     resp.BaseResp.StatusCode,
+		"msg":      resp.BaseResp.StatusMessage,
+		"spans":    resp.Spans,
+		"BaseResp": resp.BaseResp,
+	})
 }
 
 // GetTraceSDK .
@@ -655,9 +669,22 @@ func GetTraceSDK(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp := new(workflow.GetTraceSDKResponse)
+	resp, err := appworkflow.SVC.GetTraceSDK(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
 
-	c.JSON(consts.StatusOK, resp)
+	if resp.BaseResp == nil {
+		resp.BaseResp = base.NewBaseResp()
+	}
+
+	c.JSON(consts.StatusOK, map[string]any{
+		"code":     resp.BaseResp.StatusCode,
+		"msg":      resp.BaseResp.StatusMessage,
+		"data":     resp.Data,
+		"BaseResp": resp.BaseResp,
+	})
 }
 
 // GetWorkflowDetail .

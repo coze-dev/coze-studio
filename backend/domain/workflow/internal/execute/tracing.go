@@ -46,7 +46,7 @@ const (
 	spanTypeExit          = "WorkflowEnd"
 	spanTypeEntry         = "WorkflowStart"
 )
-
+// 工作流开始的span，收集工作流trace中的第一个span的信息
 func startWorkflowSpan(ctx context.Context, c *Context, handler *WorkflowHandler, resumed bool, origin string, payload map[string]any, nodeCount int32) context.Context {
 	if c == nil {
 		return ctx
@@ -142,7 +142,7 @@ func startWorkflowSpan(ctx context.Context, c *Context, handler *WorkflowHandler
 	c.workflowSpan = span
 	return ctxWithSpan
 }
-
+// 工作流结束的span，收集工作流trace中的最后一个span的信息，目前没有展示
 func finishWorkflowSpan(c *Context, duration time.Duration, status codes.Code, err error, token *TokenInfo, attrs ...attribute.KeyValue) {
 	if c == nil {
 		return
@@ -180,7 +180,7 @@ func addWorkflowSpanEvent(c *Context, name string, attrs ...attribute.KeyValue) 
 	}
 	span.AddEvent(name, oteltrace.WithAttributes(attrs...))
 }
-
+// 工作流中的某节点开始的span
 func startNodeSpan(ctx context.Context, c *Context, nodeType entity.NodeType, resumed bool, origin string, payload map[string]any) context.Context {
 	if c == nil {
 		return ctx
@@ -264,7 +264,7 @@ func startNodeSpan(ctx context.Context, c *Context, nodeType entity.NodeType, re
 	}
 	return ctxWithSpan
 }
-
+// 工作流中的某节点结束的span
 func finishNodeSpan(c *Context, duration time.Duration, status codes.Code, err error, token *TokenInfo, attrs ...attribute.KeyValue) {
 	if c == nil {
 		return

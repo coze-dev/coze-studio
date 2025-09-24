@@ -580,6 +580,17 @@ func (i *impl) GetExecution(ctx context.Context, wfExe *entity.WorkflowExecution
 	return wfExeEntity, nil
 }
 
+func (i *impl) ListRootWorkflowExecutions(ctx context.Context, policy *workflow.ListWorkflowExecutionPolicy) ([]*entity.WorkflowExecution, error) {
+	if policy == nil {
+		return nil, fmt.Errorf("list workflow execution policy is nil")
+	}
+	return i.repo.ListRootWorkflowExecutions(ctx, policy)
+}
+
+func (i *impl) GetRootWorkflowExecutionByLogID(ctx context.Context, logID string, startAtMilli, endAtMilli int64) (*entity.WorkflowExecution, bool, error) {
+	return i.repo.GetRootWorkflowExecutionByLogID(ctx, logID, startAtMilli, endAtMilli)
+}
+
 func (i *impl) GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error) {
 	nodeExe, found, err := i.repo.GetNodeExecution(ctx, exeID, nodeID)
 	if err != nil {
