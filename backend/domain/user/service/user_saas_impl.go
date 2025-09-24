@@ -148,11 +148,6 @@ func (u *userImpl) GetSaasUserInfo(ctx context.Context, userID int64) (*entity.U
 	return getCozeUserService().GetUserInfo(ctx, userID)
 }
 
-// GetUserBenefit implements SaasUserProvider.GetUserBenefit
-func (u *userImpl) GetUserBenefit(ctx context.Context, userID int64) (*entity.UserBenefit, error) {
-	return getCozeUserService().GetUserBenefit(ctx, userID)
-}
-
 // GetEnterpriseBenefit gets enterprise benefit with query parameters
 func (u *userImpl) GetEnterpriseBenefit(ctx context.Context, req *entity.GetEnterpriseBenefitRequest) (*entity.GetEnterpriseBenefitResponse, error) {
 	return getCozeUserService().GetEnterpriseBenefit(ctx, req)
