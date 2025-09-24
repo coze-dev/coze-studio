@@ -50,4 +50,5 @@ export { VARIABLE_NODE_REGISTRY } from './variable';
 export { JSON_STRINGIFY_NODE_REGISTRY } from './json-stringify';
 export { CARD_SELECTOR_NODE_REGISTRY } from './card-selector';
 export { MCP_NODE_REGISTRY } from './mcp';
+export { AGENT_NODE_REGISTRY } from './agent';
 // The cli script inserts the identifier (registry), do not modify/delete this line comment

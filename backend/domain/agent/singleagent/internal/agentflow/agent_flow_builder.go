@@ -34,6 +34,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type Config struct {
@@ -192,7 +193,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	var agentNodeOpts []compose.GraphAddNodeOpt
 	var agentNodeName string
 	if isReActAgent {
-		agent, err := react.NewAgent(ctx, &react.AgentConfig{
+		reactConfig := &react.AgentConfig{
 			ToolCallingModel: chatModel,
 			ToolsConfig: compose.ToolsNodeConfig{
 				Tools: agentTools,
@@ -200,7 +201,51 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 			ToolReturnDirectly: returnDirectlyTools,
 			ModelNodeName:      keyOfReActAgentChatModel,
 			ToolsNodeName:      keyOfReActAgentToolsNode,
-		})
+		}
+		
+		// 根据模型类型自适应选择StreamToolCallChecker
+		// 某些模型（如Qwen、Claude）会先输出文本再输出工具调用
+		// 需要使用兼容的checker
+		needsCompatibleChecker := false
+		
+		// 首先检查是否通过环境变量强制使用兼容模式
+		if shouldUseCompatibleChecker() {
+			needsCompatibleChecker = true
+			logs.CtxInfof(ctx, "[AgentBuilder] Force using compatible tool call checker (env: FORCE_COMPATIBLE_TOOL_CHECKER=true)")
+		} else if modelInfo != nil && modelInfo.Name != "" {
+			modelName := strings.ToLower(modelInfo.Name)
+			
+			// Qwen系列模型
+			if strings.Contains(modelName, "qwen") {
+				needsCompatibleChecker = true
+				logs.CtxInfof(ctx, "[AgentBuilder] Detected Qwen model '%s', using compatible tool call checker", modelInfo.Name)
+			}
+			// Claude系列模型
+			if strings.Contains(modelName, "claude") {
+				needsCompatibleChecker = true
+				logs.CtxInfof(ctx, "[AgentBuilder] Detected Claude model '%s', using compatible tool call checker", modelInfo.Name)
+			}
+			// 通义千问系列（阿里的模型）
+			if strings.Contains(modelName, "tongyi") || strings.Contains(modelName, "qianwen") {
+				needsCompatibleChecker = true
+				logs.CtxInfof(ctx, "[AgentBuilder] Detected Tongyi/Qianwen model '%s', using compatible tool call checker", modelInfo.Name)
+			}
+			// Gemini系列模型
+			if strings.Contains(modelName, "gemini") {
+				needsCompatibleChecker = true
+				logs.CtxInfof(ctx, "[AgentBuilder] Detected Gemini model '%s', using compatible tool call checker", modelInfo.Name)
+			}
+		}
+		
+		// 如果需要兼容的checker，使用自定义实现
+		if needsCompatibleChecker {
+			reactConfig.StreamToolCallChecker = adaptiveToolCallChecker
+			logs.CtxInfof(ctx, "[AgentBuilder] Using adaptive tool call checker for better compatibility")
+		} else {
+			logs.CtxInfof(ctx, "[AgentBuilder] Using default tool call checker")
+		}
+		
+		agent, err := react.NewAgent(ctx, reactConfig)
 		if err != nil {
 			return nil, err
 		}

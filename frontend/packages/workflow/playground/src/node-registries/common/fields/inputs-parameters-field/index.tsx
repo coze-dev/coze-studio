@@ -36,6 +36,7 @@ interface InputsSectionProps extends FieldProps<InputValueVO[]> {
   literalDisabled?: boolean;
   nameProps?: Partial<NodeInputNameProps>;
   customReadonly?: boolean;
+  allowAppend?: boolean;
 }
 
 export const InputsParametersField = ({
@@ -53,6 +54,7 @@ export const InputsParametersField = ({
   nameProps,
   customReadonly,
   testId,
+  allowAppend,
 }: InputsSectionProps) =>
   isTree ? (
     <InputsTreeField
@@ -78,5 +80,6 @@ export const InputsParametersField = ({
       nameProps={nameProps}
       customReadonly={customReadonly}
       testId={testId}
+      allowAppend={allowAppend}
     />
   );

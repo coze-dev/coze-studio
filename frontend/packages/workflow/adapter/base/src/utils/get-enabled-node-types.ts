@@ -47,6 +47,7 @@ export const getEnabledNodeTypes = (_params: {
     [StandardNodeType.Comment]: true,
     [StandardNodeType.VariableMerge]: true,
     [StandardNodeType.CardSelector]: true,
+    [StandardNodeType.Agent]: true,
     // [StandardNodeType.QueryMessageList]: true,
     // [StandardNodeType.ClearContext]: true,
     // [StandardNodeType.CreateConversation]: true,

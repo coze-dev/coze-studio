@@ -82,6 +82,7 @@ const (
 	NodeTypeInputReceiver NodeType = "InputReceiver"
 	NodeTypeQuestion      NodeType = "QuestionAnswer"
 	NodeTypeCardSelector  NodeType = "CardSelector"
+	NodeTypeAgent         NodeType = "Agent"
 )
 
 const (

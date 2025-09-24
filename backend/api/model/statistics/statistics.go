@@ -5757,8 +5757,8 @@ func (p *ListConversationMessageLogRequest) String() string {
 }
 
 type MessageContent struct {
-	Query  string  `thrift:"query,1,required" form:"query,required" json:"query,required" query:"query,required"`
-	Answer *string `thrift:"answer,2,optional" form:"answer" json:"answer,omitempty" query:"answer"`
+	Query  string   `thrift:"query,1,required" form:"query,required" json:"query,required" query:"query,required"`
+	Answer []string `thrift:"answer,2,optional" form:"answer" json:"answer,omitempty" query:"answer"`
 }
 
 func NewMessageContent() *MessageContent {
@@ -5772,13 +5772,13 @@ func (p *MessageContent) GetQuery() (v string) {
 	return p.Query
 }
 
-var MessageContent_Answer_DEFAULT string
+var MessageContent_Answer_DEFAULT []string
 
-func (p *MessageContent) GetAnswer() (v string) {
+func (p *MessageContent) GetAnswer() (v []string) {
 	if !p.IsSetAnswer() {
 		return MessageContent_Answer_DEFAULT
 	}
-	return *p.Answer
+	return p.Answer
 }
 
 var fieldIDToName_MessageContent = map[int16]string{
@@ -5819,7 +5819,7 @@ func (p *MessageContent) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 2:
-			if fieldTypeId == thrift.STRING {
+			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField2(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -5873,12 +5873,24 @@ func (p *MessageContent) ReadField1(iprot thrift.TProtocol) error {
 	return nil
 }
 func (p *MessageContent) ReadField2(iprot thrift.TProtocol) error {
-
-	var _field *string
-	if v, err := iprot.ReadString(); err != nil {
+	_, size, err := iprot.ReadListBegin()
+	if err != nil {
 		return err
-	} else {
-		_field = &v
+	}
+	_field := make([]string, 0, size)
+	for i := 0; i < size; i++ {
+
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
+			return err
+		} else {
+			_elem = v
+		}
+
+		_field = append(_field, _elem)
+	}
+	if err := iprot.ReadListEnd(); err != nil {
+		return err
 	}
 	p.Answer = _field
 	return nil
@@ -5934,10 +5946,18 @@ WriteFieldEndError:
 }
 func (p *MessageContent) writeField2(oprot thrift.TProtocol) (err error) {
 	if p.IsSetAnswer() {
-		if err = oprot.WriteFieldBegin("answer", thrift.STRING, 2); err != nil {
+		if err = oprot.WriteFieldBegin("answer", thrift.LIST, 2); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteString(*p.Answer); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.Answer)); err != nil {
+			return err
+		}
+		for _, v := range p.Answer {
+			if err := oprot.WriteString(v); err != nil {
+				return err
+			}
+		}
+		if err := oprot.WriteListEnd(); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -7063,10 +7083,10 @@ func (p *ListConversationMessageLogResponse) String() string {
 
 // ExportConversationMessageLog 导出会话消息日志请求
 type ExportConversationMessageLogRequest struct {
-	AgentID         int64   `thrift:"agent_id,1,required" form:"agent_id,required" json:"agent_id,string,required"`
-	FileName        string  `thrift:"file_name,2,required" form:"file_name,required" json:"file_name,required"`
-	ConversationIds []int64 `thrift:"conversation_ids,3,optional" form:"conversation_ids" json:"conversation_ids,string,omitempty"`
-	RunIds          []int64 `thrift:"run_ids,4,optional" form:"run_ids" json:"run_ids,string,omitempty"`
+	AgentID         int64    `thrift:"agent_id,1,required" form:"agent_id,required" json:"agent_id,string,required"`
+	FileName        string   `thrift:"file_name,2,required" form:"file_name,required" json:"file_name,required"`
+	ConversationIds []string `thrift:"conversation_ids,3,optional" form:"conversation_ids" json:"conversation_ids,omitempty"`
+	RunIds          []string `thrift:"run_ids,4,optional" form:"run_ids" json:"run_ids,omitempty"`
 	// 导出文件保存小时数，默认72小时
 	ExpireHours *int32 `thrift:"expire_hours,5,optional" form:"expire_hours" json:"expire_hours,omitempty"`
 }
@@ -7086,18 +7106,18 @@ func (p *ExportConversationMessageLogRequest) GetFileName() (v string) {
 	return p.FileName
 }
 
-var ExportConversationMessageLogRequest_ConversationIds_DEFAULT []int64
+var ExportConversationMessageLogRequest_ConversationIds_DEFAULT []string
 
-func (p *ExportConversationMessageLogRequest) GetConversationIds() (v []int64) {
+func (p *ExportConversationMessageLogRequest) GetConversationIds() (v []string) {
 	if !p.IsSetConversationIds() {
 		return ExportConversationMessageLogRequest_ConversationIds_DEFAULT
 	}
 	return p.ConversationIds
 }
 
-var ExportConversationMessageLogRequest_RunIds_DEFAULT []int64
+var ExportConversationMessageLogRequest_RunIds_DEFAULT []string
 
-func (p *ExportConversationMessageLogRequest) GetRunIds() (v []int64) {
+func (p *ExportConversationMessageLogRequest) GetRunIds() (v []string) {
 	if !p.IsSetRunIds() {
 		return ExportConversationMessageLogRequest_RunIds_DEFAULT
 	}
@@ -7262,11 +7282,11 @@ func (p *ExportConversationMessageLogRequest) ReadField3(iprot thrift.TProtocol)
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7285,11 +7305,11 @@ func (p *ExportConversationMessageLogRequest) ReadField4(iprot thrift.TProtocol)
 	if err != nil {
 		return err
 	}
-	_field := make([]int64, 0, size)
+	_field := make([]string, 0, size)
 	for i := 0; i < size; i++ {
 
-		var _elem int64
-		if v, err := iprot.ReadI64(); err != nil {
+		var _elem string
+		if v, err := iprot.ReadString(); err != nil {
 			return err
 		} else {
 			_elem = v
@@ -7396,11 +7416,11 @@ func (p *ExportConversationMessageLogRequest) writeField3(oprot thrift.TProtocol
 		if err = oprot.WriteFieldBegin("conversation_ids", thrift.LIST, 3); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.ConversationIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.ConversationIds)); err != nil {
 			return err
 		}
 		for _, v := range p.ConversationIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
@@ -7422,11 +7442,11 @@ func (p *ExportConversationMessageLogRequest) writeField4(oprot thrift.TProtocol
 		if err = oprot.WriteFieldBegin("run_ids", thrift.LIST, 4); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I64, len(p.RunIds)); err != nil {
+		if err := oprot.WriteListBegin(thrift.STRING, len(p.RunIds)); err != nil {
 			return err
 		}
 		for _, v := range p.RunIds {
-			if err := oprot.WriteI64(v); err != nil {
+			if err := oprot.WriteString(v); err != nil {
 				return err
 			}
 		}
