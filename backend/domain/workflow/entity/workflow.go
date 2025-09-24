@@ -40,8 +40,14 @@ func (w *Workflow) GetBasic() *WorkflowBasic {
 	if w.VersionMeta != nil {
 		version = w.VersionMeta.Version
 	}
+
+	var name string
+	if w.Meta != nil {
+		name = w.Meta.Name
+	}
 	return &WorkflowBasic{
 		ID:       w.ID,
+		Name:     name,
 		Version:  version,
 		SpaceID:  w.SpaceID,
 		AppID:    w.AppID,
@@ -71,6 +77,7 @@ type IDVersionPair struct {
 
 type WorkflowBasic struct {
 	ID       int64
+	Name     string
 	Version  string
 	SpaceID  int64
 	AppID    *int64

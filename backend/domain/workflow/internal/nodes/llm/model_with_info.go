@@ -81,6 +81,7 @@ func (m *ModelForLLM) Generate(ctx context.Context, input []*schema.Message, opt
 	output *schema.Message, err error,
 ) {
 	if m.UseFallback(ctx) {
+		m.setCallMetadata(ctx, m.FallbackInfo, true)
 		if !m.fallbackEnableCallback {
 			defer func() {
 				if err != nil {
@@ -93,6 +94,8 @@ func (m *ModelForLLM) Generate(ctx context.Context, input []*schema.Message, opt
 		}
 		return m.FallbackModel.Generate(ctx, input, opts...)
 	}
+
+	m.setCallMetadata(ctx, m.MInfo, false)
 
 	if !m.modelEnableCallback {
 		defer func() {
@@ -111,6 +114,7 @@ func (m *ModelForLLM) Stream(ctx context.Context, input []*schema.Message, opts 
 	output *schema.StreamReader[*schema.Message], err error,
 ) {
 	if m.UseFallback(ctx) {
+		m.setCallMetadata(ctx, m.FallbackInfo, true)
 		if !m.fallbackEnableCallback {
 			defer func() {
 				if err != nil {
@@ -124,6 +128,8 @@ func (m *ModelForLLM) Stream(ctx context.Context, input []*schema.Message, opts 
 		return m.FallbackModel.Stream(ctx, input, opts...)
 	}
 
+	m.setCallMetadata(ctx, m.MInfo, false)
+
 	if !m.modelEnableCallback {
 		defer func() {
 			if err != nil {
@@ -135,6 +141,30 @@ func (m *ModelForLLM) Stream(ctx context.Context, input []*schema.Message, opts 
 		ctx = callbacks.OnStart(ctx, input)
 	}
 	return m.Model.Stream(ctx, input, opts...)
+}
+
+func (m *ModelForLLM) setCallMetadata(ctx context.Context, info *modelmgr.Model, usingFallback bool) {
+	meta := &execute.LLMCallMetadata{
+		UsingFallback: usingFallback,
+	}
+
+	if info != nil {
+		meta.ModelID = info.ID
+		meta.ModelName = info.Name
+		if info.Description != nil {
+			if info.Description.EN != "" {
+				meta.ModelDisplayName = info.Description.EN
+			} else if info.Description.ZH != "" {
+				meta.ModelDisplayName = info.Description.ZH
+			}
+		}
+		meta.ModelProvider = string(info.Meta.Protocol)
+		if info.Meta.ConnConfig != nil {
+			meta.ModelDeployedName = info.Meta.ConnConfig.Model
+		}
+	}
+
+	execute.SetLLMCallMetadata(ctx, meta)
 }
 
 func (m *ModelForLLM) WithTools(tools []*schema.ToolInfo) (model.ToolCallingChatModel, error) {

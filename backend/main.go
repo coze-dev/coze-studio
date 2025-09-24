@@ -29,6 +29,7 @@ import (
 	"os"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app/server"
 	"github.com/cloudwego/hertz/pkg/common/config"
@@ -38,6 +39,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/middleware"
 	"github.com/coze-dev/coze-studio/backend/api/router"
 	"github.com/coze-dev/coze-studio/backend/application"
+	otelsetup "github.com/coze-dev/coze-studio/backend/infra/otel"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -55,6 +57,19 @@ func main() {
 	}
 
 	setLogLevel()
+
+	telemetryShutdown, err := otelsetup.Init(ctx)
+	if err != nil {
+		logs.Errorf("init telemetry failed: %v", err)
+	} else if telemetryShutdown != nil {
+		defer func() {
+			shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := telemetryShutdown(shutdownCtx); err != nil {
+				logs.Warnf("shutdown telemetry error: %v", err)
+			}
+		}()
+	}
 
 	if err := application.Init(ctx); err != nil {
 		panic("InitializeInfra failed, err=" + err.Error())

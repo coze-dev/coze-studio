@@ -33,6 +33,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	oteltrace "go.opentelemetry.io/otel/trace"
 )
 
 type Context struct {
@@ -53,6 +54,11 @@ type Context struct {
 	AppVarStore *AppVariables
 
 	executed *atomic.Int64
+
+	workflowSpan oteltrace.Span
+	nodeSpan     oteltrace.Span
+	llmSpan      oteltrace.Span
+	llmMeta      *LLMCallMetadata
 }
 
 type RootCtx struct {
@@ -75,6 +81,8 @@ type NodeCtx struct {
 	NodePath      []string
 	TerminatePlan *vo.TerminatePlan
 
+	ObservedInput string
+
 	ResumingEvent    *entity.InterruptEvent
 	SubWorkflowExeID int64 // if this node is subworkflow node, the execute id of the sub workflow
 
@@ -85,6 +93,15 @@ type BatchInfo struct {
 	Index            int
 	Items            map[string]any
 	CompositeNodeKey vo.NodeKey
+}
+
+type LLMCallMetadata struct {
+	ModelID           int64
+	ModelName         string
+	ModelDisplayName  string
+	ModelProvider     string
+	ModelDeployedName string
+	UsingFallback     bool
 }
 
 type contextKey struct{}
@@ -125,6 +142,10 @@ func restoreWorkflowCtx(ctx context.Context, h *WorkflowHandler) (context.Contex
 		storedCtx.AppVarStore = currentC.AppVarStore
 		storedCtx.executed = currentC.executed
 	}
+	storedCtx.workflowSpan = nil
+	storedCtx.nodeSpan = nil
+	storedCtx.llmSpan = nil
+	storedCtx.llmMeta = nil
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
@@ -176,6 +197,10 @@ func restoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey, resumeEvent *entity
 	}
 
 	storedCtx.NodeCtx.CurrentRetryCount = 0
+	storedCtx.workflowSpan = nil
+	storedCtx.nodeSpan = nil
+	storedCtx.llmSpan = nil
+	storedCtx.llmMeta = nil
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), nil
 }
@@ -215,6 +240,10 @@ func tryRestoreNodeCtx(ctx context.Context, nodeKey vo.NodeKey) (context.Context
 	}
 
 	storedCtx.NodeCtx.CurrentRetryCount = 0
+	storedCtx.workflowSpan = nil
+	storedCtx.nodeSpan = nil
+	storedCtx.llmSpan = nil
+	storedCtx.llmMeta = nil
 
 	return context.WithValue(ctx, contextKey{}, storedCtx), true
 }
@@ -238,6 +267,10 @@ func PrepareRootExeCtx(ctx context.Context, h *WorkflowHandler) (context.Context
 		AppVarStore:    NewAppVariables(),
 		executed:       ptr.Of(atomic.Int64{}),
 	}
+	rootExeCtx.workflowSpan = nil
+	rootExeCtx.nodeSpan = nil
+	rootExeCtx.llmSpan = nil
+	rootExeCtx.llmMeta = nil
 
 	if h.requireCheckpoint {
 		rootExeCtx.CheckPointID = strconv.FormatInt(h.rootExecuteID, 10)
@@ -293,6 +326,10 @@ func PrepareSubExeCtx(ctx context.Context, wb *entity.WorkflowBasic, requireChec
 		AppVarStore:    c.AppVarStore,
 		executed:       c.executed,
 	}
+	newC.llmSpan = nil
+	newC.llmMeta = nil
+	newC.workflowSpan = nil
+	newC.nodeSpan = nil
 
 	if requireCheckpoint {
 		err := compose.ProcessState[ExeContextStore](ctx, func(ctx context.Context, state ExeContextStore) error {
@@ -337,6 +374,9 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 		AppVarStore:  c.AppVarStore,
 		executed:     c.executed,
 	}
+	newC.llmSpan = nil
+	newC.workflowSpan = c.workflowSpan
+	newC.nodeSpan = nil
 
 	if c.NodeCtx == nil { // node within top level workflow, also not under composite node
 		newC.NodeCtx.NodePath = []string{string(nodeKey)}
@@ -384,6 +424,10 @@ func InheritExeCtxWithBatchInfo(ctx context.Context, index int, items map[string
 		CheckPointID: newCheckpointID,
 		AppVarStore:  c.AppVarStore,
 		executed:     c.executed,
+		workflowSpan: c.workflowSpan,
+		nodeSpan:     c.nodeSpan,
+		llmSpan:      c.llmSpan,
+		llmMeta:      nil,
 	}), newCheckpointID
 }
 
@@ -427,4 +471,57 @@ func GetAppVarStore(ctx context.Context) *AppVariables {
 		return nil
 	}
 	return c.(*Context).AppVarStore
+}
+
+func SetLLMCallMetadata(ctx context.Context, meta *LLMCallMetadata) {
+	c := GetExeCtx(ctx)
+	if c == nil {
+		return
+	}
+
+	c.llmMeta = meta
+	if meta == nil {
+		return
+	}
+
+	span := c.llmSpan
+	if span == nil || !span.SpanContext().IsValid() {
+		return
+	}
+	span.SetName(llmCallSpanName(c, meta))
+}
+
+func getLLMCallMetadata(c *Context) *LLMCallMetadata {
+	if c == nil {
+		return nil
+	}
+	return c.llmMeta
+}
+
+func clearLLMCallMetadata(c *Context) {
+	if c == nil {
+		return
+	}
+	c.llmMeta = nil
+}
+
+func llmCallSpanName(c *Context, meta *LLMCallMetadata) string {
+	nodeKey := "node"
+	if c != nil && c.NodeCtx != nil {
+		nodeKey = string(c.NodeCtx.NodeKey)
+	}
+
+	if meta == nil {
+		return fmt.Sprintf("workflow.node.%s.llm", nodeKey)
+	}
+
+	modelNameSource := meta.ModelName
+	if modelNameSource == "" && meta.ModelDeployedName != "" {
+		modelNameSource = meta.ModelDeployedName
+	}
+	modelSegment := normalizedModelName(modelNameSource, meta.ModelID)
+	if modelSegment == "unknown" {
+		return fmt.Sprintf("workflow.node.%s.llm", nodeKey)
+	}
+	return fmt.Sprintf("%s", modelSegment)
 }
