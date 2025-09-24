@@ -160,7 +160,12 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		IsDraft:            false,
 		ConnectorID:        connectorID,
 		ContentType:        contentType,
-		Ext:                ar.ExtraParams,
+		Ext:                func() map[string]string {
+			if ar.ExtraParams == nil {
+				return map[string]string{}
+			}
+			return ar.ExtraParams
+		}(),
 		CustomVariables:    ar.CustomVariables,
 		CozeUID:            conversationData.CreatorID,
 		AdditionalMessages: filterMultiAdditionalMessages,
