@@ -533,8 +533,6 @@ func (t *toolExecutor) execute(ctx context.Context, argumentsInJson, accessToken
 		ArgsInJson:     argumentsInJson,
 		ProjectInfo:    t.projectInfo,
 		UserID:         t.userID,
-		AccessToken:    accessToken,
-		AuthURL:        authURL,
 		Plugin:         t.plugin,
 		Tool:           t.tool,
 		PluginManifest: t.plugin.Manifest,

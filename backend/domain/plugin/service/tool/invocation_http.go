@@ -315,7 +315,11 @@ func (h *httpCallImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http
 		return "", nil
 	}
 
-	accessToken := args.AccessToken
+	if args.AuthInfo.OAuth == nil {
+		return "", fmt.Errorf("auth of oauth is nil")
+	}
+
+	accessToken := args.AuthInfo.OAuth.AccessToken
 	authInfo := args.AuthInfo.MetaInfo
 
 	if authInfo.SubType == pluginConsts.AuthzSubTypeOfOAuthAuthorizationCode &&
@@ -325,7 +329,7 @@ func (h *httpCallImpl) injectOAuthAccessToken(ctx context.Context, httpReq *http
 			errMsg = authCodeInvalidTokenErrMsg[i18n.LocaleEN]
 		}
 
-		errMsg = fmt.Sprintf(errMsg, args.PluginManifest.NameForHuman, args.AuthURL)
+		errMsg = fmt.Sprintf(errMsg, args.PluginManifest.NameForHuman, args.AuthInfo.OAuth.AuthURL)
 
 		return errMsg, nil
 	}

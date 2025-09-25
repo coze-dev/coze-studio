@@ -68,8 +68,6 @@ type InvocationArgs struct {
 
 	UserID      string
 	ProjectInfo *model.ProjectInfo
-	AccessToken string
-	AuthURL     string
 
 	Header map[string]any
 	Path   map[string]any
@@ -82,8 +80,6 @@ type InvocationArgsBuilder struct {
 	ArgsInJson     string
 	ProjectInfo    *model.ProjectInfo
 	UserID         string
-	AccessToken    string
-	AuthURL        string
 	Plugin         *entity.PluginInfo
 	Tool           *entity.ToolInfo
 	AuthInfo       *AuthInfo
@@ -98,11 +94,13 @@ func NewInvocationArgs(ctx context.Context, builder *InvocationArgsBuilder) (*In
 		return nil, err
 	}
 
+	if builder.AuthInfo == nil {
+		return nil, fmt.Errorf("auth info is nil")
+	}
+
 	args := &InvocationArgs{
 		UserID:         builder.UserID,
 		ProjectInfo:    builder.ProjectInfo,
-		AccessToken:    builder.AccessToken,
-		AuthURL:        builder.AuthURL,
 		Tool:           builder.Tool,
 		AuthInfo:       builder.AuthInfo,
 		PluginManifest: builder.PluginManifest,
