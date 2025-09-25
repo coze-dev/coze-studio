@@ -114,8 +114,8 @@ const mergedConfig = defineConfig({
       'process.env.RUNTIME_ENTRY': JSON.stringify('@coze-dev/runtime'),
       'process.env.TARO_ENV': JSON.stringify('h5'),
       // RAGFlow External Knowledge Base Configuration
-      'process.env.RAGFLOW_API_URL': JSON.stringify('http://localhost:9380'),
-      'process.env.RAGFLOW_WEB_URL': JSON.stringify('http://localhost:9222'),
+      'process.env.RAGFLOW_API_URL': JSON.stringify('https://ynetflow-agent.finmall.com'),
+      'process.env.RAGFLOW_WEB_URL': JSON.stringify('https://ynetflow-agent.finmall.com'),
       ENABLE_COVERAGE: JSON.stringify(false),
     },
     include: [

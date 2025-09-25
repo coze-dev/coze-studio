@@ -217,10 +217,10 @@ func GetRAGFlowDatasets(ctx context.Context, c *app.RequestContext) {
 
 // callRAGFlowDatasetsAPI 直接调用RAGFlow的知识库列表API
 func callRAGFlowDatasetsAPI(ctx context.Context, c *app.RequestContext) (*external_knowledge.GetRAGFlowDatasetsResponse, error) {
-	// Get RAGFlow API URL from environment (9380 port for API)
+	// Get RAGFlow API URL from environment
 	ragflowAPIURL := os.Getenv("RAGFLOW_API_URL")
 	if ragflowAPIURL == "" {
-		ragflowAPIURL = "http://localhost:9380" // fallback to localhost:9380
+		ragflowAPIURL = "https://ynetflow-agent.finmall.com" // fallback to production URL
 	}
 
 	// Create HTTP request to RAGFlow API
@@ -234,7 +234,12 @@ func callRAGFlowDatasetsAPI(ctx context.Context, c *app.RequestContext) (*extern
 	httpReq.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
 	httpReq.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	httpReq.Header.Set("Connection", "keep-alive")
-	httpReq.Header.Set("Origin", "http://localhost:9222")
+	// Use the same URL for Origin header
+	ragflowWebURL := os.Getenv("RAGFLOW_WEB_URL")
+	if ragflowWebURL == "" {
+		ragflowWebURL = "https://ynetflow-agent.finmall.com"
+	}
+	httpReq.Header.Set("Origin", ragflowWebURL)
 
 	// 传递用户的cookie
 	cookieHeader := c.GetHeader("Cookie")

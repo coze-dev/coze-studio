@@ -138,10 +138,10 @@ func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, que
 
 	logs.CtxInfof(ctx, "[ExternalKnowledge] Using session_key from database for user %d", userID)
 
-	// Get RAGFlow API URL from environment (9380 port for API)
+	// Get RAGFlow API URL from environment
 	ragflowAPIURL := os.Getenv("RAGFLOW_API_URL")
 	if ragflowAPIURL == "" {
-		ragflowAPIURL = "http://localhost:9380" // fallback to localhost:9380
+		ragflowAPIURL = "https://ynetflow-agent.finmall.com" // fallback to production URL
 	}
 
 	// Use Bot configuration parameters
@@ -201,8 +201,13 @@ func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, que
 	httpReq.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
 	httpReq.Header.Set("Content-Type", "application/json;charset=UTF-8")
 	httpReq.Header.Set("Connection", "keep-alive")
-	httpReq.Header.Set("Origin", "http://localhost:9222")
-	httpReq.Header.Set("Referer", fmt.Sprintf("http://localhost:9222/dataset/testing/%s", kbID))
+	// Use the same URL for Origin and Referer headers
+	ragflowWebURL := os.Getenv("RAGFLOW_WEB_URL")
+	if ragflowWebURL == "" {
+		ragflowWebURL = "https://ynetflow-agent.finmall.com"
+	}
+	httpReq.Header.Set("Origin", ragflowWebURL)
+	httpReq.Header.Set("Referer", fmt.Sprintf("%s/dataset/testing/%s", ragflowWebURL, kbID))
 
 	// Add user's session key as cookie
 	httpReq.Header.Set("Cookie", fmt.Sprintf("session_key=%s", userInfo.SessionKey))
