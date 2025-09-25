@@ -22,6 +22,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/dal/model"
@@ -105,6 +106,8 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVe
 			Database:        po.DatabaseConfig,
 			ShortcutCommand: po.ShortcutCommand,
 			Version:         po.Version,
+			BotMode:         bot_common.BotMode(po.BotMode),
+			LayoutInfo:      po.LayoutInfo,
 		},
 	}
 }
@@ -131,5 +134,7 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent)
 		VariablesMetaID: do.VariablesMetaID,
 		DatabaseConfig:  do.Database,
 		ShortcutCommand: do.ShortcutCommand,
+		BotMode:         int32(do.BotMode),
+		LayoutInfo:      do.LayoutInfo,
 	}
 }
