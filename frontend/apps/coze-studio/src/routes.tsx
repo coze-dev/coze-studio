@@ -290,6 +290,26 @@ export const router: ReturnType<typeof createBrowserRouter> =
                   }),
                 },
                 {
+                  path: 'hiagents',
+                  children: [
+                    {
+                      index: true,
+                      lazy: () => import('./pages/space-hiagent-config'),
+                    },
+                    {
+                      path: 'add',
+                      element: <div>添加 HiAgent - 开发中</div>,
+                    },
+                    {
+                      path: 'edit/:agent_id',
+                      element: <div>编辑 HiAgent - 开发中</div>,
+                    },
+                  ],
+                  loader: () => ({
+                    subMenuKey: SpaceSubModuleEnum.HIAGENTS,
+                  }),
+                },
+                {
                   path: 'project-ide/:project_id/*',
                   Component: IDELayout,
                   loader: () => ({

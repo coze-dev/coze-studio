@@ -25,3 +25,53 @@ func _revertdraftbotMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _hi_agentsMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _testhiagentconnectionMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _spaceMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func __7bspace_id_7dMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _gethiagentlistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _hi_agents0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createhiagentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletehiagentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _gethiagentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatehiagentMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

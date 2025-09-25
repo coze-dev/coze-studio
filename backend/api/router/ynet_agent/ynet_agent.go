@@ -20,6 +20,22 @@ func Register(r *server.Hertz) {
 	{
 		_api := root.Group("/api", _apiMw()...)
 		{
+			_hi_agents := _api.Group("/hi-agents", _hi_agentsMw()...)
+			_hi_agents.POST("/test-connection", append(_testhiagentconnectionMw(), ynet_agent.TestHiAgentConnection)...)
+		}
+		{
+			_space := _api.Group("/space", _spaceMw()...)
+			{
+				__7bspace_id_7d := _space.Group("/:space_id", __7bspace_id_7dMw()...)
+				__7bspace_id_7d.GET("/hi-agents", append(_gethiagentlistMw(), ynet_agent.GetHiAgentList)...)
+				__7bspace_id_7d.POST("/hi-agents", append(_createhiagentMw(), ynet_agent.CreateHiAgent)...)
+				_hi_agents0 := __7bspace_id_7d.Group("/hi-agents", _hi_agents0Mw()...)
+				_hi_agents0.DELETE("/:agent_id", append(_deletehiagentMw(), ynet_agent.DeleteHiAgent)...)
+				_hi_agents0.GET("/:agent_id", append(_gethiagentMw(), ynet_agent.GetHiAgent)...)
+				_hi_agents0.PUT("/:agent_id", append(_updatehiagentMw(), ynet_agent.UpdateHiAgent)...)
+			}
+		}
+		{
 			_ynet_agent := _api.Group("/ynet-agent", _ynet_agentMw()...)
 			_ynet_agent.POST("/revert-draft-bot", append(_revertdraftbotMw(), ynet_agent.RevertDraftBot)...)
 		}

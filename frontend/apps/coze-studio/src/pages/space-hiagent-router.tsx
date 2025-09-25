@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-export enum SpaceSubModuleEnum {
-  DEVELOP = 'develop',
-  LIBRARY = 'library',
-  MEMBERS = 'members',
-  MODELS = 'models',
-  HIAGENTS = 'hiagents',
-  MCP = 'mcp',
-  CARD = 'card',
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import SpaceHiAgentConfigPage from './space-hiagent-config';
+
+function SpaceHiAgentRouter() {
+  return (
+    <Routes>
+      <Route index element={<SpaceHiAgentConfigPage />} />
+      <Route path="add" element={<div>添加 HiAgent - 开发中</div>} />
+      <Route path="edit/:agent_id" element={<div>编辑 HiAgent - 开发中</div>} />
+    </Routes>
+  );
 }
+
+export { SpaceHiAgentRouter };
+export default SpaceHiAgentRouter;

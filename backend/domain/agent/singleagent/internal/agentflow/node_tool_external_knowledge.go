@@ -22,18 +22,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	external_knowledge "github.com/coze-dev/coze-studio/backend/api/model/external_knowledge"
-	externalKnowledgeApp "github.com/coze-dev/coze-studio/backend/application/external_knowledge"
+	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	domainExternalKnowledge "github.com/coze-dev/coze-studio/backend/domain/external_knowledge"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	userApp "github.com/coze-dev/coze-studio/backend/application/user"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -43,6 +40,7 @@ type externalKnowledgeConfig struct {
 	agentIdentity       *entity.AgentIdentity
 	botID               string
 	externalKnowledge   *bot_common.ExternalKnowledge
+	sessionCookie       string  // 用户的session cookie（废弃，改为从数据库获取）
 }
 
 // newExternalKnowledgeTools creates external knowledge tools if dataset_ids is not empty
@@ -58,6 +56,7 @@ func newExternalKnowledgeTools(ctx context.Context, conf *externalKnowledgeConfi
 		botID:             conf.botID,
 		agentIdentity:     conf.agentIdentity,
 		externalKnowledge: conf.externalKnowledge,
+		sessionCookie:     conf.sessionCookie,
 	}
 
 	return []tool.InvokableTool{externalKnowledgeTool}, nil
@@ -68,6 +67,7 @@ type externalKnowledgeInvokableTool struct {
 	botID             string
 	agentIdentity     *entity.AgentIdentity
 	externalKnowledge *bot_common.ExternalKnowledge
+	sessionCookie     string  // 废弃，改为从数据库获取
 }
 
 // Info returns the tool information for the external knowledge base
@@ -117,86 +117,72 @@ func (e *externalKnowledgeInvokableTool) InvokableRun(ctx context.Context, argum
 	return string(resultJSON), nil
 }
 
-// callRAGFlowAPI directly calls RAGFlow API v2 with user's binding key and Bot configuration
+// callRAGFlowAPI directly calls RAGFlow API with user's session key from database
 func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, question string) (map[string]interface{}, error) {
-	// Get RAGFlow base URL from environment
-	ragflowBaseURL := os.Getenv("RAGFLOW_BASE_URL")
-	if ragflowBaseURL == "" {
-		ragflowBaseURL = "http://10.10.10.223:9222" // fallback with port
+	// 获取当前用户ID
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		return nil, fmt.Errorf("user not authenticated")
 	}
+	userID := *userIDPtr
 
-	// Get user's binding key from the application service
-	if externalKnowledgeApp.ExternalKnowledgeApplicationSVC == nil {
-		return nil, fmt.Errorf("external knowledge service not initialized")
-	}
-
-	// Get the user's enabled binding for RAGFlow API key
-	userIDInt, err := strconv.ParseInt(e.userID, 10, 64)
+	// 从数据库获取用户信息，包括session_key
+	userInfo, err := userApp.UserApplicationSVC.DomainSVC.GetUserInfo(ctx, userID)
 	if err != nil {
-		return nil, fmt.Errorf("invalid user ID: %s", e.userID)
-	}
-	userIDStr := strconv.FormatInt(userIDInt, 10)
-
-	// Get user bindings through the existing GetBindingList API
-	bindingReq := &external_knowledge.GetBindingListRequest{
-		Page:     ptr.Of(int32(1)),
-		PageSize: ptr.Of(int32(10)),
-	}
-	bindingResp, err := externalKnowledgeApp.ExternalKnowledgeApplicationSVC.GetBindingList(ctx, userIDStr, bindingReq)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get user bindings: %w", err)
+		return nil, fmt.Errorf("failed to get user info: %w", err)
 	}
 
-	if bindingResp.Code != 0 || len(bindingResp.Data) == 0 {
-		return nil, fmt.Errorf("no enabled RAGFlow binding found for user %s", userIDStr)
+	if userInfo.SessionKey == "" {
+		return nil, fmt.Errorf("user session key is empty")
 	}
 
-	// Find an enabled binding
-	var apiKey string
-	for _, binding := range bindingResp.Data {
-		if binding.Status == domainExternalKnowledge.BindingStatusEnabled {
-			apiKey = fmt.Sprintf("Bearer %s", binding.BindingKey)
-			break
-		}
-	}
-	if apiKey == "" {
-		return nil, fmt.Errorf("no enabled binding found for user %s", userIDStr)
+	logs.CtxInfof(ctx, "[ExternalKnowledge] Using session_key from database for user %d", userID)
+
+	// Get RAGFlow API URL from environment (9380 port for API)
+	ragflowAPIURL := os.Getenv("RAGFLOW_API_URL")
+	if ragflowAPIURL == "" {
+		ragflowAPIURL = "http://localhost:9380" // fallback to localhost:9380
 	}
 
 	// Use Bot configuration parameters
 	datasetIDs := e.externalKnowledge.DatasetIds
-	topK := int(5) // default
+	if len(datasetIDs) == 0 {
+		return nil, fmt.Errorf("no dataset IDs configured")
+	}
+
+	// 取第一个数据集ID作为kb_id
+	kbID := datasetIDs[0]
+
+	topK := int(1024) // default to 1024 like in curl
 	if e.externalKnowledge.TopK != nil {
 		topK = int(*e.externalKnowledge.TopK)
 	}
-	
-	pageSize := int(5) // default, use configured page_size
+
+	pageSize := int(10) // default page size
 	if e.externalKnowledge.PageSize != nil {
 		pageSize = int(*e.externalKnowledge.PageSize)
 	}
-	
+
 	similarityThreshold := 0.2 // default
 	if e.externalKnowledge.SimilarityThreshold != nil {
 		similarityThreshold = *e.externalKnowledge.SimilarityThreshold
 	}
-	
+
 	vectorSimilarityWeight := 0.3 // default
 	if e.externalKnowledge.VectorSimilarityWeight != nil {
 		vectorSimilarityWeight = *e.externalKnowledge.VectorSimilarityWeight
 	}
 
-	// Build retrieval request body with v2 API format and exclude_fields
+	// Build retrieval request body matching the curl command format
 	requestBody := map[string]interface{}{
-		"question":                 question,
-		"page":                     1,
-		"page_size":                pageSize,
-		"dataset_ids":              datasetIDs,
-		"exclude_fields":           []string{"image_id", "positions", "content_ltks", "important_keywords"}, // 固定的exclude_fields
-		"top_k":                    topK,
-		"similarity_threshold":     similarityThreshold,
-		"vector_similarity_weight": vectorSimilarityWeight,
-		"keyword":                  true, // enable keyword search
-		"highlight":                true, // enable highlight
+		"similarity_threshold":       similarityThreshold,
+		"vector_similarity_weight":   vectorSimilarityWeight,
+		"top_k":                     topK,
+		"use_kg":                    false,
+		"question":                  question,
+		"kb_id":                     kbID,
+		"page":                      1,
+		"size":                      pageSize,
 	}
 
 	jsonBody, err := json.Marshal(requestBody)
@@ -204,14 +190,22 @@ func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, que
 		return nil, fmt.Errorf("failed to marshal request: %w", err)
 	}
 
-	// Create HTTP request for v2 API
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/api/v1/retrieval_v2", ragflowBaseURL), strings.NewReader(string(jsonBody)))
+	// Create HTTP request to RAGFlow API
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/v1/chunk/retrieval_test", ragflowAPIURL), strings.NewReader(string(jsonBody)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
 
-	httpReq.Header.Set("Content-Type", "application/json")
-	httpReq.Header.Set("Authorization", apiKey)
+	// Set headers matching the curl command
+	httpReq.Header.Set("Accept", "application/json")
+	httpReq.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+	httpReq.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	httpReq.Header.Set("Connection", "keep-alive")
+	httpReq.Header.Set("Origin", "http://localhost:9222")
+	httpReq.Header.Set("Referer", fmt.Sprintf("http://localhost:9222/dataset/testing/%s", kbID))
+
+	// Add user's session key as cookie
+	httpReq.Header.Set("Cookie", fmt.Sprintf("session_key=%s", userInfo.SessionKey))
 
 	// Send request
 	client := &http.Client{}
@@ -228,11 +222,7 @@ func (e *externalKnowledgeInvokableTool) callRAGFlowAPI(ctx context.Context, que
 	}
 
 	// Log request details for debugging
-	if data, ok := result["data"].(map[string]interface{}); ok {
-		if chunks, ok := data["chunks"].([]interface{}); ok {
-			logs.Infof("RAGFlow API v2 called with page_size=%d, returned %d chunks", pageSize, len(chunks))
-		}
-	}
+	logs.Infof("RAGFlow API called with kb_id=%s, question=%s, size=%d, status=%d", kbID, question, pageSize, resp.StatusCode)
 
 	return result, nil
 }

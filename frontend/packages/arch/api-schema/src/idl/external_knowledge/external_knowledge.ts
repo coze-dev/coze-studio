@@ -106,6 +106,36 @@ export interface GetRAGFlowDatasetsResponse {
   msg: string,
   data: RAGFlowDataset[],
 }
+/** 知识库检索请求 */
+export interface RetrievalRequest {
+  question: string,
+  bot_id: string,
+  draft_mode?: boolean,
+}
+/** 知识库检索响应（保持RAGFlow返回格式） */
+export interface RetrievalResponse {
+  code: number,
+  msg: string,
+  data?: RetrievalData,
+}
+export interface RetrievalData {
+  chunks?: RetrievalChunk[],
+  total?: number,
+}
+export interface RetrievalChunk {
+  id?: string,
+  content?: string,
+  document_id?: string,
+  document_name?: string,
+  dataset_id?: string,
+  dataset_name?: string,
+  similarity?: number,
+  metadata?: {
+    [key: string | number]: string
+  },
+  highlight?: string,
+  position?: number,
+}
 /** 创建绑定 */
 export const CreateBinding = /*#__PURE__*/createAPI<CreateBindingRequest, CreateBindingResponse>({
   "url": "/api/external-knowledge/binding/create",
@@ -180,6 +210,19 @@ export const GetRAGFlowDatasets = /*#__PURE__*/createAPI<GetRAGFlowDatasetsReque
   "reqType": "GetRAGFlowDatasetsRequest",
   "reqMapping": {},
   "resType": "GetRAGFlowDatasetsResponse",
+  "schemaRoot": "api://schemas/idl_external_knowledge_external_knowledge",
+  "service": "external_knowledge"
+});
+/** 知识库检索接口 */
+export const Retrieval = /*#__PURE__*/createAPI<RetrievalRequest, RetrievalResponse>({
+  "url": "/api/external-knowledge/retrieval",
+  "method": "POST",
+  "name": "Retrieval",
+  "reqType": "RetrievalRequest",
+  "reqMapping": {
+    "body": ["question", "bot_id", "draft_mode"]
+  },
+  "resType": "RetrievalResponse",
   "schemaRoot": "api://schemas/idl_external_knowledge_external_knowledge",
   "service": "external_knowledge"
 });

@@ -37,6 +37,16 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
+// Session key is now retrieved from database when needed
+
+// Helper function for min
+func min(a, b int) int {
+	if a < b {
+		return a
+	}
+	return b
+}
+
 type Config struct {
 	Agent                   *entity.SingleAgent
 	UserID                  string
@@ -45,6 +55,7 @@ type Config struct {
 	ModelFactory            chatmodel.Factory
 	CPStore                 compose.CheckPointStore
 	Embedder                embedding.Embedder
+	SessionCookie           string  // 用户的session cookie，用于调用RAGFlow API
 }
 
 const (
@@ -61,6 +72,8 @@ const (
 )
 
 func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
+	// Session key will be retrieved from database when needed by external knowledge tool
+
 	persona := conf.Agent.Prompt.GetPrompt()
 
 	avConf := &variableConf{
@@ -150,6 +163,7 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 			agentIdentity:     conf.Identity,
 			botID:             fmt.Sprintf("%d", conf.Agent.AgentID),
 			externalKnowledge: conf.Agent.ExternalKnowledge,
+			sessionCookie:     "", // 不再使用，改为从数据库获取
 		}
 		externalKnowledgeTools, err = newExternalKnowledgeTools(ctx, externalKnowledgeConfig)
 		if err != nil {

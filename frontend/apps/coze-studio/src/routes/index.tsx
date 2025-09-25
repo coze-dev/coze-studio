@@ -254,6 +254,12 @@ export const router: ReturnType<typeof createBrowserRouter> =
                   },
                 },
 
+                // hiagent management
+                {
+                  path: 'hiagents/*',
+                  lazy: () => import('../pages/space-hiagent-router'),
+                },
+
                 // members management
                 {
                   path: 'members',

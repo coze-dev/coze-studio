@@ -5,6 +5,8 @@ package ynet_agent
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -13,6 +15,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	ynet_agent "github.com/coze-dev/coze-studio/backend/api/model/ynet_agent"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
+	"github.com/coze-dev/coze-studio/backend/infra/impl/mysql"
 )
 
 // RevertDraftBot .
@@ -31,7 +34,7 @@ func RevertDraftBot(ctx context.Context, c *app.RequestContext) {
 		BotID:   req.BotID,
 		Version: &req.Version, // 传入版本号获取历史版本数据
 	}
-	
+
 	historyData, err := singleagent.SingleAgentSVC.GetAgentBotInfo(ctx, getReq)
 	if err != nil {
 		resp := &ynet_agent.RevertDraftBotResponse{
@@ -54,14 +57,14 @@ func RevertDraftBot(ctx context.Context, c *app.RequestContext) {
 	// 步骤2: 将历史版本数据转换为更新请求格式
 	// 需要将 BotInfo 转换为 BotInfoForUpdate
 	botInfoForUpdate := convertBotInfoToForUpdate(historyData.Data.BotInfo)
-	
+
 	updateReq := &playground.UpdateDraftBotInfoAgwRequest{
 		BotInfo: botInfoForUpdate,
 	}
-	
+
 	// 确保更新的是当前草稿（不带版本号）
 	updateReq.BotInfo.Version = nil
-	
+
 	// 添加调试信息：更新前
 	fmt.Printf("[DEBUG] About to call UpdateSingleAgentDraft for bot_id=%d, version=%s\n", req.BotID, req.Version)
 	var nameStr, descStr string
@@ -72,7 +75,7 @@ func RevertDraftBot(ctx context.Context, c *app.RequestContext) {
 		descStr = *updateReq.BotInfo.Description
 	}
 	fmt.Printf("[DEBUG] UpdateReq BotInfo fields - Name: %s, Description: %s\n", nameStr, descStr)
-	
+
 	updateResp, err := singleagent.SingleAgentSVC.UpdateSingleAgentDraft(ctx, updateReq)
 	if err != nil {
 		fmt.Printf("[DEBUG] UpdateSingleAgentDraft failed with error: %v\n", err)
@@ -100,7 +103,7 @@ func RevertDraftBot(ctx context.Context, c *app.RequestContext) {
 	message := fmt.Sprintf("Successfully reverted bot %d to version %s. Update response code: %d", req.BotID, req.Version, updateResp.Code)
 	resp := &ynet_agent.RevertDraftBotResponse{
 		Code: 0,
-		Msg:  "success", 
+		Msg:  "success",
 		Data: &ynet_agent.RevertDraftBotData{
 			BotID:     req.BotID,
 			Version:   req.Version,
@@ -118,7 +121,7 @@ func convertBotInfoToForUpdate(botInfo *bot_common.BotInfo) *bot_common.BotInfoF
 	if botInfo == nil {
 		return nil
 	}
-	
+
 	// 复制基本字段（指针类型）
 	botId := botInfo.BotId
 	name := botInfo.Name
@@ -130,14 +133,14 @@ func convertBotInfoToForUpdate(botInfo *bot_common.BotInfo) *bot_common.BotInfoF
 	updateTime := botInfo.UpdateTime
 	connectorId := botInfo.ConnectorId
 	version := botInfo.Version
-	
+
 	// 处理 BotMode 类型转换（int64 -> *BotMode）
 	var botMode *bot_common.BotMode
 	if botInfo.BotMode != 0 {
 		mode := bot_common.BotMode(botInfo.BotMode)
 		botMode = &mode
 	}
-	
+
 	result := &bot_common.BotInfoForUpdate{
 		BotId:            &botId,
 		Name:             &name,
@@ -165,7 +168,7 @@ func convertBotInfoToForUpdate(botInfo *bot_common.BotInfo) *bot_common.BotInfoF
 		// 注意：暂时跳过 Agents 字段，因为类型不兼容（Agent vs AgentForUpdate）
 		// Agents:           botInfo.Agents,  // 需要特殊转换
 	}
-	
+
 	// 对于空的复合字段，也要明确设置，以确保完全替换
 	if result.PluginInfoList == nil {
 		result.PluginInfoList = []*bot_common.PluginInfo{}
@@ -180,6 +183,498 @@ func convertBotInfoToForUpdate(botInfo *bot_common.BotInfo) *bot_common.BotInfoF
 		result.DatabaseList = []*bot_common.Database{}
 	}
 	// 注意：暂时不处理 Agents 字段，因为需要复杂的类型转换
-	
+
 	return result
+}
+
+// CreateHiAgent .
+// @router /api/space/{space_id}/hi-agents [POST]
+func CreateHiAgent(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req ynet_agent.CreateHiAgentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 从路径参数获取space_id
+	spaceIDStr := c.Param("space_id")
+	spaceID, err := strconv.ParseInt(spaceIDStr, 10, 64)
+	if err != nil {
+		resp := &ynet_agent.CreateHiAgentResponse{
+			Code: 400,
+			Msg:  "Invalid space_id",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 获取数据库连接
+	db, err := mysql.New()
+	if err != nil {
+		resp := &ynet_agent.CreateHiAgentResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Database connection failed: %v", err),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 创建记录
+	now := time.Now().Format("2006-01-02 15:04:05")
+	createSQL := `
+		INSERT INTO external_agent_config
+		(space_id, name, description, platform, agent_url, agent_key, agent_id, app_id, icon, category, status, created_by, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+	`
+
+	result := db.WithContext(ctx).Exec(createSQL,
+		spaceID,
+		req.Name,
+		req.Description,
+		req.Platform,
+		req.AgentURL,
+		req.AgentKey,
+		req.AgentID,
+		req.AppID,
+		req.Icon,
+		req.Category,
+		1, // status: 默认启用
+		1, // created_by: TODO: 从session获取用户ID
+		now,
+		now,
+	)
+
+	if result.Error != nil {
+		resp := &ynet_agent.CreateHiAgentResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Failed to create agent: %v", result.Error),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 获取插入的ID
+	var lastInsertID int64
+	db.Raw("SELECT LAST_INSERT_ID()").Scan(&lastInsertID)
+
+	// 返回成功响应
+	resp := &ynet_agent.CreateHiAgentResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: &ynet_agent.HiAgentInfo{
+			ID:          lastInsertID,
+			SpaceID:     spaceID,
+			Name:        req.Name,
+			Description: req.Description,
+			Platform:    getStringOrDefault(req.Platform, "hiagent"),
+			AgentURL:    req.AgentURL,
+			AgentID:     req.AgentID,
+			AppID:       req.AppID,
+			Icon:        req.Icon,
+			Category:    req.Category,
+			Status:      1,
+			CreatedBy:   1,
+			CreatedAt:   now,
+			UpdatedAt:   now,
+		},
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// Helper function to get string value or default
+func getStringOrDefault(value *string, defaultValue string) string {
+	if value != nil {
+		return *value
+	}
+	return defaultValue
+}
+
+// UpdateHiAgent .
+// @router /api/space/{space_id}/hi-agents/{agent_id} [PUT]
+func UpdateHiAgent(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req ynet_agent.UpdateHiAgentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 从路径参数获取agent_id
+	agentIDStr := c.Param("agent_id")
+	agentID, err := strconv.ParseInt(agentIDStr, 10, 64)
+	if err != nil {
+		resp := &ynet_agent.UpdateHiAgentResponse{
+			Code: 400,
+			Msg:  "Invalid agent_id",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 获取数据库连接
+	db, err := mysql.New()
+	if err != nil {
+		resp := &ynet_agent.UpdateHiAgentResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Database connection failed: %v", err),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 构建更新SQL
+	updateFields := []string{}
+	updateValues := []interface{}{}
+
+	if req.Name != nil {
+		updateFields = append(updateFields, "name = ?")
+		updateValues = append(updateValues, *req.Name)
+	}
+	if req.Description != nil {
+		updateFields = append(updateFields, "description = ?")
+		updateValues = append(updateValues, *req.Description)
+	}
+	if req.Platform != nil {
+		updateFields = append(updateFields, "platform = ?")
+		updateValues = append(updateValues, *req.Platform)
+	}
+	if req.AgentURL != nil {
+		updateFields = append(updateFields, "agent_url = ?")
+		updateValues = append(updateValues, *req.AgentURL)
+	}
+	if req.AgentKey != nil {
+		updateFields = append(updateFields, "agent_key = ?")
+		updateValues = append(updateValues, *req.AgentKey)
+	}
+	if req.AgentIDStr != nil {
+		updateFields = append(updateFields, "agent_id = ?")
+		updateValues = append(updateValues, *req.AgentIDStr)
+	}
+	if req.AppID != nil {
+		updateFields = append(updateFields, "app_id = ?")
+		updateValues = append(updateValues, *req.AppID)
+	}
+	if req.Icon != nil {
+		updateFields = append(updateFields, "icon = ?")
+		updateValues = append(updateValues, *req.Icon)
+	}
+	if req.Category != nil {
+		updateFields = append(updateFields, "category = ?")
+		updateValues = append(updateValues, *req.Category)
+	}
+	if req.Status != nil {
+		updateFields = append(updateFields, "status = ?")
+		updateValues = append(updateValues, *req.Status)
+	}
+
+	// 添加updated_at
+	updateFields = append(updateFields, "updated_at = NOW()")
+
+	// 添加WHERE条件参数
+	updateValues = append(updateValues, agentID)
+
+	if len(updateFields) == 1 { // 只有updated_at
+		resp := &ynet_agent.UpdateHiAgentResponse{
+			Code: 400,
+			Msg:  "No fields to update",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	updateSQL := fmt.Sprintf(
+		"UPDATE external_agent_config SET %s WHERE id = ? AND deleted_at IS NULL",
+		strings.Join(updateFields, ", "),
+	)
+
+	result := db.WithContext(ctx).Exec(updateSQL, updateValues...)
+
+	if result.Error != nil {
+		resp := &ynet_agent.UpdateHiAgentResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Failed to update agent: %v", result.Error),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		resp := &ynet_agent.UpdateHiAgentResponse{
+			Code: 404,
+			Msg:  "Agent not found",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 查询更新后的数据返回
+	var updatedAgent struct {
+		ID          int64   `gorm:"column:id"`
+		SpaceID     int64   `gorm:"column:space_id"`
+		Name        string  `gorm:"column:name"`
+		Description *string `gorm:"column:description"`
+		Platform    string  `gorm:"column:platform"`
+		AgentURL    string  `gorm:"column:agent_url"`
+		AgentID     *string `gorm:"column:agent_id"`
+		AppID       *string `gorm:"column:app_id"`
+		Icon        *string `gorm:"column:icon"`
+		Category    *string `gorm:"column:category"`
+		Status      int32   `gorm:"column:status"`
+		Metadata    *string `gorm:"column:metadata"`
+		CreatedBy   int64   `gorm:"column:created_by"`
+		UpdatedBy   *int64  `gorm:"column:updated_by"`
+		CreatedAt   string  `gorm:"column:created_at"`
+		UpdatedAt   string  `gorm:"column:updated_at"`
+	}
+
+	err = db.WithContext(ctx).Table("external_agent_config").
+		Where("id = ? AND deleted_at IS NULL", agentID).
+		First(&updatedAgent).Error
+
+	if err != nil {
+		// 更新成功但查询失败，仍返回成功
+		resp := &ynet_agent.UpdateHiAgentResponse{
+			Code: 0,
+			Msg:  "success",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	resp := &ynet_agent.UpdateHiAgentResponse{
+		Code: 0,
+		Msg:  "success",
+		Data: &ynet_agent.HiAgentInfo{
+			ID:          updatedAgent.ID,
+			SpaceID:     updatedAgent.SpaceID,
+			Name:        updatedAgent.Name,
+			Description: updatedAgent.Description,
+			Platform:    updatedAgent.Platform,
+			AgentURL:    updatedAgent.AgentURL,
+			AgentID:     updatedAgent.AgentID,
+			AppID:       updatedAgent.AppID,
+			Icon:        updatedAgent.Icon,
+			Category:    updatedAgent.Category,
+			Status:      updatedAgent.Status,
+			Metadata:    updatedAgent.Metadata,
+			CreatedBy:   updatedAgent.CreatedBy,
+			UpdatedBy:   updatedAgent.UpdatedBy,
+			CreatedAt:   updatedAgent.CreatedAt,
+			UpdatedAt:   updatedAgent.UpdatedAt,
+		},
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DeleteHiAgent .
+// @router /api/space/{space_id}/hi-agents/{agent_id} [DELETE]
+func DeleteHiAgent(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req ynet_agent.DeleteHiAgentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 从路径参数获取agent_id
+	agentIDStr := c.Param("agent_id")
+	agentID, err := strconv.ParseInt(agentIDStr, 10, 64)
+	if err != nil {
+		resp := &ynet_agent.DeleteHiAgentResponse{
+			Code: 400,
+			Msg:  "Invalid agent_id",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 获取数据库连接
+	db, err := mysql.New()
+	if err != nil {
+		resp := &ynet_agent.DeleteHiAgentResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Database connection failed: %v", err),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 软删除记录（设置deleted_at）
+	result := db.WithContext(ctx).Exec(
+		"UPDATE external_agent_config SET deleted_at = NOW() WHERE id = ? AND deleted_at IS NULL",
+		agentID,
+	)
+
+	if result.Error != nil {
+		resp := &ynet_agent.DeleteHiAgentResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Failed to delete agent: %v", result.Error),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	if result.RowsAffected == 0 {
+		resp := &ynet_agent.DeleteHiAgentResponse{
+			Code: 404,
+			Msg:  "Agent not found",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	resp := &ynet_agent.DeleteHiAgentResponse{
+		Code: 0,
+		Msg:  "success",
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetHiAgent .
+// @router /api/space/{space_id}/hi-agents/{agent_id} [GET]
+func GetHiAgent(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req ynet_agent.GetHiAgentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(ynet_agent.GetHiAgentResponse)
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// GetHiAgentList .
+// @router /api/space/{space_id}/hi-agents [GET]
+func GetHiAgentList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req ynet_agent.GetHiAgentListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	// 从路径参数获取space_id
+	spaceIDStr := c.Param("space_id")
+	spaceID, err := strconv.ParseInt(spaceIDStr, 10, 64)
+	if err != nil {
+		resp := &ynet_agent.GetHiAgentListResponse{
+			Code: 400,
+			Msg:  "Invalid space_id",
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 获取数据库连接
+	db, err := mysql.New()
+	if err != nil {
+		resp := &ynet_agent.GetHiAgentListResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Database connection failed: %v", err),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 定义external_agent_config表的结构
+	type ExternalAgentConfig struct {
+		ID          int64   `gorm:"column:id"`
+		SpaceID     int64   `gorm:"column:space_id"`
+		Name        string  `gorm:"column:name"`
+		Description *string `gorm:"column:description"`
+		Platform    string  `gorm:"column:platform"`
+		AgentURL    string  `gorm:"column:agent_url"`
+		AgentKey    *string `gorm:"column:agent_key"`
+		AgentID     *string `gorm:"column:agent_id"`
+		AppID       *string `gorm:"column:app_id"`
+		Icon        *string `gorm:"column:icon"`
+		Category    *string `gorm:"column:category"`
+		Status      int32   `gorm:"column:status"`
+		Metadata    *string `gorm:"column:metadata"`
+		CreatedBy   int64   `gorm:"column:created_by"`
+		UpdatedBy   *int64  `gorm:"column:updated_by"`
+		CreatedAt   string  `gorm:"column:created_at"`
+		UpdatedAt   string  `gorm:"column:updated_at"`
+	}
+
+	// 查询数据
+	var configs []ExternalAgentConfig
+	err = db.WithContext(ctx).Table("external_agent_config").
+		Where("space_id = ? AND deleted_at IS NULL", spaceID).
+		Order("created_at DESC").
+		Find(&configs).Error
+	if err != nil {
+		resp := &ynet_agent.GetHiAgentListResponse{
+			Code: 500,
+			Msg:  fmt.Sprintf("Query failed: %v", err),
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// 转换为响应格式
+	var agents []*ynet_agent.HiAgentInfo
+	for _, config := range configs {
+		agent := &ynet_agent.HiAgentInfo{
+			ID:          config.ID,
+			SpaceID:     config.SpaceID,
+			Name:        config.Name,
+			Description: config.Description,
+			Platform:    config.Platform,
+			AgentURL:    config.AgentURL,
+			AgentID:     config.AgentID,
+			AppID:       config.AppID,
+			Icon:        config.Icon,
+			Category:    config.Category,
+			Status:      config.Status,
+			Metadata:    config.Metadata,
+			CreatedBy:   config.CreatedBy,
+			UpdatedBy:   config.UpdatedBy,
+			CreatedAt:   config.CreatedAt,
+			UpdatedAt:   config.UpdatedAt,
+		}
+		agents = append(agents, agent)
+	}
+
+	// 构建响应
+	resp := &ynet_agent.GetHiAgentListResponse{
+		Code:   0,
+		Msg:    "success",
+		Agents: agents,
+		Total:  int32(len(agents)),
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// Helper function to get string pointer
+func strPtr(s string) *string {
+	return &s
+}
+
+// TestHiAgentConnection .
+// @router /api/hi-agents/test-connection [POST]
+func TestHiAgentConnection(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req ynet_agent.TestHiAgentConnectionRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(ynet_agent.TestHiAgentConnectionResponse)
+
+	c.JSON(consts.StatusOK, resp)
 }

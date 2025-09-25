@@ -34,6 +34,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
+// Session key is now retrieved from database when needed
+
 // AgentRun .
 // @router /api/conversation/chat [POST]
 func AgentRun(ctx context.Context, c *app.RequestContext) {
@@ -50,6 +52,8 @@ func AgentRun(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
+
+	// Session key will be retrieved from database when needed by external knowledge tool
 
 	sseSender := sseImpl.NewSSESender(sse.NewStream(c))
 	c.SetStatusCode(http.StatusOK)
@@ -98,6 +102,8 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, checkErr.Error())
 		return
 	}
+
+	// Session key will be retrieved from database when needed by external knowledge tool
 
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")

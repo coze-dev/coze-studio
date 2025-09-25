@@ -53,14 +53,6 @@ export const AccountDropdown = () => {
         },
         {
           prefixIcon: <IconCozSetting />,
-          title: '外部知识库绑定',
-          onClick: () => {
-            openAccountSettings('external-knowledge');
-          },
-          dataTestId: 'layout_avatar_external-knowledge',
-        },
-        {
-          prefixIcon: <IconCozSetting />,
           title: I18n.t('navi_bar_account_settings'),
           onClick: () => {
             openAccountSettings('account');

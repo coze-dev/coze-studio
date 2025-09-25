@@ -1,12 +1,6 @@
 export * as passport from './idl/passport/passport';
 export * as external_knowledge from './idl/external_knowledge/external_knowledge';
-// Marketplace (Explore) APIs
 export * as explore from './idl/marketplace/public_api';
-// Model manager APIs
-export * as modelmgr from './idl/modelmgr/model_management_fixed';
-// Workflow APIs
-export * as workflow from './idl/workflow/workflow';
-// Workflow Service (HTTP) APIs
-export * as workflowApi from './idl/workflow/workflow_svc';
-// Space management APIs
-export * as space_management from './idl/space/space_management';
+export * as ynet_workflow from './idl/ynet_workflow/ynet_workflow';
+export * as ynet_agent from './idl/ynet-agent/ynet_agent';
+export * as statistics from './idl/statistics/statistics';

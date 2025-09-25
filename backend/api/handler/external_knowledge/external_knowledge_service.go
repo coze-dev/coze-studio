@@ -4,7 +4,12 @@ package external_knowledge
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"os"
 	"strconv"
+	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -185,7 +190,7 @@ func GetRAGFlowDatasets(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// Get user ID from context
+	// Get user ID from context for authentication
 	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
 	if userIDPtr == nil {
 		c.JSON(consts.StatusOK, &external_knowledge.GetRAGFlowDatasetsResponse{
@@ -195,10 +200,9 @@ func GetRAGFlowDatasets(ctx context.Context, c *app.RequestContext) {
 		})
 		return
 	}
-	userID := strconv.FormatInt(ptr.From(userIDPtr), 10)
 
-	// Call application service to get RAGFlow datasets
-	resp, err := externalKnowledgeApp.ExternalKnowledgeApplicationSVC.GetRAGFlowDatasets(ctx, userID, &req)
+	// 直接调用RAGFlow API，使用用户的session cookie
+	resp, err := callRAGFlowDatasetsAPI(ctx, c)
 	if err != nil {
 		c.JSON(consts.StatusOK, &external_knowledge.GetRAGFlowDatasetsResponse{
 			Code: 500,
@@ -209,6 +213,95 @@ func GetRAGFlowDatasets(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+// callRAGFlowDatasetsAPI 直接调用RAGFlow的知识库列表API
+func callRAGFlowDatasetsAPI(ctx context.Context, c *app.RequestContext) (*external_knowledge.GetRAGFlowDatasetsResponse, error) {
+	// Get RAGFlow API URL from environment (9380 port for API)
+	ragflowAPIURL := os.Getenv("RAGFLOW_API_URL")
+	if ragflowAPIURL == "" {
+		ragflowAPIURL = "http://localhost:9380" // fallback to localhost:9380
+	}
+
+	// Create HTTP request to RAGFlow API
+	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/v1/kb/list", ragflowAPIURL), strings.NewReader("{}"))
+	if err != nil {
+		return nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	// Set headers matching the frontend request
+	httpReq.Header.Set("Accept", "application/json")
+	httpReq.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+	httpReq.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	httpReq.Header.Set("Connection", "keep-alive")
+	httpReq.Header.Set("Origin", "http://localhost:9222")
+
+	// 传递用户的cookie
+	cookieHeader := c.GetHeader("Cookie")
+	if len(cookieHeader) > 0 {
+		httpReq.Header.Set("Cookie", string(cookieHeader))
+	}
+
+	// Send request
+	client := &http.Client{}
+	resp, err := client.Do(httpReq)
+	if err != nil {
+		return nil, fmt.Errorf("failed to call RAGFlow API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// Parse RAGFlow response
+	var ragflowResp struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+		Data    struct {
+			Kbs   []struct {
+				ID          string `json:"id"`
+				Name        string `json:"name"`
+				Nickname    string `json:"nickname"`
+				Description string `json:"description"`
+				Avatar      string `json:"avatar"`
+				DocNum      int    `json:"doc_num"`
+				ChunkNum    int    `json:"chunk_num"`
+				TokenNum    int    `json:"token_num"`
+				Language    string `json:"language"`
+				EmbdID      string `json:"embd_id"`
+				UpdateTime  int64  `json:"update_time"`
+			} `json:"kbs"`
+			Total int `json:"total"`
+		} `json:"data"`
+	}
+
+	if err := json.NewDecoder(resp.Body).Decode(&ragflowResp); err != nil {
+		return nil, fmt.Errorf("failed to parse response: %w", err)
+	}
+
+	// Convert RAGFlow response to our format
+	datasets := make([]*external_knowledge.RAGFlowDataset, len(ragflowResp.Data.Kbs))
+	for i, kb := range ragflowResp.Data.Kbs {
+		datasets[i] = &external_knowledge.RAGFlowDataset{
+			ID:               kb.ID,
+			Name:             kb.Name,
+			Description:      &kb.Description,
+			Avatar:           &kb.Avatar,
+			DocumentCount:    int32(kb.DocNum),
+			ChunkCount:       int32(kb.ChunkNum),
+			TokenNum:         int64(kb.TokenNum),
+			Language:         kb.Language,
+			EmbeddingModel:   kb.EmbdID,
+			CreateDate:       "", // RAGFlow doesn't return create_date
+			CreateTime:       0,  // RAGFlow doesn't return create_time
+			UpdateDate:       "", // RAGFlow doesn't return update_date
+			UpdateTime:       kb.UpdateTime,
+			Status:           1, // Assume all returned KBs are active
+		}
+	}
+
+	return &external_knowledge.GetRAGFlowDatasetsResponse{
+		Code: int32(ragflowResp.Code),
+		Msg:  ragflowResp.Message,
+		Data: datasets,
+	}, nil
 }
 
 // Retrieval .

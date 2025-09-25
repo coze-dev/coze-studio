@@ -173,6 +173,13 @@ export const WorkspaceSubMenu = () => {
       dataTestId: 'navigation_workspace_models',
     },
     {
+      icon: <IconBotPlugin />,
+      activeIcon: <IconBotPluginActive />,
+      title: () => I18n.t('navigation_workspace_manage_hiagents', {}, 'HiAgents'),
+      path: SpaceSubModuleEnum.HIAGENTS,
+      dataTestId: 'navigation_workspace_hiagents',
+    },
+    {
       icon: <IconBotMember />,
       activeIcon: <IconBotMemberActive />,
       title: () => I18n.t('navigation_workspace_members', {}, 'Members'),
