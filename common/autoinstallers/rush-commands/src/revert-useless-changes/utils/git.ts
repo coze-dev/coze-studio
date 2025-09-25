@@ -118,7 +118,7 @@ export const isNewFile = (filePath: string, options: GitOptions): boolean => {
 };
 
 /**
- * Check if a file has only whitespace changes
+ * Check if a file has only whitespace changes (including blank lines)
  */
 export const hasOnlyWhitespaceChanges = (filePath: string, options: GitOptions): boolean => {
   try {
@@ -132,7 +132,10 @@ export const hasOnlyWhitespaceChanges = (filePath: string, options: GitOptions):
       ? filePath.substring(projectRoot.length + 1)
       : filePath;
 
-    const output = execSync(`git diff -w ${options.ref || 'HEAD'} -- "${relativePath}"`, {
+    // Use -w to ignore whitespace changes and -b to ignore blank line changes
+    // --ignore-space-at-eol ignores changes in whitespace at EOL
+    // --ignore-blank-lines ignores changes whose lines are all blank
+    const output = execSync(`git diff -w -b --ignore-space-at-eol --ignore-blank-lines ${options.ref || 'HEAD'} -- "${relativePath}"`, {
       cwd: options.cwd,
       encoding: 'utf8',
       stdio: ['pipe', 'pipe', 'ignore']

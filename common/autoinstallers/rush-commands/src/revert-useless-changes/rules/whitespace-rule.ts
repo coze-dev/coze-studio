@@ -8,7 +8,7 @@ import { exists } from '../utils/file';
  */
 export const WHITESPACE_RULE: Rule = {
   name: 'whitespace-only',
-  description: 'Detects files that have only whitespace changes (spaces, tabs, newlines)',
+  description: 'Detects files that have only whitespace changes (spaces, tabs, newlines, blank lines)',
   filePatterns: FILE_PATTERNS.ALL_FILES
 } as const;
 
@@ -55,7 +55,7 @@ export const analyzeWhitespaceRule = async (filePath: string, config: Config): P
       return createResult(
         filePath,
         true,
-        'File has only whitespace changes (spaces, tabs, newlines)'
+        'File has only whitespace changes (spaces, tabs, newlines, blank lines)'
       );
     } else {
       return createResult(
