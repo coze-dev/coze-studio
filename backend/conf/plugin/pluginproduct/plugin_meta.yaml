@@ -1,5 +1,4 @@
 - plugin_id: 2
-  product_id: 7376228190244618278
   deprecated: false
   version: v1.0.0
   openapi_doc_file: library_search.yaml
@@ -30,7 +29,6 @@
       method: get
       sub_url: /document/coze
 - plugin_id: 3
-  product_id: 7496002227321143350
   deprecated: false
   version: v1.0.0
   openapi_doc_file: bocha_search.yaml
@@ -63,7 +61,6 @@
       method: post
       sub_url: /v1/web-search
 - plugin_id: 4
-  product_id: 7328314516272463923
   deprecated: false
   version: v1.0.0
   openapi_doc_file: wolfram_alpha.yaml
@@ -98,7 +95,6 @@
       method: get
       sub_url: /v2/query
 - plugin_id: 5
-  product_id: 7351267469065011241
   deprecated: false
   version: v1.0.0
   openapi_doc_file: maker_smart_design.yaml
@@ -127,7 +123,6 @@
       method: get
       sub_url: /coze
 - plugin_id: 6
-  product_id: 7343894357063385100
   deprecated: false
   version: v1.0.0
   openapi_doc_file: sohu_hot_news.yaml
@@ -156,7 +151,6 @@
       method: get
       sub_url: /blog/outer/temp/feeds/ark
 - plugin_id: 9
-  product_id: 7461926057290153993
   deprecated: false
   version: v1.0.0
   openapi_doc_file: image_compression.yaml
@@ -182,7 +176,6 @@
       method: post
       sub_url: /img2base64/img2base64
 - plugin_id: 10
-  product_id: 7355060468744044595
   deprecated: false
   version: v1.0.0
   openapi_doc_file: worth_buying.yaml
@@ -215,7 +208,6 @@
       method: get
       sub_url: /query
 - plugin_id: 11
-  product_id: 7358789295274049572
   deprecated: false
   version: v1.0.0
   openapi_doc_file: chestnut_sign.yaml
@@ -244,7 +236,6 @@
       method: post
       sub_url: /generate_tasks
 - plugin_id: 12
-  product_id: 7407722060627247143
   deprecated: false
   version: v1.0.0
   openapi_doc_file: sky_eye_check.yaml
@@ -293,7 +284,6 @@
       method: get
       sub_url: /search/2.0
 - plugin_id: 14
-  product_id: 7395041877151514662
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_authentication_authorization.yaml
@@ -322,7 +312,6 @@
       method: post
       sub_url: /access_token/get_tenant_access_token
 - plugin_id: 15
-  product_id: 7395041302766944275
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_message.yaml
@@ -384,7 +373,6 @@
       method: post
       sub_url: /message/send_webhook_message
 - plugin_id: 16
-  product_id: 7395043460165779483
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_base.yaml
@@ -506,7 +494,6 @@
       method: post
       sub_url: /base/update_records
 - plugin_id: 17
-  product_id: 7395040352337559578
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_sheet.yaml
@@ -606,7 +593,6 @@
       method: post
       sub_url: /spreadsheet/search_spreadsheet
 - plugin_id: 18
-  product_id: 7395041172152156186
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_task.yaml
@@ -666,7 +652,6 @@
       method: patch
       sub_url: /task/update_task
 - plugin_id: 19
-  product_id: 7395041536909574154
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_docx.yaml
@@ -760,7 +745,6 @@
       method: post
       sub_url: /drive/upload_media
 - plugin_id: 20
-  product_id: 7408195262340104230
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_wiki.yaml
@@ -792,7 +776,6 @@
       method: post
       sub_url: /wiki/search_wiki
 - plugin_id: 21
-  product_id: 7395041856574423075
   deprecated: false
   version: v1.0.0
   openapi_doc_file: lark_calendar.yaml
@@ -844,7 +827,6 @@
       method: patch
       sub_url: /calendar/update_event/{event_id}
 - plugin_id: 22
-  product_id: 7379953949534715956
   deprecated: false
   version: v1.0.0
   openapi_doc_file: gaode_map.yaml

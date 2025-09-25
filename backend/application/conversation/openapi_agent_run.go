@@ -149,18 +149,18 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 	}
 	displayContent := a.buildDisplayContent(ctx, ar)
 	arm := &entity.AgentRunMeta{
-		ConversationID:     ptr.From(ar.ConversationID),
-		AgentID:            ar.BotID,
-		Content:            multiContent,
-		DisplayContent:     displayContent,
-		SpaceID:            spaceID,
-		UserID:             ar.User,
-		SectionID:          conversationData.SectionID,
-		PreRetrieveTools:   shortcutCMDData,
-		IsDraft:            false,
-		ConnectorID:        connectorID,
-		ContentType:        contentType,
-		Ext:                func() map[string]string {
+		ConversationID:   ptr.From(ar.ConversationID),
+		AgentID:          ar.BotID,
+		Content:          multiContent,
+		DisplayContent:   displayContent,
+		SpaceID:          spaceID,
+		UserID:           ar.User,
+		SectionID:        conversationData.SectionID,
+		PreRetrieveTools: shortcutCMDData,
+		IsDraft:          false,
+		ConnectorID:      connectorID,
+		ContentType:      contentType,
+		Ext: func() map[string]string {
 			if ar.ExtraParams == nil {
 				return map[string]string{}
 			}

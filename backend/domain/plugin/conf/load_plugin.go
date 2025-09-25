@@ -39,7 +39,6 @@ import (
 
 type pluginProductMeta struct {
 	PluginID       int64                 `yaml:"plugin_id" validate:"required"`
-	ProductID      int64                 `yaml:"product_id" validate:"required"`
 	Deprecated     bool                  `yaml:"deprecated"`
 	Version        string                `yaml:"version" validate:"required"`
 	PluginType     common.PluginType     `yaml:"plugin_type" validate:"required"`
@@ -178,14 +177,13 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 
 		pi := &PluginInfo{
 			Info: &model.PluginInfo{
-				ID:           m.PluginID,
-				RefProductID: &m.ProductID,
-				PluginType:   m.PluginType,
-				Version:      ptr.Of(m.Version),
-				IconURI:      ptr.Of(m.Manifest.LogoURL),
-				ServerURL:    ptr.Of(doc.Servers[0].URL),
-				Manifest:     m.Manifest,
-				OpenapiDoc:   doc,
+				ID:         m.PluginID,
+				PluginType: m.PluginType,
+				Version:    ptr.Of(m.Version),
+				IconURI:    ptr.Of(m.Manifest.LogoURL),
+				ServerURL:  ptr.Of(doc.Servers[0].URL),
+				Manifest:   m.Manifest,
+				OpenapiDoc: doc,
 			},
 			ToolIDs: make([]int64, 0, len(m.Tools)),
 		}
@@ -271,10 +269,7 @@ func checkPluginMetaInfo(ctx context.Context, m *pluginProductMeta) (continued b
 		logs.CtxErrorf(ctx, "invalid plugin id '%d'", m.PluginID)
 		return false
 	}
-	if m.ProductID <= 0 {
-		logs.CtxErrorf(ctx, "invalid product id '%d'", m.ProductID)
-		return false
-	}
+
 	_, ok := toolProducts[m.PluginID]
 	if ok {
 		logs.CtxErrorf(ctx, "duplicate plugin id '%d'", m.PluginID)
