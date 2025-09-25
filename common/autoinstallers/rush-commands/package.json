@@ -1,20 +1,29 @@
 {
   "name": "rush-commands",
   "version": "1.0.0",
-  "description": "",
+  "private": true,
+  "description": "Rush command tools and utilities",
   "keywords": [],
   "license": "Apache-2.0",
   "author": "",
   "main": "index.js",
-  "scripts": {},
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf lib/",
+    "revert-useless-changes": "node lib/revert-useless-changes/cli.js"
+  },
   "dependencies": {
-    "commander": "^11.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "chalk": "^4.1.2",
+    "commander": "^12.0.0",
+    "glob": "^10.3.10",
     "simple-git": "^3.20.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "rimraf": "^5.0.0",
+    "sucrase": "^3.32.0",
     "tsx": "^4.19.2",
     "typescript": "^5.0.0"
   }
 }
-
