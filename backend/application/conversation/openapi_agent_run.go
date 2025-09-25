@@ -148,6 +148,10 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		return nil, err
 	}
 	displayContent := a.buildDisplayContent(ctx, ar)
+	chatflowParameters, err := parseChatflowParameters(ctx, ar)
+	if err != nil {
+		return nil, err
+	}
 	arm := &entity.AgentRunMeta{
 		ConversationID:     ptr.From(ar.ConversationID),
 		AgentID:            ar.BotID,
@@ -169,19 +173,19 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		CustomVariables:    ar.CustomVariables,
 		CozeUID:            conversationData.CreatorID,
 		AdditionalMessages: filterMultiAdditionalMessages,
-		ChatflowParameters: func() map[string]any {
-			if ar.Parameters != nil {
-				parameters := make(map[string]any)
-				if err := json.Unmarshal([]byte(*ar.Parameters), &parameters); err != nil {
-					logs.CtxErrorf(ctx, "buildAgentRunRequest Unmarshal err:%v", err)
-					return map[string]any{}
-				}
-				return parameters
-			}
-			return map[string]any{}
-		}(),
+		ChatflowParameters: chatflowParameters,
 	}
 	return arm, nil
+}
+func parseChatflowParameters(ctx context.Context, ar *run.ChatV3Request) (map[string]any, error) {
+	parameters := make(map[string]any)
+	if ar.Parameters != nil {
+		if err := json.Unmarshal([]byte(*ar.Parameters), &parameters); err != nil {
+			return nil, errors.New("parameters field should be an object, not a string")
+		}
+		return parameters,nil
+	}
+	return parameters,nil
 }
 
 func (a *OpenapiAgentRunApplication) buildTools(ctx context.Context, shortcmd *run.ShortcutCommandDetail) ([]*entity.Tool, error) {
