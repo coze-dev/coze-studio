@@ -70,6 +70,6 @@ export const transformResourceToWorkflowEditInfo = (
     desc: resource.desc,
     schema_type: bizExtend?.schema_type,
     external_flow_info: bizExtend?.external_flow_info,
-    space_id: resource.space_id,
+    space_id: resource.space_id || '', // 确保 space_id 不为 undefined
   };
 };

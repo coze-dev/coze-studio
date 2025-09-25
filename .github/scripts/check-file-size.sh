@@ -40,6 +40,7 @@ EXCLUDE_PATTERNS=(
   'common/changes/**'
   'apps/fornax/**',
   "packages/arch/semi-theme-hand01"
+  'frontend/packages/arch/resources/studio-i18n-resource/src/locale-data.d.ts'
 )
 
 for pattern in "${EXCLUDE_PATTERNS[@]}"; do

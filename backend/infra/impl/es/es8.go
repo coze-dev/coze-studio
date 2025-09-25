@@ -32,6 +32,8 @@ import (
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/sortorder"
 	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/textquerytype"
 
+	"github.com/coze-dev/coze-studio/backend/pkg/parsex"
+
 	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { lazy } from 'react';
+import React, { lazy } from 'react';
 
 // login page
 export const LoginPage = lazy(() =>
@@ -113,6 +113,20 @@ export const WorkflowPage = lazy(() =>
     default: res.WorkflowPage,
   })),
 );
+
+// workflow import page
+export const WorkflowImportPage = lazy(async () => {
+  const WorkflowImportModule = await import('../pages/workflow-import');
+  return {
+    default: () =>
+      React.createElement(WorkflowImportModule.default, {
+        visible: true,
+        onCancel: () => {
+          /* Empty handler for modal closure */
+        },
+      }),
+  };
+});
 
 // plugin resource page layout component
 export const PluginLayout = lazy(() => import('../pages/plugin/layout'));
