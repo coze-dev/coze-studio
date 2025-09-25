@@ -169,6 +169,17 @@ func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, a
 		CustomVariables:    ar.CustomVariables,
 		CozeUID:            conversationData.CreatorID,
 		AdditionalMessages: filterMultiAdditionalMessages,
+		ChatflowParameters: func() map[string]any {
+			if ar.Parameters != nil {
+				parameters := make(map[string]any)
+				if err := json.Unmarshal([]byte(*ar.Parameters), &parameters); err != nil {
+					logs.CtxErrorf(ctx, "buildAgentRunRequest Unmarshal err:%v", err)
+					return map[string]any{}
+				}
+				return parameters
+			}
+			return map[string]any{}
+		}(),
 	}
 	return arm, nil
 }

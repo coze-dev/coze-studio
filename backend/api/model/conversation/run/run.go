@@ -5152,6 +5152,7 @@ type ChatV3Request struct {
 	ConnectorID *int64 `thrift:"ConnectorID,12,optional" form:"connector_id" json:"connector_id,string,omitempty"`
 	// Specify shortcut instructions
 	ShortcutCommand *ShortcutCommandDetail `thrift:"ShortcutCommand,13,optional" form:"shortcut_command" json:"shortcut_command,omitempty"`
+	Parameters      *string                `thrift:"Parameters,14,optional" form:"parameters" json:"parameters,omitempty"`
 }
 
 func NewChatV3Request() *ChatV3Request {
@@ -5250,6 +5251,15 @@ func (p *ChatV3Request) GetShortcutCommand() (v *ShortcutCommandDetail) {
 	return p.ShortcutCommand
 }
 
+var ChatV3Request_Parameters_DEFAULT string
+
+func (p *ChatV3Request) GetParameters() (v string) {
+	if !p.IsSetParameters() {
+		return ChatV3Request_Parameters_DEFAULT
+	}
+	return *p.Parameters
+}
+
 var fieldIDToName_ChatV3Request = map[int16]string{
 	1:  "BotID",
 	2:  "ConversationID",
@@ -5262,6 +5272,7 @@ var fieldIDToName_ChatV3Request = map[int16]string{
 	11: "ExtraParams",
 	12: "ConnectorID",
 	13: "ShortcutCommand",
+	14: "Parameters",
 }
 
 func (p *ChatV3Request) IsSetConversationID() bool {
@@ -5298,6 +5309,10 @@ func (p *ChatV3Request) IsSetConnectorID() bool {
 
 func (p *ChatV3Request) IsSetShortcutCommand() bool {
 	return p.ShortcutCommand != nil
+}
+
+func (p *ChatV3Request) IsSetParameters() bool {
+	return p.Parameters != nil
 }
 
 func (p *ChatV3Request) Read(iprot thrift.TProtocol) (err error) {
@@ -5405,6 +5420,14 @@ func (p *ChatV3Request) Read(iprot thrift.TProtocol) (err error) {
 		case 13:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField13(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 14:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField14(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -5631,6 +5654,17 @@ func (p *ChatV3Request) ReadField13(iprot thrift.TProtocol) error {
 	p.ShortcutCommand = _field
 	return nil
 }
+func (p *ChatV3Request) ReadField14(iprot thrift.TProtocol) error {
+
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = &v
+	}
+	p.Parameters = _field
+	return nil
+}
 
 func (p *ChatV3Request) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -5680,6 +5714,10 @@ func (p *ChatV3Request) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField13(oprot); err != nil {
 			fieldId = 13
+			goto WriteFieldError
+		}
+		if err = p.writeField14(oprot); err != nil {
+			fieldId = 14
 			goto WriteFieldError
 		}
 	}
@@ -5934,6 +5972,24 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 13 end error: ", p), err)
+}
+func (p *ChatV3Request) writeField14(oprot thrift.TProtocol) (err error) {
+	if p.IsSetParameters() {
+		if err = oprot.WriteFieldBegin("Parameters", thrift.STRING, 14); err != nil {
+			goto WriteFieldBeginError
+		}
+		if err := oprot.WriteString(*p.Parameters); err != nil {
+			return err
+		}
+		if err = oprot.WriteFieldEnd(); err != nil {
+			goto WriteFieldEndError
+		}
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 14 end error: ", p), err)
 }
 
 func (p *ChatV3Request) String() string {

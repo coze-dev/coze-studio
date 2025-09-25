@@ -158,6 +158,9 @@ struct ChatV3Request {
     11:optional map<string, string> ExtraParams (api.body = "extra_params") // Pass parameters to plugin/workflow etc downstream
     12:optional i64 ConnectorID (api.body="connector_id", api.js_conv='true') // Manually specify channel id chat. Currently only supports websdk (= 999)
     13:optional ShortcutCommandDetail ShortcutCommand (api.body="shortcut_command") // Specify shortcut instructions
+    14: optional string Parameters (api.body="parameters")          
+
+
 }
 
 struct ChatV3MessageDetail {

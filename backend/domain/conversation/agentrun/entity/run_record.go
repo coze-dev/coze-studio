@@ -125,6 +125,7 @@ type AgentRunMeta struct {
 	Version            string                   `json:"version"`
 	Ext                map[string]string        `json:"ext"`
 	AdditionalMessages []*AdditionalMessage     `json:"additional_messages"`
+	ChatflowParameters map[string]any           `json:"chatflow_parameters"`
 }
 
 type AdditionalMessage struct {
