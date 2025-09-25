@@ -90,24 +90,22 @@ interface RAGFlowKB {
 // RAGFlow API响应结构
 interface RAGFlowAPIResponse {
   code: number;
-  message: string;
-  data: {
-    kbs: RAGFlowKB[];
-    total: number;
-  };
+  message?: string;
+  msg?: string;
+  data: unknown;
+  total?: number;
 }
 
 // 环境配置
 const getRAGFlowConfig = () => {
-  // 从rsbuild.config.ts中配置的环境变量获取RAGFlow API URL
-  const ragflowAPIURL = process.env.RAGFLOW_API_URL || 'http://localhost:9380';
+  // 从环境变量中读取RAGFlow Web地址，用于跳转
   const ragflowWebURL = process.env.RAGFLOW_WEB_URL || 'http://localhost:9222';
   return {
-    apiURL: `${ragflowAPIURL}/v1/kb/list`,
+    apiURL: '/api/external-knowledge/ragflow/datasets',
     webURL: ragflowWebURL,
-    createURL: `${ragflowAPIURL}/v1/kb/create`,
-    updateURL: `${ragflowAPIURL}/v1/kb/update`,
-    removeURL: `${ragflowAPIURL}/v1/kb/rm`,
+    createURL: '/api/external-knowledge/ragflow/datasets/create',
+    updateURL: '/api/external-knowledge/ragflow/datasets/update',
+    removeURL: '/api/external-knowledge/ragflow/datasets/delete',
   };
 };
 
@@ -126,6 +124,102 @@ const ExternalKnowledgePage: React.FC = () => {
   const [editingDataset, setEditingDataset] = useState<RAGFlowKB | null>(null);
   const [editDatasetName, setEditDatasetName] = useState('');
   const [updatingDataset, setUpdatingDataset] = useState(false);
+
+  const coerceNumber = (value: unknown, defaultValue = 0): number => {
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = Number(value);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
+    return defaultValue;
+  };
+
+  const toOptionalNumber = (value: unknown): number | undefined => {
+    if (value === null || value === undefined) {
+      return undefined;
+    }
+    if (typeof value === 'number' && !Number.isNaN(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = Number(value);
+      if (!Number.isNaN(parsed)) {
+        return parsed;
+      }
+    }
+    return undefined;
+  };
+
+  const mapDatasetFromAPI = (dataset: any): RAGFlowKB | null => {
+    if (!dataset || typeof dataset !== 'object') {
+      return null;
+    }
+
+    const id = dataset.id ?? '';
+    if (typeof id !== 'string' || id.trim() === '') {
+      return null;
+    }
+
+    const name = dataset.name ?? dataset.nickname ?? '';
+    if (typeof name !== 'string' || name.trim() === '') {
+      return null;
+    }
+
+    const description = dataset.description ?? '';
+    const avatar = dataset.avatar ?? '';
+    const docNum = coerceNumber(dataset.doc_num ?? dataset.docNum ?? dataset.document_count);
+    const chunkNum = coerceNumber(dataset.chunk_num ?? dataset.chunkNum ?? dataset.chunk_count);
+    const tokenNum = coerceNumber(
+      dataset.token_num ?? dataset.tokenNum ?? dataset.token_count,
+    );
+    const updateTime = coerceNumber(dataset.update_time ?? dataset.updateTime);
+    const statusRaw = dataset.status;
+    const status = typeof statusRaw === 'string'
+      ? statusRaw === '1'
+        ? 1
+        : coerceNumber(statusRaw, 1)
+      : coerceNumber(statusRaw, 1);
+
+    let parserConfig: Record<string, unknown> | null = null;
+    const rawParserConfig = dataset.parser_config ?? dataset.parserConfig;
+    if (rawParserConfig && typeof rawParserConfig === 'object') {
+      parserConfig = rawParserConfig as Record<string, unknown>;
+    }
+
+    return {
+      id,
+      name,
+      nickname: typeof dataset.nickname === 'string' ? dataset.nickname : name,
+      description: typeof description === 'string' ? description : '',
+      avatar: typeof avatar === 'string' && avatar ? avatar : undefined,
+      doc_num: docNum,
+      chunk_num: chunkNum,
+      token_num: tokenNum,
+      language: typeof dataset.language === 'string' ? dataset.language : '',
+      embd_id: typeof dataset.embd_id === 'string'
+        ? dataset.embd_id
+        : typeof dataset.embedding_model === 'string'
+        ? dataset.embedding_model
+        : '',
+      parser_id: typeof dataset.parser_id === 'string' ? dataset.parser_id : '',
+      permission: typeof dataset.permission === 'string' ? dataset.permission : 'me',
+      tenant_id: typeof dataset.tenant_id === 'string' ? dataset.tenant_id : '',
+      tenant_avatar: typeof dataset.tenant_avatar === 'string' ? dataset.tenant_avatar : '',
+      update_time: updateTime,
+      similarity_threshold: toOptionalNumber(
+        dataset.similarity_threshold ?? dataset.similarityThreshold,
+      ),
+      vector_similarity_weight: toOptionalNumber(
+        dataset.vector_similarity_weight ?? dataset.vectorSimilarityWeight,
+      ),
+      status,
+      parser_config: parserConfig,
+    };
+  };
 
   // 跳转到RAGFlow知识库详情页面
   const navigateToDataset = (datasetId: string) => {
@@ -211,7 +305,8 @@ const ExternalKnowledgePage: React.FC = () => {
       const data = await response.json();
 
       if (data.code === 0) {
-        const datasetId = data.data?.kb_id || data.data?.id;
+        const responseData = data as any;
+        const datasetId = responseData?.data?.kb_id || responseData?.data?.id;
         if (!datasetId) {
           throw new Error('invalid dataset id');
         }
@@ -223,7 +318,7 @@ const ExternalKnowledgePage: React.FC = () => {
         });
         navigateToDataset(datasetId);
       } else {
-        throw new Error(data.message || 'create failed');
+        throw new Error(data.message || data.msg || 'create failed');
       }
     } catch (error: any) {
       console.error('Failed to create dataset:', error);
@@ -305,7 +400,7 @@ const ExternalKnowledgePage: React.FC = () => {
         setEditingDataset(null);
         setEditDatasetName('');
       } else {
-        throw new Error(data.message || 'update failed');
+        throw new Error(data.message || data.msg || 'update failed');
       }
     } catch (error: any) {
       console.error('Failed to update dataset:', error);
@@ -363,7 +458,7 @@ const ExternalKnowledgePage: React.FC = () => {
               fetchDatasets();
             }, 0);
           } else {
-            throw new Error(data.message || 'delete failed');
+            throw new Error(data.message || data.msg || 'delete failed');
           }
         } catch (error: any) {
           console.error('Failed to delete dataset:', error);
@@ -387,14 +482,12 @@ const ExternalKnowledgePage: React.FC = () => {
     try {
       const { apiURL } = getRAGFlowConfig();
 
-      // 直接调用RAGFlow API
+      // 通过后端代理调用RAGFlow
       const response = await fetch(apiURL, {
-        method: 'POST',
+        method: 'GET',
         headers: {
           Accept: 'application/json',
-          'Content-Type': 'application/json;charset=UTF-8',
         },
-        body: JSON.stringify({}),
         credentials: 'include', // 包含cookie
       });
 
@@ -405,13 +498,24 @@ const ExternalKnowledgePage: React.FC = () => {
       const data: RAGFlowAPIResponse = await response.json();
 
       if (data.code === 0) {
-        setDatasets(data.data.kbs || []);
+        const rawDatasets = Array.isArray(data.data)
+          ? data.data
+          : Array.isArray((data.data as any)?.kbs)
+          ? (data.data as any).kbs
+          : [];
+
+        const normalizedDatasets = (rawDatasets as any[])
+          .map(item => mapDatasetFromAPI(item))
+          .filter((item): item is RAGFlowKB => item !== null);
+
+        setDatasets(normalizedDatasets);
         setHasBinding(true);
       } else {
         emitNotification('error', {
           message: I18n.t('external_knowledge_fetch_error', {}, '获取失败'),
           description:
             data.message ||
+            data.msg ||
             I18n.t(
               'external_knowledge_fetch_error_desc',
               {},

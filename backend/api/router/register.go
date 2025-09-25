@@ -28,6 +28,7 @@ import (
 	"github.com/cloudwego/hertz/pkg/app/server"
 
 	cozeHandler "github.com/coze-dev/coze-studio/backend/api/handler/coze"
+	external_knowledge_handler "github.com/coze-dev/coze-studio/backend/api/handler/external_knowledge"
 	coze "github.com/coze-dev/coze-studio/backend/api/router/coze"
 	external_knowledge "github.com/coze-dev/coze-studio/backend/api/router/external_knowledge"
 	memory_config "github.com/coze-dev/coze-studio/backend/api/router/memory_config"
@@ -59,6 +60,7 @@ func GeneratedRegister(r *server.Hertz) {
 	template_publish.Register(r)
 	// Manually register import/export routes until IDL is regenerated
 	manualRegisterImportExport(r)
+	manualRegisterExternalKnowledge(r)
 	staticFileRegister(r)
 }
 
@@ -72,8 +74,8 @@ func staticFileRegister(r *server.Hertz) {
 
 	staticFile := path.Join(cwd, "resources/static/index.html")
 
-    // Serve static assets from cwd/resources/static (avoid absolute join)
-    r.Static("/static", path.Join(cwd, "resources/static"))
+	// Serve static assets from cwd/resources/static (avoid absolute join)
+	r.Static("/static", path.Join(cwd, "resources/static"))
 	r.StaticFile("/favicon.png", "./resources/static/favicon.png")
 	r.StaticFile("/", staticFile)
 	r.StaticFile("/sign", staticFile)
@@ -112,4 +114,13 @@ func manualRegisterImportExport(r *server.Hertz) {
 	workflowAPI.POST("/import", cozeHandler.ImportWorkflow)
 	workflowAPI.POST("/validate_import", cozeHandler.ValidateImport)
 
+}
+
+func manualRegisterExternalKnowledge(r *server.Hertz) {
+	api := r.Group("/api")
+	externalKnowledgeGroup := api.Group("/external-knowledge")
+	ragflowGroup := externalKnowledgeGroup.Group("/ragflow")
+	ragflowGroup.POST("/datasets/create", external_knowledge_handler.CreateRAGFlowDataset)
+	ragflowGroup.POST("/datasets/update", external_knowledge_handler.UpdateRAGFlowDataset)
+	ragflowGroup.POST("/datasets/delete", external_knowledge_handler.DeleteRAGFlowDataset)
 }

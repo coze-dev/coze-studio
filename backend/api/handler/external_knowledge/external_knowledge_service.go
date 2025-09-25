@@ -3,13 +3,15 @@
 package external_knowledge
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
+	"time"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -17,7 +19,9 @@ import (
 	external_knowledge "github.com/coze-dev/coze-studio/backend/api/model/external_knowledge"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	externalKnowledgeApp "github.com/coze-dev/coze-studio/backend/application/external_knowledge"
+	userApp "github.com/coze-dev/coze-studio/backend/application/user"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 // CreateBinding .
@@ -201,8 +205,10 @@ func GetRAGFlowDatasets(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	// 直接调用RAGFlow API，使用用户的session cookie
-	resp, err := callRAGFlowDatasetsAPI(ctx, c)
+	userID := ptr.From(userIDPtr)
+
+	// 调用RAGFlow API，使用后端保存的session key
+	resp, err := callRAGFlowDatasetsAPI(ctx, userID)
 	if err != nil {
 		c.JSON(consts.StatusOK, &external_knowledge.GetRAGFlowDatasetsResponse{
 			Code: 500,
@@ -215,52 +221,154 @@ func GetRAGFlowDatasets(ctx context.Context, c *app.RequestContext) {
 	c.JSON(consts.StatusOK, resp)
 }
 
-// callRAGFlowDatasetsAPI 直接调用RAGFlow的知识库列表API
-func callRAGFlowDatasetsAPI(ctx context.Context, c *app.RequestContext) (*external_knowledge.GetRAGFlowDatasetsResponse, error) {
-	// Get RAGFlow API URL from environment
-	ragflowAPIURL := os.Getenv("RAGFLOW_API_URL")
-	if ragflowAPIURL == "" {
-		ragflowAPIURL = "https://ynetflow-agent.finmall.com" // fallback to production URL
+// CreateRAGFlowDataset proxies dataset creation to RAGFlow.
+func CreateRAGFlowDataset(ctx context.Context, c *app.RequestContext) {
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		c.JSON(consts.StatusUnauthorized, map[string]interface{}{
+			"code":    401,
+			"message": "Unauthorized",
+		})
+		return
 	}
 
-	// Create HTTP request to RAGFlow API
-	httpReq, err := http.NewRequestWithContext(ctx, "POST", fmt.Sprintf("%s/v1/kb/list", ragflowAPIURL), strings.NewReader("{}"))
+	sessionKey, err := getUserSessionKey(ctx, ptr.From(userIDPtr))
 	if err != nil {
-		return nil, fmt.Errorf("failed to create request: %w", err)
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
 	}
 
-	// Set headers matching the frontend request
-	httpReq.Header.Set("Accept", "application/json")
-	httpReq.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
-	httpReq.Header.Set("Content-Type", "application/json;charset=UTF-8")
-	httpReq.Header.Set("Connection", "keep-alive")
-	// Use the same URL for Origin header
-	ragflowWebURL := os.Getenv("RAGFLOW_WEB_URL")
-	if ragflowWebURL == "" {
-		ragflowWebURL = "https://ynetflow-agent.finmall.com"
-	}
-	httpReq.Header.Set("Origin", ragflowWebURL)
-
-	// 传递用户的cookie
-	cookieHeader := c.GetHeader("Cookie")
-	if len(cookieHeader) > 0 {
-		httpReq.Header.Set("Cookie", string(cookieHeader))
+	payload := append([]byte(nil), c.Request.Body()...)
+	if len(payload) == 0 {
+		payload = []byte("{}")
 	}
 
-	// Send request
-	client := &http.Client{}
-	resp, err := client.Do(httpReq)
+	referer := fmt.Sprintf("%s/dataset", ragflowWebBase())
+	statusCode, respBody, err := proxyRAGFlowJSON(ctx, sessionKey, http.MethodPost, "/v1/kb/create", payload, referer)
 	if err != nil {
-		return nil, fmt.Errorf("failed to call RAGFlow API: %w", err)
+		logs.CtxErrorf(ctx, "[ExternalKnowledge] create dataset failed: %v", err)
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
 	}
-	defer resp.Body.Close()
+
+	c.Data(statusCode, "application/json", respBody)
+}
+
+// UpdateRAGFlowDataset proxies dataset update to RAGFlow.
+func UpdateRAGFlowDataset(ctx context.Context, c *app.RequestContext) {
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		c.JSON(consts.StatusUnauthorized, map[string]interface{}{
+			"code":    401,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	sessionKey, err := getUserSessionKey(ctx, ptr.From(userIDPtr))
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	payload := append([]byte(nil), c.Request.Body()...)
+	if len(payload) == 0 {
+		payload = []byte("{}")
+	}
+
+	referer := fmt.Sprintf("%s/dataset", ragflowWebBase())
+	if kbID := extractKbIDFromPayload(payload); kbID != "" {
+		referer = fmt.Sprintf("%s/dataset/dataset/%s", ragflowWebBase(), kbID)
+	}
+
+	statusCode, respBody, err := proxyRAGFlowJSON(ctx, sessionKey, http.MethodPost, "/v1/kb/update", payload, referer)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[ExternalKnowledge] update dataset failed: %v", err)
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.Data(statusCode, "application/json", respBody)
+}
+
+// DeleteRAGFlowDataset proxies dataset removal to RAGFlow.
+func DeleteRAGFlowDataset(ctx context.Context, c *app.RequestContext) {
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		c.JSON(consts.StatusUnauthorized, map[string]interface{}{
+			"code":    401,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	sessionKey, err := getUserSessionKey(ctx, ptr.From(userIDPtr))
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	payload := append([]byte(nil), c.Request.Body()...)
+	if len(payload) == 0 {
+		payload = []byte("{}")
+	}
+
+	referer := fmt.Sprintf("%s/dataset", ragflowWebBase())
+	if kbID := extractKbIDFromPayload(payload); kbID != "" {
+		referer = fmt.Sprintf("%s/dataset/dataset/%s", ragflowWebBase(), kbID)
+	}
+
+	statusCode, respBody, err := proxyRAGFlowJSON(ctx, sessionKey, http.MethodPost, "/v1/kb/rm", payload, referer)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[ExternalKnowledge] delete dataset failed: %v", err)
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.Data(statusCode, "application/json", respBody)
+}
+
+// callRAGFlowDatasetsAPI 调用RAGFlow的知识库列表API，使用用户在系统中保存的session key
+func callRAGFlowDatasetsAPI(ctx context.Context, userID int64) (*external_knowledge.GetRAGFlowDatasetsResponse, error) {
+	sessionKey, err := getUserSessionKey(ctx, userID)
+	if err != nil {
+		return nil, err
+	}
+
+	referer := fmt.Sprintf("%s/dataset", ragflowWebBase())
+	statusCode, respBody, err := proxyRAGFlowJSON(ctx, sessionKey, http.MethodPost, "/v1/kb/list", []byte("{}"), referer)
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode != http.StatusOK {
+		logs.CtxWarnf(ctx, "[ExternalKnowledge] RAGFlow list non-200 status, userID=%d, status=%d", userID, statusCode)
+	}
 
 	// Parse RAGFlow response
 	var ragflowResp struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
 		Data    struct {
-			Kbs   []struct {
+			Kbs []struct {
 				ID          string `json:"id"`
 				Name        string `json:"name"`
 				Nickname    string `json:"nickname"`
@@ -277,28 +385,30 @@ func callRAGFlowDatasetsAPI(ctx context.Context, c *app.RequestContext) (*extern
 		} `json:"data"`
 	}
 
-	if err := json.NewDecoder(resp.Body).Decode(&ragflowResp); err != nil {
+	if err := json.Unmarshal(respBody, &ragflowResp); err != nil {
 		return nil, fmt.Errorf("failed to parse response: %w", err)
 	}
 
 	// Convert RAGFlow response to our format
 	datasets := make([]*external_knowledge.RAGFlowDataset, len(ragflowResp.Data.Kbs))
 	for i, kb := range ragflowResp.Data.Kbs {
+		description := kb.Description
+		avatar := kb.Avatar
 		datasets[i] = &external_knowledge.RAGFlowDataset{
-			ID:               kb.ID,
-			Name:             kb.Name,
-			Description:      &kb.Description,
-			Avatar:           &kb.Avatar,
-			DocumentCount:    int32(kb.DocNum),
-			ChunkCount:       int32(kb.ChunkNum),
-			TokenNum:         int64(kb.TokenNum),
-			Language:         kb.Language,
-			EmbeddingModel:   kb.EmbdID,
-			CreateDate:       "", // RAGFlow doesn't return create_date
-			CreateTime:       0,  // RAGFlow doesn't return create_time
-			UpdateDate:       "", // RAGFlow doesn't return update_date
-			UpdateTime:       kb.UpdateTime,
-			Status:           1, // Assume all returned KBs are active
+			ID:             kb.ID,
+			Name:           kb.Name,
+			Description:    &description,
+			Avatar:         &avatar,
+			DocumentCount:  int32(kb.DocNum),
+			ChunkCount:     int32(kb.ChunkNum),
+			TokenNum:       int64(kb.TokenNum),
+			Language:       kb.Language,
+			EmbeddingModel: kb.EmbdID,
+			CreateDate:     "", // RAGFlow doesn't return create_date
+			CreateTime:     0,  // RAGFlow doesn't return create_time
+			UpdateDate:     "", // RAGFlow doesn't return update_date
+			UpdateTime:     kb.UpdateTime,
+			Status:         1, // Assume all returned KBs are active
 		}
 	}
 
@@ -307,6 +417,81 @@ func callRAGFlowDatasetsAPI(ctx context.Context, c *app.RequestContext) (*extern
 		Msg:  ragflowResp.Message,
 		Data: datasets,
 	}, nil
+}
+
+func getUserSessionKey(ctx context.Context, userID int64) (string, error) {
+	userInfo, err := userApp.UserApplicationSVC.DomainSVC.GetUserInfo(ctx, userID)
+	if err != nil {
+		logs.CtxErrorf(ctx, "[ExternalKnowledge] GetUserInfo failed, userID=%d, err=%v", userID, err)
+		return "", fmt.Errorf("failed to get user info: %w", err)
+	}
+
+	if userInfo == nil || userInfo.SessionKey == "" {
+		return "", fmt.Errorf("user session key is empty")
+	}
+
+	return userInfo.SessionKey, nil
+}
+
+func proxyRAGFlowJSON(ctx context.Context, sessionKey string, method, path string, payload []byte, referer string) (int, []byte, error) {
+	if payload == nil {
+		payload = []byte("{}")
+	}
+
+	req, err := http.NewRequestWithContext(ctx, method, fmt.Sprintf("%s%s", ragflowAPIBase(), path), bytes.NewReader(payload))
+	if err != nil {
+		return 0, nil, fmt.Errorf("failed to create request: %w", err)
+	}
+
+	req.Header.Set("Accept", "application/json")
+	req.Header.Set("Accept-Language", "zh-CN,zh;q=0.9")
+	req.Header.Set("Content-Type", "application/json;charset=UTF-8")
+	req.Header.Set("Connection", "keep-alive")
+	webBase := ragflowWebBase()
+	req.Header.Set("Origin", webBase)
+	if referer == "" {
+		referer = webBase
+	}
+	req.Header.Set("Referer", referer)
+	req.Header.Set("Cookie", fmt.Sprintf("session_key=%s", sessionKey))
+
+	client := &http.Client{Timeout: 10 * time.Second}
+	resp, err := client.Do(req)
+	if err != nil {
+		return 0, nil, fmt.Errorf("failed to call RAGFlow API: %w", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return resp.StatusCode, nil, fmt.Errorf("failed to read response: %w", err)
+	}
+
+	return resp.StatusCode, body, nil
+}
+
+func ragflowAPIBase() string {
+	if api := os.Getenv("RAGFLOW_API_URL"); api != "" {
+		return api
+	}
+	return "https://ynetflow-agent.finmall.com"
+}
+
+func ragflowWebBase() string {
+	if web := os.Getenv("RAGFLOW_WEB_URL"); web != "" {
+		return web
+	}
+	return "https://ynetflow-agent.finmall.com"
+}
+
+func extractKbIDFromPayload(payload []byte) string {
+	var req struct {
+		KbID string `json:"kb_id"`
+	}
+	if err := json.Unmarshal(payload, &req); err != nil {
+		return ""
+	}
+	return req.KbID
 }
 
 // Retrieval .
