@@ -270,6 +270,7 @@ func CreateHiAgent(ctx context.Context, c *app.RequestContext) {
 			Description: req.Description,
 			Platform:    getStringOrDefault(req.Platform, "hiagent"),
 			AgentURL:    req.AgentURL,
+			AgentKey:    req.AgentKey,
 			AgentID:     req.AgentID,
 			AppID:       req.AppID,
 			Icon:        req.Icon,
@@ -419,6 +420,7 @@ func UpdateHiAgent(ctx context.Context, c *app.RequestContext) {
 		Description *string `gorm:"column:description"`
 		Platform    string  `gorm:"column:platform"`
 		AgentURL    string  `gorm:"column:agent_url"`
+		AgentKey    *string `gorm:"column:agent_key"`
 		AgentID     *string `gorm:"column:agent_id"`
 		AppID       *string `gorm:"column:app_id"`
 		Icon        *string `gorm:"column:icon"`
@@ -455,6 +457,7 @@ func UpdateHiAgent(ctx context.Context, c *app.RequestContext) {
 			Description: updatedAgent.Description,
 			Platform:    updatedAgent.Platform,
 			AgentURL:    updatedAgent.AgentURL,
+			AgentKey:    updatedAgent.AgentKey,
 			AgentID:     updatedAgent.AgentID,
 			AppID:       updatedAgent.AppID,
 			Icon:        updatedAgent.Icon,
@@ -633,6 +636,7 @@ func GetHiAgentList(ctx context.Context, c *app.RequestContext) {
 			Description: config.Description,
 			Platform:    config.Platform,
 			AgentURL:    config.AgentURL,
+			AgentKey:    config.AgentKey,
 			AgentID:     config.AgentID,
 			AppID:       config.AppID,
 			Icon:        config.Icon,

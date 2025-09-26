@@ -21,6 +21,7 @@ import { withNodeConfigForm } from '@/node-registries/common/hocs';
 
 import {
   PLATFORM_PATH,
+  AGENT_BINDING_PATH,
   DYNAMIC_INPUTS_PATH,
   TIMEOUT_PATH,
   RETRY_COUNT_PATH,
@@ -28,7 +29,7 @@ import {
 } from './constants';
 import {
   PlatformSelectorField,
-  AgentConfigField,
+  AgentBindingField,
   QueryInputField,
   DynamicInputsField,
   AdvancedSettingsField,
@@ -37,7 +38,7 @@ import {
 export const FormRender = withNodeConfigForm(() => (
   <>
     <PlatformSelectorField name={PLATFORM_PATH} />
-    <AgentConfigField name="inputs" />
+    <AgentBindingField name={AGENT_BINDING_PATH} />
     <QueryInputField name={QUERY_PATH} />
     <DynamicInputsField name={DYNAMIC_INPUTS_PATH} />
     <AdvancedSettingsField

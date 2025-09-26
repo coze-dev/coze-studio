@@ -18,6 +18,10 @@
 export const PLATFORM_PATH = 'inputs.platform';
 export const AGENT_URL_PATH = 'inputs.agent_url';
 export const AGENT_KEY_PATH = 'inputs.agent_key';
+export const AGENT_ID_PATH = 'inputs.agent_id';
+export const AGENT_BINDING_PATH = 'inputs.agent_binding_id';
+export const AGENT_NAME_PATH = 'inputs.agent_name';
+export const AGENT_METADATA_PATH = 'inputs.agent_metadata';
 export const QUERY_PATH = 'inputs.query';
 export const INPUT_PARAMETERS_PATH = 'inputs.inputParameters';
 export const DYNAMIC_INPUTS_PATH = 'inputs.dynamicInputs';
@@ -34,16 +38,17 @@ export const NEW_TIMEOUT_PATH = '$$advanced_decorator$$.timeout';
 export const NEW_RETRY_COUNT_PATH = '$$advanced_decorator$$.retry_count';
 
 export const PLATFORM_OPTIONS = [
-  { value: 'hiagent', label: 'Hiagent', available: true },
+  { value: 'coze', label: 'Coze 智能体', available: true },
+  { value: 'hiagent', label: 'HiAgent 智能体', available: true },
   {
     value: 'dify',
-    label: 'Dify',
+    label: 'Dify 智能体',
     available: false,
     reason: '暂未支持，敬请期待',
   },
   {
-    value: 'coze',
-    label: 'Coze',
+    value: 'bailing',
+    label: '百灵 智能体',
     available: false,
     reason: '暂未支持，敬请期待',
   },
@@ -51,3 +56,5 @@ export const PLATFORM_OPTIONS = [
 
 export const DEFAULT_TIMEOUT = 30_000;
 export const DEFAULT_RETRY_COUNT = 3;
+
+export const DEFAULT_PLATFORM = 'hiagent';

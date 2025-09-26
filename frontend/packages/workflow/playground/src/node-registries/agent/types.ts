@@ -42,6 +42,10 @@ export interface AgentInputs extends AgentConfig, AgentAdvancedConfig {
   query: string;
   dynamicInputs: InputValueVO[];
   inputParameters: InputValueVO[];
+  agent_id?: string;
+  agent_binding_id?: string;
+  agent_name?: string;
+  agent_metadata?: unknown;
 }
 
 export interface AgentFormData extends Omit<NodeDataDTO, 'inputs'> {
@@ -51,5 +55,9 @@ export interface AgentFormData extends Omit<NodeDataDTO, 'inputs'> {
     query: string;
     dynamicInputs: InputValueVO[];
     inputParameters: InputValueVO[];
+    agent_binding_id?: string;
+    agent_id?: string;
+    agent_name?: string;
+    agent_metadata?: unknown;
   };
 }

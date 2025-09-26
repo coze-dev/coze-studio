@@ -839,40 +839,6 @@ const ExternalKnowledgePage: React.FC = () => {
               </Typography.Text>
             </div>
 
-            {/* 调试：跳转链接 */}
-            <div className="mt-[8px] flex items-center gap-2">
-              <Tooltip title={detailLink} trigger="hover">
-                <Typography.Text
-                  className="text-[12px] leading-[16px] coz-fg-quaternary"
-                  style={{ maxWidth: '200px' }}
-                  ellipsis={{ rows: 2, showTooltip: true }}
-                >
-                  {detailLink}
-                </Typography.Text>
-              </Tooltip>
-              <Button
-                size="small"
-                type="tertiary"
-                onClick={event => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  if (navigator.clipboard) {
-                    navigator.clipboard.writeText(detailLink).then(() => {
-                      emitNotification('info', {
-                        message: I18n.t(
-                          'external_knowledge_link_copied',
-                          {},
-                          '链接已复制',
-                        ),
-                      });
-                    });
-                  }
-                }}
-              >
-                {I18n.t('external_knowledge_copy_link', {}, '复制')}
-              </Button>
-            </div>
-
             {/* 统计信息 */}
             <div className="mt-[12px] flex items-center gap-3">
               <Space spacing={8} className="text-[12px] coz-fg-quaternary">

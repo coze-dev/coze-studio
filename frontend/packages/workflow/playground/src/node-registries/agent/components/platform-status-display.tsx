@@ -17,16 +17,19 @@
 import { useWorkflowNode } from '@coze-workflow/base';
 import { Tag } from '@coze-arch/bot-semi';
 
-import { PLATFORM_OPTIONS } from '../constants';
+import { DEFAULT_PLATFORM, PLATFORM_OPTIONS } from '../constants';
 
 export function PlatformStatusDisplay() {
   const node = useWorkflowNode();
   const platformValue = node?.inputs?.platform as
     | (typeof PLATFORM_OPTIONS)[number]['value']
     | undefined;
-  const option =
-    PLATFORM_OPTIONS.find(item => item.value === platformValue) ??
+  const fallback =
+    PLATFORM_OPTIONS.find(item => item.value === DEFAULT_PLATFORM) ??
     PLATFORM_OPTIONS[0];
+
+  const option =
+    PLATFORM_OPTIONS.find(item => item.value === platformValue) ?? fallback;
 
   return (
     <Tag size="small" color={option.available ? 'green' : 'grey'}>

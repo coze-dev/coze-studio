@@ -22,8 +22,6 @@ import { Field } from '@/components/node-render/node-render-new/fields';
 
 import { InputParameters } from '../common/components';
 import {
-  AgentStatusIndicator,
-  ConfigSummary,
   PlatformStatusDisplay,
 } from './components';
 
@@ -35,8 +33,18 @@ const extractQuery = (query: unknown) => {
     return query;
   }
   if (query && typeof query === 'object') {
-    const value = get(query, 'value.content');
-    return typeof value === 'string' ? value : '';
+    const directContent = get(query, 'content');
+    if (typeof directContent === 'string') {
+      return directContent;
+    }
+    const nestedValue = get(query, 'value');
+    if (nestedValue) {
+      return extractQuery(nestedValue);
+    }
+    const literalContent = get(query, 'value.content');
+    if (typeof literalContent === 'string') {
+      return literalContent;
+    }
   }
   return '';
 };
@@ -59,12 +67,6 @@ export function AgentContent() {
     <>
       <Field label={I18n.t('平台')}>
         <PlatformStatusDisplay />
-      </Field>
-      <Field label={I18n.t('配置状态')}>
-        <AgentStatusIndicator />
-      </Field>
-      <Field label={I18n.t('配置摘要')}>
-        <ConfigSummary />
       </Field>
       <Field label={I18n.t('查询内容')}>
         <QueryPreview />

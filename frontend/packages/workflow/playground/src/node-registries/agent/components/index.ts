@@ -15,10 +15,10 @@
  */
 
 export { PlatformSelectorField } from './platform-selector-field';
+export { AgentBindingField } from './agent-binding-field';
 export { AgentConfigField } from './agent-config-field';
 export { QueryInputField } from './query-input-field';
 export { DynamicInputsField } from './dynamic-inputs-field';
 export { AdvancedSettingsField } from './advanced-settings-field';
 export { PlatformStatusDisplay } from './platform-status-display';
 export { ConfigSummary } from './config-summary';
-export { AgentStatusIndicator } from './agent-status-indicator';

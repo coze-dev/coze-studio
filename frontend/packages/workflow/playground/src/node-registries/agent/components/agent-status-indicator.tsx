@@ -24,23 +24,22 @@ const extractQuery = (query: unknown) => {
     return query;
   }
   if (query && typeof query === 'object') {
-    const value = get(query, 'value.content');
-    return typeof value === 'string' ? value : '';
+    const directContent = get(query, 'content');
+    if (typeof directContent === 'string') {
+      return directContent;
+    }
+    const nestedValue = get(query, 'value');
+    if (nestedValue) {
+      return extractQuery(nestedValue);
+    }
+    const literalContent = get(query, 'value.content');
+    if (typeof literalContent === 'string') {
+      return literalContent;
+    }
   }
   return '';
 };
 
 export function AgentStatusIndicator() {
-  const node = useWorkflowNode();
-  const inputs = node?.inputs ?? {};
-  const agentUrl = typeof inputs.agent_url === 'string' ? inputs.agent_url : '';
-  const query = extractQuery(inputs.query);
-
-  const ready = Boolean(agentUrl.trim() && query.trim().length > 0);
-
-  return (
-    <Tag size="small" color={ready ? 'green' : 'grey'}>
-      {ready ? I18n.t('配置完成') : I18n.t('待配置')}
-    </Tag>
-  );
+  return null;
 }

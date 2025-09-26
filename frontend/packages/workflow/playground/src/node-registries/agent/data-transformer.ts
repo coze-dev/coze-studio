@@ -29,13 +29,11 @@ import {
 
 import { type AgentFormData, type AgentPlatformValue } from './types';
 import {
+  DEFAULT_PLATFORM,
   DEFAULT_RETRY_COUNT,
   DEFAULT_TIMEOUT,
   PLATFORM_OPTIONS,
 } from './constants';
-
-const DEFAULT_PLATFORM: AgentPlatformValue =
-  PLATFORM_OPTIONS.find(option => option.available)?.value ?? 'hiagent';
 
 const EMPTY_NODE_DATA: NodeDataDTO = {
   inputs: {},
@@ -73,6 +71,15 @@ const buildInputs = (
     typeof rawInputs.agent_url === 'string' ? rawInputs.agent_url : '';
   const agentKey =
     typeof rawInputs.agent_key === 'string' ? rawInputs.agent_key : '';
+  const agentBindingId =
+    typeof rawInputs.agent_binding_id === 'string'
+      ? rawInputs.agent_binding_id
+      : undefined;
+  const agentId =
+    typeof rawInputs.agent_id === 'string' ? rawInputs.agent_id : undefined;
+  const agentName =
+    typeof rawInputs.agent_name === 'string' ? rawInputs.agent_name : undefined;
+  const agentMetadata = rawInputs.agent_metadata ?? undefined;
   const timeout =
     typeof rawInputs.timeout === 'number' ? rawInputs.timeout : DEFAULT_TIMEOUT;
   const retryCount =
@@ -84,6 +91,10 @@ const buildInputs = (
     platform,
     agent_url: agentUrl,
     agent_key: agentKey,
+    agent_binding_id: agentBindingId,
+    agent_id: agentId,
+    agent_name: agentName,
+    agent_metadata: agentMetadata,
     query: extractQueryLiteral(rawInputs.query),
     timeout,
     retry_count: retryCount,
@@ -191,6 +202,10 @@ export const transformOnInit = (
       ...normalizedInputs,
       inputParameters: [queryParam],
       dynamicInputs,
+      agent_binding_id: normalizedInputs.agent_binding_id,
+      agent_id: normalizedInputs.agent_id,
+      agent_name: normalizedInputs.agent_name,
+      agent_metadata: normalizedInputs.agent_metadata,
     },
     nodeMeta,
     outputs,
@@ -248,13 +263,14 @@ export const transformOnSubmit = (
     ...otherInputs,
     platform,
     agent_url: trimmedUrl,
+    agent_key: trimmedKey,
     dynamicInputs: dynamicInputsDTO,
     timeout: Number.isFinite(timeout) ? timeout : DEFAULT_TIMEOUT,
     retry_count: Number.isFinite(retry_count)
       ? retry_count
       : DEFAULT_RETRY_COUNT,
     query: queryDTO,
-    inputParameters: dynamicInputsDTO,
+    inputParameters: inputParametersDTO,
   };
 
   if (trimmedKey) {

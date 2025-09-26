@@ -142,10 +142,17 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	sources map[string]*schema2.SourceInfo,
 	supportedModals map[modelmgr.Modal]bool,
 ) (*schema.Message, error) {
-	isChatFlow := execute.GetExeCtx(ctx).ExeCfg.WorkflowMode == workflow.WorkflowMode_ChatFlow
-	userMessage := execute.GetExeCtx(ctx).ExeCfg.UserMessage
+	exeCtx := execute.GetExeCtx(ctx)
+	var (
+		isChatFlow  bool
+		userMessage *schema.Message
+	)
+	if exeCtx != nil {
+		isChatFlow = exeCtx.ExeCfg.WorkflowMode == workflow.WorkflowMode_ChatFlow
+		userMessage = exeCtx.ExeCfg.UserMessage
+	}
 
-	if !isChatFlow {
+	if !isChatFlow || userMessage == nil {
 		if !pl.hasMultiModal || len(supportedModals) == 0 {
 			var opts []nodes.RenderOption
 			if len(pl.reservedKeys) > 0 {
@@ -163,7 +170,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	} else {
 		if (!pl.hasMultiModal || len(supportedModals) == 0) &&
 			(len(pl.associateUserInputFields) == 0 ||
-				(len(pl.associateUserInputFields) > 0 && userMessage.MultiContent == nil)) {
+				(len(pl.associateUserInputFields) > 0 && (userMessage == nil || userMessage.MultiContent == nil))) {
 			var opts []nodes.RenderOption
 			if len(pl.reservedKeys) > 0 {
 				opts = append(opts, nodes.WithReservedKey(pl.reservedKeys...))
@@ -195,11 +202,23 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 			continue
 		}
 
-		if _, ok := pl.associateUserInputFields[part.part.Value]; ok && userMessage != nil && isChatFlow {
-			for _, p := range userMessage.MultiContent {
-				multiParts = append(multiParts, p)
+		if _, ok := pl.associateUserInputFields[part.part.Value]; ok {
+			if isChatFlow && userMessage != nil {
+				if len(userMessage.MultiContent) > 0 {
+					multiParts = append(multiParts, userMessage.MultiContent...)
+					continue
+				}
+				if userMessage.Content != "" {
+					multiParts = append(multiParts, schema.ChatMessagePart{
+						Type: schema.ChatMessagePartTypeText,
+						Text: userMessage.Content,
+					})
+					continue
+				}
+				// user message is empty, fall back to template rendering below
+			} else if userMessage == nil && len(pl.associateUserInputFields) > 0 {
+				logs.CtxWarnf(ctx, "[LLM][Prompt] missing user message for associated input field: %s", part.part.Value)
 			}
-			continue
 		}
 
 		skipped, invalid := part.part.Skipped(sources)

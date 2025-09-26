@@ -14,33 +14,6 @@
  * limitations under the License.
  */
 
-import { useWorkflowNode } from '@coze-workflow/base';
-import { I18n } from '@coze-arch/i18n';
-
-const truncateUrl = (value: string | undefined) => {
-  if (!value) {
-    return I18n.t('未配置');
-  }
-  if (value.length <= 36) {
-    return value;
-  }
-  return `${value.slice(0, 32)}...`;
-};
-
 export function ConfigSummary() {
-  const node = useWorkflowNode();
-  const inputs = node?.inputs ?? {};
-  const agentUrl =
-    typeof inputs.agent_url === 'string' ? inputs.agent_url : undefined;
-  const agentKey =
-    typeof inputs.agent_key === 'string' ? inputs.agent_key : undefined;
-
-  return (
-    <div className="flex flex-col gap-[4px] text-xs text-[#4B5563]">
-      <span>
-        {I18n.t('接口地址')}: {truncateUrl(agentUrl)}
-      </span>
-      <span>API Key: {agentKey ? I18n.t('已配置') : I18n.t('未配置')}</span>
-    </div>
-  );
+  return null;
 }
