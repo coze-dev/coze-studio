@@ -741,9 +741,6 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 		spaceID        int64
 		executeID      int64
 
-		outputCount int32
-		inputCount  int32
-
 		intermediateMessage *message.Message
 
 		needRegeneratedMessage = true
@@ -818,12 +815,16 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 					BotID:          strconv.FormatInt(bizID, 10),
 					Status:         vo.Completed,
 					ExecuteID:      strconv.FormatInt(executeID, 10),
-					Usage: &vo.Usage{
-						InputTokens:  ptr.Of(inputCount),
-						OutputTokens: ptr.Of(outputCount),
-						TokenCount:   ptr.Of(outputCount + inputCount),
-					},
 				}
+
+				if msg.StateMessage.Usage != nil {
+					chatDoneEvent.Usage = &vo.Usage{
+						InputTokens:  &msg.StateMessage.Usage.InputTokens,
+						OutputTokens: &msg.StateMessage.Usage.OutputTokens,
+						TokenCount:   ptr.Of(msg.StateMessage.Usage.OutputTokens + msg.StateMessage.Usage.OutputTokens),
+					}
+				}
+
 				data, err := sonic.MarshalString(chatDoneEvent)
 				if err != nil {
 					return nil, err

@@ -38,9 +38,9 @@ const (
 )
 
 type Usage struct {
-	TokenCount   *int32 `form:"token_count" json:"token_count,omitempty"`
-	OutputTokens *int32 `form:"output_count" json:"output_count,omitempty"`
-	InputTokens  *int32 `form:"input_count" json:"input_count,omitempty"`
+	TokenCount   *int64 `form:"token_count" json:"token_count,omitempty"`
+	OutputTokens *int64 `form:"output_count" json:"output_count,omitempty"`
+	InputTokens  *int64 `form:"input_count" json:"input_count,omitempty"`
 }
 
 type Status string
