@@ -346,6 +346,34 @@ func DeleteRAGFlowDataset(ctx context.Context, c *app.RequestContext) {
 	c.Data(statusCode, "application/json", respBody)
 }
 
+// GetRAGFlowSessionKey returns current user's session key for RAGFlow link stitching.
+func GetRAGFlowSessionKey(ctx context.Context, c *app.RequestContext) {
+	userIDPtr := ctxutil.GetUIDFromCtx(ctx)
+	if userIDPtr == nil {
+		c.JSON(consts.StatusUnauthorized, map[string]interface{}{
+			"code":    401,
+			"message": "Unauthorized",
+		})
+		return
+	}
+
+	sessionKey, err := getUserSessionKey(ctx, ptr.From(userIDPtr))
+	if err != nil {
+		c.JSON(consts.StatusInternalServerError, map[string]interface{}{
+			"code":    500,
+			"message": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(consts.StatusOK, map[string]interface{}{
+		"code": 0,
+		"data": map[string]string{
+			"session_key": sessionKey,
+		},
+	})
+}
+
 // callRAGFlowDatasetsAPI 调用RAGFlow的知识库列表API，使用用户在系统中保存的session key
 func callRAGFlowDatasetsAPI(ctx context.Context, userID int64) (*external_knowledge.GetRAGFlowDatasetsResponse, error) {
 	sessionKey, err := getUserSessionKey(ctx, userID)

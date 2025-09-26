@@ -123,4 +123,5 @@ func manualRegisterExternalKnowledge(r *server.Hertz) {
 	ragflowGroup.POST("/datasets/create", external_knowledge_handler.CreateRAGFlowDataset)
 	ragflowGroup.POST("/datasets/update", external_knowledge_handler.UpdateRAGFlowDataset)
 	ragflowGroup.POST("/datasets/delete", external_knowledge_handler.DeleteRAGFlowDataset)
+	ragflowGroup.GET("/session-key", external_knowledge_handler.GetRAGFlowSessionKey)
 }

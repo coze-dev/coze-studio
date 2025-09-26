@@ -124,6 +124,7 @@ const ExternalKnowledgePage: React.FC = () => {
   const [editingDataset, setEditingDataset] = useState<RAGFlowKB | null>(null);
   const [editDatasetName, setEditDatasetName] = useState('');
   const [updatingDataset, setUpdatingDataset] = useState(false);
+  const [sessionKey, setSessionKey] = useState<string | null>(null);
 
   const coerceNumber = (value: unknown, defaultValue = 0): number => {
     if (typeof value === 'number' && !Number.isNaN(value)) {
@@ -221,10 +222,27 @@ const ExternalKnowledgePage: React.FC = () => {
     };
   };
 
+  const withSessionKey = (url: string): string => {
+    const key = sessionKey || getSessionKeyFallback();
+    if (!key) {
+      return url;
+    }
+    const separator = url.includes('?') ? '&' : '?';
+    return `${url}${separator}session_key=${encodeURIComponent(key)}`;
+  };
+
+  const getSessionKeyFallback = (): string | null => {
+    if (typeof document === 'undefined') {
+      return null;
+    }
+    const match = document.cookie.match(/(?:^|;\s*)session_key=([^;]+)/);
+    return match ? decodeURIComponent(match[1]) : null;
+  };
+
   // 跳转到RAGFlow知识库详情页面
   const navigateToDataset = (datasetId: string) => {
     const { webURL } = getRAGFlowConfig();
-    const targetUrl = `${webURL}/dataset/dataset/${datasetId}`;
+    const targetUrl = withSessionKey(`${webURL}/dataset/dataset/${datasetId}`);
 
     try {
       // 方法1: 直接在新标签页中打开
@@ -562,6 +580,28 @@ const ExternalKnowledgePage: React.FC = () => {
   }, [fetchDatasets]);
 
   useEffect(() => {
+    fetch('/api/external-knowledge/ragflow/session-key', {
+      method: 'GET',
+      credentials: 'include',
+    })
+      .then(async response => {
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(result => {
+        const key = result?.data?.session_key;
+        if (typeof key === 'string' && key) {
+          setSessionKey(key);
+        }
+      })
+      .catch(error => {
+        console.warn('Failed to fetch session key:', error);
+      });
+  }, []);
+
+  useEffect(() => {
     if (!showCreateModal && refreshAfterCreateRef.current) {
       refreshAfterCreateRef.current = false;
       fetchDatasets();
@@ -664,6 +704,8 @@ const ExternalKnowledgePage: React.FC = () => {
 
   const renderDatasetCard = (dataset: RAGFlowKB) => {
     const isHovered = hoveredDatasetId === dataset.id;
+    const { webURL } = getRAGFlowConfig();
+    const detailLink = withSessionKey(`${webURL}/dataset/dataset/${dataset.id}`);
 
     return (
       <div
@@ -795,6 +837,40 @@ const ExternalKnowledgePage: React.FC = () => {
                 {dataset.description ||
                   I18n.t('external_knowledge_no_description', {}, '暂无描述')}
               </Typography.Text>
+            </div>
+
+            {/* 调试：跳转链接 */}
+            <div className="mt-[8px] flex items-center gap-2">
+              <Tooltip title={detailLink} trigger="hover">
+                <Typography.Text
+                  className="text-[12px] leading-[16px] coz-fg-quaternary"
+                  style={{ maxWidth: '200px' }}
+                  ellipsis={{ rows: 2, showTooltip: true }}
+                >
+                  {detailLink}
+                </Typography.Text>
+              </Tooltip>
+              <Button
+                size="small"
+                type="tertiary"
+                onClick={event => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  if (navigator.clipboard) {
+                    navigator.clipboard.writeText(detailLink).then(() => {
+                      emitNotification('info', {
+                        message: I18n.t(
+                          'external_knowledge_link_copied',
+                          {},
+                          '链接已复制',
+                        ),
+                      });
+                    });
+                  }
+                }}
+              >
+                {I18n.t('external_knowledge_copy_link', {}, '复制')}
+              </Button>
             </div>
 
             {/* 统计信息 */}
