@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"runtime/debug"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -29,6 +30,7 @@ import (
 	xmaps "golang.org/x/exp/maps"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	base "github.com/coze-dev/coze-studio/backend/api/model/base"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
@@ -191,11 +193,11 @@ func (w *ApplicationService) NodePanelSearch(ctx context.Context, req *workflow.
 			// 获取节点名称和描述（支持国际化）
 			nodeName := ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSName, nodeMeta.Name)
 			nodeDesc := ternary.IFElse(i18n.GetLocale(ctx) == i18n.LocaleEN, nodeMeta.EnUSDescription, nodeMeta.Desc)
-			
+
 			// 搜索关键词匹配（名称、描述）
 			if strings.Contains(strings.ToLower(nodeName), strings.ToLower(keyword)) ||
 				strings.Contains(strings.ToLower(nodeDesc), strings.ToLower(keyword)) {
-				
+
 				// 创建节点模板
 				tpl := &workflow.NodeTemplate{
 					ID:           fmt.Sprintf("%d", nodeMeta.ID),
@@ -666,17 +668,24 @@ func (w *ApplicationService) GetProcess(ctx context.Context, req *workflow.GetWo
 		return nil, err
 	}
 
+	executeIDStr := strings.TrimSpace(req.GetExecuteID())
+	if executeIDStr == "" {
+		return nil, fmt.Errorf("execute_id should not be empty")
+	}
+
+	subExecuteIDStr := strings.TrimSpace(req.GetSubExecuteID())
+
 	var wfExeEntity *entity.WorkflowExecution
-	if req.SubExecuteID == nil {
+	if subExecuteIDStr == "" {
 		wfExeEntity = &entity.WorkflowExecution{
-			ID:         mustParseInt64(req.GetExecuteID()),
+			ID:         mustParseInt64(executeIDStr),
 			WorkflowID: mustParseInt64(req.GetWorkflowID()),
 		}
 	} else {
 		wfExeEntity = &entity.WorkflowExecution{
-			ID:              mustParseInt64(req.GetSubExecuteID()),
+			ID:              mustParseInt64(subExecuteIDStr),
 			WorkflowID:      mustParseInt64(req.GetWorkflowID()),
-			RootExecutionID: mustParseInt64(req.GetExecuteID()),
+			RootExecutionID: mustParseInt64(executeIDStr),
 		}
 	}
 
@@ -941,6 +950,469 @@ func (w *ApplicationService) GetNodeExecuteHistory(ctx context.Context, req *wor
 		return &workflow.GetNodeExecuteHistoryResponse{
 			Data: result,
 		}, nil
+	}
+}
+
+func (w *ApplicationService) ListRootSpans(ctx context.Context, req *workflow.ListRootSpansRequest) (_ *workflow.ListRootSpansResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	if req == nil {
+		return nil, fmt.Errorf("request must not be nil")
+	}
+
+	workflowID := mustParseInt64(req.GetWorkflowID())
+	wfEntity, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+		ID:       workflowID,
+		QType:    workflowModel.FromDraft,
+		MetaOnly: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	wfBasic := wfEntity.GetBasic()
+	if wfBasic == nil {
+		return nil, fmt.Errorf("failed to load basic workflow info for id %d", workflowID)
+	}
+
+	if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), wfBasic.SpaceID); err != nil {
+		return nil, err
+	}
+
+	policy := &workflowDomain.ListWorkflowExecutionPolicy{
+		WorkflowID:      workflowID,
+		StartAtMilli:    req.GetStartAt(),
+		EndAtMilli:      req.GetEndAt(),
+		DescByStartTime: req.GetDescByStartTime(),
+	}
+
+	if req.IsSetLimit() {
+		policy.Limit = int(req.GetLimit())
+	}
+	if policy.Limit <= 0 {
+		policy.Limit = workflowDomain.DefaultListWorkflowExecutionLimit
+	}
+	if req.IsSetOffset() {
+		policy.Offset = int(req.GetOffset())
+	}
+	if policy.Offset < 0 {
+		policy.Offset = 0
+	}
+	if req.IsSetInput() {
+		policy.InputLike = req.GetInput()
+	}
+	if req.IsSetStatus() {
+		policy.Statuses = append(policy.Statuses, mapSpanStatusToWorkflowStatuses(req.GetStatus())...)
+	}
+	if req.IsSetExecuteMode() {
+		if mode, ok := mapExecuteModeToDomain(req.GetExecuteMode()); ok {
+			policy.Modes = append(policy.Modes, mode)
+		}
+	}
+
+	inputFilter := strings.TrimSpace(policy.InputLike)
+	origLimit := policy.Limit
+	origOffset := policy.Offset
+
+	if inputFilter != "" {
+		policy.Offset = 0
+		policy.Limit = origLimit + origOffset
+	}
+
+	executions, err := GetWorkflowDomainSVC().ListRootWorkflowExecutions(ctx, policy)
+	if err != nil {
+		return nil, err
+	}
+
+	if inputFilter != "" {
+		filtered := make([]*entity.WorkflowExecution, 0, len(executions))
+		for _, exe := range executions {
+			if strings.Contains(exe.LogID, inputFilter) {
+				filtered = append(filtered, exe)
+				continue
+			}
+			if exe.Input != nil && strings.Contains(*exe.Input, inputFilter) {
+				filtered = append(filtered, exe)
+			}
+		}
+
+		if origOffset >= len(filtered) {
+			executions = []*entity.WorkflowExecution{}
+		} else {
+			executions = filtered[origOffset:]
+			if len(executions) > origLimit {
+				executions = executions[:origLimit]
+			}
+		}
+	}
+
+	spans := make([]*workflow.Span, 0, len(executions))
+	for _, exe := range executions {
+		spans = append(spans, buildWorkflowSpan(exe, wfBasic))
+	}
+
+	return &workflow.ListRootSpansResponse{
+		Spans:    spans,
+		BaseResp: base.NewBaseResp(),
+	}, nil
+}
+
+func (w *ApplicationService) GetTraceSDK(ctx context.Context, req *workflow.GetTraceSDKRequest) (_ *workflow.GetTraceSDKResponse, err error) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	if req == nil {
+		return nil, fmt.Errorf("request must not be nil")
+	}
+
+	var (
+		wfExe *entity.WorkflowExecution
+		ok    bool
+	)
+
+	logID := strings.TrimSpace(req.GetLogID())
+	startAt := req.GetStartAt()
+	endAt := req.GetEndAt()
+
+	switch {
+	case logID != "":
+		wfExe, ok, err = GetWorkflowDomainSVC().GetRootWorkflowExecutionByLogID(ctx, logID, startAt, endAt)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			return &workflow.GetTraceSDKResponse{
+				Data:     &workflow.TraceFrontend{Spans: make([]*workflow.TraceFrontendSpan, 0)},
+				BaseResp: base.NewBaseResp(),
+			}, nil
+		}
+	case req.IsSetExecuteID() && req.GetExecuteID() > 0:
+		wfExe = &entity.WorkflowExecution{ID: req.GetExecuteID()}
+	default:
+		return nil, fmt.Errorf("either log_id or execute_id must be provided")
+	}
+
+	wfExe, err = GetWorkflowDomainSVC().GetExecution(ctx, wfExe, true)
+	if err != nil {
+		return nil, err
+	}
+
+	if wfExe == nil {
+		return &workflow.GetTraceSDKResponse{
+			Data:     &workflow.TraceFrontend{Spans: make([]*workflow.TraceFrontendSpan, 0)},
+			BaseResp: base.NewBaseResp(),
+		}, nil
+	}
+
+	var wfBasic *entity.WorkflowBasic
+	if wfExe.WorkflowID > 0 {
+		wf, getErr := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+			ID:       wfExe.WorkflowID,
+			QType:    workflowModel.FromDraft,
+			MetaOnly: true,
+		})
+		if getErr != nil {
+			return nil, getErr
+		}
+		wfBasic = wf.GetBasic()
+		if wfBasic == nil {
+			return nil, fmt.Errorf("failed to load workflow basic info for id %d", wfExe.WorkflowID)
+		}
+
+		if err := checkUserSpace(ctx, ctxutil.MustGetUIDFromCtx(ctx), wfBasic.SpaceID); err != nil {
+			return nil, err
+		}
+	}
+
+	traceData := buildTraceFrontendFromExecution(wfExe, wfBasic)
+
+	return &workflow.GetTraceSDKResponse{
+		Data:     traceData,
+		BaseResp: base.NewBaseResp(),
+	}, nil
+}
+
+const (
+	maxTracePayloadLength = 8192
+	maxInt32Value         = int64(1<<31 - 1)
+)
+
+func buildTraceFrontendFromExecution(exe *entity.WorkflowExecution, wfBasic *entity.WorkflowBasic) *workflow.TraceFrontend {
+	if exe == nil {
+		return &workflow.TraceFrontend{Spans: make([]*workflow.TraceFrontendSpan, 0)}
+	}
+
+	rootSpan := convertWorkflowExecutionToTraceSpan(exe, wfBasic)
+	spans := []*workflow.TraceFrontendSpan{rootSpan}
+
+	if len(exe.NodeExecutions) == 0 {
+		return &workflow.TraceFrontend{
+			Spans:  spans,
+			Header: buildTraceHeaderFromExecution(exe, rootSpan),
+		}
+	}
+
+	nodeExecs := append([]*entity.NodeExecution(nil), exe.NodeExecutions...)
+	sort.SliceStable(nodeExecs, func(i, j int) bool {
+		if nodeExecs[i] == nil || nodeExecs[j] == nil {
+			return i < j
+		}
+		if !nodeExecs[i].CreatedAt.Equal(nodeExecs[j].CreatedAt) {
+			return nodeExecs[i].CreatedAt.Before(nodeExecs[j].CreatedAt)
+		}
+		return nodeExecs[i].ID < nodeExecs[j].ID
+	})
+
+	nodeID2Span := make(map[string]*workflow.TraceFrontendSpan, len(nodeExecs))
+	pendingParents := make(map[*workflow.TraceFrontendSpan]string)
+
+	for _, nodeExe := range nodeExecs {
+		if nodeExe == nil {
+			continue
+		}
+
+		nodeSpan := convertNodeExecutionToTraceSpan(nodeExe, rootSpan.TraceID, rootSpan.LogID, exe.WorkflowID)
+		if nodeExe.NodeID != "" {
+			nodeID2Span[nodeExe.NodeID] = nodeSpan
+		}
+
+		if nodeExe.ParentNodeID != nil {
+			parentNodeID := strings.TrimSpace(*nodeExe.ParentNodeID)
+			if parentNodeID != "" {
+				pendingParents[nodeSpan] = parentNodeID
+			} else {
+				nodeSpan.ParentID = rootSpan.SpanID
+			}
+		} else {
+			nodeSpan.ParentID = rootSpan.SpanID
+		}
+
+		spans = append(spans, nodeSpan)
+	}
+
+	for span, parentNodeID := range pendingParents {
+		if parent, ok := nodeID2Span[parentNodeID]; ok && parent != nil && parent.SpanID != "" {
+			span.ParentID = parent.SpanID
+			continue
+		}
+		span.ParentID = rootSpan.SpanID
+	}
+
+	return &workflow.TraceFrontend{
+		Spans:  spans,
+		Header: buildTraceHeaderFromExecution(exe, rootSpan),
+	}
+}
+
+func convertWorkflowExecutionToTraceSpan(exe *entity.WorkflowExecution, wfBasic *entity.WorkflowBasic) *workflow.TraceFrontendSpan {
+	baseSpan := buildWorkflowSpan(exe, wfBasic)
+	traceSpan := &workflow.TraceFrontendSpan{
+		TraceID:    baseSpan.TraceID,
+		LogID:      baseSpan.LogID,
+		SpanID:     baseSpan.SpanID,
+		Type:       baseSpan.Type,
+		Name:       baseSpan.Name,
+		AliasName:  baseSpan.Name,
+		ParentID:   baseSpan.ParentID,
+		Duration:   baseSpan.Duration,
+		StartTime:  baseSpan.StartTime,
+		StatusCode: baseSpan.StatusCode,
+		Tags:       baseSpan.Tags,
+		Input:      buildSpanInputOutput(exe.Input),
+		Output:     buildSpanInputOutput(exe.Output),
+	}
+	if traceSpan.ParentID == "" {
+		traceSpan.ParentID = "0"
+	}
+	return traceSpan
+}
+
+func convertNodeExecutionToTraceSpan(nodeExe *entity.NodeExecution, traceID, logID string, workflowID int64) *workflow.TraceFrontendSpan {
+	span := &workflow.TraceFrontendSpan{
+		TraceID:    traceID,
+		LogID:      logID,
+		SpanID:     strconv.FormatInt(nodeExe.ID, 10),
+		Type:       mapNodeTypeToTraceType(nodeExe.NodeType),
+		Name:       strings.TrimSpace(nodeExe.NodeName),
+		AliasName:  strings.TrimSpace(nodeExe.NodeName),
+		Duration:   resolveDurationMillis(nodeExe.CreatedAt, nodeExe.Duration, nodeExe.UpdatedAt),
+		StartTime:  nodeExe.CreatedAt.UnixMilli(),
+		StatusCode: mapNodeStatusToSpanCode(nodeExe.Status),
+		Input:      buildSpanInputOutput(nodeExe.Input),
+		Output:     buildSpanInputOutput(nodeExe.Output),
+	}
+
+	if span.Name == "" {
+		if meta := entity.NodeMetaByNodeType(nodeExe.NodeType); meta != nil {
+			if display := strings.TrimSpace(meta.Name); display != "" {
+				span.Name = display
+				span.AliasName = display
+			}
+		}
+	}
+	if span.Name == "" {
+		span.Name = string(nodeExe.NodeType)
+		span.AliasName = span.Name
+	}
+
+	if nodeExe.NodeType == entity.NodeTypeEntry {
+		span.IsEntry = ptr.Of(true)
+	}
+	if span.StatusCode != 0 {
+		span.IsKeySpan = ptr.Of(true)
+	}
+
+	tags := make([]*workflow.TraceTag, 0, 16)
+	tags = appendTag(tags, newStringTag("workflow_node_id", nodeExe.NodeID))
+	tags = appendTag(tags, newStringTag("node_type", string(nodeExe.NodeType)))
+	tags = appendTag(tags, newLongTag("execute_id", nodeExe.ExecuteID))
+	tags = appendTag(tags, newStringTag("workflow_id", strconv.FormatInt(workflowID, 10)))
+	tags = appendTag(tags, newLongTag("duration_ms", span.Duration))
+	tags = appendTag(tags, newLongTag("start_time", span.StartTime))
+	if nodeExe.Index > 0 {
+		tags = appendTag(tags, newLongTag("batch_index", int64(nodeExe.Index)))
+	}
+	if nodeExe.ParentNodeID != nil {
+		tags = appendTag(tags, newStringTag("parent_node_id", *nodeExe.ParentNodeID))
+	}
+	if nodeExe.TokenInfo != nil {
+		tags = appendTag(tags, newLongTag("input_tokens", nodeExe.TokenInfo.InputTokens))
+		tags = appendTag(tags, newLongTag("output_tokens", nodeExe.TokenInfo.OutputTokens))
+		tags = appendTag(tags, newLongTag("tokens", nodeExe.TokenInfo.InputTokens+nodeExe.TokenInfo.OutputTokens))
+	}
+	if nodeExe.ErrorInfo != nil {
+		tags = appendTag(tags, newStringTag("error_info", *nodeExe.ErrorInfo))
+	}
+	if nodeExe.ErrorLevel != nil {
+		tags = appendTag(tags, newStringTag("error_level", *nodeExe.ErrorLevel))
+	}
+	if nodeExe.SubWorkflowExecution != nil {
+		tags = appendTag(tags, newLongTag("sub_execute_id", nodeExe.SubWorkflowExecution.ID))
+	}
+	if nodeExe.RawOutput != nil {
+		tags = appendTag(tags, newStringTag("raw_output", truncateTracePayload(*nodeExe.RawOutput)))
+	}
+
+	span.Tags = tags
+	return span
+}
+
+func buildTraceHeaderFromExecution(exe *entity.WorkflowExecution, rootSpan *workflow.TraceFrontendSpan) *workflow.TraceHeader {
+	if rootSpan == nil {
+		return nil
+	}
+
+	header := workflow.NewTraceHeader()
+	header.Duration = ptr.Of(rootSpan.Duration)
+	header.StatusCode = ptr.Of(rootSpan.StatusCode)
+	header.StartTime = ptr.Of(rootSpan.StartTime)
+	if exe != nil && exe.TokenInfo != nil {
+		totalTokens := exe.TokenInfo.InputTokens + exe.TokenInfo.OutputTokens
+		if totalTokens > 0 {
+			if totalTokens > maxInt32Value {
+				totalTokens = maxInt32Value
+			}
+			header.Tokens = ptr.Of(int32(totalTokens))
+		}
+	}
+	return header
+}
+
+func buildSpanInputOutput(raw *string) *workflow.SpanInputOutput {
+	if raw == nil {
+		return nil
+	}
+	trimmed := strings.TrimSpace(*raw)
+	if trimmed == "" {
+		return nil
+	}
+	content := truncateTracePayload(trimmed)
+	return &workflow.SpanInputOutput{
+		Type:    workflow.InputOutputTypePtr(workflow.InputOutputType_TEXT),
+		Content: ptr.Of(content),
+	}
+}
+
+func truncateTracePayload(s string) string {
+	runes := []rune(s)
+	if len(runes) <= maxTracePayloadLength {
+		return s
+	}
+	if maxTracePayloadLength <= 3 {
+		return string(runes[:maxTracePayloadLength])
+	}
+	return string(runes[:maxTracePayloadLength-3]) + "..."
+}
+
+func resolveDurationMillis(createdAt time.Time, duration time.Duration, updatedAt *time.Time) int64 {
+	calc := duration
+	if calc <= 0 && updatedAt != nil {
+		calc = updatedAt.Sub(createdAt)
+	}
+	if calc < 0 {
+		calc = 0
+	}
+	return calc.Milliseconds()
+}
+
+func mapNodeStatusToSpanCode(status entity.NodeExecuteStatus) int32 {
+	switch status {
+	case entity.NodeSuccess:
+		return 0
+	case entity.NodeRunning:
+		return 2
+	default:
+		return 1
+	}
+}
+
+func mapNodeTypeToTraceType(nodeType entity.NodeType) string {
+	switch nodeType {
+	case entity.NodeTypeEntry:
+		return "WorkflowStart"
+	case entity.NodeTypeExit:
+		return "WorkflowEnd"
+	}
+
+	nt := strings.TrimSpace(string(nodeType))
+	if nt == "" {
+		return "Workflow"
+	}
+
+	switch {
+	case strings.Contains(nt, "LLM"):
+		return "WorkflowLLMCall"
+	case strings.Contains(nt, "Plugin") || strings.Contains(nt, "Mcp"):
+		return "WorkflowPluginTool"
+	case strings.Contains(nt, "Knowledge"):
+		return "WorkflowKnowledge"
+	case strings.Contains(nt, "Code") || strings.Contains(nt, "Lambda"):
+		return "WorkflowCode"
+	case strings.Contains(nt, "Batch"):
+		return "WorkflowPluginToolBatch"
+	case strings.Contains(nt, "Condition") || strings.Contains(nt, "Selector") || strings.Contains(nt, "Switch") || strings.Contains(nt, "Loop") || strings.Contains(nt, "Continue") || strings.Contains(nt, "Break"):
+		return "WorkflowCondition"
+	case strings.Contains(nt, "Message") || strings.Contains(nt, "Conversation") || strings.Contains(nt, "Input") || strings.Contains(nt, "Output") || strings.Contains(nt, "Card"):
+		return "WorkflowMessage"
+	case strings.Contains(nt, "Workflow"):
+		return "Workflow"
+	default:
+		return "Workflow"
 	}
 }
 
@@ -3205,11 +3677,16 @@ func (w *ApplicationService) GetHistorySchema(ctx context.Context, req *workflow
 	}
 
 	workflowID := mustParseInt64(req.GetWorkflowID())
-	executeID := mustParseInt64(req.GetExecuteID())
+
+	executeIDStr := strings.TrimSpace(req.GetExecuteID())
+	if executeIDStr == "" {
+		return nil, fmt.Errorf("execute_id should not be empty")
+	}
+	executeID := mustParseInt64(executeIDStr)
 
 	var subExecuteID *int64
-	if req.IsSetSubExecuteID() {
-		subExecuteID = ptr.Of(mustParseInt64(req.GetSubExecuteID()))
+	if subExecuteIDStr := strings.TrimSpace(req.GetSubExecuteID()); subExecuteIDStr != "" {
+		subExecuteID = ptr.Of(mustParseInt64(subExecuteIDStr))
 	}
 
 	exe := &entity.WorkflowExecution{
@@ -3483,6 +3960,153 @@ func (w *ApplicationService) publishWorkflowResource(ctx context.Context, policy
 	})
 
 	return nil
+}
+
+func mapSpanStatusToWorkflowStatuses(status workflow.SpanStatus) []entity.WorkflowExecuteStatus {
+	switch status {
+	case workflow.SpanStatus_Success:
+		return []entity.WorkflowExecuteStatus{entity.WorkflowSuccess}
+	case workflow.SpanStatus_Fail:
+		return []entity.WorkflowExecuteStatus{entity.WorkflowFailed, entity.WorkflowCancel, entity.WorkflowInterrupted}
+	default:
+		return nil
+	}
+}
+
+func mapExecuteModeToDomain(mode int32) (workflowModel.ExecuteMode, bool) {
+	switch mode {
+	case 1:
+		return workflowModel.ExecuteModeDebug, true
+	case 2:
+		return workflowModel.ExecuteModeRelease, true
+	case 3:
+		return workflowModel.ExecuteModeNodeDebug, true
+	default:
+		return "", false
+	}
+}
+
+func mapWorkflowStatusToSpanCode(status entity.WorkflowExecuteStatus) int32 {
+	switch status {
+	case entity.WorkflowSuccess:
+		return 0
+	case entity.WorkflowRunning:
+		return 2
+	default:
+		return 1
+	}
+}
+
+func buildWorkflowSpan(exe *entity.WorkflowExecution, wfBasic *entity.WorkflowBasic) *workflow.Span {
+	if exe == nil {
+		return &workflow.Span{}
+	}
+
+	duration := exe.Duration
+	if (duration <= 0 || duration == time.Duration(0)) && exe.UpdatedAt != nil {
+		duration = exe.UpdatedAt.Sub(exe.CreatedAt)
+	}
+	if duration < 0 {
+		duration = 0
+	}
+	durationMs := duration.Milliseconds()
+	traceID := strings.TrimSpace(exe.LogID)
+	if traceID == "" {
+		traceID = strconv.FormatInt(exe.RootExecutionID, 10)
+	}
+
+	name := fmt.Sprintf("Workflow %d", exe.WorkflowID)
+	if wfBasic != nil && strings.TrimSpace(wfBasic.Name) != "" {
+		name = wfBasic.Name
+	}
+
+	span := &workflow.Span{
+		TraceID:    traceID,
+		LogID:      exe.LogID,
+		SpanID:     strconv.FormatInt(exe.ID, 10),
+		Type:       "Workflow",
+		Name:       name,
+		ParentID:   "0",
+		Duration:   durationMs,
+		StartTime:  exe.CreatedAt.UnixMilli(),
+		StatusCode: mapWorkflowStatusToSpanCode(exe.Status),
+	}
+
+	tags := make([]*workflow.TraceTag, 0, 18)
+	tags = appendTag(tags, newStringTag("workflow_id", strconv.FormatInt(exe.WorkflowID, 10)))
+	if wfBasic != nil && strings.TrimSpace(wfBasic.Version) != "" {
+		tags = appendTag(tags, newStringTag("workflow_version", wfBasic.Version))
+	} else if strings.TrimSpace(exe.Version) != "" {
+		tags = appendTag(tags, newStringTag("workflow_version", exe.Version))
+	}
+	tags = appendTag(tags, newStringTag("workflow_name", name))
+	tags = appendTag(tags, newStringTag("space_id", strconv.FormatInt(exe.SpaceID, 10)))
+	tags = appendTag(tags, newStringTag("execute_id", strconv.FormatInt(exe.ID, 10)))
+	tags = appendTag(tags, newStringTag("root_execute_id", strconv.FormatInt(exe.RootExecutionID, 10)))
+	tags = appendTag(tags, newStringTag("execute_mode", string(exe.ExecuteConfig.Mode)))
+	tags = appendTag(tags, newStringTag("sync_pattern", string(exe.ExecuteConfig.SyncPattern)))
+	if exe.ExecuteConfig.Operator != 0 {
+		tags = appendTag(tags, newStringTag("operator_id", strconv.FormatInt(exe.ExecuteConfig.Operator, 10)))
+	}
+	if exe.ExecuteConfig.AppID != nil {
+		tags = appendTag(tags, newStringTag("app_id", strconv.FormatInt(*exe.ExecuteConfig.AppID, 10)))
+	}
+	if exe.ExecuteConfig.AgentID != nil {
+		tags = appendTag(tags, newStringTag("agent_id", strconv.FormatInt(*exe.ExecuteConfig.AgentID, 10)))
+	}
+	if exe.ExecuteConfig.ConnectorID != 0 {
+		tags = appendTag(tags, newLongTag("connector_id", exe.ExecuteConfig.ConnectorID))
+	}
+	tags = appendTag(tags, newStringTag("connector_uid", exe.ExecuteConfig.ConnectorUID))
+	tags = appendTag(tags, newStringTag("commit_id", exe.CommitID))
+	if exe.TokenInfo != nil {
+		tags = appendTag(tags, newLongTag("input_tokens", exe.TokenInfo.InputTokens))
+		tags = appendTag(tags, newLongTag("output_tokens", exe.TokenInfo.OutputTokens))
+		tags = appendTag(tags, newLongTag("tokens", exe.TokenInfo.InputTokens+exe.TokenInfo.OutputTokens))
+	}
+	tags = appendTag(tags, newLongTag("node_count", int64(exe.NodeCount)))
+	tags = appendTag(tags, newLongTag("duration_ms", durationMs))
+	tags = appendTag(tags, newLongTag("start_time", exe.CreatedAt.UnixMilli()))
+	if exe.UpdatedAt != nil {
+		tags = appendTag(tags, newLongTag("end_time", exe.UpdatedAt.UnixMilli()))
+	}
+	tags = appendTag(tags, newStringTag("log_id", exe.LogID))
+	if exe.ExecuteConfig.Mode == workflowModel.ExecuteModeRelease {
+		tags = appendTag(tags, newStringTag("is_trigger", "true"))
+	}
+
+	span.Tags = tags
+	return span
+}
+
+func newStringTag(key, value string) *workflow.TraceTag {
+	if strings.TrimSpace(value) == "" {
+		return nil
+	}
+	return &workflow.TraceTag{
+		Key:     key,
+		TagType: workflow.TagType_STRING,
+		Value: &workflow.Value{
+			VStr: ptr.Of(value),
+		},
+	}
+}
+
+func newLongTag(key string, value int64) *workflow.TraceTag {
+	return &workflow.TraceTag{
+		Key:     key,
+		TagType: workflow.TagType_LONG,
+		Value: &workflow.Value{
+			VLong: ptr.Of(value),
+		},
+	}
+}
+
+func appendTag(tags []*workflow.TraceTag, tag *workflow.TraceTag) []*workflow.TraceTag {
+	if tag == nil {
+		return tags
+	}
+	return append(tags, tag)
 }
 
 func mustParseInt64(s string) int64 {

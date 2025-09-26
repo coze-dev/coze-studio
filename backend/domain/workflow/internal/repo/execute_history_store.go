@@ -21,11 +21,13 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"gorm.io/gorm"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflowdomain "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
@@ -211,28 +213,112 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 		return nil, false, nil
 	}
 
-	rootExe := rootExes[0]
-	var exeMode workflowModel.ExecuteMode
-	if rootExe.Mode == 1 {
-		exeMode = workflowModel.ExecuteModeDebug
-	} else if rootExe.Mode == 2 {
-		exeMode = workflowModel.ExecuteModeRelease
+	return convertWorkflowExecutionModel(rootExes[0]), true, nil
+}
+
+func (e *executeHistoryStoreImpl) GetRootWorkflowExecutionByLogID(
+	ctx context.Context,
+	logID string,
+	startAtMilli, endAtMilli int64,
+) (*entity.WorkflowExecution, bool, error) {
+	logID = strings.TrimSpace(logID)
+	if logID == "" {
+		return nil, false, fmt.Errorf("log id must not be empty")
+	}
+
+	queryBuilder := e.query.WorkflowExecution.WithContext(ctx).
+		Where(e.query.WorkflowExecution.LogID.Eq(logID)).
+		Where(e.query.WorkflowExecution.RootExecutionID.EqCol(e.query.WorkflowExecution.ID))
+
+	if startAtMilli > 0 {
+		queryBuilder = queryBuilder.Where(e.query.WorkflowExecution.CreatedAt.Gte(startAtMilli))
+	}
+	if endAtMilli > 0 {
+		queryBuilder = queryBuilder.Where(e.query.WorkflowExecution.CreatedAt.Lte(endAtMilli))
+	}
+
+	row, err := queryBuilder.First()
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, false, nil
+		}
+		return nil, false, vo.WrapError(errno.ErrDatabaseError,
+			fmt.Errorf("failed to find workflow execution by log id: %w", err))
+	}
+
+	return convertWorkflowExecutionModel(row), true, nil
+}
+
+func (e *executeHistoryStoreImpl) ListRootWorkflowExecutions(ctx context.Context, policy *workflowdomain.ListWorkflowExecutionPolicy) ([]*entity.WorkflowExecution, error) {
+	if policy == nil {
+		return nil, fmt.Errorf("list workflow execution policy is nil")
+	}
+	policy.Normalize()
+	if policy.WorkflowID <= 0 {
+		return nil, fmt.Errorf("workflow_id must be positive")
+	}
+
+	queryBuilder := e.query.WorkflowExecution.WithContext(ctx).
+		Where(e.query.WorkflowExecution.WorkflowID.Eq(policy.WorkflowID)).
+		Where(e.query.WorkflowExecution.RootExecutionID.EqCol(e.query.WorkflowExecution.ID))
+
+	if policy.StartAtMilli > 0 {
+		queryBuilder = queryBuilder.Where(e.query.WorkflowExecution.CreatedAt.Gte(policy.StartAtMilli))
+	}
+	if policy.EndAtMilli > 0 {
+		queryBuilder = queryBuilder.Where(e.query.WorkflowExecution.CreatedAt.Lte(policy.EndAtMilli))
+	}
+	if len(policy.Statuses) > 0 {
+		statuses := make([]int32, 0, len(policy.Statuses))
+		for _, status := range policy.Statuses {
+			statuses = append(statuses, int32(status))
+		}
+		queryBuilder = queryBuilder.Where(e.query.WorkflowExecution.Status.In(statuses...))
+	}
+	if len(policy.Modes) > 0 {
+		modes := make([]int32, 0, len(policy.Modes))
+		for _, mode := range policy.Modes {
+			if v := encodeExecuteMode(mode); v > 0 {
+				modes = append(modes, v)
+			}
+		}
+		if len(modes) > 0 {
+			queryBuilder = queryBuilder.Where(e.query.WorkflowExecution.Mode.In(modes...))
+		}
+	}
+	if policy.DescByStartTime {
+		queryBuilder = queryBuilder.Order(e.query.WorkflowExecution.CreatedAt.Desc(), e.query.WorkflowExecution.ID.Desc())
 	} else {
-		exeMode = workflowModel.ExecuteModeNodeDebug
+		queryBuilder = queryBuilder.Order(e.query.WorkflowExecution.CreatedAt, e.query.WorkflowExecution.ID)
 	}
 
-	var syncPattern workflowModel.SyncPattern
-	switch rootExe.SyncPattern {
-	case 1:
-		syncPattern = workflowModel.SyncPatternSync
-	case 2:
-		syncPattern = workflowModel.SyncPatternAsync
-	case 3:
-		syncPattern = workflowModel.SyncPatternStream
-	default:
+	if policy.Offset > 0 {
+		queryBuilder = queryBuilder.Offset(policy.Offset)
+	}
+	queryBuilder = queryBuilder.Limit(policy.Limit)
+
+	rows, err := queryBuilder.Find()
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrDatabaseError, fmt.Errorf("failed to list workflow executions: %w", err))
 	}
 
-	exe := &entity.WorkflowExecution{
+	executions := make([]*entity.WorkflowExecution, 0, len(rows))
+	for _, row := range rows {
+		executions = append(executions, convertWorkflowExecutionModel(row))
+	}
+
+	return executions, nil
+}
+
+func convertWorkflowExecutionModel(rootExe *model.WorkflowExecution) *entity.WorkflowExecution {
+	if rootExe == nil {
+		return nil
+	}
+
+	exeMode := decodeExecuteMode(rootExe.Mode)
+	syncPattern := decodeSyncPattern(rootExe.SyncPattern)
+
+	execution := &entity.WorkflowExecution{
 		ID:         rootExe.ID,
 		WorkflowID: rootExe.WorkflowID,
 		Version:    rootExe.Version,
@@ -251,24 +337,63 @@ func (e *executeHistoryStoreImpl) GetWorkflowExecution(ctx context.Context, id i
 		NodeCount:  rootExe.NodeCount,
 		Status:     entity.WorkflowExecuteStatus(rootExe.Status),
 		Duration:   time.Duration(rootExe.Duration) * time.Millisecond,
-		Input:      &rootExe.Input,
-		Output:     &rootExe.Output,
-		ErrorCode:  &rootExe.ErrorCode,
-		FailReason: &rootExe.FailReason,
+		Input:      ptr.Of(rootExe.Input),
+		Output:     ptr.Of(rootExe.Output),
+		ErrorCode:  ptr.Of(rootExe.ErrorCode),
+		FailReason: ptr.Of(rootExe.FailReason),
 		TokenInfo: &entity.TokenUsage{
 			InputTokens:  rootExe.InputTokens,
 			OutputTokens: rootExe.OutputTokens,
 		},
 		UpdatedAt:              ternary.IFElse(rootExe.UpdatedAt > 0, ptr.Of(time.UnixMilli(rootExe.UpdatedAt)), nil),
 		ParentNodeID:           ptr.Of(rootExe.ParentNodeID),
-		ParentNodeExecuteID:    nil, // keep it nil here, query parent node execution separately
-		NodeExecutions:         nil, // keep it nil here, query node executions separately
+		ParentNodeExecuteID:    nil,
+		NodeExecutions:         nil,
 		RootExecutionID:        rootExe.RootExecutionID,
 		CurrentResumingEventID: ternary.IFElse(rootExe.ResumeEventID == 0, nil, ptr.Of(rootExe.ResumeEventID)),
 		CommitID:               rootExe.CommitID,
 	}
 
-	return exe, true, nil
+	return execution
+}
+
+func decodeExecuteMode(mode int32) workflowModel.ExecuteMode {
+	switch mode {
+	case 1:
+		return workflowModel.ExecuteModeDebug
+	case 2:
+		return workflowModel.ExecuteModeRelease
+	case 3:
+		return workflowModel.ExecuteModeNodeDebug
+	default:
+		return workflowModel.ExecuteModeNodeDebug
+	}
+}
+
+func encodeExecuteMode(mode workflowModel.ExecuteMode) int32 {
+	switch mode {
+	case workflowModel.ExecuteModeDebug:
+		return 1
+	case workflowModel.ExecuteModeRelease:
+		return 2
+	case workflowModel.ExecuteModeNodeDebug:
+		return 3
+	default:
+		return 0
+	}
+}
+
+func decodeSyncPattern(pattern int32) workflowModel.SyncPattern {
+	switch pattern {
+	case 1:
+		return workflowModel.SyncPatternSync
+	case 2:
+		return workflowModel.SyncPatternAsync
+	case 3:
+		return workflowModel.SyncPatternStream
+	default:
+		return workflowModel.SyncPatternSync
+	}
 }
 
 func (e *executeHistoryStoreImpl) CreateNodeExecution(ctx context.Context, execution *entity.NodeExecution) error {

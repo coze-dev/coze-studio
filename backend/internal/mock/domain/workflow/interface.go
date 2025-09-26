@@ -259,6 +259,22 @@ func (mr *MockServiceMockRecorder) GetLatestTestRunInput(ctx, wfID, userID any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLatestTestRunInput", reflect.TypeOf((*MockService)(nil).GetLatestTestRunInput), ctx, wfID, userID)
 }
 
+// GetRootWorkflowExecutionByLogID mocks base method.
+func (m *MockService) GetRootWorkflowExecutionByLogID(ctx context.Context, logID string, startAtMilli, endAtMilli int64) (*entity.WorkflowExecution, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRootWorkflowExecutionByLogID", ctx, logID, startAtMilli, endAtMilli)
+	ret0, _ := ret[0].(*entity.WorkflowExecution)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetRootWorkflowExecutionByLogID indicates an expected call of GetRootWorkflowExecutionByLogID.
+func (mr *MockServiceMockRecorder) GetRootWorkflowExecutionByLogID(ctx, logID, startAtMilli, endAtMilli any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRootWorkflowExecutionByLogID", reflect.TypeOf((*MockService)(nil).GetRootWorkflowExecutionByLogID), ctx, logID, startAtMilli, endAtMilli)
+}
+
 // GetNodeExecution mocks base method.
 func (m *MockService) GetNodeExecution(ctx context.Context, exeID int64, nodeID string) (*entity.NodeExecution, *entity.NodeExecution, error) {
 	m.ctrl.T.Helper()
@@ -979,6 +995,22 @@ func (m *MockRepository) GetWorkflowExecution(ctx context.Context, id int64) (*e
 func (mr *MockRepositoryMockRecorder) GetWorkflowExecution(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetWorkflowExecution", reflect.TypeOf((*MockRepository)(nil).GetWorkflowExecution), ctx, id)
+}
+
+// GetRootWorkflowExecutionByLogID mocks base method.
+func (m *MockRepository) GetRootWorkflowExecutionByLogID(ctx context.Context, logID string, startAtMilli, endAtMilli int64) (*entity.WorkflowExecution, bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetRootWorkflowExecutionByLogID", ctx, logID, startAtMilli, endAtMilli)
+	ret0, _ := ret[0].(*entity.WorkflowExecution)
+	ret1, _ := ret[1].(bool)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// GetRootWorkflowExecutionByLogID indicates an expected call of GetRootWorkflowExecutionByLogID.
+func (mr *MockRepositoryMockRecorder) GetRootWorkflowExecutionByLogID(ctx, logID, startAtMilli, endAtMilli any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetRootWorkflowExecutionByLogID", reflect.TypeOf((*MockRepository)(nil).GetRootWorkflowExecutionByLogID), ctx, logID, startAtMilli, endAtMilli)
 }
 
 // IsApplicationConnectorWorkflowVersion mocks base method.
