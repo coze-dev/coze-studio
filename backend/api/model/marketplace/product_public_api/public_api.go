@@ -271,20 +271,20 @@ func (p *TriggerEnable) Value() (driver.Value, error) {
 type UserLevel int64
 
 const (
-	// 免费版。
+	// Free version
 	UserLevel_Free UserLevel = 0
-	// 海外
+	// Overseas
 	UserLevel_PremiumLite UserLevel = 10
 	// Premium
 	UserLevel_Premium     UserLevel = 15
 	UserLevel_PremiumPlus UserLevel = 20
-	// 国内
+	// Domestic
 	UserLevel_V1ProInstance UserLevel = 100
-	// 个人旗舰版
+	// Personal flagship edition
 	UserLevel_ProPersonal UserLevel = 110
-	// 团队版
+	// Team edition
 	UserLevel_Team UserLevel = 120
-	// 企业版
+	// Enterprise edition
 	UserLevel_Enterprise UserLevel = 130
 )
 
@@ -26520,7 +26520,7 @@ func (p *DuplicateProductData) String() string {
 
 type GetProductCategoryListRequest struct {
 	EntityType product_common.ProductEntityType `thrift:"EntityType,1" json:"EntityType" query:"entity_type"`
-	// 上架的时候需要获取全量的 category 列表，用于区分上架场景和主页场景
+	// When listing, need to get the full category list to distinguish between listing and homepage scenarios
 	NeedEmptyCategory *bool      `thrift:"NeedEmptyCategory,2,optional" json:"NeedEmptyCategory,omitempty" query:"need_empty_category"`
 	Lang              *string    `thrift:"Lang,3,optional" json:"Lang,omitempty" query:"lang"`
 	Base              *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
@@ -27654,15 +27654,15 @@ func (p *GetProductCallInfoRequest) String() string {
 }
 
 type ProductCallCountLimit struct {
-	// 插件是否调用 tool 次数无限制
+	// Whether plugin tool calls are unlimited
 	IsUnlimited bool `thrift:"is_unlimited,1" form:"is_unlimited" json:"is_unlimited" query:"is_unlimited"`
-	// 插件已调用 tool 次数
+	// Plugin tool calls used
 	UsedCount int32 `thrift:"used_count,2" form:"used_count" json:"used_count" query:"used_count"`
-	// 插件总调用 tool 次数
+	// Plugin total tool calls
 	TotalCount int32 `thrift:"total_count,3" form:"total_count" json:"total_count" query:"total_count"`
-	// 插件调用 tool 次数重置时间
+	// Plugin tool call count reset time
 	ResetDatetime int64 `thrift:"reset_datetime,4" form:"reset_datetime" json:"reset_datetime" query:"reset_datetime"`
-	// 插件调用 tool 次数限制，按付费等级分
+	// Plugin tool call count limit by user level
 	CallCountLimitByUserLevel map[UserLevel]*ProductCallCountLimit `thrift:"call_count_limit_by_user_level,5" form:"call_count_limit_by_user_level" json:"call_count_limit_by_user_level" query:"call_count_limit_by_user_level"`
 }
 
@@ -28009,7 +28009,7 @@ func (p *ProductCallCountLimit) String() string {
 type ProductCallRateLimit struct {
 	// qps
 	QPS int32 `thrift:"qps,1" form:"qps" json:"qps" query:"qps"`
-	// 插件调用 tool 速率限制，按付费等级分
+	// Plugin tool call rate limit by user level
 	CallRateLimitByUserLevel map[UserLevel]*ProductCallRateLimit `thrift:"call_rate_limit_by_user_level,2" form:"call_rate_limit_by_user_level" json:"call_rate_limit_by_user_level" query:"call_rate_limit_by_user_level"`
 }
 
@@ -28222,13 +28222,13 @@ func (p *ProductCallRateLimit) String() string {
 }
 
 type GetProductCallInfoData struct {
-	// mcp 配置 json 字符串
+	// mcp configuration json string
 	McpJSON string `thrift:"mcp_json,1" form:"mcp_json" json:"mcp_json" query:"mcp_json"`
-	// 付费等级
+	// Payment level
 	UserLevel UserLevel `thrift:"user_level,2" form:"user_level" json:"user_level" query:"user_level"`
-	// 插件调用 tool 次数限制
+	// Plugin tool call count limit
 	CallCountLimit *ProductCallCountLimit `thrift:"call_count_limit,3" form:"call_count_limit" json:"call_count_limit" query:"call_count_limit"`
-	// 插件调用 tool 速率限制
+	// Plugin tool call rate limit
 	CallRateLimit *ProductCallRateLimit `thrift:"call_rate_limit,4" form:"call_rate_limit" json:"call_rate_limit" query:"call_rate_limit"`
 }
 

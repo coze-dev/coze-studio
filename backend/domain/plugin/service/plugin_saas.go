@@ -222,11 +222,6 @@ func (p *pluginServiceImpl) searchSaasPlugin(ctx context.Context, req *domainDto
 		return nil, errorx.Wrapf(err, "failed to parse coze.cn search API response")
 	}
 
-	searchResp.Code = apiResp.Code
-	searchResp.Msg = apiResp.Msg
-
-	logs.CtxInfof(ctx, "searched SaaS plugins from coze.cn, found %d items", len(searchResp.Data.Items))
-
 	return &searchResp, nil
 }
 
@@ -256,12 +251,6 @@ func (p *pluginServiceImpl) ListSaasPluginCategories(ctx context.Context, req *d
 
 	categoriesResp.Code = apiResp.Code
 	categoriesResp.Msg = apiResp.Msg
-
-	itemCount := 0
-	if categoriesResp.Data != nil && categoriesResp.Data.Items != nil {
-		itemCount = len(categoriesResp.Data.Items)
-	}
-	logs.CtxInfof(ctx, "fetched SaaS plugin categories from coze.cn, found %d items", itemCount)
 
 	return &categoriesResp, nil
 }

@@ -28,6 +28,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
@@ -184,12 +185,20 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *mo
 		return nil, nil, fmt.Errorf("draft tool is not supported in online agent")
 	}
 
-	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
-	if err != nil {
+	var (
+		exist        bool
+	)
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas{
+		//TODO：：get plugin info from saas
+
+	} else {
+		onlineTool, exist, err = p.toolRepo.GetOnlineTool(ctx, req.ToolID)
+		if err != nil {
 		return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
-	}
-	if !exist {
-		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		if !exist {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
 	}
 
 	agentTool, exist, err := p.toolRepo.GetDraftAgentTool(ctx, execOpt.ProjectInfo.ProjectID, req.ToolID)

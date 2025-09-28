@@ -19,6 +19,7 @@ package vo
 import (
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
@@ -252,7 +253,9 @@ type FCParam struct {
 			ApiName       string `json:"api_name"`
 			PluginVersion string `json:"plugin_version"`
 			IsDraft       bool   `json:"is_draft"`
-			FCSetting     *struct {
+
+			PluginSource bot_common.PluginSource `json:"plugin_source"`
+			FCSetting    *struct {
 				RequestParameters  []*workflow.APIParameter `json:"request_params"`
 				ResponseParameters []*workflow.APIParameter `json:"response_params"`
 			} `json:"fc_setting,omitempty"`
@@ -303,7 +306,8 @@ type VariableAggregator struct {
 }
 
 type PluginAPIParam struct {
-	APIParams []*Param `json:"apiParam"`
+	APIParams    []*Param                `json:"apiParam"`
+	PluginSource bot_common.PluginSource `json:"pluginSource"`
 }
 
 type CodeRunner struct {

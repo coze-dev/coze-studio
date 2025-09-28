@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 // CozeAPIClient represents a client for coze.cn OpenAPI
@@ -156,14 +157,14 @@ func (c *CozeAPIClient) request(ctx context.Context, method, path string, body [
 // requestWithQuery is the core method for making HTTP requests to coze.cn API with query parameters
 func (c *CozeAPIClient) requestWithQuery(ctx context.Context, method, path string, body []byte, queryParams map[string]interface{}) (*CozeAPIResponse, error) {
 	baseURL := fmt.Sprintf("%s%s", c.BaseURL, path)
-	
+
 	// Build query parameters
-	if queryParams != nil && len(queryParams) > 0 {
+	if len(queryParams) > 0 {
 		u, err := url.Parse(baseURL)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse URL: %w", err)
 		}
-		
+
 		q := u.Query()
 		for key, value := range queryParams {
 			if value != nil {
@@ -215,6 +216,8 @@ func (c *CozeAPIClient) requestWithQuery(ctx context.Context, method, path strin
 	// Add API key if available
 	if c.APIKey != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
+		req.Header.Set("X-TT-ENV", "ppe_cozemcpserver")
+		req.Header.Set("X-USE-PPE", "1")
 	}
 
 	// Make request with retries
@@ -263,14 +266,14 @@ func (c *CozeAPIClient) requestWithQuery(ctx context.Context, method, path strin
 
 // getEnvOrDefault returns environment variable value or default if not set
 func getSaasOpenAPIUrl() string {
-	if value := os.Getenv("COZE_SAAS_API_BASE_URL"); value != "" {
+	if value := os.Getenv(consts.CozeSaasAPIBaseURL); value != "" {
 		return value
 	}
 	return "https://api.coze.cn"
 }
 
 func getSaasOpenAPIKey() string {
-	if value := os.Getenv("COZE_SAAS_API_KEY"); value != "" {
+	if value := os.Getenv(consts.CozeSaasAPIKey); value != "" {
 		return value
 	}
 	return ""

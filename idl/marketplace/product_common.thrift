@@ -35,7 +35,7 @@ enum ProductEntityType {
     Common           = 99,
     Topic = 101 // Special Topics (Compatible with previous designs)
 
-    SaasPlugin = 999 // Saas plugin,the plugins from coze saas
+    SaasPlugin = 901 // Saas plugin,the plugins from coze saas
 }
 
 enum SortType {

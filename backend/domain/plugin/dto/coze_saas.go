@@ -28,9 +28,15 @@ type SearchSaasPluginRequest struct {
 
 // SearchSaasPluginResponse represents the response from coze.cn search API
 type SearchSaasPluginResponse struct {
-	Code int                   `json:"code"`
-	Msg  string                `json:"msg"`
-	Data *SearchSaasPluginData `json:"data"`
+	Code   int                   `json:"code"`
+	Msg    string                `json:"msg"`
+	Detail *ResponseDetail       `json:"detail,omitempty"`
+	Data   *SearchSaasPluginData `json:"data"`
+}
+
+// ResponseDetail represents the detail section of API response
+type ResponseDetail struct {
+	LogID string `json:"logid"`
 }
 
 // SearchSaasPluginData represents the data section of search response
@@ -56,6 +62,7 @@ type SaasPluginMetaInfo struct {
 	UserInfo      *SaasPluginUserInfo `json:"user_info"`
 	Category      *SaasPluginCategory `json:"category"`
 	IconURL       string              `json:"icon_url"`
+	ProductURL    string              `json:"product_url"`
 	ListedAt      int64               `json:"listed_at"`
 	PaidType      string              `json:"paid_type"`
 	IsOfficial    bool                `json:"is_official"`
@@ -63,7 +70,7 @@ type SaasPluginMetaInfo struct {
 
 // SaasPluginUserInfo represents the user information of a SaaS plugin
 type SaasPluginUserInfo struct {
-	UserID    int64  `json:"user_id"`
+	UserID    string `json:"user_id"`
 	UserName  string `json:"user_name"`
 	NickName  string `json:"nick_name"`
 	AvatarURL string `json:"avatar_url"`
