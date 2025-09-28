@@ -34,5 +34,8 @@ type User struct {
 }
 
 type UserBenefit struct {
-	UserID int64
+	UserID      int64
+	UsedCount   int32
+	TotalCount  int32
+	IsUnlimited bool
 }

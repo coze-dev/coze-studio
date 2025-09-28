@@ -494,7 +494,7 @@ func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 	}
 
 	// Call GetSaasUserInfo
-	_, err = t.userSVC.GetSaasUserInfo(ctx, *userID)
+	_, err = t.userSVC.GetSaasUserInfo(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
 		return &productAPI.GetProductCallInfoResponse{
@@ -504,7 +504,7 @@ func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 	}
 
 	// Call GetUserBenefit
-	_, err = t.userSVC.GetUserBenefit(ctx, *userID)
+	benefit, err := t.userSVC.GetUserBenefit(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
 		return &productAPI.GetProductCallInfoResponse{
@@ -515,13 +515,15 @@ func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 
 	// Build response data
 	data := &productAPI.GetProductCallInfoData{
-		McpJSON:   "",                        // TODO: Set appropriate MCP JSON based on requirements
-		UserLevel: productAPI.UserLevel_Free, // TODO: Map from userBenefit to appropriate UserLevel
+		UserLevel: productAPI.UserLevel_Free,
 	}
 
-	// TODO: Set CallCountLimit and CallRateLimit based on userBenefit
-	// data.CallCountLimit = &productAPI.ProductCallCountLimit{...}
-	// data.CallRateLimit = &productAPI.ProductCallRateLimit{...}
+
+	data.CallCountLimit = &productAPI.ProductCallCountLimit{
+		IsUnlimited: benefit.IsUnlimited,
+		UsedCount:   benefit.UsedCount,
+		TotalCount:  benefit.TotalCount,
+	}
 
 	return &productAPI.GetProductCallInfoResponse{
 		Code:    0,

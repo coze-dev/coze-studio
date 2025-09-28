@@ -25,6 +25,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	gonanoid "github.com/matoous/go-nanoid"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
@@ -617,6 +618,8 @@ type ExecuteToolRequest struct {
 	ToolID        int64
 	ExecDraftTool bool // if true, execute draft tool
 	ExecScene     consts.ExecuteScene
+
+	PluginSource  *bot_common.PluginSource
 
 	ArgumentsInJson string
 }

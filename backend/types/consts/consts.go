@@ -52,6 +52,9 @@ const (
 	S3Endpoint         = "S3_ENDPOINT"
 	S3BucketEndpoint   = "S3_BUCKET_ENDPOINT"
 
+	CozeSaasAPIKey     = "COZE_SAAS_API_KEY"
+	CozeSaasAPIBaseURL = "COZE_SAAS_API_BASE_URL"
+
 	HostKeyInCtx          = "HOST_KEY_IN_CTX"
 	RequestSchemeKeyInCtx = "REQUEST_SCHEME_IN_CTX"
 

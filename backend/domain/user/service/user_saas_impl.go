@@ -19,6 +19,7 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -40,7 +41,7 @@ func NewCozeUserService() *CozeUserService {
 }
 
 // GetUserInfo calls the /v1/users/me endpoint
-func (s *CozeUserService) GetUserInfo(ctx context.Context, userID int64) (*entity.User, error) {
+func (s *CozeUserService) GetUserInfo(ctx context.Context) (*entity.User, error) {
 	resp, err := s.client.Get(ctx, "/v1/users/me")
 	if err != nil {
 		logs.CtxErrorf(ctx, "failed to call GetUserInfo API: %v", err)
@@ -49,17 +50,10 @@ func (s *CozeUserService) GetUserInfo(ctx context.Context, userID int64) (*entit
 
 	// Parse the data field
 	var userData struct {
-		UserID       int64  `json:"user_id"`
-		Name         string `json:"name"`
-		UniqueName   string `json:"unique_name"`
-		Email        string `json:"email"`
-		Description  string `json:"description"`
-		IconURI      string `json:"icon_uri"`
-		IconURL      string `json:"icon_url"`
-		UserVerified bool   `json:"user_verified"`
-		Locale       string `json:"locale"`
-		CreatedAt    int64  `json:"created_at"`
-		UpdatedAt    int64  `json:"updated_at"`
+		UserID    string `json:"user_id"`
+		UserName  string `json:"user_name"`
+		NickName  string `json:"nick_name"`
+		AvatarURL string `json:"avatar_url"`
 	}
 
 	if err := json.Unmarshal(resp.Data, &userData); err != nil {
@@ -67,75 +61,96 @@ func (s *CozeUserService) GetUserInfo(ctx context.Context, userID int64) (*entit
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "data parse failed"))
 	}
 
+	// Convert user_id from string to int64
+	userIDInt64, err := strconv.ParseInt(userData.UserID, 10, 64)
+	if err != nil {
+		logs.CtxErrorf(ctx, "failed to parse user_id: %v", err)
+		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "invalid user_id format"))
+	}
+
 	// Map to entity.User
 	return &entity.User{
-		UserID:       userData.UserID,
-		Name:         userData.Name,
-		UniqueName:   userData.UniqueName,
-		Email:        userData.Email,
-		Description:  userData.Description,
-		IconURI:      userData.IconURI,
-		IconURL:      userData.IconURL,
-		UserVerified: userData.UserVerified,
-		Locale:       userData.Locale,
-		CreatedAt:    userData.CreatedAt,
-		UpdatedAt:    userData.UpdatedAt,
+		UserID:     userIDInt64,
+		Name:       userData.NickName,  // nick_name maps to Name (nickname)
+		UniqueName: userData.UserName,  // user_name maps to UniqueName
+		IconURL:    userData.AvatarURL, // avatar_url maps to IconURL
 	}, nil
 }
 
-// GetEnterpriseBenefit calls the /v1/commerce/benefit/benefits/get endpoint with query parameters
 func (s *CozeUserService) GetEnterpriseBenefit(ctx context.Context, req *entity.GetEnterpriseBenefitRequest) (*entity.GetEnterpriseBenefitResponse, error) {
-	// Build query parameters
+
 	queryParams := make(map[string]interface{})
 	if req.BenefitType != nil {
-		queryParams["benefit_type"] = int32(*req.BenefitType)
+		queryParams["benefit_type"] = *req.BenefitType
 	}
 	if req.ResourceID != nil {
 		queryParams["resource_id"] = *req.ResourceID
 	}
 
-	// Call API
-	resp, err := s.client.GetWithQuery(ctx, "/v1/commerce/benefit/benefits/get", queryParams)
+	resp, err := s.client.GetWithQuery(ctx, "/v1/commerce/benefit/benefits/get?benefit_type=call_tool_limit", queryParams)
 	if err != nil {
 		logs.CtxErrorf(ctx, "failed to call GetEnterpriseBenefit API: %v", err)
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "API call failed"))
 	}
 
-	// Parse response data
-	var benefitResp entity.GetEnterpriseBenefitResponse
-	if err := json.Unmarshal(resp.Data, &benefitResp.Data); err != nil {
+
+	var benefitData entity.BenefitData
+	if err := json.Unmarshal(resp.Data, &benefitData); err != nil {
 		logs.CtxErrorf(ctx, "failed to parse benefit data: %v", err)
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "data parse failed"))
 	}
 
-	// Set response basic information
-	benefitResp.Code = int32(resp.Code)
-	benefitResp.Message = resp.Msg
+	// Validate parsed data
+	if benefitData.BasicInfo != nil && !benefitData.BasicInfo.UserLevel.IsValid() {
+		logs.CtxWarnf(ctx, "invalid user level: %s", benefitData.BasicInfo.UserLevel)
+	}
 
-	logs.CtxInfof(ctx, "successfully retrieved enterprise benefit data")
+	for _, benefitInfo := range benefitData.BenefitInfo {
+		if benefitInfo != nil && benefitInfo.Basic != nil && !benefitInfo.Basic.Status.IsValid() {
+			logs.CtxWarnf(ctx, "invalid benefit status: %s", benefitInfo.Basic.Status)
+		}
+		if benefitInfo != nil && benefitInfo.Basic != nil && benefitInfo.Basic.ItemInfo != nil && !benefitInfo.Basic.ItemInfo.Strategy.IsValid() {
+			logs.CtxWarnf(ctx, "invalid resource usage strategy: %s", benefitInfo.Basic.ItemInfo.Strategy)
+		}
+	}
 
-	return &benefitResp, nil
+	benefit := &entity.GetEnterpriseBenefitResponse{
+		Code:    int32(resp.Code),
+		Message: resp.Msg,
+		Data:    &benefitData,
+	}
+
+	logs.CtxInfof(ctx, "successfully retrieved enterprise benefit data, user_level: %s, benefit_count: %d",
+		benefit.Data.BasicInfo.UserLevel, len(benefit.Data.BenefitInfo))
+
+	return benefit, nil
 }
 
-// GetUserBenefit calls the /v1/users/benefit endpoint (legacy method, kept for backward compatibility)
-func (s *CozeUserService) GetUserBenefit(ctx context.Context, userID int64) (*entity.UserBenefit, error) {
-	// Use new enterprise benefit interface without query parameters
-	req := &entity.GetEnterpriseBenefitRequest{}
-	_, err := s.GetEnterpriseBenefit(ctx, req)
+func (s *CozeUserService) GetUserBenefit(ctx context.Context) (*entity.UserBenefit, error) {
+
+	benefitType := entity.BenefitTypeCallToolLimit
+	req := &entity.GetEnterpriseBenefitRequest{
+		BenefitType: &benefitType,
+	}
+	benefit, err := s.GetEnterpriseBenefit(ctx, req)
 	if err != nil {
 		return nil, err
 	}
+	if benefit.Data == nil || len(benefit.Data.BenefitInfo) == 0 {
+		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "benefit info not found"))
+	}
 
-	// Convert to old UserBenefit format for backward compatibility
 	return &entity.UserBenefit{
-		UserID: userID,
+		UsedCount:  int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Used),
+		TotalCount: int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Total),
+		IsUnlimited: func() bool {
+			return benefit.Data.BenefitInfo[0].Basic.ItemInfo.Strategy == entity.ResourceUsageStrategyUnlimit
+		}(),
 	}, nil
 }
 
-// Global coze user service instance
 var cozeUserService *CozeUserService
 
-// getCozeUserService returns the global coze user service instance
 func getCozeUserService() *CozeUserService {
 	if cozeUserService == nil {
 		cozeUserService = NewCozeUserService()
@@ -143,12 +158,10 @@ func getCozeUserService() *CozeUserService {
 	return cozeUserService
 }
 
-// getSaasUserInfo is a helper function to get user info from SaaS API
-func (u *userImpl) GetSaasUserInfo(ctx context.Context, userID int64) (*entity.User, error) {
-	return getCozeUserService().GetUserInfo(ctx, userID)
+func (u *userImpl) GetSaasUserInfo(ctx context.Context) (*entity.User, error) {
+	return getCozeUserService().GetUserInfo(ctx)
 }
 
-// GetUserBenefit implements SaasUserProvider.GetUserBenefit
-func (u *userImpl) GetUserBenefit(ctx context.Context, userID int64) (*entity.UserBenefit, error) {
-	return getCozeUserService().GetUserBenefit(ctx, userID)
+func (u *userImpl) GetUserBenefit(ctx context.Context) (*entity.UserBenefit, error) {
+	return getCozeUserService().GetUserBenefit(ctx)
 }

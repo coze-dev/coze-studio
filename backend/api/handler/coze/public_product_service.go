@@ -350,7 +350,7 @@ func PublicGetProductCallInfo(ctx context.Context, c *app.RequestContext) {
 	var req product_public_api.GetProductCallInfoRequest
 	err = c.BindAndValidate(&req)
 	if err != nil {
-		c.String(consts.StatusBadRequest, err.Error())
+		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 

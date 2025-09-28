@@ -17,39 +17,41 @@
 package entity
 
 // BenefitType represents the type of benefit
-type BenefitType int32
+type BenefitType string
 
 const (
-	BenefitTypeUnknown BenefitType = 0
+	BenefitTypeCallToolLimit BenefitType = "call_tool_limit"
 	// Add specific benefit types as needed
 )
 
-// UserLevel represents the user level
-type UserLevel int32
+// UserLevel represents the user level (string type to match API)
+type UserLevel string
 
 const (
-	UserLevelUnknown UserLevel = 0
-	UserLevelBasic   UserLevel = 1
-	UserLevelPro     UserLevel = 2
+	UserLevelUnknown    UserLevel = "unknown"
+	UserLevelBasic      UserLevel = "basic"
+	UserLevelPro        UserLevel = "pro"
+	UserLevelEnterprise UserLevel = "enterprise"
 	// Add more levels as needed
 )
 
-// EntityBenefitStatus represents the status of a benefit entity
-type EntityBenefitStatus int32
+// EntityBenefitStatus represents the status of a benefit entity (string type to match API)
+type EntityBenefitStatus string
 
 const (
-	EntityBenefitStatusUnknown EntityBenefitStatus = 0
-	EntityBenefitStatusActive  EntityBenefitStatus = 1
-	EntityBenefitStatusExpired EntityBenefitStatus = 2
+	EntityBenefitStatusUnknown EntityBenefitStatus = "unknown"
+	EntityBenefitStatusValid   EntityBenefitStatus = "valid"
+	EntityBenefitStatusExpired EntityBenefitStatus = "expired"
 	// Add more statuses as needed
 )
 
-// ResourceUsageStrategy represents the resource usage strategy
-type ResourceUsageStrategy int32
+// ResourceUsageStrategy represents the resource usage strategy (string type to match API)
+type ResourceUsageStrategy string
 
 const (
-	ResourceUsageStrategyUnknown ResourceUsageStrategy = 0
-	ResourceUsageStrategyByQuota ResourceUsageStrategy = 1
+	ResourceUsageStrategyUnknown ResourceUsageStrategy = "unknown"
+	ResourceUsageStrategyByQuota ResourceUsageStrategy = "quota"
+	ResourceUsageStrategyUnlimit ResourceUsageStrategy = "unlimit"
 	// Add more strategies as needed
 )
 
@@ -68,8 +70,8 @@ type GetEnterpriseBenefitResponse struct {
 
 // BenefitData represents the benefit data
 type BenefitData struct {
-	BasicInfo   *BasicInfo   `json:"basic_info,omitempty"`
-	BenefitInfo *BenefitInfo `json:"benefit_info,omitempty"`
+	BasicInfo   *BasicInfo    `json:"basic_info,omitempty"`
+	BenefitInfo []*BenefitInfo `json:"benefit_info,omitempty"`
 }
 
 // BasicInfo represents the basic information
@@ -79,73 +81,72 @@ type BasicInfo struct {
 
 // BenefitInfo represents the benefit information
 type BenefitInfo struct {
-	ResourceID  *string                `json:"resource_id,omitempty"`
-	BenefitType *BenefitType           `json:"benefit_type,omitempty"`
-	Basic       *BenefitTypeInfoItem   `json:"basic,omitempty"`       // Basic value
-	Extra       []*BenefitTypeInfoItem `json:"extra,omitempty"`       // Extra values, may not exist
+	ResourceID  string                `json:"resource_id,omitempty"`
+	BenefitType BenefitType           `json:"benefit_type,omitempty"`
+	Basic       *BenefitTypeInfoItem  `json:"basic,omitempty"` // Basic value
+	Extra       []*BenefitTypeInfoItem `json:"extra,omitempty"` // Extra values, may not exist
 }
 
 // BenefitTypeInfoItem represents a benefit type info item
 type BenefitTypeInfoItem struct {
-	ItemID    *string              `json:"item_id,omitempty"`
+	ItemID    string               `json:"item_id,omitempty"`
 	ItemInfo  *CommonCounter       `json:"item_info,omitempty"`
-	Status    *EntityBenefitStatus `json:"status,omitempty"`
-	BenefitID *string              `json:"benefit_id,omitempty"`
+	Status    EntityBenefitStatus  `json:"status,omitempty"`
+	BenefitID string               `json:"benefit_id,omitempty"`
 }
 
 // CommonCounter represents a common counter
 type CommonCounter struct {
-	Used     *float64               `json:"used,omitempty"`     // Used amount when Strategy == ByQuota, returns 0 if no usage data
-	Total    *float64               `json:"total,omitempty"`    // Total limit when Strategy == ByQuota
-	Strategy *ResourceUsageStrategy `json:"strategy,omitempty"` // Resource usage strategy
-	StartAt  *int64                 `json:"start_at,omitempty"` // Start time in seconds
-	EndAt    *int64                 `json:"end_at,omitempty"`   // End time in seconds
+	Used     float64                `json:"used,omitempty"`     // Used amount when Strategy == ByQuota, returns 0 if no usage data
+	Total    float64                `json:"total,omitempty"`    // Total limit when Strategy == ByQuota
+	Strategy ResourceUsageStrategy  `json:"strategy,omitempty"` // Resource usage strategy
+	StartAt  int64                  `json:"start_at,omitempty"` // Start time in seconds
+	EndAt    int64                  `json:"end_at,omitempty"`   // End time in seconds
 }
 
 // String methods for enums (for better debugging and logging)
 
+// String methods for enums (for better debugging and logging)
 func (bt BenefitType) String() string {
-	switch bt {
-	case BenefitTypeUnknown:
-		return "Unknown"
-	default:
-		return "Unknown"
-	}
+	return string(bt)
 }
 
 func (ul UserLevel) String() string {
-	switch ul {
-	case UserLevelUnknown:
-		return "Unknown"
-	case UserLevelBasic:
-		return "Basic"
-	case UserLevelPro:
-		return "Pro"
-	default:
-		return "Unknown"
-	}
+	return string(ul)
 }
 
 func (ebs EntityBenefitStatus) String() string {
-	switch ebs {
-	case EntityBenefitStatusUnknown:
-		return "Unknown"
-	case EntityBenefitStatusActive:
-		return "Active"
-	case EntityBenefitStatusExpired:
-		return "Expired"
-	default:
-		return "Unknown"
-	}
+	return string(ebs)
 }
 
 func (rus ResourceUsageStrategy) String() string {
-	switch rus {
-	case ResourceUsageStrategyUnknown:
-		return "Unknown"
-	case ResourceUsageStrategyByQuota:
-		return "ByQuota"
+	return string(rus)
+}
+
+// Validation methods
+func (ul UserLevel) IsValid() bool {
+	switch ul {
+	case UserLevelUnknown, UserLevelBasic, UserLevelPro, UserLevelEnterprise:
+		return true
 	default:
-		return "Unknown"
+		return false
+	}
+}
+
+func (ebs EntityBenefitStatus) IsValid() bool {
+	switch ebs {
+	case EntityBenefitStatusUnknown, EntityBenefitStatusValid, EntityBenefitStatusExpired:
+		return true
+	default:
+		return false
+	}
+}
+
+func (rus ResourceUsageStrategy) IsValid() bool {
+	switch rus {
+	case ResourceUsageStrategyUnknown, ResourceUsageStrategyByQuota, ResourceUsageStrategyUnlimit:
+		return true
+	default:
+		return false
 	}
 }
