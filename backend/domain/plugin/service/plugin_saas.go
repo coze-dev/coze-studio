@@ -23,7 +23,8 @@ import (
 	"strconv"
 
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	domainDto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -88,22 +89,22 @@ func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.Plugi
 	}
 
 	// 创建插件清单
-	manifest := &dto.PluginManifest{
+	manifest := &model.PluginManifest{
 		SchemaVersion:       "v1",
 		NameForModel:        metaInfo.Name,
 		NameForHuman:        metaInfo.Name,
 		DescriptionForModel: metaInfo.Description,
 		DescriptionForHuman: metaInfo.Description,
 		LogoURL:             metaInfo.IconURL,
-		Auth: &dto.AuthV2{
-			Type: dto.AuthzTypeOfNone,
+		Auth: &model.AuthV2{
+			Type: consts.AuthzTypeOfNone,
 		},
-		API: dto.APIDesc{
+		API: model.APIDesc{
 			Type: "openapi",
 		},
 	}
 
-	pluginInfo := &dto.PluginInfo{
+	pluginInfo := &model.PluginInfo{
 		ID:          pluginID,
 		PluginType:  pluginCommon.PluginType_PLUGIN,
 		SpaceID:     0,
@@ -127,22 +128,22 @@ func convertCozePluginToEntity(cozePlugin CozePlugin) *entity.PluginInfo {
 		pluginID = int64(simpleHash(cozePlugin.ID))
 	}
 
-	manifest := &dto.PluginManifest{
+	manifest := &model.PluginManifest{
 		SchemaVersion:       "v1",
 		NameForModel:        cozePlugin.Name,
 		NameForHuman:        cozePlugin.Name,
 		DescriptionForModel: cozePlugin.Description,
 		DescriptionForHuman: cozePlugin.Description,
 		LogoURL:             cozePlugin.IconURL,
-		Auth: &dto.AuthV2{
-			Type: dto.AuthzTypeOfNone,
+		Auth: &model.AuthV2{
+			Type: consts.AuthzTypeOfNone,
 		},
-		API: dto.APIDesc{
+		API: model.APIDesc{
 			Type: "openapi",
 		},
 	}
 
-	pluginInfo := &dto.PluginInfo{
+	pluginInfo := &model.PluginInfo{
 		ID:          pluginID,
 		PluginType:  pluginCommon.PluginType_PLUGIN,
 		SpaceID:     0,

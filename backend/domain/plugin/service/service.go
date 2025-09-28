@@ -84,7 +84,7 @@ type PluginService interface {
 	GetSaasPluginInfo(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
 	ListSaasPluginCategories(ctx context.Context, req *dto.ListPluginCategoriesRequest) (resp *dto.ListPluginCategoriesResponse, err error)
 
-	OAuthCode(ctx context.Context, code string, state *entity.OAuthState) (err error)
-	GetAccessToken(ctx context.Context, oa *entity.OAuthInfo) (accessToken string, err error)
-	RevokeAccessToken(ctx context.Context, meta *entity.AuthorizationCodeMeta) (err error)
+	OAuthCode(ctx context.Context, code string, state *dto.OAuthState) (err error)
+	GetAccessToken(ctx context.Context, oa *dto.OAuthInfo) (accessToken string, err error)
+	RevokeAccessToken(ctx context.Context, meta *dto.AuthorizationCodeMeta) (err error)
 }

@@ -18,6 +18,7 @@ package plugin
 
 import (
 	"context"
+	"strconv"
 	"strings"
 	"time"
 
@@ -315,72 +316,6 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 	return plugin, nil
 }
 
-func (p *PluginApplicationService) OauthAuthorizationCode(ctx context.Context, req *botOpenAPI.OauthAuthorizationCodeReq) (resp *botOpenAPI.OauthAuthorizationCodeResp, err error) {
-	stateStr, err := url.QueryUnescape(req.State)
-	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
-	}
-
-	secret := os.Getenv(encrypt.StateSecretEnv)
-	if secret == "" {
-		secret = encrypt.DefaultStateSecret
-	}
-
-	stateBytes, err := encrypt.DecryptByAES(stateStr, secret)
-	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
-	}
-
-	state := &entity.OAuthState{}
-	err = json.Unmarshal(stateBytes, state)
-	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
-	}
-
-	err = p.DomainSVC.OAuthCode(ctx, req.Code, state)
-	if err != nil {
-		return nil, errorx.WrapByCode(err, errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "authorize failed"))
-	}
-
-	resp = &botOpenAPI.OauthAuthorizationCodeResp{}
-
-	return resp, nil
-}
-
-func (p *PluginApplicationService) GetQueriedOAuthPluginList(ctx context.Context, req *pluginAPI.GetQueriedOAuthPluginListRequest) (resp *pluginAPI.GetQueriedOAuthPluginListResponse, err error) {
-	userID := ctxutil.GetUIDFromCtx(ctx)
-	if userID == nil {
-		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
-	}
-
-	status, err := p.DomainSVC.GetAgentPluginsOAuthStatus(ctx, *userID, req.BotID)
-	if err != nil {
-		return nil, errorx.Wrapf(err, "GetAgentPluginsOAuthStatus failed, userID=%d, agentID=%d", *userID, req.BotID)
-	}
-
-	if len(status) == 0 {
-		return &pluginAPI.GetQueriedOAuthPluginListResponse{
-			OauthPluginList: []*pluginAPI.OAuthPluginInfo{},
-		}, nil
-	}
-
-	oauthPluginList := make([]*pluginAPI.OAuthPluginInfo, 0, len(status))
-	for _, s := range status {
-		oauthPluginList = append(oauthPluginList, &pluginAPI.OAuthPluginInfo{
-			PluginID:   s.PluginID,
-			Status:     s.Status,
-			Name:       s.PluginName,
-			PluginIcon: s.PluginIconURL,
-		})
-	}
-
-	resp = &pluginAPI.GetQueriedOAuthPluginListResponse{
-		OauthPluginList: oauthPluginList,
-	}
-
-	return resp, nil
-}
-
 // convertPluginToProductInfo converts a plugin entity to ProductInfo
 func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductInfo {
 	return &productAPI.ProductInfo{
@@ -580,7 +515,7 @@ func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 
 	// Build response data
 	data := &productAPI.GetProductCallInfoData{
-		McpJSON:   "", // TODO: Set appropriate MCP JSON based on requirements
+		McpJSON:   "",                        // TODO: Set appropriate MCP JSON based on requirements
 		UserLevel: productAPI.UserLevel_Free, // TODO: Map from userBenefit to appropriate UserLevel
 	}
 
