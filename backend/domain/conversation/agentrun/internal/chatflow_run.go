@@ -82,11 +82,11 @@ func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) 
 			"USER_INPUT": concatWfInput(art),
 		}
 		if art.GetRunMeta().ChatflowParameters != nil {
-			for k,v := range art.GetRunMeta().ChatflowParameters {
+			for k, v := range art.GetRunMeta().ChatflowParameters {
 				chatInput[k] = v
 			}
 		}
-		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig,  chatInput)
+		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig, chatInput)
 	}
 	if err != nil {
 		return err

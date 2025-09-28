@@ -183,9 +183,9 @@ func parseChatflowParameters(ctx context.Context, ar *run.ChatV3Request) (map[st
 		if err := json.Unmarshal([]byte(*ar.Parameters), &parameters); err != nil {
 			return nil, errors.New("parameters field should be an object, not a string")
 		}
-		return parameters,nil
+		return parameters, nil
 	}
-	return parameters,nil
+	return parameters, nil
 }
 
 func (a *OpenapiAgentRunApplication) buildTools(ctx context.Context, shortcmd *run.ShortcutCommandDetail) ([]*entity.Tool, error) {

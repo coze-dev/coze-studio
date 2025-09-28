@@ -58,10 +58,10 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, agentRuntim
 ) *model.ExecuteRequest {
 
 	return &model.ExecuteRequest{
-		Identity: c.buildIdentity(agentRuntime),
-		Input:    agentRuntime.Input,
-		History:  agentRuntime.HistoryMsg,
-		UserID:   agentRuntime.UserID,
+		Identity:        c.buildIdentity(agentRuntime),
+		Input:           agentRuntime.Input,
+		History:         agentRuntime.HistoryMsg,
+		UserID:          agentRuntime.UserID,
 		CustomVariables: agentRuntime.CustomVariables,
 		PreCallTools: slices.Transform(agentRuntime.PreRetrieveTools, func(tool *agentrun.Tool) *agentrun.ToolsRetriever {
 			return &agentrun.ToolsRetriever{
