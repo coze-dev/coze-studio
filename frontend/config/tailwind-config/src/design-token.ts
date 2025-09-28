@@ -105,4 +105,4 @@ function borderRadiusTransformer(borderRadiusObj: Record<string, string>) {
 
 // Get other packages and splice /src /**/*.{ ts, tsx}
 
-export { getTailwindContents } from './tailwind-contents';
+export { getTailwindContents } from './tailwind-contents.js';

@@ -53,10 +53,18 @@ common/temp
 .rush
 .eslintcache
 
+# Python virtual environment
+venv/
+.venv/
+*.venv
+
 
 backend/conf/model/*.yaml
 values-dev.yaml
 **/conf/model_ark_doubao-seed-1.6.yaml
 
 *.tsbuildinfo
+
+# Generated i18n locale data files
+frontend/packages/arch/resources/studio-i18n-resource/src/locale-data.d.ts
 
