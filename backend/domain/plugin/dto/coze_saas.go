@@ -110,19 +110,15 @@ type PluginCategoryItem struct {
 	Name string `json:"name"`
 }
 
-
-
 type GetSaasPluginCallInfoRequest struct {
 	PluginID int64 `json:"plugin_id"`
 }
 
 type GetSaasPluginCallInfoResponse struct {
-	Code int                    `json:"code"`
-	Msg  string                 `json:"msg"`
+	Code int                        `json:"code"`
+	Msg  string                     `json:"msg"`
 	Data *GetSaasPluginCallInfoData `json:"data"`
 }
 
 type GetSaasPluginCallInfoData struct {
-
 }
-

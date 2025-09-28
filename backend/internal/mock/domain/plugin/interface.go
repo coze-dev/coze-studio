@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	dto "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/dto"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	dto0 "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	entity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	gomock "go.uber.org/mock/gomock"
@@ -189,14 +189,14 @@ func (mr *MockPluginServiceMockRecorder) DuplicateDraftAgentTools(ctx, fromAgent
 }
 
 // ExecuteTool mocks base method.
-func (m *MockPluginService) ExecuteTool(ctx context.Context, req *dto.ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (*dto.ExecuteToolResponse, error) {
+func (m *MockPluginService) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (*model.ExecuteToolResponse, error) {
 	m.ctrl.T.Helper()
 	varargs := []any{ctx, req}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "ExecuteTool", varargs...)
-	ret0, _ := ret[0].(*dto.ExecuteToolResponse)
+	ret0, _ := ret[0].(*model.ExecuteToolResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -450,7 +450,7 @@ func (mr *MockPluginServiceMockRecorder) ListSaasPluginProducts(ctx, req any) *g
 }
 
 // MGetAgentTools mocks base method.
-func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *dto.MGetAgentToolsRequest) ([]*entity.ToolInfo, error) {
+func (m *MockPluginService) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) ([]*entity.ToolInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetAgentTools", ctx, req)
 	ret0, _ := ret[0].([]*entity.ToolInfo)
@@ -525,10 +525,10 @@ func (mr *MockPluginServiceMockRecorder) MGetOnlineTools(ctx, toolIDs any) *gomo
 }
 
 // MGetPluginLatestVersion mocks base method.
-func (m *MockPluginService) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (*dto.MGetPluginLatestVersionResponse, error) {
+func (m *MockPluginService) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (*model.MGetPluginLatestVersionResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MGetPluginLatestVersion", ctx, pluginIDs)
-	ret0, _ := ret[0].(*dto.MGetPluginLatestVersionResponse)
+	ret0, _ := ret[0].(*model.MGetPluginLatestVersionResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -599,10 +599,10 @@ func (mr *MockPluginServiceMockRecorder) OAuthCode(ctx, code, state any) *gomock
 }
 
 // PublishAPPPlugins mocks base method.
-func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *dto.PublishAPPPluginsRequest) (*dto.PublishAPPPluginsResponse, error) {
+func (m *MockPluginService) PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (*model.PublishAPPPluginsResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishAPPPlugins", ctx, req)
-	ret0, _ := ret[0].(*dto.PublishAPPPluginsResponse)
+	ret0, _ := ret[0].(*model.PublishAPPPluginsResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -628,7 +628,7 @@ func (mr *MockPluginServiceMockRecorder) PublishAgentTools(ctx, agentID, agentVe
 }
 
 // PublishPlugin mocks base method.
-func (m *MockPluginService) PublishPlugin(ctx context.Context, req *dto.PublishPluginRequest) error {
+func (m *MockPluginService) PublishPlugin(ctx context.Context, req *model.PublishPluginRequest) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "PublishPlugin", ctx, req)
 	ret0, _ := ret[0].(error)
