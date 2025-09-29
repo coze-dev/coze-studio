@@ -26,6 +26,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/cache"
 )
 
+type Cmdable = cache.Cmdable
+
 func New() cache.Cmdable {
 	addr := os.Getenv("REDIS_ADDR")
 	password := os.Getenv("REDIS_PASSWORD")

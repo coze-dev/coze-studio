@@ -18,7 +18,7 @@ package eventbus
 
 import "context"
 
-//go:generate  mockgen -destination ../../../internal/mock/infra/eventbus/eventbus_mock.go -package mock -source eventbus.go Factory
+//go:generate  mockgen -destination ../../internal/mock/infra/eventbus/eventbus_mock.go -package mock -source eventbus.go Factory
 type Producer interface {
 	Send(ctx context.Context, body []byte, opts ...SendOpt) error
 	BatchSend(ctx context.Context, bodyArr [][]byte, opts ...SendOpt) error

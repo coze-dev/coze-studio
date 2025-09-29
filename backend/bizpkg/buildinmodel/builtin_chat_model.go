@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package appinfra
+package buildinmodel
 
 import (
 	"context"
@@ -22,18 +22,18 @@ import (
 	"os"
 	"strconv"
 
-	ao "github.com/cloudwego/eino-ext/components/model/ark"
+	"github.com/cloudwego/eino-ext/components/model/ark"
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino-ext/components/model/gemini"
 	"github.com/cloudwego/eino-ext/components/model/ollama"
-	mo "github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino-ext/components/model/qwen"
 	"google.golang.org/genai"
 
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 )
 
-func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {
+func GetBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {
 	getEnv := func(key string) string {
 		if val := os.Getenv(envPrefix + key); val != "" {
 			return val
@@ -44,14 +44,14 @@ func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.B
 	switch getEnv("BUILTIN_CM_TYPE") {
 	case "openai":
 		byAzure, _ := strconv.ParseBool(getEnv("BUILTIN_CM_OPENAI_BY_AZURE"))
-		bcm, err = mo.NewChatModel(ctx, &mo.ChatModelConfig{
+		bcm, err = openai.NewChatModel(ctx, &openai.ChatModelConfig{
 			APIKey:  getEnv("BUILTIN_CM_OPENAI_API_KEY"),
 			ByAzure: byAzure,
 			BaseURL: getEnv("BUILTIN_CM_OPENAI_BASE_URL"),
 			Model:   getEnv("BUILTIN_CM_OPENAI_MODEL"),
 		})
 	case "ark":
-		bcm, err = ao.NewChatModel(ctx, &ao.ChatModelConfig{
+		bcm, err = ark.NewChatModel(ctx, &ark.ChatModelConfig{
 			APIKey:  getEnv("BUILTIN_CM_ARK_API_KEY"),
 			Model:   getEnv("BUILTIN_CM_ARK_MODEL"),
 			BaseURL: getEnv("BUILTIN_CM_ARK_BASE_URL"),

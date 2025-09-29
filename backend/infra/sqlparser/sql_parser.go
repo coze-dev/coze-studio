@@ -78,3 +78,5 @@ type SQLParser interface {
 	// AddSelectFieldsToSelectSQL add select fields to select sql
 	AddSelectFieldsToSelectSQL(origSQL string, cols []string) (string, error)
 }
+
+var New func() SQLParser

@@ -19,12 +19,12 @@ package ppstructure
 import (
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/fileutil"
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser/impl/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 )
 
 func NewManager(apiConfig *APIConfig, ocr ocr.OCR, storage storage.Storage, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
@@ -64,7 +64,7 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 		pFn = builtin.ParseMarkdown(config, m.storage, m.ocr)
 		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionDocx:
-		pFn = builtin.ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_docx.py"))
+		pFn = builtin.ParseByPython(config, m.storage, m.ocr, fileutil.GetPython3Path(), fileutil.GetPythonFilePath("parse_docx.py"))
 		return &builtin.Parser{ParseFn: pFn}, nil
 	case parser.FileExtensionCSV:
 		pFn = builtin.ParseCSV(config)

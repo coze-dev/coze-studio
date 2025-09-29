@@ -46,8 +46,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/rdb"
 	entity3 "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
 	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -1044,8 +1044,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("SQL is empty")
 	}
 
-	// TODO(@fanlv) : domain 不依赖 impl
-	operation, err := sqlparser.NewSQLParser().GetSQLOperation(*req.SQL)
+	operation, err := sqlparser.New().GetSQLOperation(*req.SQL)
 	if err != nil {
 		return nil, err
 	}
@@ -1072,7 +1071,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		},
 	}
 
-	parsedSQL, err := sqlparser.NewSQLParser().ParseAndModifySQL(*req.SQL, tableColumnMapping)
+	parsedSQL, err := sqlparser.New().ParseAndModifySQL(*req.SQL, tableColumnMapping)
 	if err != nil {
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
@@ -1080,7 +1079,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && len(req.UserID) != 0 {
 		switch operation {
 		case sqlparsercontract.OperationTypeSelect, sqlparsercontract.OperationTypeUpdate, sqlparsercontract.OperationTypeDelete:
-			parsedSQL, err = sqlparser.NewSQLParser().AppendSQLFilter(parsedSQL, sqlparsercontract.SQLFilterOpAnd, fmt.Sprintf("%s = '%s'", database.DefaultUidColName, req.UserID))
+			parsedSQL, err = sqlparser.New().AppendSQLFilter(parsedSQL, sqlparsercontract.SQLFilterOpAnd, fmt.Sprintf("%s = '%s'", database.DefaultUidColName, req.UserID))
 			if err != nil {
 				return nil, fmt.Errorf("append sql filter failed: %v", err)
 			}
@@ -1092,7 +1091,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		if req.ConnectorID != nil {
 			cid = *req.ConnectorID
 		}
-		nums, err := sqlparser.NewSQLParser().GetInsertDataNums(parsedSQL)
+		nums, err := sqlparser.New().GetInsertDataNums(parsedSQL)
 		if err != nil {
 			return nil, err
 		}
@@ -1114,7 +1113,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 			for i, id := range ids {
 				iIDs[i] = id
 			}
-			parsedSQL, _, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
+			parsedSQL, _, err = sqlparser.New().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
 				{
 					ColName: database.DefaultCidColName,
 					Value:   cid,
@@ -1128,7 +1127,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
 			}
 		} else if req.SQLType == database.SQLType_Parameterized {
-			parsedSQL, existingCols, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
+			parsedSQL, existingCols, err = sqlparser.New().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
 				{
 					ColName: database.DefaultCidColName,
 				},

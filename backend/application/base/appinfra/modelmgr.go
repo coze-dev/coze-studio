@@ -31,6 +31,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
+// TODO(fanlv) : 模型管理移到 Infra
+
 func initModelMgr() (modelmgr.Manager, error) {
 	wd, err := os.Getwd()
 	if err != nil {

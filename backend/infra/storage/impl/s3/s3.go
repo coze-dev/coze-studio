@@ -62,7 +62,7 @@ func getS3Client(ctx context.Context, ak, sk, bucketName, endpoint, region strin
 		}, nil
 	})
 	cfg, err := config.LoadDefaultConfig(
-		context.TODO(),
+		ctx,
 		config.WithCredentialsProvider(creds),
 		config.WithEndpointResolverWithOptions(customResolver),
 		config.WithRegion("auto"),

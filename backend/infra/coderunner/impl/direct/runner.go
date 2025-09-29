@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"os/exec"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/fileutil"
 	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
-	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 )
 
@@ -78,7 +78,7 @@ func (r *runner) pythonCmdRun(_ context.Context, code string, params map[string]
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal params to json, err: %w", err)
 	}
-	cmd := exec.Command(goutil.GetPython3Path(), "-c", fmt.Sprintf(pythonCode, code), string(bs)) // ignore_security_alert RCE
+	cmd := exec.Command(fileutil.GetPython3Path(), "-c", fmt.Sprintf(pythonCode, code), string(bs)) // ignore_security_alert RCE
 	stdout := new(bytes.Buffer)
 	stderr := new(bytes.Buffer)
 	cmd.Stdout = stdout

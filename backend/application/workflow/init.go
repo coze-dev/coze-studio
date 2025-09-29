@@ -28,8 +28,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
-
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
@@ -40,7 +38,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
-	workflowservice "github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/infra/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
@@ -101,8 +98,8 @@ func InitService(_ context.Context, components *ServiceComponents) (*Application
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
 	wrapPlugin.SetOSS(components.Tos)
 
-	code.SetCodeRunner(components.CodeRunner)
-	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())
+	coderunner.SetCodeRunner(components.CodeRunner)
+	callbacks.AppendGlobalHandlers(service.GetTokenCallbackHandler())
 
 	setEventBus(components.DomainNotifier)
 

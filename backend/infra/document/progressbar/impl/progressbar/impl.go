@@ -42,8 +42,8 @@ const (
 	ProgressBarTotalNumRedisKey     = "RedisBiz.Knowledge_ProgressBar_TotalNum_%d"
 	ProgressBarProcessedNumRedisKey = "RedisBiz.Knowledge_ProgressBar_ProcessedNum_%d"
 	DefaultProcessTime              = 300
-	ProcessDone                     = 100
-	ProcessInit                     = 0
+	ProcessDone                     = progressbar.ProcessDone
+	ProcessInit                     = progressbar.ProcessInit
 )
 
 func NewProgressBar(ctx context.Context, pkID int64, total int64, CacheCli cache.Cmdable, needInit bool) progressbar.ProgressBar {
@@ -142,6 +142,9 @@ func (p *ProgressBarImpl) GetProgress(ctx context.Context) (percent int, remainS
 	if ptr.From(startTime) == 0 {
 		remainSec = DefaultProcessTime
 	} else {
+		if ptr.From(processedNum) == 0 {
+			return
+		}
 		usedSec := time.Now().Unix() - ptr.From(startTime)
 		remainSec = int(float64(ptr.From(totalNum)-ptr.From(processedNum)) / float64(ptr.From(processedNum)) * float64(usedSec))
 	}

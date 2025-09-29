@@ -27,8 +27,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/rdb"
 	"github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
-	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -657,12 +656,12 @@ func (m *mysqlService) ExecuteSQL(ctx context.Context, req *rdb.ExecuteSQLReques
 		}
 	}
 
-	operation, err := sqlparser.NewSQLParser().GetSQLOperation(processedSQL)
+	operation, err := sqlparser.New().GetSQLOperation(processedSQL)
 	if err != nil {
 		return nil, err
 	}
 
-	if operation != sqlparsercontract.OperationTypeSelect {
+	if operation != sqlparser.OperationTypeSelect {
 		result := m.db.WithContext(ctx).Exec(processedSQL, processedParams...)
 		if result.Error != nil {
 			return nil, fmt.Errorf("failed to execute SQL: %v", result.Error)

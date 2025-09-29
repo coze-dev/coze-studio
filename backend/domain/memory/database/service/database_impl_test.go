@@ -37,6 +37,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/repository"
 	"github.com/coze-dev/coze-studio/backend/infra/rdb"
 	rdb2 "github.com/coze-dev/coze-studio/backend/infra/rdb/impl/rdb"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	sqlparserImpl "github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
 	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/idgen"
 	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -44,6 +46,8 @@ import (
 )
 
 func setupTestEnv(t *testing.T) (*gorm.DB, rdb.RDB, *mock.MockIDGenerator, repository.DraftDAO, repository.OnlineDAO, Database) {
+	sqlparser.New = sqlparserImpl.NewSQLParser
+
 	dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
 	if os.Getenv("CI_JOB_NAME") != "" {
 		dsn = strings.ReplaceAll(dsn, "127.0.0.1", "mysql")

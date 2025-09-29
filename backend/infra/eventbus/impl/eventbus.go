@@ -77,3 +77,35 @@ func NewProducer(nameServer, topic, group string, retries int) (eventbus.Produce
 
 	return nil, fmt.Errorf("invalid mq type: %s , only support nsq, kafka, rmq, pulsar", tp)
 }
+
+func InitResourceEventBusProducer() (eventbus.Producer, error) {
+	nameServer := os.Getenv(consts.MQServer)
+	resourceEventBusProducer, err := NewProducer(nameServer,
+		consts.RMQTopicResource, consts.RMQConsumeGroupResource, 1)
+	if err != nil {
+		return nil, fmt.Errorf("init resource producer failed, err=%w", err)
+	}
+
+	return resourceEventBusProducer, nil
+}
+
+func InitAppEventProducer() (eventbus.Producer, error) {
+	nameServer := os.Getenv(consts.MQServer)
+	appEventProducer, err := NewProducer(nameServer, consts.RMQTopicApp, consts.RMQConsumeGroupApp, 1)
+	if err != nil {
+		return nil, fmt.Errorf("init app producer failed, err=%w", err)
+	}
+
+	return appEventProducer, nil
+}
+
+func InitKnowledgeEventBusProducer() (eventbus.Producer, error) {
+	nameServer := os.Getenv(consts.MQServer)
+
+	knowledgeProducer, err := NewProducer(nameServer, consts.RMQTopicKnowledge, consts.RMQConsumeGroupKnowledge, 2)
+	if err != nil {
+		return nil, fmt.Errorf("init knowledge producer failed, err=%w", err)
+	}
+
+	return knowledgeProducer, nil
+}

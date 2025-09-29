@@ -70,8 +70,12 @@ import (
 	workflowImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/workflow"
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel/impl/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/checkpoint"
+	"github.com/coze-dev/coze-studio/backend/infra/document/progressbar"
+	progressBarImpl "github.com/coze-dev/coze-studio/backend/infra/document/progressbar/impl/progressbar"
 	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
 	implEventbus "github.com/coze-dev/coze-studio/backend/infra/eventbus/impl"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	sqlparserImpl "github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
 )
 
 type eventbusImpl struct {
@@ -115,6 +119,9 @@ func Init(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
+
+	progressbar.New = progressBarImpl.NewProgressBar
+	sqlparser.New = sqlparserImpl.NewSQLParser
 
 	eventbus := initEventBus(infra)
 

@@ -50,7 +50,7 @@ func New(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName
 	return m, nil
 }
 
-func getMinioClient(_ context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (*minioClient, error) {
+func getMinioClient(ctx context.Context, endpoint, accessKeyID, secretAccessKey, bucketName string, useSSL bool) (*minioClient, error) {
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(accessKeyID, secretAccessKey, ""),
 		Secure: useSSL,
@@ -67,7 +67,7 @@ func getMinioClient(_ context.Context, endpoint, accessKeyID, secretAccessKey, b
 		endpoint:        endpoint,
 	}
 
-	err = m.createBucketIfNeed(context.Background(), client, bucketName, "cn-north-1")
+	err = m.createBucketIfNeed(ctx, client, bucketName, "cn-north-1")
 	if err != nil {
 		return nil, fmt.Errorf("init minio client failed %v", err)
 	}

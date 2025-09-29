@@ -19,11 +19,11 @@ package builtin
 import (
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/fileutil"
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 )
 
 func NewManager(storage storage.Storage, ocr ocr.OCR, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
@@ -52,13 +52,13 @@ func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {
 
 	switch config.FileExtension {
 	case parser.FileExtensionPDF:
-		pFn = ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_pdf.py"))
+		pFn = ParseByPython(config, m.storage, m.ocr, fileutil.GetPython3Path(), fileutil.GetPythonFilePath("parse_pdf.py"))
 	case parser.FileExtensionTXT:
 		pFn = ParseText(config)
 	case parser.FileExtensionMarkdown:
 		pFn = ParseMarkdown(config, m.storage, m.ocr)
 	case parser.FileExtensionDocx:
-		pFn = ParseByPython(config, m.storage, m.ocr, goutil.GetPython3Path(), goutil.GetPythonFilePath("parse_docx.py"))
+		pFn = ParseByPython(config, m.storage, m.ocr, fileutil.GetPython3Path(), fileutil.GetPythonFilePath("parse_docx.py"))
 	case parser.FileExtensionCSV:
 		pFn = ParseCSV(config)
 	case parser.FileExtensionXLSX:

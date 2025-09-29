@@ -19,6 +19,7 @@ package veimagex
 import (
 	"context"
 	"errors"
+	"os"
 	"time"
 
 	"github.com/volcengine/volc-sdk-golang/base"
@@ -26,7 +27,19 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
+
+func NewDefault() (imagex.ImageX, error) {
+	return New(
+		os.Getenv(consts.VeImageXAK),
+		os.Getenv(consts.VeImageXSK),
+		os.Getenv(consts.VeImageXDomain),
+		os.Getenv(consts.VeImageXUploadHost),
+		os.Getenv(consts.VeImageXTemplate),
+		[]string{os.Getenv(consts.VeImageXServerID)},
+	)
+}
 
 func New(ak, sk, domain, uploadHost, template string, serverIDs []string) (imagex.ImageX, error) {
 	instance := veimagex.DefaultInstance

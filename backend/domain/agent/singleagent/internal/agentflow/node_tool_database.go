@@ -35,7 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	"github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -79,8 +79,7 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 		tableType = table.TableType_DraftTable
 	}
 
-	// TODO(@fanlv): domain 不能依赖具体 impl
-	tableName, err := sqlparser.NewSQLParser().GetTableName(req.SQL)
+	tableName, err := sqlparser.New().GetTableName(req.SQL)
 	if err != nil {
 		return "", err
 	}

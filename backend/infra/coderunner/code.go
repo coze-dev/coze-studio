@@ -38,3 +38,13 @@ type RunResponse struct {
 type Runner interface {
 	Run(ctx context.Context, request *RunRequest) (*RunResponse, error)
 }
+
+func GetCodeRunner() Runner {
+	return runnerImpl
+}
+
+func SetCodeRunner(runner Runner) {
+	runnerImpl = runner
+}
+
+var runnerImpl Runner

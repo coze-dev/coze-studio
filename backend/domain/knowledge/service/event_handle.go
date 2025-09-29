@@ -35,8 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
 	"github.com/coze-dev/coze-studio/backend/infra/document"
-	progressbarContract "github.com/coze-dev/coze-studio/backend/infra/document/progressbar"
-	"github.com/coze-dev/coze-studio/backend/infra/document/progressbar/impl/progressbar"
+	"github.com/coze-dev/coze-studio/backend/infra/document/progressbar"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
 	"github.com/coze-dev/coze-studio/backend/infra/rdb"
@@ -379,9 +378,8 @@ func (k *knowledgeSVC) handleTableDocument(ctx context.Context,
 func (k *knowledgeSVC) processDocumentChunks(ctx context.Context,
 	doc *entity.Document, parseResult []*schema.Document, cacheRecord *indexDocCacheRecord) error {
 
-	// TODO(@fanlv): domain 不能依赖具体 impl
 	batchSize := 100
-	progressbar := progressbar.NewProgressBar(ctx, doc.ID,
+	progressbar := progressbar.New(ctx, doc.ID,
 		int64(len(parseResult)*len(k.searchStoreManagers)), k.cacheCli, true)
 
 	if err := progressbar.AddN(int(cacheRecord.LastProcessedNumber) * len(k.searchStoreManagers)); err != nil {
@@ -417,7 +415,7 @@ func (k *knowledgeSVC) finalizeDocumentIndexing(ctx context.Context, knowledgeID
 // batchProcessSlice processes a batch of document slices
 func (k *knowledgeSVC) batchProcessSlice(ctx context.Context, doc *entity.Document,
 	startIdx int, parseResult []*schema.Document, cacheRecord *indexDocCacheRecord,
-	progressBar progressbarContract.ProgressBar) error {
+	progressBar progressbar.ProgressBar) error {
 
 	collectionName := getCollectionName(doc.KnowledgeID)
 	length := len(parseResult)
@@ -640,7 +638,7 @@ func (k *knowledgeSVC) storeSlicesInDB(ctx context.Context, doc *entity.Document
 // indexSlicesInSearchStores indexes slices in appropriate search stores
 func (k *knowledgeSVC) indexSlicesInSearchStores(ctx context.Context, doc *entity.Document,
 	collectionName string, sliceEntities []*entity.Slice, cacheRecord *indexDocCacheRecord,
-	progressBar progressbarContract.ProgressBar) error {
+	progressBar progressbar.ProgressBar) error {
 
 	fields, err := k.mapSearchFields(doc)
 	if err != nil {

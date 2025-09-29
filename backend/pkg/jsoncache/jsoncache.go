@@ -74,7 +74,8 @@ func (g *JsonCache[T]) Get(ctx context.Context, k string) (*T, error) {
 }
 
 func (g *JsonCache[T]) Delete(ctx context.Context, k string) error {
-	if err := g.cache.Del(ctx, k).Err(); err != nil {
+	key := g.prefix + k
+	if err := g.cache.Del(ctx, key).Err(); err != nil {
 		return fmt.Errorf("failed to delete key %s: %w", k, err)
 	}
 	return nil

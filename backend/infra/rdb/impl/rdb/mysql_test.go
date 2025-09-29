@@ -30,6 +30,8 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/rdb"
 	entity2 "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	sqlparserImpl "github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
 	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
@@ -515,6 +517,8 @@ func TestSelectData(t *testing.T) {
 
 func TestExecuteSQL(t *testing.T) {
 	t.Run("success", func(t *testing.T) {
+		sqlparser.New = sqlparserImpl.NewSQLParser
+
 		db, svc := setupTestDB(t)
 		defer cleanupTestDB(t, db, "test_sql_table")
 

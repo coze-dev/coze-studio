@@ -45,7 +45,6 @@ import (
 	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/pluginmock"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -768,7 +767,7 @@ func TestCodeAndPluginNodes(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 		mockCodeRunner := mockcode.NewMockRunner(ctrl)
-		mockey.Mock(code.GetCodeRunner).Return(mockCodeRunner).Build()
+		mockey.Mock(coderunner.GetCodeRunner).Return(mockCodeRunner).Build()
 
 		mockRepo := mockWorkflow.NewMockRepository(ctrl)
 

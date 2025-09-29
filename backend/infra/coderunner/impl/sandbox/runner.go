@@ -23,15 +23,15 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/fileutil"
 	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
-	"github.com/coze-dev/coze-studio/backend/pkg/goutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 func NewRunner(config *Config) coderunner.Runner {
 	return &runner{
-		pyPath:     goutil.GetPython3Path(),
-		scriptPath: goutil.GetPythonFilePath("sandbox.py"),
+		pyPath:     fileutil.GetPython3Path(),
+		scriptPath: fileutil.GetPythonFilePath("sandbox.py"),
 		config:     config,
 	}
 }

@@ -26,7 +26,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/messages2query"
+	"github.com/coze-dev/coze-studio/backend/infra/document/messages2query"
 )
 
 func NewMessagesToQuery(_ context.Context, model chatmodel.BaseChatModel, template prompt.ChatTemplate) (messages2query.MessagesToQuery, error) {
