@@ -24,9 +24,8 @@ import (
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
-	chatmodel2 "github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/chatmodel/impl/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
@@ -37,7 +36,7 @@ type modelManager struct {
 
 func InitDomainService(m modelmgr.Manager, f chatmodel.Factory) crossmodelmgr.Manager {
 	if f == nil {
-		f = chatmodel2.NewDefaultFactory()
+		f = chatmodel.NewDefaultFactory()
 	}
 	return &modelManager{
 		modelMgr: m,

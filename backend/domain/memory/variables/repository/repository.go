@@ -24,7 +24,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 func NewVariableRepo(db *gorm.DB, generator idgen.IDGenerator) VariableRepository {

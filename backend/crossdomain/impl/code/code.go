@@ -17,7 +17,7 @@
 package code
 
 import (
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
+	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
 )
 
 func GetCodeRunner() coderunner.Runner {

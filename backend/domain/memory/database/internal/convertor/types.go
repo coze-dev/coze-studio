@@ -23,7 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
 )
 
 const (

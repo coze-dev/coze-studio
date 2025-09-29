@@ -20,7 +20,7 @@ import (
 	"context"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 )
 

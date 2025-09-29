@@ -15,7 +15,7 @@ import (
 
 	model "github.com/cloudwego/eino/components/model"
 	model0 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	modelmgr "github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
+	modelmgr "github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	gomock "go.uber.org/mock/gomock"
 )
 

@@ -23,7 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 func NewConversationRepo(db *gorm.DB, idGen idgen.IDGenerator) ConversationRepo {

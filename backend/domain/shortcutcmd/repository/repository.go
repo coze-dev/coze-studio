@@ -23,7 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 func NewShortCutCmdRepo(db *gorm.DB, idGen idgen.IDGenerator) ShortCutCmdRepo {

@@ -22,7 +22,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 )
 
 func getFormatType(tp knowledge.DocumentType) parser.FileExtension {

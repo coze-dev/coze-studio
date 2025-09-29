@@ -30,8 +30,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/repository"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/orm"
+	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/orm"
 )
 
 // Test_NewListMessage tests the NewListMessage function

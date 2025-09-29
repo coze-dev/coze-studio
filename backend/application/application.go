@@ -68,10 +68,10 @@ import (
 	uploadImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/upload"
 	variablesImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/variables"
 	workflowImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/workflow"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/checkpoint"
-	implEventbus "github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/chatmodel/impl/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/checkpoint"
+	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
+	implEventbus "github.com/coze-dev/coze-studio/backend/infra/eventbus/impl"
 )
 
 type eventbusImpl struct {

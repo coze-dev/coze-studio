@@ -30,7 +30,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/qwen"
 	"google.golang.org/genai"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 )
 
 func getBuiltinChatModel(ctx context.Context, envPrefix string) (bcm chatmodel.BaseChatModel, configured bool, err error) {

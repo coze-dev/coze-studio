@@ -31,13 +31,13 @@ import (
 
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/rdb"
-	producerMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/eventbus"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	"github.com/coze-dev/coze-studio/backend/infra/document/parser/impl/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/document/rerank/impl/rrf"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb/impl/rdb"
+	producerMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/eventbus"
+	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/idgen"
+	storageMock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 

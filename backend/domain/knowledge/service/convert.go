@@ -28,8 +28,8 @@ import (
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 

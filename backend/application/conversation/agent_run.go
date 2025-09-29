@@ -26,7 +26,6 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	crossDomainMessage "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
@@ -36,7 +35,7 @@ import (
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
-	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
+	sseImpl "github.com/coze-dev/coze-studio/backend/infra/sse/impl/sse"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"

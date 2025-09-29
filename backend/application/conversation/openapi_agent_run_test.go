@@ -33,7 +33,7 @@ import (
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
 	uploadEntity "github.com/coze-dev/coze-studio/backend/domain/upload/entity"
 	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
-	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
+	sseImpl "github.com/coze-dev/coze-studio/backend/infra/sse/impl/sse"
 	mockSingleAgent "github.com/coze-dev/coze-studio/backend/internal/mock/domain/agent/singleagent"
 	mockAgentRun "github.com/coze-dev/coze-studio/backend/internal/mock/domain/conversation/agentrun"
 	mockConversation "github.com/coze-dev/coze-studio/backend/internal/mock/domain/conversation/conversation"

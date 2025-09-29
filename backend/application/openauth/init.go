@@ -20,7 +20,7 @@ import (
 	"gorm.io/gorm"
 
 	openapiauth2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 var (

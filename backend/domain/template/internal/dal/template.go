@@ -26,7 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/template/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/template/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/template/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 var (

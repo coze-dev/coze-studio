@@ -28,7 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"

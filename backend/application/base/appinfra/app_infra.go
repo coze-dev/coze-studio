@@ -38,43 +38,43 @@ import (
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/ocr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/rerank"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/embedding"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/messages2query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/cache/redis"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/direct"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/coderunner/sandbox"
-	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/impl/document/nl2sql/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/ppocr"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/ocr/veocr"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/parser/ppstructure"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/rrf"
-	vikingReranker "github.com/coze-dev/coze-studio/backend/infra/impl/document/rerank/vikingdb"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/elasticsearch"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/milvus"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/oceanbase"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/searchstore/vikingdb"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/ark"
-	embeddingHttp "github.com/coze-dev/coze-studio/backend/infra/impl/embedding/http"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/embedding/wrap"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/es"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/imagex/veimagex"
-	builtinM2Q "github.com/coze-dev/coze-studio/backend/infra/impl/messages2query/builtin"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/mysql"
-	oceanbaseClient "github.com/coze-dev/coze-studio/backend/infra/impl/oceanbase"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/cache/impl/redis"
+	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
+	"github.com/coze-dev/coze-studio/backend/infra/coderunner/impl/direct"
+	"github.com/coze-dev/coze-studio/backend/infra/coderunner/impl/sandbox"
+	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql"
+	builtinNL2SQL "github.com/coze-dev/coze-studio/backend/infra/document/nl2sql/impl/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/document/ocr"
+	"github.com/coze-dev/coze-studio/backend/infra/document/ocr/impl/ppocr"
+	"github.com/coze-dev/coze-studio/backend/infra/document/ocr/impl/veocr"
+	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
+	"github.com/coze-dev/coze-studio/backend/infra/document/parser/impl/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/document/parser/impl/ppstructure"
+	"github.com/coze-dev/coze-studio/backend/infra/document/rerank"
+	"github.com/coze-dev/coze-studio/backend/infra/document/rerank/impl/rrf"
+	vikingReranker "github.com/coze-dev/coze-studio/backend/infra/document/rerank/impl/vikingdb"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/elasticsearch"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/milvus"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/oceanbase"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/vikingdb"
+	"github.com/coze-dev/coze-studio/backend/infra/embedding"
+	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl/ark"
+	embeddingHttp "github.com/coze-dev/coze-studio/backend/infra/embedding/impl/http"
+	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl/wrap"
+	"github.com/coze-dev/coze-studio/backend/infra/es/impl/es"
+	eventbus "github.com/coze-dev/coze-studio/backend/infra/eventbus/impl"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen/impl/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex/impl/veimagex"
+	"github.com/coze-dev/coze-studio/backend/infra/messages2query"
+	builtinM2Q "github.com/coze-dev/coze-studio/backend/infra/messages2query/impl/builtin"
+	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
+	oceanbaseClient "github.com/coze-dev/coze-studio/backend/infra/oceanbase"
+	"github.com/coze-dev/coze-studio/backend/infra/orm/impl/mysql"
+	storage "github.com/coze-dev/coze-studio/backend/infra/storage/impl"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -105,7 +105,7 @@ type AppDependencies struct {
 func Init(ctx context.Context) (*AppDependencies, error) {
 	deps := &AppDependencies{}
 	var err error
-	deps.TOSClient, err = initTOS(ctx)
+	deps.TOSClient, err = storage.New(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("init tos client failed, err=%w", err)
 	}
@@ -307,10 +307,6 @@ func initImageX(ctx context.Context) (imagex.ImageX, error) {
 		os.Getenv(consts.VeImageXTemplate),
 		[]string{os.Getenv(consts.VeImageXServerID)},
 	)
-}
-
-func initTOS(ctx context.Context) (storage.Storage, error) {
-	return storage.New(ctx)
 }
 
 func initResourceEventBusProducer() (eventbus.Producer, error) {

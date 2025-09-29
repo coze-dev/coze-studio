@@ -31,10 +31,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/mock/dal/dao"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rentity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	mrdb "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/rdb"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	rentity "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	mrdb "github.com/coze-dev/coze-studio/backend/internal/mock/infra/rdb"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 

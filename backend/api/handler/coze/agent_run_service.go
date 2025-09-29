@@ -30,7 +30,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 
 	"github.com/coze-dev/coze-studio/backend/application/conversation"
-	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
+	sseImpl "github.com/coze-dev/coze-studio/backend/infra/sse/impl/sse"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/types/errno"

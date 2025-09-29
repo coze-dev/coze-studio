@@ -22,7 +22,7 @@ import (
 	eino "github.com/cloudwego/eino/components/model"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 )
 
 //go:generate  mockgen -destination modelmock/model_mock.go --package mockmodel -source modelmgr.go

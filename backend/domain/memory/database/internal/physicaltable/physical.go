@@ -24,8 +24,8 @@ import (
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/convertor"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	entity3 "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	entity3 "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 

@@ -21,7 +21,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 var ShortcutCmdSVC *ShortcutCmdApplicationService

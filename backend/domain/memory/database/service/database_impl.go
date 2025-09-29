@@ -31,7 +31,7 @@ import (
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
@@ -43,12 +43,12 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/physicaltable"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/sheet"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	entity3 "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/contract/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	entity3 "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -1044,6 +1044,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("SQL is empty")
 	}
 
+	// TODO(@fanlv) : domain 不依赖 impl
 	operation, err := sqlparser.NewSQLParser().GetSQLOperation(*req.SQL)
 	if err != nil {
 		return nil, err

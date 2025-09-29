@@ -27,7 +27,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/prompt/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/prompt/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/prompt/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )

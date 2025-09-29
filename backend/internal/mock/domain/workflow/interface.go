@@ -38,7 +38,7 @@ import (
 	config "github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	entity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	vo "github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	storage "github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	storage "github.com/coze-dev/coze-studio/backend/infra/storage"
 	gomock "go.uber.org/mock/gomock"
 )
 

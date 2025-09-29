@@ -28,8 +28,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	mockImagex "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
+	mockImagex "github.com/coze-dev/coze-studio/backend/internal/mock/infra/imagex"
 )
 
 func TestParseMessageURI(t *testing.T) {

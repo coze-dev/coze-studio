@@ -26,8 +26,8 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/internal/dal/model"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/orm"
+	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/orm"
 )
 
 func TestApiAuthImpl_Create(t *testing.T) {

@@ -34,14 +34,14 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	progressbarContract "github.com/coze-dev/coze-studio/backend/infra/contract/document/progressbar"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/progressbar"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	progressbarContract "github.com/coze-dev/coze-studio/backend/infra/document/progressbar"
+	"github.com/coze-dev/coze-studio/backend/infra/document/progressbar/impl/progressbar"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
+	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -379,6 +379,7 @@ func (k *knowledgeSVC) handleTableDocument(ctx context.Context,
 func (k *knowledgeSVC) processDocumentChunks(ctx context.Context,
 	doc *entity.Document, parseResult []*schema.Document, cacheRecord *indexDocCacheRecord) error {
 
+	// TODO(@fanlv): domain 不能依赖具体 impl
 	batchSize := 100
 	progressbar := progressbar.NewProgressBar(ctx, doc.ID,
 		int64(len(parseResult)*len(k.searchStoreManagers)), k.cacheCli, true)

@@ -37,7 +37,7 @@ import (
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
 	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
-	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
+	sseImpl "github.com/coze-dev/coze-studio/backend/infra/sse/impl/sse"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"

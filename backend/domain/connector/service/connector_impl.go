@@ -21,7 +21,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
 	"github.com/coze-dev/coze-studio/backend/domain/connector/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"

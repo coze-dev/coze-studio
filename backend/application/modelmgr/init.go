@@ -17,8 +17,8 @@
 package modelmgr
 
 import (
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
 func InitService(mgr modelmgr.Manager, tosClient storage.Storage) *ModelmgrApplicationService {
