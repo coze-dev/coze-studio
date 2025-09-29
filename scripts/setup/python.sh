@@ -40,10 +40,10 @@ fi
 echo "Python packages installed successfully!"
 deactivate
 
-PARSER_SCRIPT_ROOT="$BACKEND_DIR/infra/impl/document/parser/builtin"
+PARSER_SCRIPT_ROOT="$BACKEND_DIR/infra/document/parser/impl/builtin"
 PDF_PARSER="$PARSER_SCRIPT_ROOT/parse_pdf.py"
 DOCX_PARSER="$PARSER_SCRIPT_ROOT/parse_docx.py"
-WORKFLOW_SANBOX="$BACKEND_DIR/infra/impl/coderunner/script/sandbox.py"
+WORKFLOW_SANBOX="$BACKEND_DIR/infra/coderunner/impl/script/sandbox.py"
 
 if [ -f "$PDF_PARSER" ]; then
     cp "$PDF_PARSER" "$BIN_DIR/parse_pdf.py"

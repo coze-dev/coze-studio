@@ -47,9 +47,9 @@ RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
 COPY --from=builder /app/opencoze /app/opencoze
 
 # Copy Python application scripts
-COPY backend/infra/impl/document/parser/builtin/parse_pdf.py /app/parse_pdf.py
-COPY backend/infra/impl/document/parser/builtin/parse_docx.py /app/parse_docx.py
-COPY backend/infra/impl/coderunner/script/sandbox.py /app/sandbox.py
+COPY backend/infra/document/parser/impl/builtin/parse_pdf.py /app/parse_pdf.py
+COPY backend/infra/document/parser/impl/builtin/parse_docx.py /app/parse_docx.py
+COPY backend/infra/coderunner/impl/script/sandbox.py /app/sandbox.py
 
 
 # Copy static resources
