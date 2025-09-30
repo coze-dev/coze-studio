@@ -433,14 +433,14 @@ func (k *knowledgeSVC) DeleteDocument(ctx context.Context, request *DeleteDocume
 		}
 	}
 
-	err = k.documentRepo.DeleteDocuments(ctx, []int64{request.DocumentID})
-	if err != nil {
-		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
-	}
-
 	sliceIDs, err := k.sliceRepo.GetDocumentSliceIDs(ctx, []int64{request.DocumentID})
 	if err != nil {
 		logs.CtxErrorf(ctx, "[DeleteDocument] get document slice ids failed, err: %v", err)
+		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+
+	err = k.documentRepo.DeleteDocuments(ctx, []int64{request.DocumentID})
+	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
 
