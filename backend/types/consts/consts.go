@@ -136,3 +136,7 @@ const (
 	DisableUserRegistration = "DISABLE_USER_REGISTRATION"
 	AllowRegistrationEmail  = "ALLOW_REGISTRATION_EMAIL"
 )
+
+const (
+	PublishInfoKeyPrefix = "agent:publish:last"
+)

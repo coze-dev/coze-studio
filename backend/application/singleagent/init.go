@@ -38,7 +38,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
-	"github.com/coze-dev/coze-studio/backend/pkg/jsoncache"
+	"github.com/coze-dev/coze-studio/backend/pkg/kvstore"
 )
 
 type (
@@ -72,7 +72,7 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
-		PublishInfoRepo:  jsoncache.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
+		PublishInfoRepo:  kvstore.New[entity.PublishInfo](c.DB),
 		CounterRepo:      repository.NewCounterRepo(c.Cache),
 		CPStore:          c.CPStore,
 		ModelFactory:     chatmodel.NewDefaultFactory(),
