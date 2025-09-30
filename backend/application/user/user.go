@@ -19,7 +19,6 @@ package user
 import (
 	"context"
 	"net/mail"
-	"os"
 	"slices"
 	"strconv"
 	"strings"
@@ -28,13 +27,13 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/passport"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	langSlices "github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -60,12 +59,17 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 		return nil, "", errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "Invalid email"))
 	}
 
+	baseConf, err := config.Base().GetBaseConfig(ctx)
+	if err != nil {
+		return nil, "", err
+	}
+
 	// Allow Register Checker
-	if !u.allowRegisterChecker(req.GetEmail()) {
+	if !u.allowRegisterChecker(req.GetEmail(), baseConf) {
 		return nil, "", errorx.New(errno.ErrNotAllowedRegisterCode)
 	}
 
-	userInfo, err := u.DomainSVC.Create(ctx, &user.CreateUserRequest{
+	_, err = u.DomainSVC.Create(ctx, &user.CreateUserRequest{
 		Email:    req.GetEmail(),
 		Password: req.GetPassword(),
 
@@ -75,7 +79,7 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 		return nil, "", err
 	}
 
-	userInfo, err = u.DomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
+	userInfo, err := u.DomainSVC.Login(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		return nil, "", err
 	}
@@ -86,13 +90,12 @@ func (u *UserApplicationService) PassportWebEmailRegisterV2(ctx context.Context,
 	}, userInfo.SessionKey, nil
 }
 
-func (u *UserApplicationService) allowRegisterChecker(email string) bool {
-	disableUserRegistration := os.Getenv(consts.DisableUserRegistration)
-	if strings.ToLower(disableUserRegistration) != "true" {
+func (u *UserApplicationService) allowRegisterChecker(email string, baseConf *config.BasicConfiguration) bool {
+	if !baseConf.DisableUserRegistration {
 		return true
 	}
 
-	allowedEmails := os.Getenv(consts.AllowRegistrationEmail)
+	allowedEmails := baseConf.AllowRegistrationEmail
 	if allowedEmails == "" {
 		return false
 	}

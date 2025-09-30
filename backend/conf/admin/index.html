@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coze Studio 管理后台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f7fa;
+            color: #2c3e50;
+        }
+
+        .admin-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 250px;
+            background: #2c3e50;
+            color: white;
+            padding: 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+        }
+
+        .logo-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ecf0f1;
+        }
+
+        .nav-menu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .nav-item {
+            margin: 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #bdc3c7;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 16px;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .nav-link.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .nav-icon {
+            margin-right: 12px;
+            font-size: 16px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .nav-arrow {
+            margin-left: auto;
+            font-size: 12px;
+            transition: transform 0.3s ease;
+        }
+
+        .has-submenu .nav-arrow {
+            transform: rotate(-90deg);
+        }
+
+        .has-submenu.expanded .nav-arrow {
+            transform: rotate(0deg);
+        }
+
+        .submenu {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: rgba(0, 0, 0, 0.1);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .has-submenu.expanded .submenu {
+            max-height: 200px;
+        }
+
+        .submenu-item {
+            margin: 0;
+        }
+
+        .submenu-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 20px 10px 52px;
+            color: #95a5a6;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            font-size: 15px;
+        }
+
+        .submenu-link:hover {
+            background: rgba(52, 152, 219, 0.1);
+            color: #3498db;
+        }
+
+        .submenu-link.active {
+            background: #3498db;
+            color: white;
+        }
+
+        .submenu-icon {
+            margin-right: 8px;
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e1e8ed;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .page-header {
+            margin: 0;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0 0 5px 0;
+        }
+
+        .page-description {
+            color: #6c757d;
+            font-size: 16px;
+            margin: 0;
+        }
+
+        .content-area {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .content-frame {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            min-height: calc(100vh - 200px);
+            overflow: hidden;
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 400px;
+            color: #6c757d;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .sidebar-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            padding: 0 25px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            padding-top: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            color: rgba(255,255,255,0.8);
+            font-size: 16px;
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-size: 16px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 200px;
+            }
+            
+            .content-area {
+                padding: 20px;
+            }
+            
+            .top-bar {
+                padding: 15px 20px;
+            }
+        }
+
+        .welcome-content {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .welcome-icon {
+            font-size: 64px;
+            color: #667eea;
+            margin-bottom: 20px;
+        }
+
+        .welcome-title {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 15px;
+        }
+
+        .welcome-text {
+            color: #7f8c8d;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect x="3" y="3" width="7" height="7" rx="1" fill="#4A90E2"/>
+                            <rect x="14" y="3" width="7" height="7" rx="1" fill="#4A90E2"/>
+                            <rect x="3" y="14" width="7" height="7" rx="1" fill="#4A90E2"/>
+                            <rect x="14" y="14" width="7" height="7" rx="1" fill="#4A90E2"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">Coze Studio</span>
+                </div>
+            </div>
+            
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-page="workspace">
+                        <span class="nav-icon">🏠</span>
+                        工作台
+                    </a>
+                </li>
+                <li class="nav-item has-submenu">
+                    <a href="#" class="nav-link" data-page="config">
+                        <span class="nav-icon">⚙️</span>
+                        配置管理
+                        <span class="nav-arrow">▼</span>
+                    </a>
+                    <ul class="submenu">
+                        <li class="submenu-item">
+                            <a href="#" class="submenu-link active" data-page="basic-config">
+                                <span class="submenu-icon">🔧</span>
+                                基础配置
+                            </a>
+                        </li>
+                        <li class="submenu-item">
+                            <a href="#" class="submenu-link" data-page="model-management">
+                                <span class="submenu-icon">🤖</span>
+                                模型管理
+                            </a>
+                        </li>
+                        <li class="submenu-item">
+                            <a href="#" class="submenu-link" data-page="knowledge-config">
+                                <span class="submenu-icon">📚</span>
+                                知识库配置
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar" id="userAvatar">👤</div>
+                    <div>
+                        <div id="userName">管理员</div>
+                        <div style="font-size: 12px; opacity: 0.7;">在线</div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <main class="main-content">
+            <div class="top-bar" style="display: none;">
+                <div class="page-header">
+                    <h1 class="page-title" id="pageTitle">基础配置</h1>
+                    <p class="page-description" id="pageDescription">管理和配置基础配置</p>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <div class="content-frame">
+                    <div id="pageContent">
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <span>加载中...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 页面导航功能
+        const navLinks = document.querySelectorAll('.nav-link');
+        const submenuLinks = document.querySelectorAll('.submenu-link');
+        const pageTitle = document.getElementById('pageTitle');
+        const pageDescription = document.getElementById('pageDescription');
+        const pageContent = document.getElementById('pageContent');
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载用户信息
+            loadUserInfo();
+            
+            // 初始化子菜单功能
+            initSubmenuToggle();
+            
+            // 默认展开配置管理子菜单
+            const configMenu = document.querySelector('[data-page="config"]');
+            if (configMenu) {
+                const navItem = configMenu.closest('.nav-item');
+                if (navItem) {
+                    navItem.classList.add('expanded');
+                }
+            }
+            
+            // 从URL hash获取当前页面，如果没有则显示默认页面
+            initPageFromURL();
+        });
+
+        // 从URL初始化页面
+        function initPageFromURL() {
+            const hash = window.location.hash.substring(1); // 去掉#号
+            if (hash) {
+                // 如果URL中有hash，加载对应页面
+                loadPageFromHash(hash);
+            } else {
+                // 如果没有hash，显示默认页面
+                showDefaultPage();
+            }
+        }
+
+        // 从hash加载页面
+        function loadPageFromHash(hash) {
+            const pageConfig = {
+                'workspace': { title: '工作台', description: '工作台概览和快速操作' },
+                'basic-config': { title: '基础配置', description: '系统基础配置管理' },
+                'model-management': { title: '模型管理', description: 'AI模型配置和管理' },
+                'knowledge-config': { title: '知识库配置', description: '知识库设置和管理' }
+            };
+
+            if (pageConfig[hash]) {
+                // 设置对应的导航项为活动状态
+                const targetLink = document.querySelector(`[data-page="${hash}"]`);
+                if (targetLink) {
+                    // 移除所有活动状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    submenuLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // 添加当前活动状态
+                    targetLink.classList.add('active');
+                    
+                    // 如果是子菜单项，确保父菜单展开
+                    if (targetLink.classList.contains('submenu-link')) {
+                        const parentNavItem = targetLink.closest('.nav-item');
+                        if (parentNavItem) {
+                            parentNavItem.classList.add('expanded');
+                        }
+                    }
+                }
+                
+                // 加载页面内容
+                loadPageContent(hash);
+            } else {
+                // 如果hash不存在，显示默认页面
+                showDefaultPage();
+            }
+        }
+
+        // 加载用户信息
+        async function loadUserInfo() {
+            try {
+                // 从当前页面URL获取host
+                const currentHost = window.location.origin;
+                const apiUrl = `${currentHost}/api/passport/account/info/v2/`;
+                
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({})
+                });
+                const result = await response.json();
+                
+                // 检查是否是认证失败
+                if (result.code === 700012006) {
+                    // 认证失败，重定向到登录页面
+                    window.location.href = '/sign?redirect=%2Fspace';
+                    return;
+                }
+                
+                if (result.code === 0 && result.data) {
+                    // 更新用户名
+                    const userNameElement = document.getElementById('userName');
+                    if (userNameElement && result.data.name) {
+                        userNameElement.textContent = result.data.name;
+                    }
+                    
+                    // 更新用户头像
+                    const userAvatarElement = document.getElementById('userAvatar');
+                    if (userAvatarElement && result.data.avatar_url) {
+                        // 创建img元素替换原有的emoji
+                        const img = document.createElement('img');
+                        img.src = result.data.avatar_url;
+                        img.alt = result.data.name || '用户头像';
+                        img.style.width = '100%';
+                        img.style.height = '100%';
+                        img.style.borderRadius = '50%';
+                        img.style.objectFit = 'cover';
+                        
+                        // 添加错误处理，如果图片加载失败则显示默认图标
+                        img.onerror = function() {
+                            userAvatarElement.innerHTML = '👤';
+                        };
+                        
+                        userAvatarElement.innerHTML = '';
+                        userAvatarElement.appendChild(img);
+                    }
+                } else {
+                    console.warn('用户信息接口返回异常:', result);
+                }
+            } catch (error) {
+                console.error('加载用户信息失败:', error);
+                // 保持默认显示
+            }
+        }
+
+        // 初始化子菜单切换功能
+        function initSubmenuToggle() {
+            const hasSubmenuItems = document.querySelectorAll('.has-submenu');
+            
+            hasSubmenuItems.forEach(item => {
+                const navLink = item.querySelector('.nav-link');
+                navLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    
+                    // 切换展开状态
+                    item.classList.toggle('expanded');
+                });
+            });
+        }
+
+        // 导航点击事件
+        navLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                const parentItem = link.closest('.nav-item');
+                
+                // 如果不是子菜单项，处理页面跳转
+                if (!parentItem.classList.contains('has-submenu')) {
+                    e.preventDefault();
+                    
+                    // 移除所有活动状态
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    submenuLinks.forEach(l => l.classList.remove('active'));
+                    
+                    // 添加当前活动状态
+                    link.classList.add('active');
+                    
+                    const pageName = link.getAttribute('data-page');
+                    // 更新URL hash
+                    window.location.hash = pageName;
+                    loadPageContent(pageName);
+                }
+            });
+        });
+
+        // 子菜单点击事件
+        submenuLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // 移除所有活动状态
+                navLinks.forEach(l => l.classList.remove('active'));
+                submenuLinks.forEach(l => l.classList.remove('active'));
+                
+                // 添加当前活动状态
+                link.classList.add('active');
+                
+                const pageName = link.getAttribute('data-page');
+                // 更新URL hash
+                window.location.hash = pageName;
+                loadPageContent(pageName);
+            });
+        });
+
+        // 加载页面内容
+        function loadPageContent(pageName) {
+            const pageConfig = {
+                'workspace': { title: '工作台', description: '工作台概览和快速操作' },
+                'basic-config': { title: '基础配置', description: '系统基础配置管理' },
+                'model-management': { title: '模型管理', description: 'AI模型配置和管理' },
+                'knowledge-config': { title: '知识库配置', description: '知识库设置和管理' }
+            };
+            
+            const config = pageConfig[pageName] || { title: '页面', description: '页面描述' };
+            
+            pageTitle.textContent = config.title;
+            pageDescription.textContent = config.description;
+            
+            // 显示页面内容
+            showPageContent(pageName, config.title);
+        }
+
+        // 显示默认页面
+        function showDefaultPage() {
+            // 设置工作台为选中状态
+            const workspaceLink = document.querySelector('[data-page="workspace"]');
+            if (workspaceLink) {
+                // 移除所有活动状态
+                navLinks.forEach(l => l.classList.remove('active'));
+                submenuLinks.forEach(l => l.classList.remove('active'));
+                
+                // 添加工作台的活动状态
+                workspaceLink.classList.add('active');
+            }
+            
+            // 设置默认页面的URL hash
+            window.location.hash = 'workspace';
+            loadPageContent('workspace');
+        }
+
+        // 显示页面内容
+        function showPageContent(pageName, title) {
+            // 如果是工作台页面，显示特殊的欢迎内容
+            if (pageName === 'workspace') {
+                showWorkspaceContent();
+                return;
+            }
+            
+            // 如果是基础配置页面，加载config.html的内容
+            if (pageName === 'basic-config') {
+                loadBasicConfigPage();
+                return;
+            }
+            
+            pageContent.innerHTML = `
+                <div style="padding: 30px;">
+                    <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <h2 style="color: #2c3e50; margin-bottom: 20px;">${title}</h2>
+                        <p style="color: #7f8c8d; margin-bottom: 30px;">这里是${title}页面的内容区域。</p>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; border-left: 4px solid #3498db;">
+                                <h4 style="color: #2c3e50; margin: 0 0 10px;">功能模块 1</h4>
+                                <p style="color: #7f8c8d; margin: 0; font-size: 14px;">相关功能描述和操作入口</p>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; border-left: 4px solid #e74c3c;">
+                                <h4 style="color: #2c3e50; margin: 0 0 10px;">功能模块 2</h4>
+                                <p style="color: #7f8c8d; margin: 0; font-size: 14px;">相关功能描述和操作入口</p>
+                            </div>
+                            <div style="background: #f8f9fa; padding: 20px; border-radius: 6px; border-left: 4px solid #f39c12;">
+                                <h4 style="color: #2c3e50; margin: 0 0 10px;">功能模块 3</h4>
+                                <p style="color: #7f8c8d; margin: 0; font-size: 14px;">相关功能描述和操作入口</p>
+                            </div>
+                        </div>
+                        
+                        <div style="margin-top: 30px; padding: 20px; background: #ecf0f1; border-radius: 6px;">
+                            <h4 style="color: #2c3e50; margin: 0 0 15px;">快速操作</h4>
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <button style="background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">新建</button>
+                                <button style="background: #2ecc71; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">导入</button>
+                                <button style="background: #f39c12; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">导出</button>
+                                <button style="background: #95a5a6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer; font-size: 14px;">设置</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 加载基础配置页面
+        function loadBasicConfigPage() {
+            fetch('config.html')
+                .then(response => response.text())
+                .then(html => {
+                    // 提取body内容和样式
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const bodyContent = doc.body.innerHTML;
+                    
+                    // 提取并应用样式
+                    const styles = doc.querySelectorAll('style');
+                    styles.forEach(style => {
+                        // 检查是否已经存在相同的样式，避免重复添加
+                        const existingStyle = document.querySelector(`style[data-config-page="true"]`);
+                        if (existingStyle) {
+                            existingStyle.remove();
+                        }
+                        
+                        // 创建新的样式标签并添加到head中
+                        const newStyle = document.createElement('style');
+                        newStyle.setAttribute('data-config-page', 'true');
+                        newStyle.textContent = style.textContent;
+                        document.head.appendChild(newStyle);
+                    });
+                    
+                    pageContent.innerHTML = bodyContent;
+                    
+                    // 重新执行页面中的脚本
+                    const scripts = pageContent.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        if (script.textContent) {
+                            try {
+                                // 创建新的script标签并添加到head中，确保在全局作用域执行
+                                const newScript = document.createElement('script');
+                                newScript.textContent = script.textContent;
+                                newScript.setAttribute('data-config-script', 'true');
+                                
+                                // 移除之前的配置脚本
+                                const existingScript = document.querySelector('script[data-config-script="true"]');
+                                if (existingScript) {
+                                    existingScript.remove();
+                                }
+                                
+                                document.head.appendChild(newScript);
+                            } catch (e) {
+                                console.error('执行脚本失败:', e);
+                            }
+                        }
+                    });
+                    
+                    // 确保页面加载完成后初始化
+                    setTimeout(() => {
+                        // 检查是否有loadConfig函数并执行
+                        if (typeof window.loadConfig === 'function') {
+                            window.loadConfig();
+                        }
+                    }, 200);
+                })
+                .catch(error => {
+                    console.error('加载基础配置页面失败:', error);
+                    pageContent.innerHTML = `
+                        <div style="padding: 30px;">
+                            <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                <h2 style="color: #e74c3c; margin-bottom: 20px;">加载失败</h2>
+                                <p style="color: #7f8c8d;">无法加载基础配置页面，请检查网络连接或稍后重试。</p>
+                            </div>
+                        </div>
+                    `;
+                });
+        }
+
+        // 显示工作台内容
+        function showWorkspaceContent() {
+            const now = new Date();
+            const today = now.toLocaleDateString('zh-CN', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                weekday: 'long'
+            });
+            
+            const hour = now.getHours();
+            let greeting = '';
+            if (hour < 6) {
+                greeting = '夜深了，注意休息 🌙';
+            } else if (hour < 12) {
+                greeting = '早上好 🌅';
+            } else if (hour < 14) {
+                greeting = '中午好 ☀️';
+            } else if (hour < 18) {
+                greeting = '下午好 🌤️';
+            } else {
+                greeting = '晚上好 🌆';
+            }
+            
+            pageContent.innerHTML = `
+                <div style="padding: 30px;">
+                    <div style="text-align: center; margin-bottom: 40px;">
+                        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 40px; border-radius: 15px; box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);">
+                            <h1 style="margin: 0 0 15px; font-size: 2.5em; font-weight: 300;">欢迎使用 Coze Studio</h1>
+                            <p style="margin: 0 0 20px; font-size: 1.2em; opacity: 0.9;">${greeting}</p>
+                            <div style="background: rgba(255,255,255,0.2); padding: 15px; border-radius: 10px; display: inline-block;">
+                                <p style="margin: 0; font-size: 1.1em; font-weight: 500;">📅 ${today}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px;">
+                        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #3498db;">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <div style="background: #3498db; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 18px;">🔧</div>
+                                <h3 style="margin: 0; color: #2c3e50;">基础配置</h3>
+                            </div>
+                            <p style="color: #7f8c8d; margin-bottom: 15px; line-height: 1.6;">配置系统基础参数和核心设置，确保系统正常运行。</p>
+                            <button onclick="loadPageContent('basic-config')" style="background: #3498db; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s;">开始配置</button>
+                        </div>
+                        
+                        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #2ecc71;">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <div style="background: #2ecc71; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 18px;">🤖</div>
+                                <h3 style="margin: 0; color: #2c3e50;">模型管理</h3>
+                            </div>
+                            <p style="color: #7f8c8d; margin-bottom: 15px; line-height: 1.6;">管理AI模型配置、参数调优和模型版本控制。</p>
+                            <button onclick="loadPageContent('model-management')" style="background: #2ecc71; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s;">管理模型</button>
+                        </div>
+                        
+                        <div style="background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border-left: 5px solid #f39c12;">
+                            <div style="display: flex; align-items: center; margin-bottom: 15px;">
+                                <div style="background: #f39c12; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 18px;">📚</div>
+                                <h3 style="margin: 0; color: #2c3e50;">知识库配置</h3>
+                            </div>
+                            <p style="color: #7f8c8d; margin-bottom: 15px; line-height: 1.6;">配置知识库索引、向量存储和检索策略设置。</p>
+                            <button onclick="loadPageContent('knowledge-config')" style="background: #f39c12; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 14px; transition: all 0.3s;">配置知识库</button>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 30px; text-align: center; color: #95a5a6; font-size: 14px;">
+                        <p>🚀 让我们开始构建您的智能助手吧！</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // 显示加载状态
+        function showLoading() {
+            pageContent.innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <span>加载中...</span>
+                </div>
+            `;
+        }
+
+        // 显示错误信息
+        function showError(message) {
+            pageContent.innerHTML = `
+                <div class="error-message">
+                    <div class="error-icon">⚠️</div>
+                    <h3>加载失败</h3>
+                    <p>${message}</p>
+                    <button onclick="location.reload()" style="
+                        background: #667eea;
+                        color: white;
+                        border: none;
+                        padding: 10px 20px;
+                        border-radius: 5px;
+                        cursor: pointer;
+                        margin-top: 15px;
+                    ">重新加载</button>
+                </div>
+            `;
+            alert(message)
+        }
+
+        // 加载外部页面
+        function loadPage(filename) {
+            showLoading();
+            
+            fetch(filename)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    // 解析HTML并提取内容
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const title = doc.querySelector('title')?.textContent || '页面';
+                    const content = doc.querySelector('.page-content')?.innerHTML || 
+                                  doc.querySelector('body')?.innerHTML || 
+                                  '<p>页面内容为空</p>';
+                    
+                    pageTitle.textContent = title;
+                    pageDescription.textContent = `管理和配置 ${title}`;
+                    pageContent.innerHTML = content;
+                    
+                    // 执行页面中的脚本
+                    const scripts = doc.querySelectorAll('script');
+                    scripts.forEach(script => {
+                        if (script.textContent) {
+                            try {
+                                eval(script.textContent);
+                            } catch (e) {
+                                console.warn('执行页面脚本失败:', e);
+                            }
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('加载页面失败:', error);
+                    showError(`页面加载失败: ${error.message}`);
+                });
+        }
+
+        // 快速操作函数
+        function showSystemStatus() {
+            pageContent.innerHTML = `
+                <div style="padding: 30px;">
+                    <h2 style="margin-bottom: 20px;">📊 系统状态</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px;">
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <h4 style="color: #28a745; margin: 0 0 10px;">服务状态</h4>
+                            <p style="margin: 0; font-size: 24px; font-weight: bold;">🟢 正常运行</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #007bff;">
+                            <h4 style="color: #007bff; margin: 0 0 10px;">CPU 使用率</h4>
+                            <p style="margin: 0; font-size: 24px; font-weight: bold;">23%</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <h4 style="color: #ffc107; margin: 0 0 10px;">内存使用</h4>
+                            <p style="margin: 0; font-size: 24px; font-weight: bold;">1.2GB / 4GB</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                            <h4 style="color: #17a2b8; margin: 0 0 10px;">运行时间</h4>
+                            <p style="margin: 0; font-size: 24px; font-weight: bold;">7天 12小时</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showLogs() {
+            pageContent.innerHTML = `
+                <div style="padding: 30px;">
+                    <h2 style="margin-bottom: 20px;">📝 系统日志</h2>
+                    <div style="background: #1e1e1e; color: #00ff00; padding: 20px; border-radius: 8px; font-family: 'Courier New', monospace; font-size: 14px; max-height: 400px; overflow-y: auto;">
+                        <div>[2024-01-16 10:30:15] INFO: 系统启动完成</div>
+                        <div>[2024-01-16 10:30:16] INFO: 加载配置文件成功</div>
+                        <div>[2024-01-16 10:30:17] INFO: 数据库连接建立</div>
+                        <div>[2024-01-16 10:30:18] INFO: API 服务启动，端口: 8080</div>
+                        <div>[2024-01-16 10:35:22] INFO: 用户登录: admin</div>
+                        <div>[2024-01-16 10:36:45] INFO: 模型配置更新</div>
+                        <div>[2024-01-16 10:38:12] WARN: 知识库索引队列较长</div>
+                        <div>[2024-01-16 10:40:33] INFO: 知识库索引完成</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function exportConfig() {
+            const config = {
+                timestamp: new Date().toISOString(),
+                version: "1.0.0",
+                settings: {
+                    api: { endpoint: "https://api.example.com", timeout: 30000 },
+                    models: ["gpt-4", "gpt-3.5-turbo"],
+                    knowledge: { maxSize: "10GB", indexing: true }
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(config, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'coze-studio-config.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            alert('配置文件已导出！');
+        }
+
+        function showHelp() {
+            pageContent.innerHTML = `
+                <div style="padding: 30px;">
+                    <h2 style="margin-bottom: 20px;">❓ 帮助文档</h2>
+                    <div style="display: grid; gap: 20px;">
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <h3 style="color: #667eea; margin-top: 0;">🚀 快速开始</h3>
+                            <p>1. 首先配置基础设置，包括 API 密钥和系统参数</p>
+                            <p>2. 添加和配置 AI 模型</p>
+                            <p>3. 创建知识库并上传文档</p>
+                            <p>4. 开始使用您的 AI 助手</p>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <h3 style="color: #667eea; margin-top: 0;">📚 功能说明</h3>
+                            <p><strong>基础配置：</strong>系统设置、API 配置、安全设置</p>
+                            <p><strong>模型管理：</strong>添加、编辑、删除 AI 模型</p>
+                            <p><strong>知识库：</strong>文档上传、索引管理、检索配置</p>
+                        </div>
+                        <div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <h3 style="color: #667eea; margin-top: 0;">🔧 技术支持</h3>
+                            <p>如果您遇到问题，请联系技术支持团队</p>
+                            <p>📧 邮箱: support@coze-studio.com</p>
+                            <p>📞 电话: 400-123-4567</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>

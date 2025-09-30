@@ -20,6 +20,7 @@ package coze
 
 import (
 	"github.com/cloudwego/hertz/pkg/app"
+	"github.com/coze-dev/coze-studio/backend/api/middleware"
 )
 
 func rootMw() []app.HandlerFunc {
@@ -1567,6 +1568,75 @@ func _appsMw() []app.HandlerFunc {
 }
 
 func _getonlineappdataMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _adminMw() []app.HandlerFunc {
+	return []app.HandlerFunc{middleware.AdminAuthMW()}
+}
+
+func _configMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _basicMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getbasicconfigurationMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatebasicconfigurationMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getknowledgeconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updateknowledgeconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _modelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _createmodelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _deletemodelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _getmodellistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _updatemodelMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _knowledge0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _savebasicconfigurationMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

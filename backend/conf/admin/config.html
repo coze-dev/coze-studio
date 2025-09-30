@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>基础配置</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            color: #2c3e50;
+        }
+
+        .page-content {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 30px;
+        }
+
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border-left: 4px solid #3498db;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: #6c757d;
+            font-weight: 400;
+        }
+
+        .config-section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+            border: 1px solid #e1e8ed;
+            transition: all 0.3s ease;
+        }
+
+        .config-section:hover {
+            box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f1f3f4;
+        }
+
+        .section-icon {
+            margin-right: 12px;
+            font-size: 20px;
+            color: #3498db;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .form-input:hover:not(:focus) {
+            border-color: #bdc3c7;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 12px center;
+            background-repeat: no-repeat;
+            background-size: 16px;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e1e8ed;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-group:hover {
+            background: #f1f3f4;
+            border-color: #bdc3c7;
+        }
+
+        .checkbox-input {
+            margin-right: 12px;
+            width: 18px;
+            height: 18px;
+            accent-color: #3498db;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .radio-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            background: white;
+            border-radius: 8px;
+            border: 2px solid #e1e8ed;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .radio-item:hover {
+            background: #f8f9fa;
+            border-color: #3498db;
+        }
+
+        .radio-item:has(input:checked) {
+            background: #e8f4fd;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .radio-input {
+            margin-right: 8px;
+            width: 18px;
+            height: 18px;
+            accent-color: #3498db;
+            cursor: pointer;
+        }
+
+        .radio-item label {
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            text-decoration: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(1px);
+            box-shadow: 0 1px 4px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #6c757d;
+            border: 2px solid #e1e8ed;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+            border-color: #bdc3c7;
+            color: #495057;
+        }
+
+        /* 用户注册配置组样式 */
+        .registration-config-group {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            border: 2px solid #e1e8ed;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .registration-config-group::before {
+            content: '👥';
+            position: absolute;
+            top: -12px;
+            left: 20px;
+            background: white;
+            padding: 0 8px;
+            font-size: 16px;
+            color: #3498db;
+        }
+
+        .registration-config-group .checkbox-group {
+            margin-bottom: 16px;
+            background: white;
+            border: 2px solid #3498db;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.1);
+        }
+
+        .whitelist-email-config {
+            margin-left: 30px;
+            padding-left: 20px;
+            border-left: 3px solid #3498db;
+            background: white;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 0;
+            transition: all 0.3s ease;
+        }
+
+        .whitelist-email-config.show {
+            animation: slideDown 0.3s ease-out;
+        }
+
+        /* 邮箱标签样式 */
+        .email-tags-container {
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 8px;
+            background: white;
+            min-height: 48px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-start;
+            gap: 6px;
+            cursor: text;
+            transition: border-color 0.3s ease;
+        }
+
+        .email-tags-container:focus-within {
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        .email-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .email-tag {
+            background: #3498db;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 16px;
+            font-size: 12px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            max-width: 200px;
+            overflow: hidden;
+        }
+
+        .email-tag-text {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .email-tag-remove {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            line-height: 1;
+            transition: background-color 0.2s ease;
+        }
+
+        .email-tag-remove:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .email-input {
+            border: none !important;
+            box-shadow: none !important;
+            padding: 4px 0 !important;
+            margin: 0 !important;
+            flex: 1;
+            min-width: 200px;
+            background: transparent !important;
+        }
+
+        .email-input:focus {
+            outline: none !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+
+        .help-text {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .sandbox-config {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 2px solid #e1e8ed;
+            position: relative;
+        }
+
+        .sandbox-config::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #3498db;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .sandbox-config.show {
+            display: block;
+            animation: slideDown 0.3s ease-out;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .sandbox-config h4 {
+            margin-bottom: 16px;
+            color: #2c3e50;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .sandbox-config h4::before {
+            content: '🔧';
+            font-size: 16px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+            background: white;
+            border-radius: 12px;
+            margin: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+
+        .loading::before {
+            content: '⚙️';
+            font-size: 32px;
+            display: block;
+            margin-bottom: 12px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #dc2626;
+            font-weight: 500;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #16a34a;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #16a34a;
+            font-weight: 500;
+        }
+
+        /* 透明浮层样式 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .overlay-content {
+            background: white;
+            padding: 24px 32px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .overlay.show .overlay-content {
+            transform: scale(1);
+        }
+
+        .overlay-content.success {
+            border-left: 4px solid #16a34a;
+            color: #16a34a;
+        }
+
+        .overlay-content.error {
+            border-left: 4px solid #dc2626;
+            color: #dc2626;
+        }
+
+        .overlay-content .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .overlay-content.success .icon::before {
+            content: "✓";
+        }
+
+        .overlay-content.error .icon::before {
+            content: "✗";
+        }
+
+        .overlay-content .message {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.5;
+        }
+
+        .action-buttons {
+            margin-top: 30px;
+            padding-top: 24px;
+            border-top: 2px solid #f1f3f4;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="page-content">
+        <div id="loadingMessage" class="loading">
+            正在加载配置...
+        </div>
+        
+        <div id="errorMessage" class="error" style="display: none;"></div>
+        <div id="successMessage" class="success" style="display: none;"></div>
+
+        <!-- 透明浮层 -->
+        <div id="overlay" class="overlay">
+            <div id="overlayContent" class="overlay-content">
+                <div class="icon"></div>
+                <div class="message" id="overlayMessage"></div>
+            </div>
+        </div>
+
+        <form id="configForm" style="display: none;">
+            <!-- 基础配置 -->
+            <div class="config-section">
+                
+                <div class="form-group">
+                    <label class="form-label">管理员邮箱</label>
+                    <div class="email-tags-container">
+                        <div id="emailTags" class="email-tags"></div>
+                        <input type="text" id="adminEmails" class="form-input email-input" placeholder="输入邮箱，按回车添加（例如: foo@example.com）">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Coze API Token</label>
+                    <input type="password" id="cozeApiToken" class="form-input" placeholder="输入您的 Coze API Token">
+                </div>
+                
+                <!-- 用户注册配置组 -->
+                <div class="registration-config-group">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="disableUserRegistration" class="checkbox-input">
+                        <label for="disableUserRegistration">禁止用户注册</label>
+                    </div>
+
+                    <div id="whitelistEmailGroup" class="form-group whitelist-email-config" style="display: none;">
+                        <label class="form-label">允许注册的白名单邮箱</label>
+                        <div class="email-tags-container">
+                            <div id="whitelistEmailTags" class="email-tags"></div>
+                            <input type="text" id="allowRegistrationEmail" class="form-input email-input" placeholder="输入邮箱，按回车添加（例如: foo@example.com）">
+                        </div>
+                        <div class="help-text">当禁止用户注册时，只有白名单中的邮箱才能注册</div>
+                    </div>
+                </div>
+
+
+
+                <div class="form-group">
+                    <label class="form-label">Python 代码运行环境</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="codeRunnerLocal" name="codeRunnerType" value="0" class="radio-input">
+                            <label for="codeRunnerLocal">Local</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="codeRunnerSandbox" name="codeRunnerType" value="1" class="radio-input">
+                            <label for="codeRunnerSandbox">Sandbox</label>
+                        </div>
+                    </div>
+                    <div class="help-text">Local 有被攻击的安全风险，生产环境慎用，建议使用 Sandbox 模式。</div>
+                </div>
+
+                <!-- Sandbox 配置 -->
+                <div id="sandboxConfig" class="sandbox-config">
+                    <h4 style="margin-bottom: 15px; color: #2c3e50;">Sandbox 配置</h4>
+                    
+                    <div class="form-group">
+                        <label class="form-label">允许读取的环境变量</label>
+                        <input type="text" id="allowEnv" class="form-input" placeholder="PATH,USERNAME">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">允许读取的目录地址</label>
+                        <input type="text" id="allowRead" class="form-input" placeholder="/tmp,./data">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">允许写的目录地址</label>
+                        <input type="text" id="allowWrite" class="form-input" placeholder="/tmp,./data">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">允许执行的命令</label>
+                        <input type="text" id="allowRun" class="form-input" placeholder="python,git">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">允许访问的网络地址</label>
+                        <input type="text" id="allowNet" class="form-input" placeholder="cdn.jsdelivr.net">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">允许访问的 lib 库</label>
+                        <input type="text" id="allowFfi" class="form-input" placeholder="/usr/lib/libm.so">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Node Modules 目录地址</label>
+                        <input type="text" id="nodeModulesDir" class="form-input" placeholder="/tmp/path/node_modules">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">代码执行超时时间（秒）</label>
+                            <input type="number" id="timeoutSeconds" class="form-input" placeholder="60" min="1" max="3600">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">内存限制（MB）</label>
+                            <input type="number" id="memoryLimitMb" class="form-input" placeholder="100" min="1" max="10240">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 服务器配置 -->
+            <div class="config-section">
+                <h3 class="section-title">
+                    <span class="section-icon">🌐</span>
+                    服务器配置
+                </h3>
+                
+                <div class="form-group">
+                    <label class="form-label">服务器主机地址</label>
+                    <input type="text" id="serverHost" class="form-input" placeholder="localhost:8888">
+                    <div class="help-text">格式：http(s)://主机名:端口号 , oauth 鉴权会用到</div>
+                </div>
+            </div>
+
+            <!-- 操作按钮 -->
+            <div class="action-buttons">
+                <button type="button" class="btn btn-primary" onclick="saveConfig()">💾 保存配置</button>
+                <button type="button" class="btn btn-secondary" onclick="loadConfig()">🔄 重新加载</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        let currentConfig = {};
+        
+        // 邮箱标签管理 - 在最开始声明变量
+        let emailTags = [];
+        let whitelistEmailTags = [];
+
+        // 页面加载时获取配置
+        // 直接调用以确保在动态加载后执行
+        loadConfig();
+        setupEventListeners();
+        initEmailTags();
+
+        // 辅助函数：根据数组名称获取对应的数组引用
+        function getTagsArray(tagsArrayName) {
+            if (tagsArrayName === 'emailTags') {
+                return emailTags;
+            } else if (tagsArrayName === 'whitelistEmailTags') {
+                return whitelistEmailTags;
+            }
+            return [];
+        }
+
+        function initEmailTags() {
+            // 初始化管理员邮箱标签
+            initEmailTagsForInput('adminEmails', 'emailTags', 'emailTags');
+            
+            // 初始化白名单邮箱标签
+            initEmailTagsForInput('allowRegistrationEmail', 'whitelistEmailTags', 'whitelistEmailTags');
+        }
+
+        function initEmailTagsForInput(inputId, containerId, tagsArrayName) {
+            const emailInput = document.getElementById(inputId);
+            const emailTagsContainer = document.getElementById(containerId);
+            const tagsContainer = emailInput.closest('.email-tags-container');
+
+            // 点击容器时聚焦输入框
+            tagsContainer.addEventListener('click', function() {
+                emailInput.focus();
+            });
+
+            // 监听回车键和逗号
+            emailInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    addEmailTagForInput(inputId, containerId, tagsArrayName);
+                }
+            });
+
+            // 监听失焦事件，自动添加邮箱
+            emailInput.addEventListener('blur', function() {
+                if (this.value.trim()) {
+                    addEmailTagForInput(inputId, containerId, tagsArrayName);
+                }
+            });
+
+            // 监听退格键删除标签
+            emailInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && this.value === '' && getTagsArray(tagsArrayName).length > 0) {
+                    const tagsArray = getTagsArray(tagsArrayName);
+                    removeEmailTagForInput(tagsArray.length - 1, containerId, tagsArrayName);
+                }
+            });
+        }
+
+        function addEmailTagForInput(inputId, containerId, tagsArrayName) {
+            const emailInput = document.getElementById(inputId);
+            const email = emailInput.value.trim();
+            
+            if (!email) return;
+            
+            // 简单的邮箱格式验证
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                showError('请输入有效的邮箱地址');
+                return;
+            }
+            
+            // 获取当前数组
+            const tagsArray = getTagsArray(tagsArrayName);
+            
+            // 检查是否已存在
+            if (tagsArray.includes(email)) {
+                showError('该邮箱已存在');
+                emailInput.value = '';
+                return;
+            }
+            
+            // 添加到数组
+            tagsArray.push(email);
+            emailInput.value = '';
+            
+            // 更新显示
+            renderEmailTagsForInput(containerId, tagsArray);
+            hideMessages();
+        }
+
+        function removeEmailTagForInput(index, containerId, tagsArrayName) {
+            const tagsArray = getTagsArray(tagsArrayName);
+            tagsArray.splice(index, 1);
+            renderEmailTagsForInput(containerId, tagsArray);
+        }
+
+        function renderEmailTagsForInput(containerId, tagsArray) {
+            const emailTagsContainer = document.getElementById(containerId);
+            emailTagsContainer.innerHTML = '';
+            
+            tagsArray.forEach((email, index) => {
+                const tagElement = document.createElement('div');
+                tagElement.className = 'email-tag';
+                tagElement.innerHTML = `
+                    <span class="email-tag-text">${email}</span>
+                    <button type="button" class="email-tag-remove" onclick="removeEmailTagForInput(${index}, '${containerId}', '${containerId === 'emailTags' ? 'emailTags' : 'whitelistEmailTags'}')" title="删除">×</button>
+                `;
+                emailTagsContainer.appendChild(tagElement);
+            });
+        }
+
+        // 兼容旧的函数名
+        function addEmailTag() {
+            addEmailTagForInput('adminEmails', 'emailTags', emailTags);
+        }
+
+        function removeEmailTag(index) {
+            removeEmailTagForInput(index, 'emailTags', emailTags);
+        }
+
+        function renderEmailTags() {
+            renderEmailTagsForInput('emailTags', emailTags);
+        }
+
+        function setEmailTags(emails) {
+            // 保存当前用户输入的邮箱
+            const currentEmails = [...emailTags];
+            
+            let newEmails = [];
+            if (typeof emails === 'string') {
+                // 如果是字符串，按逗号分割
+                newEmails = emails.split(',').map(email => email.trim()).filter(email => email);
+            } else if (Array.isArray(emails)) {
+                newEmails = [...emails];
+            }
+            
+            // 合并现有邮箱和新邮箱，去重
+            const allEmails = [...currentEmails];
+            newEmails.forEach(email => {
+                if (email && !allEmails.includes(email)) {
+                    allEmails.push(email);
+                }
+            });
+            
+            emailTags = allEmails;
+            renderEmailTags();
+        }
+
+        function getEmailTags() {
+            return emailTags.join(',');
+        }
+
+        function setWhitelistEmailTags(emails) {
+            // 保存当前用户输入的邮箱
+            const currentEmails = [...whitelistEmailTags];
+            
+            let newEmails = [];
+            if (typeof emails === 'string') {
+                // 如果是字符串，按逗号分割
+                newEmails = emails.split(',').map(email => email.trim()).filter(email => email);
+            } else if (Array.isArray(emails)) {
+                newEmails = [...emails];
+            }
+            
+            // 合并现有邮箱和新邮箱，去重
+            const allEmails = [...currentEmails];
+            newEmails.forEach(email => {
+                if (email && !allEmails.includes(email)) {
+                    allEmails.push(email);
+                }
+            });
+            
+            whitelistEmailTags = allEmails;
+            renderEmailTagsForInput('whitelistEmailTags', whitelistEmailTags);
+        }
+
+        function getWhitelistEmailTags() {
+            return whitelistEmailTags.join(',');
+        }
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            // 代码运行器类型切换
+            document.querySelectorAll('input[name="codeRunnerType"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    toggleSandboxConfig(this.value === '1');
+                });
+            });
+
+            // 禁止用户注册复选框切换
+            document.getElementById('disableUserRegistration').addEventListener('change', function() {
+                toggleWhitelistEmailConfig(this.checked);
+            });
+
+            // 白名单邮箱输入事件
+            document.getElementById('allowRegistrationEmail').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    addEmailTagForInput('allowRegistrationEmail', 'whitelistEmailTags', whitelistEmailTags);
+                }
+            });
+        }
+
+        // 切换白名单邮箱配置显示
+        function toggleWhitelistEmailConfig(show) {
+            const whitelistGroup = document.getElementById('whitelistEmailGroup');
+            if (show) {
+                whitelistGroup.style.display = 'block';
+                whitelistGroup.classList.add('show');
+            } else {
+                whitelistGroup.style.display = 'none';
+                whitelistGroup.classList.remove('show');
+            }
+        }
+
+        // 切换 Sandbox 配置显示
+        function toggleSandboxConfig(show) {
+            const sandboxConfig = document.getElementById('sandboxConfig');
+            if (show) {
+                sandboxConfig.classList.add('show');
+            } else {
+                sandboxConfig.classList.remove('show');
+            }
+        }
+
+        // 加载配置
+        async function loadConfig() {
+            try {
+                showLoading(true);
+                hideMessages();
+
+                // 调用真实的API接口
+                const response = await fetch('/api/admin/config/basic/get', {
+                    method: 'GET',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                // 检查响应是否成功
+                if (!response.ok) {
+                    showError(`加载配置失败: HTTP ${response.status} ${response.statusText}`);
+                    return;
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // 如果不是JSON响应，认为是失败
+                    showError('加载配置失败: 服务器返回非JSON格式数据');
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('API返回数据:', data);
+                
+                // 检查是否是认证失败
+                if (data.code === 700012006) {
+                    // 认证失败，重定向到登录页面
+                    window.location.href = '/sign?redirect=%2Fspace';
+                    return;
+                }
+                
+                // code不为0认为是失败
+                if (data.code !== 0) {
+                    showError('加载配置失败: ' + (data.msg || '未知错误'));
+                    return;
+                }
+                
+                if (data.configuration) {
+                    currentConfig = data.configuration;
+                    populateForm(currentConfig);
+                    showForm(true);
+                    console.log('配置加载成功');
+                } else {
+                    showError('加载配置失败: 配置数据为空');
+                }
+            } catch (error) {
+                console.error('加载配置失败:', error);
+                showError('加载配置失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 填充表单数据
+        function populateForm(config) {
+            // 基础配置 - 使用新的邮箱标签功能
+            setEmailTags(config.admin_emails || '');
+            
+            // 设置禁止用户注册状态
+            const disableRegistration = config.disable_user_registration || false;
+            document.getElementById('disableUserRegistration').checked = disableRegistration;
+            
+            // 根据禁止注册状态显示/隐藏白名单配置
+            toggleWhitelistEmailConfig(disableRegistration);
+            
+            // 设置白名单邮箱标签
+            setWhitelistEmailTags(config.allow_registration_email || '');
+            
+            document.getElementById('cozeApiToken').value = config.coze_api_token || '';
+            
+            // 代码运行器类型
+            const codeRunnerType = config.code_runner_type || 0;
+            document.querySelector(`input[name="codeRunnerType"][value="${codeRunnerType}"]`).checked = true;
+            toggleSandboxConfig(codeRunnerType === 1);
+
+            // Sandbox 配置
+            if (config.sandbox_config) {
+                const sandbox = config.sandbox_config;
+                document.getElementById('allowEnv').value = sandbox.allow_env || '';
+                document.getElementById('allowRead').value = sandbox.allow_read || '';
+                document.getElementById('allowWrite').value = sandbox.allow_write || '';
+                document.getElementById('allowRun').value = sandbox.allow_run || '';
+                document.getElementById('allowNet').value = sandbox.allow_net || 'cdn.jsdelivr.net';
+                document.getElementById('allowFfi').value = sandbox.allow_ffi || '';
+                document.getElementById('nodeModulesDir').value = sandbox.node_modules_dir || '';
+                document.getElementById('timeoutSeconds').value = sandbox.timeout_seconds || 60;
+                document.getElementById('memoryLimitMb').value = sandbox.memory_limit_mb || 100;
+            }
+
+            // 服务器配置
+            document.getElementById('serverHost').value = config.server_host || '';
+        }
+
+        // 收集表单数据
+        function collectFormData() {
+            const codeRunnerType = parseInt(document.querySelector('input[name="codeRunnerType"]:checked').value);
+            
+            const config = {
+                admin_emails: getEmailTags(), // 使用新的getEmailTags函数
+                disable_user_registration: document.getElementById('disableUserRegistration').checked,
+                allow_registration_email: getWhitelistEmailTags(),
+                coze_api_token: document.getElementById('cozeApiToken').value.trim(),
+                code_runner_type: codeRunnerType,
+                server_host: document.getElementById('serverHost').value.trim()
+            };
+
+            // 如果选择了 Sandbox，添加 sandbox_config
+            if (codeRunnerType === 1) {
+                config.sandbox_config = {
+                    allow_env: document.getElementById('allowEnv').value.trim(),
+                    allow_read: document.getElementById('allowRead').value.trim(),
+                    allow_write: document.getElementById('allowWrite').value.trim(),
+                    allow_run: document.getElementById('allowRun').value.trim(),
+                    allow_net: document.getElementById('allowNet').value.trim(),
+                    allow_ffi: document.getElementById('allowFfi').value.trim(),
+                    node_modules_dir: document.getElementById('nodeModulesDir').value.trim(),
+                    timeout_seconds: parseInt(document.getElementById('timeoutSeconds').value) || 60,
+                    memory_limit_mb: parseInt(document.getElementById('memoryLimitMb').value) || 100
+                };
+            }
+
+            return config;
+        }
+
+        // 保存配置
+        async function saveConfig() {
+            try {
+                const config = collectFormData();
+                
+                // 基础验证
+                if (!config.admin_emails) {
+                    showError('请至少设置一个管理员邮箱');
+                    return;
+                }
+                
+                if (!config.server_host) {
+                    showError('请填写服务器主机地址');
+                    return;
+                }
+
+                showLoading(true);
+                hideMessages();
+
+                // 构建请求体，按照用户指定的结构
+                const requestBody = {
+                    configuration: config
+                };
+
+                console.log('保存配置请求体:', JSON.stringify(requestBody, null, 2));
+
+                // 调用真实的API
+                const response = await fetch('/api/admin/config/basic/save', {
+                    method: 'POST',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+               
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    // 如果不是JSON响应，认为是失败
+                    showError(`保存配置失败: HTTP ${response.status} ${response.statusText}`);
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('保存API返回数据:', data);
+                
+                // 检查是否是认证失败
+                if (data.code === 700012006) {
+                    // 认证失败，重定向到登录页面
+                    window.location.href = '/sign?redirect=%2Fspace';
+                    return;
+                }
+                
+                // code不为0认为是失败
+                if (data.code !== 0) {
+                    showError(data.msg || '保存配置失败');
+                    return;
+                }
+
+                // 保存成功
+                showSuccess(data.msg || '配置保存成功！');
+                currentConfig = config;
+            } catch (error) {
+                console.error('保存配置失败:', error);
+                showError('保存配置失败: ' + error.message);
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // 显示/隐藏加载状态
+        function showLoading(show) {
+            document.getElementById('loadingMessage').style.display = show ? 'block' : 'none';
+        }
+
+        // 显示/隐藏表单
+        function showForm(show) {
+            document.getElementById('configForm').style.display = show ? 'block' : 'none';
+        }
+
+        // 显示成功消息（透明浮层）
+        function showSuccess(message) {
+            showOverlay(message, 'success');
+        }
+
+        // 显示错误消息（透明浮层）
+        function showError(message) {
+            showOverlay(message, 'error');
+        }
+
+        // 显示透明浮层
+        function showOverlay(message, type) {
+            const overlay = document.getElementById('overlay');
+            const overlayContent = document.getElementById('overlayContent');
+            const overlayMessage = document.getElementById('overlayMessage');
+            
+            // 设置消息内容
+            overlayMessage.textContent = message;
+            
+            // 设置样式类型
+            overlayContent.className = `overlay-content ${type}`;
+            
+            // 显示浮层
+            overlay.classList.add('show');
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                hideOverlay();
+            }, 3000);
+            
+            // 点击浮层背景隐藏
+            overlay.onclick = function(e) {
+                if (e.target === overlay) {
+                    hideOverlay();
+                }
+            };
+        }
+
+        // 隐藏透明浮层
+        function hideOverlay() {
+            const overlay = document.getElementById('overlay');
+            overlay.classList.remove('show');
+        }
+
+        // 隐藏所有消息
+        function hideMessages() {
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+    </script>
+</body>
+</html>

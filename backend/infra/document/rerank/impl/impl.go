@@ -16,8 +16,7 @@
 package impl
 
 import (
-	"os"
-
+	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/infra/document/rerank"
 	"github.com/coze-dev/coze-studio/backend/infra/document/rerank/impl/rrf"
 	"github.com/coze-dev/coze-studio/backend/infra/document/rerank/impl/vikingdb"
@@ -25,24 +24,13 @@ import (
 
 type Reranker = rerank.Reranker
 
-func New() Reranker {
-	rerankerType := os.Getenv("RERANK_TYPE")
-	switch rerankerType {
-	case "vikingdb":
-		return vikingdb.NewReranker(getVikingRerankerConfig())
-	case "rrf":
+func New(conf *config.KnowledgeConfig) Reranker {
+	switch conf.RerankConfig.Type {
+	case config.RerankType_VikingDB:
+		return vikingdb.NewReranker(conf.RerankConfig.VikingdbConfig)
+	case config.RerankType_RRF:
 		return rrf.NewRRFReranker(0)
 	default:
 		return rrf.NewRRFReranker(0)
-	}
-}
-
-func getVikingRerankerConfig() *vikingdb.Config {
-	return &vikingdb.Config{
-		AK:     os.Getenv("VIKINGDB_RERANK_AK"),
-		SK:     os.Getenv("VIKINGDB_RERANK_SK"),
-		Domain: os.Getenv("VIKINGDB_RERANK_HOST"),
-		Region: os.Getenv("VIKINGDB_RERANK_REGION"),
-		Model:  os.Getenv("VIKINGDB_RERANK_MODEL"),
 	}
 }

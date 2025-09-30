@@ -27,7 +27,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/infra/document"
 	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -38,7 +38,7 @@ const (
 	defaultColumnFmt = "| %s | %s | %s | %t |\n\n"
 )
 
-func NewNL2SQL(_ context.Context, cm chatmodel.BaseChatModel, tpl prompt.ChatTemplate) (nl2sql.NL2SQL, error) {
+func NewNL2SQL(_ context.Context, cm modelbuilder.BaseChatModel, tpl prompt.ChatTemplate) (nl2sql.NL2SQL, error) {
 	return &n2s{cm: cm, tpl: tpl}, nil
 }
 
@@ -46,7 +46,7 @@ type n2s struct {
 	ch       *compose.Chain[*nl2sqlInput, string]
 	runnable compose.Runnable[*nl2sqlInput, string]
 
-	cm  chatmodel.BaseChatModel
+	cm  modelbuilder.BaseChatModel
 	tpl prompt.ChatTemplate
 }
 

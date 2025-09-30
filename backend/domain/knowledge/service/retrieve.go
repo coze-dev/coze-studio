@@ -34,7 +34,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/document"
 	"github.com/coze-dev/coze-studio/backend/infra/document/messages2query"
 	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql"
@@ -140,15 +139,6 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 		}
 	}
 
-	var cm chatmodel.BaseChatModel
-	if req.ChatModelProtocol != nil && req.ChatModelConfig != nil {
-		cm, err = k.modelFactory.CreateChatModel(ctx, ptr.From(req.ChatModelProtocol), req.ChatModelConfig)
-		if err != nil {
-			return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode,
-				errorx.KV("msg", "invalid retriever chat model protocol or config"))
-		}
-	}
-
 	resp := RetrieveContext{
 		Ctx:              ctx,
 		OriginQuery:      req.Query,
@@ -157,7 +147,6 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 		KnowledgeInfoMap: knowledgeInfoMap,
 		Strategy:         req.Strategy,
 		Documents:        enableDocs,
-		ChatModel:        cm,
 	}
 	return &resp, nil
 }

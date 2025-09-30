@@ -25,19 +25,20 @@ import (
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 )
 
 type ModelWithInfo interface {
-	model.BaseChatModel
+	modelbuilder.BaseChatModel
 	Info(ctx context.Context) *modelmgr.Model
 }
 
 type ModelForLLM struct {
-	Model         model.BaseChatModel
+	Model         modelbuilder.BaseChatModel
 	MInfo         *modelmgr.Model
-	FallbackModel model.BaseChatModel
+	FallbackModel modelbuilder.BaseChatModel
 	FallbackInfo  *modelmgr.Model
 	UseFallback   func(ctx context.Context) bool
 
@@ -45,7 +46,7 @@ type ModelForLLM struct {
 	fallbackEnableCallback bool
 }
 
-func NewModel(m model.BaseChatModel, info *modelmgr.Model) *ModelForLLM {
+func NewModel(m modelbuilder.BaseChatModel, info *modelmgr.Model) *ModelForLLM {
 	return &ModelForLLM{
 		Model: m,
 		MInfo: info,
@@ -57,7 +58,7 @@ func NewModel(m model.BaseChatModel, info *modelmgr.Model) *ModelForLLM {
 	}
 }
 
-func NewModelWithFallback(m, f model.BaseChatModel, info, fInfo *modelmgr.Model) *ModelForLLM {
+func NewModelWithFallback(m, f modelbuilder.BaseChatModel, info, fInfo *modelmgr.Model) *ModelForLLM {
 	return &ModelForLLM{
 		Model:         m,
 		MInfo:         info,
