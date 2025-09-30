@@ -25,16 +25,16 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/infra/document/messages2query"
 )
 
-func NewMessagesToQuery(_ context.Context, model chatmodel.BaseChatModel, template prompt.ChatTemplate) (messages2query.MessagesToQuery, error) {
+func NewMessagesToQuery(_ context.Context, model modelbuilder.BaseChatModel, template prompt.ChatTemplate) (messages2query.MessagesToQuery, error) {
 	return &m2q{model, template}, nil
 }
 
 type m2q struct {
-	cm  chatmodel.BaseChatModel
+	cm  modelbuilder.BaseChatModel
 	tpl prompt.ChatTemplate
 }
 

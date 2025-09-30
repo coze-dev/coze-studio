@@ -89,13 +89,13 @@ const (
 	SSLCertFile = "SSL_CERT_FILE"
 	SSLKeyFile  = "SSL_KEY_FILE"
 
-	OCRType     = "OCR_TYPE"
-	VeOCRAK     = "VE_OCR_AK"
-	VeOCRSK     = "VE_OCR_SK"
-	PPOCRAPIURL = "PADDLEOCR_OCR_API_URL"
+	OCRType       = "OCR_TYPE"
+	VeOCRAK       = "VE_OCR_AK"
+	VeOCRSK       = "VE_OCR_SK"
+	PaddleoOcrAPI = "PADDLEOCR_OCR_API_URL"
 
 	ParserType        = "PARSER_TYPE"
-	PPStructureAPIURL = "PADDLEOCR_STRUCTURE_API_URL"
+	PPStructureApiURL = "PADDLEOCR_STRUCTURE_API_URL"
 )
 
 const (
@@ -135,4 +135,14 @@ const (
 const (
 	DisableUserRegistration = "DISABLE_USER_REGISTRATION"
 	AllowRegistrationEmail  = "ALLOW_REGISTRATION_EMAIL"
+)
+
+const (
+	PublishInfoKeyPrefix = "agent:publish:last"
+)
+
+const (
+	BaseConfigNameSpace  = "kv_config_ns"
+	KnowledgeConfigSpace = "kv_knowledge_ns"
+	ModelConfigSpace     = "kv_model_ns"
 )

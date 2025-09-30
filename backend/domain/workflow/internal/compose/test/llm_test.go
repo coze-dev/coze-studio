@@ -35,11 +35,11 @@ import (
 	"go.uber.org/mock/gomock"
 
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 
 	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
@@ -49,7 +49,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/llm"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/internal/testutil"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 )
@@ -66,8 +65,6 @@ func TestLLM(t *testing.T) {
 
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mockModelManager := mockmodel.NewMockManager(ctrl)
-		mockey.Mock(crossmodelmgr.DefaultSVC).Return(mockModelManager).Build()
 
 		if len(accessKey) > 0 && len(baseURL) > 0 && len(modelName) > 0 {
 			openaiModel, err = openai.NewChatModel(context.Background(), &openai.ChatModelConfig{
@@ -89,7 +86,7 @@ func TestLLM(t *testing.T) {
 			assert.NoError(t, err)
 		}
 
-		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelName == modelName {
 				return openaiModel, nil, nil
 			} else if params.ModelName == deepSeekModelName {
@@ -97,7 +94,7 @@ func TestLLM(t *testing.T) {
 			} else {
 				return nil, nil, fmt.Errorf("invalid model name: %s", params.ModelName)
 			}
-		}).AnyTimes()
+		}).Build()
 
 		ctx := ctxcache.Init(context.Background())
 
@@ -137,7 +134,7 @@ func TestLLM(t *testing.T) {
 					SystemPrompt: "{{sys_prompt}}",
 					UserPrompt:   "{{query}}",
 					OutputFormat: llm.FormatText,
-					LLMParams: &model.LLMParams{
+					LLMParams: &vo.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -255,7 +252,7 @@ func TestLLM(t *testing.T) {
 					SystemPrompt: "you are a helpful assistant",
 					UserPrompt:   "what's the largest country in the world and it's area size in square kilometers?",
 					OutputFormat: llm.FormatJSON,
-					LLMParams: &model.LLMParams{
+					LLMParams: &vo.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -357,7 +354,7 @@ func TestLLM(t *testing.T) {
 					SystemPrompt: "you are a helpful assistant",
 					UserPrompt:   "list the top 5 largest countries in the world",
 					OutputFormat: llm.FormatMarkdown,
-					LLMParams: &model.LLMParams{
+					LLMParams: &vo.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -474,7 +471,7 @@ func TestLLM(t *testing.T) {
 					SystemPrompt: "you are a helpful assistant",
 					UserPrompt:   "plan a 10 day family visit to China.",
 					OutputFormat: llm.FormatText,
-					LLMParams: &model.LLMParams{
+					LLMParams: &vo.LLMParams{
 						ModelName: modelName,
 					},
 				},
@@ -492,7 +489,7 @@ func TestLLM(t *testing.T) {
 					SystemPrompt: "you are a helpful assistant",
 					UserPrompt:   "thoroughly plan a 10 day family visit to China. Use your reasoning ability.",
 					OutputFormat: llm.FormatText,
-					LLMParams: &model.LLMParams{
+					LLMParams: &vo.LLMParams{
 						ModelName: modelName,
 					},
 				},
