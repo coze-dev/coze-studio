@@ -53,6 +53,18 @@ func staticFileRegister(r *server.Hertz) {
 	r.StaticFile("/", staticFile)
 	r.StaticFile("/sign", staticFile)
 
+	r.StaticFS("/admin", &app.FS{
+		Root:               path.Join(cwd, "/resources/conf"),
+		GenerateIndexPages: true,
+		IndexNames:         []string{"index.html"},
+	})
+
+	// r.StaticFS("/admin", &app.FS{
+	// 	Root:               path.Join(cwd, "/../backend/conf"),
+	// 	GenerateIndexPages: true,
+	// 	IndexNames:         []string{"index.html"},
+	// })
+
 	type data struct {
 		Code int32  `json:"code"`
 		Msg  string `json:"msg"`

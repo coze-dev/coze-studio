@@ -20,14 +20,14 @@ import (
 	"fmt"
 
 	"github.com/coze-dev/coze-studio/backend/bizpkg/fileutil"
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/infra/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser/impl/builtin"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
-func NewManager(apiConfig *APIConfig, ocr ocr.OCR, storage storage.Storage, imageAnnotationModel chatmodel.BaseChatModel) parser.Manager {
+func NewManager(apiConfig *APIConfig, ocr ocr.OCR, storage storage.Storage, imageAnnotationModel modelbuilder.BaseChatModel) parser.Manager {
 	return &manager{
 		apiConfig:            apiConfig,
 		ocr:                  ocr,
@@ -40,7 +40,7 @@ type manager struct {
 	apiConfig            *APIConfig
 	ocr                  ocr.OCR
 	storage              storage.Storage
-	imageAnnotationModel chatmodel.BaseChatModel
+	imageAnnotationModel modelbuilder.BaseChatModel
 }
 
 func (m *manager) GetParser(config *parser.Config) (parser.Parser, error) {

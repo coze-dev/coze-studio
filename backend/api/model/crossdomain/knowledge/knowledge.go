@@ -21,7 +21,6 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/document"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -109,10 +108,6 @@ type RetrieveRequest struct {
 
 	// recall strategy
 	Strategy *RetrievalStrategy
-
-	// Chat model config for nl2sql and message to query
-	ChatModelProtocol *chatmodel.Protocol
-	ChatModelConfig   *chatmodel.Config
 }
 
 type RetrievalStrategy struct {

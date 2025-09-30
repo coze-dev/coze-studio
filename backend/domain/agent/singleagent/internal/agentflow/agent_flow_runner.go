@@ -20,7 +20,6 @@ import (
 	"context"
 	"errors"
 	"io"
-	"slices"
 
 	"github.com/google/uuid"
 
@@ -29,9 +28,9 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
@@ -285,30 +284,26 @@ func (r *AgentRunner) preHandlerHistory(history []*schema.Message) []*schema.Mes
 }
 
 func (r *AgentRunner) isSupportMultiContent() bool {
-	return len(r.modelInfo.Meta.Capability.InputModal) > 1
+	return r.modelInfo.Capability.GetSupportMultiModal()
 }
 func (r *AgentRunner) isSupportImage() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalImage)
+	return r.modelInfo.Capability.GetImageUnderstanding()
 }
 func (r *AgentRunner) isSupportFile() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalFile)
+	return false
 }
 func (r *AgentRunner) isSupportAudio() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalAudio)
+	return r.modelInfo.Capability.GetAudioUnderstanding()
 }
 func (r *AgentRunner) isSupportVideo() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalVideo)
+	return r.modelInfo.Capability.GetVideoUnderstanding()
 }
 
 func (r *AgentRunner) enableLocalFileToLLMWithBase64() bool {
-	if r.modelInfo.Meta.ConnConfig.EnableBase64Url == nil {
-		return false
-	}
-	return *r.modelInfo.Meta.ConnConfig.EnableBase64Url
+	return r.modelInfo.EnableBase64URL
 }
 
 func transImageURLToBase64(imageUrl *schema.ChatMessageImageURL, enableBase64Url bool) *schema.ChatMessageImageURL {
-
 	if !enableBase64Url {
 		return imageUrl
 	}

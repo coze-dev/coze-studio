@@ -45,6 +45,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/memory"
 	"github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
@@ -55,7 +56,6 @@ import (
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -76,7 +76,6 @@ type APPApplicationService struct {
 
 	oss             storage.Storage
 	projectEventBus search.ProjectEventBus
-	modelMgr        modelmgr.Manager
 
 	userSVC user.User
 
@@ -90,12 +89,12 @@ func (a *APPApplicationService) DraftProjectCreate(ctx context.Context, req *pro
 		return nil, errorx.New(errno.ErrAppPermissionCode, errorx.KV(errno.APPMsgKey, "session is required"))
 	}
 
-	respModel, err := a.modelMgr.ListInUseModel(ctx, 1, nil)
+	modelList, err := config.ModelConf().GetOnlineModelListWithLimit(ctx, 1)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(respModel.ModelList) == 0 {
+	if len(modelList) == 0 {
 		return nil, errorx.New(errno.ErrAppNoModelInUseCode)
 	}
 

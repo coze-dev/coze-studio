@@ -30,7 +30,9 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
@@ -211,6 +213,15 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 	"domain/upload/internal/dal/query": {
 		"files": {},
 	},
+	"bizpkg/config/modelmgr/internal/query": {
+		"model_instance": {
+			"provider":     &config.ModelProvider{},
+			"display_info": &config.DisplayInfo{},
+			"connection":   &config.Connection{},
+			"capability":   &developer_api.ModelAbility{},
+			"parameters":   []*developer_api.ModelParameter{},
+		},
+	},
 }
 
 var fieldNullablePath = map[string]bool{
@@ -220,7 +231,9 @@ var fieldNullablePath = map[string]bool{
 func main() {
 	dsn := os.Getenv("MYSQL_DSN")
 	os.Setenv("LANG", "en_US.UTF-8")
-	dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
+	if dsn == "" {
+		dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
+	}
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,

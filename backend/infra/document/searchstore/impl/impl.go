@@ -19,7 +19,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/embedding/gemini"
@@ -28,6 +27,7 @@ import (
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
 	"google.golang.org/genai"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/elasticsearch"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/milvus"
@@ -39,19 +39,18 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl/wrap"
 	"github.com/coze-dev/coze-studio/backend/infra/es/impl/es"
 	"github.com/coze-dev/coze-studio/backend/infra/oceanbase"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
+	"github.com/coze-dev/coze-studio/backend/pkg/envkey"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type Manager = searchstore.Manager
 
-func New(ctx context.Context, es es.Client) ([]Manager, error) {
+func New(ctx context.Context, conf *config.KnowledgeConfig, es es.Client) ([]Manager, error) {
 	// es full text search
 	esSearchstoreManager := elasticsearch.NewManager(&elasticsearch.ManagerConfig{Client: es})
 
 	// vector search
-	mgr, err := getVectorStore(ctx)
+	mgr, err := getVectorStore(ctx, conf)
 	if err != nil {
 		return nil, fmt.Errorf("init vector store failed, err=%w", err)
 	}
@@ -59,7 +58,7 @@ func New(ctx context.Context, es es.Client) ([]Manager, error) {
 	return []searchstore.Manager{esSearchstoreManager, mgr}, nil
 }
 
-func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
+func getVectorStore(ctx context.Context, conf *config.KnowledgeConfig) (searchstore.Manager, error) {
 	vsType := os.Getenv("VECTOR_STORE_TYPE")
 
 	switch vsType {
@@ -83,7 +82,7 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 			return nil, fmt.Errorf("init milvus client failed, err=%w", err)
 		}
 
-		emb, err := getEmbedding(ctx)
+		emb, err := getEmbedding(ctx, conf.EmbeddingConfig)
 		if err != nil {
 			return nil, fmt.Errorf("init milvus embedding failed, err=%w", err)
 		}
@@ -135,7 +134,7 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 				BuiltinEmbedding:   nil,
 			}
 		} else {
-			builtinEmbedding, err := getEmbedding(ctx)
+			builtinEmbedding, err := getEmbedding(ctx, conf.EmbeddingConfig)
 			if err != nil {
 				return nil, fmt.Errorf("builtint embedding init failed, err=%w", err)
 			}
@@ -160,7 +159,7 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 		return mgr, nil
 
 	case "oceanbase":
-		emb, err := getEmbedding(ctx)
+		emb, err := getEmbedding(ctx, conf.EmbeddingConfig)
 		if err != nil {
 			return nil, fmt.Errorf("init oceanbase embedding failed, err=%w", err)
 		}
@@ -184,45 +183,16 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 			return nil, fmt.Errorf("init oceanbase client failed, err=%w", err)
 		}
 
-		if err := client.InitDatabase(ctx); err != nil {
+		if err = client.InitDatabase(ctx); err != nil {
 			return nil, fmt.Errorf("init oceanbase database failed, err=%w", err)
 		}
 
 		// Get configuration from environment variables with defaults
-		batchSize := 100
-		if bs := os.Getenv("OCEANBASE_BATCH_SIZE"); bs != "" {
-			if bsInt, err := strconv.Atoi(bs); err == nil {
-				batchSize = bsInt
-			}
-		}
-
-		enableCache := true
-		if ec := os.Getenv("OCEANBASE_ENABLE_CACHE"); ec != "" {
-			if ecBool, err := strconv.ParseBool(ec); err == nil {
-				enableCache = ecBool
-			}
-		}
-
-		cacheTTL := 300 * time.Second
-		if ct := os.Getenv("OCEANBASE_CACHE_TTL"); ct != "" {
-			if ctInt, err := strconv.Atoi(ct); err == nil {
-				cacheTTL = time.Duration(ctInt) * time.Second
-			}
-		}
-
-		maxConnections := 100
-		if mc := os.Getenv("OCEANBASE_MAX_CONNECTIONS"); mc != "" {
-			if mcInt, err := strconv.Atoi(mc); err == nil {
-				maxConnections = mcInt
-			}
-		}
-
-		connTimeout := 30 * time.Second
-		if ct := os.Getenv("OCEANBASE_CONN_TIMEOUT"); ct != "" {
-			if ctInt, err := strconv.Atoi(ct); err == nil {
-				connTimeout = time.Duration(ctInt) * time.Second
-			}
-		}
+		batchSize := envkey.GetIntD("OCEANBASE_BATCH_SIZE", 100)
+		enableCache := envkey.GetBoolD("OCEANBASE_ENABLE_CACHE", true)
+		cacheTTL := time.Duration(envkey.GetI32D("OCEANBASE_CACHE_TTL", 300)) * time.Second
+		maxConnections := envkey.GetIntD("OCEANBASE_MAX_CONNECTIONS", 100)
+		connTimeout := time.Duration(envkey.GetI32D("OCEANBASE_CONN_TIMEOUT", 30)) * time.Second
 
 		managerConfig := &searchstoreOceanbase.ManagerConfig{
 			Client:         client,
@@ -244,183 +214,95 @@ func getVectorStore(ctx context.Context) (searchstore.Manager, error) {
 	}
 }
 
-func getEmbedding(ctx context.Context) (embedding.Embedder, error) {
-	var batchSize int
-	if bs, err := strconv.ParseInt(os.Getenv("EMBEDDING_MAX_BATCH_SIZE"), 10, 64); err != nil {
-		logs.CtxWarnf(ctx, "EMBEDDING_MAX_BATCH_SIZE not set / invalid, using default batchSize=100")
-		batchSize = 100
-	} else {
-		batchSize = int(bs)
-	}
+func getEmbedding(ctx context.Context, cfg *config.EmbeddingConfig) (embedding.Embedder, error) {
+	var (
+		emb           embedding.Embedder
+		err           error
+		connInfo      = cfg.Connection.BaseConnInfo
+		embeddingInfo = cfg.Connection.EmbeddingInfo
+	)
 
-	var emb embedding.Embedder
-
-	switch os.Getenv("EMBEDDING_TYPE") {
-	case "openai":
-		var (
-			openAIEmbeddingBaseURL     = os.Getenv("OPENAI_EMBEDDING_BASE_URL")
-			openAIEmbeddingModel       = os.Getenv("OPENAI_EMBEDDING_MODEL")
-			openAIEmbeddingApiKey      = os.Getenv("OPENAI_EMBEDDING_API_KEY")
-			openAIEmbeddingByAzure     = os.Getenv("OPENAI_EMBEDDING_BY_AZURE")
-			openAIEmbeddingApiVersion  = os.Getenv("OPENAI_EMBEDDING_API_VERSION")
-			openAIEmbeddingDims        = os.Getenv("OPENAI_EMBEDDING_DIMS")
-			openAIRequestEmbeddingDims = os.Getenv("OPENAI_EMBEDDING_REQUEST_DIMS")
-		)
-
-		byAzure, err := strconv.ParseBool(openAIEmbeddingByAzure)
-		if err != nil {
-			return nil, fmt.Errorf("init openai embedding by_azure failed, err=%w", err)
-		}
-
-		dims, err := strconv.ParseInt(openAIEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init openai embedding dims failed, err=%w", err)
-		}
-
+	switch cfg.Type {
+	case config.EmbeddingType_OpenAI:
+		openaiConnCfg := cfg.Connection.Openai
 		openAICfg := &openai.EmbeddingConfig{
-			APIKey:     openAIEmbeddingApiKey,
-			ByAzure:    byAzure,
-			BaseURL:    openAIEmbeddingBaseURL,
-			APIVersion: openAIEmbeddingApiVersion,
-			Model:      openAIEmbeddingModel,
-			// Dimensions: ptr.Of(int(dims)),
-		}
-		reqDims := conv.StrToInt64D(openAIRequestEmbeddingDims, 0)
-		if reqDims > 0 {
-			// some openai model not support request dims
-			openAICfg.Dimensions = ptr.Of(int(reqDims))
+			APIKey:     connInfo.APIKey,
+			BaseURL:    connInfo.BaseURL,
+			Model:      connInfo.Model,
+			ByAzure:    openaiConnCfg.ByAzure,
+			APIVersion: openaiConnCfg.APIVersion,
 		}
 
-		emb, err = wrap.NewOpenAIEmbedder(ctx, openAICfg, dims, batchSize)
+		if openaiConnCfg.RequestDims > 0 {
+			// some openai model not support request dims
+			openAICfg.Dimensions = ptr.Of(int(openaiConnCfg.RequestDims))
+		}
+
+		emb, err = wrap.NewOpenAIEmbedder(ctx, openAICfg, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
 		if err != nil {
 			return nil, fmt.Errorf("init openai embedding failed, err=%w", err)
 		}
-
-	case "ark":
-		var (
-			arkEmbeddingBaseURL = os.Getenv("ARK_EMBEDDING_BASE_URL")
-			arkEmbeddingModel   = os.Getenv("ARK_EMBEDDING_MODEL")
-			arkEmbeddingApiKey  = os.Getenv("ARK_EMBEDDING_API_KEY")
-			// deprecated: use ARK_EMBEDDING_API_KEY instead
-			// ARK_EMBEDDING_AK will be removed in the future
-			arkEmbeddingAK      = os.Getenv("ARK_EMBEDDING_AK")
-			arkEmbeddingDims    = os.Getenv("ARK_EMBEDDING_DIMS")
-			arkEmbeddingAPIType = os.Getenv("ARK_EMBEDDING_API_TYPE")
-		)
-
-		dims, err := strconv.ParseInt(arkEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init ark embedding dims failed, err=%w", err)
-		}
+	case config.EmbeddingType_Ark:
+		arkCfg := cfg.Connection.Ark
 
 		apiType := ark.APITypeText
-		if arkEmbeddingAPIType != "" {
-			if t := ark.APIType(arkEmbeddingAPIType); t != ark.APITypeText && t != ark.APITypeMultiModal {
-				return nil, fmt.Errorf("init ark embedding api_type failed, invalid api_type=%s", t)
-			} else {
-				apiType = t
-			}
+		if ark.APIType(arkCfg.APIType) == ark.APITypeMultiModal {
+			apiType = ark.APITypeMultiModal
 		}
 
 		emb, err = ark.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey: func() string {
-				if arkEmbeddingApiKey != "" {
-					return arkEmbeddingApiKey
-				}
-				return arkEmbeddingAK
-			}(),
-			Model:   arkEmbeddingModel,
-			BaseURL: arkEmbeddingBaseURL,
+			APIKey:  connInfo.APIKey,
+			Model:   connInfo.Model,
+			BaseURL: connInfo.BaseURL,
 			APIType: &apiType,
-		}, dims, batchSize)
+		}, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
 		if err != nil {
 			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
 		}
 
-	case "ollama":
-		var (
-			ollamaEmbeddingBaseURL = os.Getenv("OLLAMA_EMBEDDING_BASE_URL")
-			ollamaEmbeddingModel   = os.Getenv("OLLAMA_EMBEDDING_MODEL")
-			ollamaEmbeddingDims    = os.Getenv("OLLAMA_EMBEDDING_DIMS")
-		)
-
-		dims, err := strconv.ParseInt(ollamaEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init ollama embedding dims failed, err=%w", err)
-		}
-
+	case config.EmbeddingType_Ollama:
 		emb, err = wrap.NewOllamaEmbedder(ctx, &ollama.EmbeddingConfig{
-			BaseURL: ollamaEmbeddingBaseURL,
-			Model:   ollamaEmbeddingModel,
-		}, dims, batchSize)
+			BaseURL: connInfo.BaseURL,
+			Model:   connInfo.Model,
+		}, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
 		if err != nil {
 			return nil, fmt.Errorf("init ollama embedding failed, err=%w", err)
 		}
-	case "gemini":
-		var (
-			geminiEmbeddingBaseURL  = os.Getenv("GEMINI_EMBEDDING_BASE_URL")
-			geminiEmbeddingModel    = os.Getenv("GEMINI_EMBEDDING_MODEL")
-			geminiEmbeddingApiKey   = os.Getenv("GEMINI_EMBEDDING_API_KEY")
-			geminiEmbeddingDims     = os.Getenv("GEMINI_EMBEDDING_DIMS")
-			geminiEmbeddingBackend  = os.Getenv("GEMINI_EMBEDDING_BACKEND") // "1" for BackendGeminiAPI / "2" for BackendVertexAI
-			geminiEmbeddingProject  = os.Getenv("GEMINI_EMBEDDING_PROJECT")
-			geminiEmbeddingLocation = os.Getenv("GEMINI_EMBEDDING_LOCATION")
-		)
+	case config.EmbeddingType_Gemini:
+		geminiCfg := cfg.Connection.Gemini
 
-		if len(geminiEmbeddingModel) == 0 {
+		if len(connInfo.Model) == 0 {
 			return nil, fmt.Errorf("GEMINI_EMBEDDING_MODEL environment variable is required")
 		}
-		if len(geminiEmbeddingApiKey) == 0 {
+		if len(connInfo.APIKey) == 0 {
 			return nil, fmt.Errorf("GEMINI_EMBEDDING_API_KEY environment variable is required")
 		}
-		if len(geminiEmbeddingDims) == 0 {
-			return nil, fmt.Errorf("GEMINI_EMBEDDING_DIMS environment variable is required")
-		}
-		if len(geminiEmbeddingBackend) == 0 {
-			return nil, fmt.Errorf("GEMINI_EMBEDDING_BACKEND environment variable is required")
-		}
 
-		dims, convErr := strconv.ParseInt(geminiEmbeddingDims, 10, 64)
-		if convErr != nil {
-			return nil, fmt.Errorf("invalid GEMINI_EMBEDDING_DIMS value: %s, err=%w", geminiEmbeddingDims, convErr)
-		}
-
-		backend, convErr := strconv.ParseInt(geminiEmbeddingBackend, 10, 64)
-		if convErr != nil {
-			return nil, fmt.Errorf("invalid GEMINI_EMBEDDING_BACKEND value: %s, err=%w", geminiEmbeddingBackend, convErr)
-		}
-
-		geminiCli, err := genai.NewClient(ctx, &genai.ClientConfig{
-			APIKey:   geminiEmbeddingApiKey,
-			Backend:  genai.Backend(backend),
-			Project:  geminiEmbeddingProject,
-			Location: geminiEmbeddingLocation,
+		geminiCli, err1 := genai.NewClient(ctx, &genai.ClientConfig{
+			APIKey:   connInfo.APIKey,
+			Backend:  genai.Backend(geminiCfg.Backend),
+			Project:  geminiCfg.Project,
+			Location: geminiCfg.Location,
 			HTTPOptions: genai.HTTPOptions{
-				BaseURL: geminiEmbeddingBaseURL,
+				BaseURL: connInfo.BaseURL,
 			},
 		})
-		if err != nil {
+		if err1 != nil {
 			return nil, fmt.Errorf("init gemini client failed, err=%w", err)
 		}
 
 		emb, err = wrap.NewGeminiEmbedder(ctx, &gemini.EmbeddingConfig{
 			Client:               geminiCli,
-			Model:                geminiEmbeddingModel,
-			OutputDimensionality: ptr.Of(int32(dims)),
-		}, dims, batchSize)
+			Model:                connInfo.Model,
+			OutputDimensionality: ptr.Of(int32(embeddingInfo.Dims)),
+		}, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
 		if err != nil {
 			return nil, fmt.Errorf("init gemini embedding failed, err=%w", err)
 		}
-	case "http":
-		var (
-			httpEmbeddingBaseURL = os.Getenv("HTTP_EMBEDDING_ADDR")
-			httpEmbeddingDims    = os.Getenv("HTTP_EMBEDDING_DIMS")
-		)
-		dims, err := strconv.ParseInt(httpEmbeddingDims, 10, 64)
-		if err != nil {
-			return nil, fmt.Errorf("init http embedding dims failed, err=%w", err)
-		}
-		emb, err = http.NewEmbedding(httpEmbeddingBaseURL, dims, batchSize)
+	case config.EmbeddingType_HTTP:
+		httpCfg := cfg.Connection.HTTP
+
+		emb, err = http.NewEmbedding(httpCfg.Address, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
 		if err != nil {
 			return nil, fmt.Errorf("init http embedding failed, err=%w", err)
 		}

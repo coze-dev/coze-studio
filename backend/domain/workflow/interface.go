@@ -19,10 +19,10 @@ package workflow
 import (
 	"context"
 
-	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"
@@ -116,7 +116,7 @@ type Repository interface {
 	compose.CheckPointStore
 	idgen.IDGenerator
 
-	GetKnowledgeRecallChatModel() model.BaseChatModel
+	GetKnowledgeRecallChatModel() modelbuilder.BaseChatModel
 	ConversationRepository
 	WorkflowConfig
 	Suggester

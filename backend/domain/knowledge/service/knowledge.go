@@ -46,10 +46,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor/impl"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
 	"github.com/coze-dev/coze-studio/backend/infra/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/document/messages2query"
 	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql"
-	"github.com/coze-dev/coze-studio/backend/infra/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 	"github.com/coze-dev/coze-studio/backend/infra/document/progressbar"
 	"github.com/coze-dev/coze-studio/backend/infra/document/rerank"
@@ -83,7 +81,6 @@ func NewKnowledgeSVC(config *KnowledgeSVCConfig) (Knowledge, eventbus.ConsumerHa
 		nl2Sql:              config.NL2Sql,
 		enableCompactTable:  ptr.FromOrDefault(config.EnableCompactTable, true),
 		cacheCli:            config.CacheCli,
-		modelFactory:        config.ModelFactory,
 	}
 
 	return svc, svc
@@ -97,12 +94,10 @@ type KnowledgeSVCConfig struct {
 	SearchStoreManagers []searchstore.Manager          // Required: Vector/Full Text
 	ParseManager        parser.Manager                 // Optional: document segmentation and processing capability, default builtin parser
 	Storage             storage.Storage                // required: oss
-	ModelFactory        chatmodel.Factory              // Required: Model factory
 	Rewriter            messages2query.MessagesToQuery // Optional: Do not overwrite when not configured
 	Reranker            rerank.Reranker                // Optional: default rrf when not configured
 	NL2Sql              nl2sql.NL2SQL                  // Optional: Not supported by default when not configured
 	EnableCompactTable  *bool                          // Optional: Table data compression, default true
-	OCR                 ocr.OCR                        // Optional: ocr, ocr function is not available when not provided
 	CacheCli            cache.Cmdable                  // Optional: cache implementation
 }
 
@@ -111,7 +106,6 @@ type knowledgeSVC struct {
 	documentRepo  repository.KnowledgeDocumentRepo
 	sliceRepo     repository.KnowledgeDocumentSliceRepo
 	reviewRepo    repository.KnowledgeDocumentReviewRepo
-	modelFactory  chatmodel.Factory
 
 	idgen               idgen.IDGenerator
 	rdb                 rdb.RDB

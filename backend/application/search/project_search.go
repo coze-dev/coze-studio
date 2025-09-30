@@ -84,7 +84,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 				info, err := s.packIntelligenceData(ctx, data)
 				if err != nil {
 					logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", data.ID, data.Type, data.GetName(), err)
-					return err
+					return nil
 				}
 
 				lock.Lock()
@@ -98,11 +98,11 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 		info, err := s.packIntelligenceData(ctx, searchResp.Data[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", searchResp.Data[0].ID, searchResp.Data[0].Type, searchResp.Data[0].GetName(), err)
-			return nil, err
+		} else {
+			lock.Lock()
+			intelligenceDataList[0] = info
+			lock.Unlock()
 		}
-		lock.Lock()
-		intelligenceDataList[0] = info
-		lock.Unlock()
 	}
 	err = tasks.Wait()
 	if err != nil {

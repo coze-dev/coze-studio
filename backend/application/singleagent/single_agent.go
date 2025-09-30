@@ -325,7 +325,7 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		target.OnboardingInfo = patch.OnboardingInfo
 	}
 
-	if patch.ModelInfo != nil {
+	if patch.ModelInfo != nil && patch.ModelInfo.ModelId != nil {
 		target.ModelInfo = patch.ModelInfo
 	}
 

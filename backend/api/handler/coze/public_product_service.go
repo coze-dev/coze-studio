@@ -220,7 +220,7 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		modelInfo := botInfo.GetData().GetBotInfo().GetModelInfo()
+		modelInfo := botInfo.GetData().GetBotInfo().ModelInfo
 		if modelInfo == nil {
 			invalidParamRequestResponse(c, "no model info found in agent")
 			return

@@ -25,21 +25,21 @@ import (
 	intelligence "github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 func (s *SingleAgentApplicationService) CreateSingleAgentDraft(ctx context.Context, req *developer_api.DraftBotCreateRequest) (*developer_api.DraftBotCreateResponse, error) {
-	resp, err := s.appContext.ModelMgr.ListInUseModel(ctx, 1, nil)
+	modelList, err := config.ModelConf().GetOnlineModelListWithLimit(ctx, 1)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(resp.ModelList) == 0 {
+	if len(modelList) == 0 {
 		return nil, errorx.New(errno.ErrAgentNoModelInUseCode)
 	}
 
@@ -123,86 +123,25 @@ func (s *SingleAgentApplicationService) newDefaultSingleAgent(ctx context.Contex
 }
 
 func (s *SingleAgentApplicationService) defaultModelInfo(ctx context.Context) (*bot_common.ModelInfo, error) {
-	modelResp, err := s.appContext.ModelMgr.ListModel(ctx, &modelmgr.ListModelRequest{
-		Status: []modelmgr.ModelStatus{modelmgr.StatusInUse},
-		Limit:  1,
-		Cursor: nil,
-	})
+	modelList, err := config.ModelConf().GetOnlineModelListWithLimit(ctx, 1)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(modelResp.ModelList) == 0 {
+	if len(modelList) == 0 {
 		return nil, errorx.New(errno.ErrAgentResourceNotFound, errorx.KV("type", "model"), errorx.KV("id", "default"))
 	}
 
-	dm := modelResp.ModelList[0]
-
-	var temperature *float64
-	if tp, ok := dm.FindParameter(modelmgr.Temperature); ok {
-		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
-		if err != nil {
-			return nil, err
-		}
-
-		temperature = ptr.Of(t)
-	}
-
-	var maxTokens *int32
-	if tp, ok := dm.FindParameter(modelmgr.MaxTokens); ok {
-		t, err := tp.GetInt(modelmgr.DefaultTypeBalance)
-		if err != nil {
-			return nil, err
-		}
-		maxTokens = ptr.Of(int32(t))
-	} else if dm.Meta.ConnConfig.MaxTokens != nil {
-		maxTokens = ptr.Of(int32(*dm.Meta.ConnConfig.MaxTokens))
-	}
-
-	var topP *float64
-	if tp, ok := dm.FindParameter(modelmgr.TopP); ok {
-		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
-		if err != nil {
-			return nil, err
-		}
-		topP = ptr.Of(t)
-	}
-
-	var topK *int32
-	if tp, ok := dm.FindParameter(modelmgr.TopK); ok {
-		t, err := tp.GetInt(modelmgr.DefaultTypeBalance)
-		if err != nil {
-			return nil, err
-		}
-		topK = ptr.Of(int32(t))
-	}
-
-	var frequencyPenalty *float64
-	if tp, ok := dm.FindParameter(modelmgr.FrequencyPenalty); ok {
-		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
-		if err != nil {
-			return nil, err
-		}
-		frequencyPenalty = ptr.Of(t)
-	}
-
-	var presencePenalty *float64
-	if tp, ok := dm.FindParameter(modelmgr.PresencePenalty); ok {
-		t, err := tp.GetFloat(modelmgr.DefaultTypeBalance)
-		if err != nil {
-			return nil, err
-		}
-		presencePenalty = ptr.Of(t)
-	}
+	dm := modelList[0]
 
 	return &bot_common.ModelInfo{
 		ModelId:          ptr.Of(dm.ID),
-		Temperature:      temperature,
-		MaxTokens:        maxTokens,
-		TopP:             topP,
-		FrequencyPenalty: frequencyPenalty,
-		PresencePenalty:  presencePenalty,
-		TopK:             topK,
+		Temperature:      dm.GetDefaultTemperature(),
+		MaxTokens:        dm.GetDefaultMaxTokens(),
+		TopP:             dm.GetDefaultTopP(),
+		FrequencyPenalty: dm.GetDefaultFrequencyPenalty(),
+		PresencePenalty:  dm.GetDefaultPresencePenalty(),
+		TopK:             dm.GetDefaultTopK(),
 		ModelStyle:       bot_common.ModelStylePtr(bot_common.ModelStyle_Balance),
 		ShortMemoryPolicy: &bot_common.ShortMemoryPolicy{
 			ContextMode:  bot_common.ContextModePtr(bot_common.ContextMode_FunctionCall_2),

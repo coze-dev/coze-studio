@@ -25,12 +25,10 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -45,7 +43,7 @@ import (
 )
 
 type QuestionAnswer struct {
-	model    model.BaseChatModel
+	model    modelbuilder.BaseChatModel
 	nodeMeta entity.NodeTypeMeta
 
 	questionTpl string
@@ -70,7 +68,7 @@ type Config struct {
 	FixedChoices []string
 
 	// used for intent recognize if answer by choices and given a custom answer, as well as for extracting structured output from user response
-	LLMParams *crossmodel.LLMParams
+	LLMParams *vo.LLMParams
 
 	// the following are required if AnswerType is AnswerDirectly and needs to extract from answer
 	ExtractFromAnswer         bool
@@ -92,7 +90,7 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 	}
 	c.QuestionTpl = qaConf.Question
 
-	var llmParams *crossmodel.LLMParams
+	var llmParams *vo.LLMParams
 	if n.Data.Inputs.LLMParam != nil {
 		llmParamBytes, err := sonic.Marshal(n.Data.Inputs.LLMParam)
 		if err != nil {
@@ -171,8 +169,8 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 	return ns, nil
 }
 
-func convertLLMParams(params vo.SimpleLLMParam) (*crossmodel.LLMParams, error) {
-	p := &crossmodel.LLMParams{}
+func convertLLMParams(params vo.SimpleLLMParam) (*vo.LLMParams, error) {
+	p := &vo.LLMParams{}
 	p.ModelName = params.ModelName
 	p.ModelType = params.ModelType
 	p.Temperature = &params.Temperature
@@ -231,11 +229,11 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 	}
 
 	var (
-		m   model.BaseChatModel
+		m   modelbuilder.BaseChatModel
 		err error
 	)
 	if c.LLMParams != nil {
-		m, _, err = crossmodelmgr.DefaultSVC().GetModel(ctx, c.LLMParams)
+		m, _, err = modelbuilder.BuildModelByID(ctx, c.LLMParams.ModelType, c.LLMParams.ToModelBuilderLLMParams())
 		if err != nil {
 			return nil, err
 		}

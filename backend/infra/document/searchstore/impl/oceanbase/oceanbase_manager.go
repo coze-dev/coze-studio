@@ -19,11 +19,10 @@ package oceanbase
 import (
 	"context"
 	"fmt"
-	"os"
-	"strconv"
 	"sync"
 	"time"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/embedding"
 	"github.com/coze-dev/coze-studio/backend/infra/oceanbase"
@@ -295,72 +294,14 @@ func (m *oceanbaseManager) cleanExpiredCache() {
 }
 
 func (m *oceanbaseManager) getVectorDimension() int {
-	embeddingType := os.Getenv("EMBEDDING_TYPE")
-
-	logs.Infof("[getVectorDimension] EMBEDDING_TYPE: %s", embeddingType)
-
-	switch embeddingType {
-	case "ark":
-		if dimStr := os.Getenv("ARK_EMBEDDING_DIMS"); dimStr != "" {
-			if dim, err := strconv.Atoi(dimStr); err == nil {
-				return dim
-			}
-		}
-	case "openai":
-		if dimStr := os.Getenv("OPENAI_EMBEDDING_DIMS"); dimStr != "" {
-			if dim, err := strconv.Atoi(dimStr); err == nil {
-				return dim
-			}
-		}
-	case "ollama":
-		if dimStr := os.Getenv("OLLAMA_EMBEDDING_DIMS"); dimStr != "" {
-			if dim, err := strconv.Atoi(dimStr); err == nil {
-				return dim
-			}
-		}
-	case "http":
-		if dimStr := os.Getenv("HTTP_EMBEDDING_DIMS"); dimStr != "" {
-			if dim, err := strconv.Atoi(dimStr); err == nil {
-				return dim
-			}
-		}
-	case "gemini":
-		if dimStr := os.Getenv("GEMINI_EMBEDDING_DIMS"); dimStr != "" {
-			if dim, err := strconv.Atoi(dimStr); err == nil {
-				return dim
-			}
-		}
+	knowledgeConf, err := config.Knowledge().GetKnowledgeConfig(context.Background())
+	if err != nil {
+		logs.Errorf("[getVectorDimension] failed to get knowledge config: %v", err)
+		return 1024
 	}
 
-	if dimStr := os.Getenv("ARK_EMBEDDING_DIMS"); dimStr != "" {
-		if dim, err := strconv.Atoi(dimStr); err == nil {
-			return dim
-		}
-	}
+	embeddingConfig := knowledgeConf.EmbeddingConfig
+	dims := int(embeddingConfig.Connection.EmbeddingInfo.Dims)
 
-	if dimStr := os.Getenv("OPENAI_EMBEDDING_DIMS"); dimStr != "" {
-		if dim, err := strconv.Atoi(dimStr); err == nil {
-			return dim
-		}
-	}
-
-	if dimStr := os.Getenv("OLLAMA_EMBEDDING_DIMS"); dimStr != "" {
-		if dim, err := strconv.Atoi(dimStr); err == nil {
-			return dim
-		}
-	}
-
-	if dimStr := os.Getenv("HTTP_EMBEDDING_DIMS"); dimStr != "" {
-		if dim, err := strconv.Atoi(dimStr); err == nil {
-			return dim
-		}
-	}
-
-	if dimStr := os.Getenv("GEMINI_EMBEDDING_DIMS"); dimStr != "" {
-		if dim, err := strconv.Atoi(dimStr); err == nil {
-			return dim
-		}
-	}
-
-	return 1024
+	return dims
 }

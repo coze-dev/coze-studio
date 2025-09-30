@@ -36,9 +36,7 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -61,8 +59,6 @@ func TestQuestionAnswer(t *testing.T) {
 	mockey.PatchConvey("test qa", t, func() {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
-		mockModelManager := mockmodel.NewMockManager(ctrl)
-		mockey.Mock(crossmodelmgr.DefaultSVC).Return(mockModelManager).Build()
 
 		accessKey := os.Getenv("OPENAI_API_KEY")
 		baseURL := os.Getenv("OPENAI_BASE_URL")
@@ -81,7 +77,8 @@ func TestQuestionAnswer(t *testing.T) {
 			})
 			assert.NoError(t, err)
 
-			mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
+			a := mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
+			defer a.UnPatch()
 		}
 
 		dsn := "root:root@tcp(127.0.0.1:3306)/opencoze?charset=utf8mb4&parseTime=True&loc=Local"
@@ -220,7 +217,8 @@ func TestQuestionAnswer(t *testing.T) {
 						}, nil
 					},
 				}
-				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(oneChatModel, nil, nil).Times(1)
+				a := mockey.Mock(modelbuilder.BuildModelByID).Return(oneChatModel, nil, nil).Build()
+				defer a.UnPatch()
 			}
 
 			entryN := &schema2.NodeSchema{
@@ -237,7 +235,7 @@ func TestQuestionAnswer(t *testing.T) {
 					AnswerType:   qa.AnswerByChoices,
 					ChoiceType:   qa.FixedChoices,
 					FixedChoices: []string{"{{choice1}}", "{{choice2}}"},
-					LLMParams:    &model.LLMParams{},
+					LLMParams:    &vo.LLMParams{},
 				},
 				InputSources: []*vo.FieldInfo{
 					{
@@ -542,7 +540,8 @@ func TestQuestionAnswer(t *testing.T) {
 						return nil, errors.New("not found")
 					},
 				}
-				mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).Times(1)
+				a := mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
+				defer a.UnPatch()
 			}
 
 			entryN := &schema2.NodeSchema{
@@ -560,7 +559,7 @@ func TestQuestionAnswer(t *testing.T) {
 					ExtractFromAnswer:         true,
 					AdditionalSystemPromptTpl: "{{prompt}}",
 					MaxAnswerCount:            2,
-					LLMParams:                 &model.LLMParams{},
+					LLMParams:                 &vo.LLMParams{},
 				},
 				InputSources: []*vo.FieldInfo{
 					{

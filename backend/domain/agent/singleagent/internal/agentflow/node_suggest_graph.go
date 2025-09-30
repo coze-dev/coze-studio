@@ -24,7 +24,7 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
@@ -38,7 +38,7 @@ const (
 	keyOfSuggestTemplate        = "suggest_template"
 )
 
-func newSuggestGraph(_ context.Context, conf *Config, chatModel chatmodel.ToolCallingChatModel) (*compose.Graph[[]*schema.Message, *schema.Message], bool) {
+func newSuggestGraph(_ context.Context, conf *Config, chatModel modelbuilder.ToolCallingChatModel) (*compose.Graph[[]*schema.Message, *schema.Message], bool) {
 
 	isNeedGenerateSuggest := false
 	agentSuggestionSetting := conf.Agent.SuggestReply

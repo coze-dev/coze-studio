@@ -31,6 +31,7 @@ import (
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	cloudworkflow "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -39,7 +40,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 	"github.com/coze-dev/coze-studio/backend/infra/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -71,9 +71,8 @@ func NewWorkflowService(repo workflow.Repository) workflow.Service {
 }
 
 func NewWorkflowRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
-	cpStore einoCompose.CheckPointStore, chatModel chatmodel.BaseChatModel, cfg workflow.WorkflowConfig) (workflow.Repository, error) {
+	cpStore einoCompose.CheckPointStore, chatModel modelbuilder.BaseChatModel, cfg workflow.WorkflowConfig) (workflow.Repository, error) {
 	return repo.NewRepository(idgen, db, redis, tos, cpStore, chatModel, cfg)
-
 }
 
 func (i *impl) ListNodeMeta(_ context.Context, nodeTypes map[entity.NodeType]bool) (map[string][]*entity.NodeTypeMeta, []entity.Category, error) {

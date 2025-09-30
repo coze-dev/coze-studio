@@ -28,6 +28,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
@@ -36,7 +38,6 @@ import (
 	shortcutCMDEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
 	workflowEntity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -166,9 +167,8 @@ func (s *SingleAgentApplicationService) fetchModelDetails(ctx context.Context, a
 	}
 
 	modelID := agentInfo.ModelInfo.GetModelId()
-	modelInfos, err := s.appContext.ModelMgr.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
-		IDs: []int64{modelID},
-	})
+	modelInfos, err := config.ModelConf().MGetModelByID(ctx, []int64{modelID})
+
 	if err != nil {
 		return nil, fmt.Errorf("fetch model(%d) details failed: %v", modelID, err)
 	}
@@ -285,14 +285,12 @@ func modelInfoDo2Vo(modelInfos []*modelmgr.Model) map[int64]*playground.ModelDet
 }
 
 func toModelDetail(m *modelmgr.Model) *playground.ModelDetail {
-	mm := m.Meta
-
 	return &playground.ModelDetail{
-		Name:         ptr.Of(m.Name),
-		ModelName:    ptr.Of(m.Name),
+		Name:         ptr.Of(m.DisplayInfo.Name),
+		ModelName:    ptr.Of(m.Connection.BaseConnInfo.Model),
 		ModelID:      ptr.Of(m.ID),
-		ModelFamily:  ptr.Of(int64(mm.Protocol.TOModelClass())),
-		ModelIconURL: ptr.Of(m.IconURL),
+		ModelFamily:  ptr.Of(int64(m.Provider.ModelClass)),
+		ModelIconURL: ptr.Of(m.Provider.IconURL),
 	}
 }
 

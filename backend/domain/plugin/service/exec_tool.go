@@ -126,7 +126,7 @@ func (p *pluginServiceImpl) acquireAccessTokenIfNeed(ctx context.Context, req *m
 			return "", "", err
 		}
 
-		authURL, err = genAuthURL(authorizationCode)
+		authURL, err = genAuthURL(ctx, authorizationCode)
 		if err != nil {
 			return "", "", err
 		}

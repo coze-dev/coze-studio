@@ -36,6 +36,10 @@ func BadRequest(c *app.RequestContext, errMsg string) {
 	c.AbortWithStatusJSON(http.StatusBadRequest, data{Code: http.StatusBadRequest, Msg: errMsg})
 }
 
+func Unauthorized(c *app.RequestContext, errMsg string) {
+	c.AbortWithStatusJSON(http.StatusUnauthorized, data{Code: http.StatusUnauthorized, Msg: errMsg})
+}
+
 func InternalError(ctx context.Context, c *app.RequestContext, err error) {
 	var customErr errorx.StatusError
 

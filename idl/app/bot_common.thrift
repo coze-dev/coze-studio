@@ -26,7 +26,17 @@ struct ModelInfo {
     7: optional ShortMemoryPolicy   ShortMemoryPolicy (api.body="short_memory_policy")                            , // contextual policy
     8: optional i32                 TopK              (api.body="top_k")                                          , // When generating, sample the size of the candidate set
     9: optional ModelResponseFormat ResponseFormat    (api.body="response_format")                                , // model reply content format
-    10: optional ModelStyle         ModelStyle        (api.body="model_style")                                    , // User-selected model style
+    10: optional ModelStyle         ModelStyle        (api.body="model_style")    
+    11: optional CacheType          CacheType           (api.body="cache_type")                                   , // 缓存配置
+    12: optional bool               SpCurrentTime       (api.body="sp_current_time")                                , // sp拼接当前时间
+    13: optional bool               SpAntiLeak          (api.body="sp_anti_leak")                                   , // sp拼接防泄露指令
+    14: optional bool               SpVoiceInfo         (api.body="sp_voice_info")                                  , // sp拼接声纹信息
+    15: optional map<string, string> Parameters         (api.body="parameters")                                   , // User-selected model style
+}
+
+enum CacheType {
+    CacheClosed = 0 // 缓存关闭
+    PrefixCache = 1 // 前缀缓存
 }
 
 enum ModelStyle {

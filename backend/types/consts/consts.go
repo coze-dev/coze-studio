@@ -51,10 +51,6 @@ const (
 	S3Endpoint         = "S3_ENDPOINT"
 	S3BucketEndpoint   = "S3_BUCKET_ENDPOINT"
 
-	CozeSaasPluginEnabled = "COZE_SAAS_PLUGIN_ENABLED"
-	CozeSaasAPIKey        = "COZE_SAAS_API_KEY"
-	CozeSaasAPIBaseURL    = "COZE_SAAS_API_BASE_URL"
-
 	HostKeyInCtx          = "HOST_KEY_IN_CTX"
 	RequestSchemeKeyInCtx = "REQUEST_SCHEME_IN_CTX"
 
@@ -92,14 +88,6 @@ const (
 	UseSSL      = "USE_SSL"
 	SSLCertFile = "SSL_CERT_FILE"
 	SSLKeyFile  = "SSL_KEY_FILE"
-
-	OCRType     = "OCR_TYPE"
-	VeOCRAK     = "VE_OCR_AK"
-	VeOCRSK     = "VE_OCR_SK"
-	PPOCRAPIURL = "PADDLEOCR_OCR_API_URL"
-
-	ParserType        = "PARSER_TYPE"
-	PPStructureAPIURL = "PADDLEOCR_STRUCTURE_API_URL"
 )
 
 const (
@@ -139,4 +127,14 @@ const (
 const (
 	DisableUserRegistration = "DISABLE_USER_REGISTRATION"
 	AllowRegistrationEmail  = "ALLOW_REGISTRATION_EMAIL"
+)
+
+const (
+	PublishInfoKeyPrefix = "agent:publish:last"
+)
+
+const (
+	BaseConfigNameSpace  = "kv_config_ns"
+	KnowledgeConfigSpace = "kv_knowledge_ns"
+	ModelConfigSpace     = "kv_model_ns"
 )

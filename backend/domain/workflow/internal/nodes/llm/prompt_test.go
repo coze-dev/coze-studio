@@ -23,7 +23,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/urltobase64url"
 )
 
@@ -32,7 +33,7 @@ func TestTransformMessagePart(t *testing.T) {
 		tests := []struct {
 			name                 string
 			part                 schema.ChatMessagePart
-			supportedModals      map[modelmgr.Modal]bool
+			supportedModals      *developer_api.ModelAbility
 			enableTransferBase64 bool
 			expectedPart         schema.ChatMessagePart
 			mockB64              bool
@@ -43,7 +44,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:     schema.ChatMessagePartTypeImageURL,
 					ImageURL: &schema.ChatMessageImageURL{URL: "http://example.com/image.png"},
 				},
-				supportedModals: map[modelmgr.Modal]bool{},
+				supportedModals: &developer_api.ModelAbility{},
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeText,
 					Text: "http://example.com/image.png",
@@ -55,7 +56,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:     schema.ChatMessagePartTypeImageURL,
 					ImageURL: &schema.ChatMessageImageURL{URL: "http://example.com/image.png"},
 				},
-				supportedModals: map[modelmgr.Modal]bool{modelmgr.ModalImage: true},
+				supportedModals: &developer_api.ModelAbility{ImageUnderstanding: ptr.Of(true), SupportMultiModal: ptr.Of(true)},
 				expectedPart: schema.ChatMessagePart{
 					Type:     schema.ChatMessagePartTypeImageURL,
 					ImageURL: &schema.ChatMessageImageURL{URL: "http://example.com/image.png"},
@@ -67,7 +68,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:     schema.ChatMessagePartTypeAudioURL,
 					AudioURL: &schema.ChatMessageAudioURL{URL: "http://example.com/audio.mp3"},
 				},
-				supportedModals: map[modelmgr.Modal]bool{},
+				supportedModals: &developer_api.ModelAbility{},
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeText,
 					Text: "http://example.com/audio.mp3",
@@ -79,7 +80,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:     schema.ChatMessagePartTypeVideoURL,
 					VideoURL: &schema.ChatMessageVideoURL{URL: "http://example.com/video.mp4"},
 				},
-				supportedModals: map[modelmgr.Modal]bool{},
+				supportedModals: &developer_api.ModelAbility{},
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeText,
 					Text: "http://example.com/video.mp4",
@@ -91,7 +92,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:    schema.ChatMessagePartTypeFileURL,
 					FileURL: &schema.ChatMessageFileURL{URL: "http://example.com/file.txt"},
 				},
-				supportedModals: map[modelmgr.Modal]bool{},
+				supportedModals: &developer_api.ModelAbility{},
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeText,
 					Text: "http://example.com/file.txt",
@@ -103,7 +104,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type: schema.ChatMessagePartTypeText,
 					Text: "hello world",
 				},
-				supportedModals: map[modelmgr.Modal]bool{},
+				supportedModals: &developer_api.ModelAbility{},
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeText,
 					Text: "hello world",
@@ -115,7 +116,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:     schema.ChatMessagePartTypeImageURL,
 					ImageURL: &schema.ChatMessageImageURL{URL: "http://example.com/image.png"},
 				},
-				supportedModals:      map[modelmgr.Modal]bool{modelmgr.ModalImage: true},
+				supportedModals:      &developer_api.ModelAbility{ImageUnderstanding: ptr.Of(true), SupportMultiModal: ptr.Of(true)},
 				enableTransferBase64: true,
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeImageURL,
@@ -132,7 +133,7 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:     schema.ChatMessagePartTypeAudioURL,
 					AudioURL: &schema.ChatMessageAudioURL{URL: "http://example.com/audio.mp3"},
 				},
-				supportedModals:      map[modelmgr.Modal]bool{modelmgr.ModalAudio: true},
+				supportedModals:      &developer_api.ModelAbility{AudioUnderstanding: ptr.Of(true), SupportMultiModal: ptr.Of(true)},
 				enableTransferBase64: true,
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeAudioURL,
@@ -149,30 +150,13 @@ func TestTransformMessagePart(t *testing.T) {
 					Type:     schema.ChatMessagePartTypeVideoURL,
 					VideoURL: &schema.ChatMessageVideoURL{URL: "http://example.com/video.mp4"},
 				},
-				supportedModals:      map[modelmgr.Modal]bool{modelmgr.ModalVideo: true},
+				supportedModals:      &developer_api.ModelAbility{VideoUnderstanding: ptr.Of(true), SupportMultiModal: ptr.Of(true)},
 				enableTransferBase64: true,
 				expectedPart: schema.ChatMessagePart{
 					Type: schema.ChatMessagePartTypeVideoURL,
 					VideoURL: &schema.ChatMessageVideoURL{
 						URL:      "data:video/mp4;base64,base64encodedstring",
 						MIMEType: "video/mp4",
-					},
-				},
-				mockB64: true,
-			},
-			{
-				name: "File modal supported, with base64 transfer",
-				part: schema.ChatMessagePart{
-					Type:    schema.ChatMessagePartTypeFileURL,
-					FileURL: &schema.ChatMessageFileURL{URL: "http://example.com/file.txt"},
-				},
-				supportedModals:      map[modelmgr.Modal]bool{modelmgr.ModalFile: true},
-				enableTransferBase64: true,
-				expectedPart: schema.ChatMessagePart{
-					Type: schema.ChatMessagePartTypeFileURL,
-					FileURL: &schema.ChatMessageFileURL{
-						URL:      "data:text/plain;base64,base64encodedstring",
-						MIMEType: "text/plain",
 					},
 				},
 				mockB64: true,

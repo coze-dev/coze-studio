@@ -29,11 +29,11 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "github.com/cloudwego/eino/components/model"
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
 	workflow "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow0 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	workflow1 "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	config "github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	entity "github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
@@ -1392,10 +1392,10 @@ func (mr *MockRepositoryMockRecorder) GetFirstInterruptEvent(ctx, wfExeID any) *
 }
 
 // GetKnowledgeRecallChatModel mocks base method.
-func (m *MockRepository) GetKnowledgeRecallChatModel() model.BaseChatModel {
+func (m *MockRepository) GetKnowledgeRecallChatModel() modelbuilder.BaseChatModel {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetKnowledgeRecallChatModel")
-	ret0, _ := ret[0].(model.BaseChatModel)
+	ret0, _ := ret[0].(modelbuilder.BaseChatModel)
 	return ret0
 }
 

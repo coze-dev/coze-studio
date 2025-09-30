@@ -243,7 +243,7 @@ func createTestPluginInfo(id int64, name, desc string) *entity.PluginInfo {
 		SaasPluginExtra: &model.SaasPluginExtraInfo{
 			IsOfficial: false,
 		},
-		Manifest:     manifest,
+		Manifest: manifest,
 	}
 
 	return entity.NewPluginInfo(pluginInfo)

@@ -44,7 +44,7 @@ func (s *singleAgentImpl) SavePublishRecord(ctx context.Context, p *entity.Singl
 }
 
 func (s *singleAgentImpl) GetPublishedTime(ctx context.Context, agentID int64) (int64, error) {
-	pubInfo, err := s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(agentID))
+	pubInfo, err := s.PublishInfoRepo.Get(ctx, consts.PublishInfoKeyPrefix, conv.Int64ToStr(agentID))
 	if err != nil {
 		return 0, err
 	}
@@ -54,7 +54,7 @@ func (s *singleAgentImpl) GetPublishedTime(ctx context.Context, agentID int64) (
 
 func (s *singleAgentImpl) UpdatePublishInfo(ctx context.Context, agentID int64, connectorIDs []int64) error {
 	now := time.Now().UnixMilli()
-	pubInfo, err := s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(agentID))
+	pubInfo, err := s.PublishInfoRepo.Get(ctx, consts.PublishInfoKeyPrefix, conv.Int64ToStr(agentID))
 	if err != nil {
 		return err
 	}
@@ -77,13 +77,13 @@ func (s *singleAgentImpl) UpdatePublishInfo(ctx context.Context, agentID int64, 
 		pubInfo.ConnectorID2PublishTime[connectorID] = now
 	}
 
-	err = s.PublishInfoRepo.Save(ctx, conv.Int64ToStr(agentID), pubInfo)
+	err = s.PublishInfoRepo.Save(ctx, consts.PublishInfoKeyPrefix, conv.Int64ToStr(agentID), pubInfo)
 
 	return err
 }
 
 func (s *singleAgentImpl) GetPublishedInfo(ctx context.Context, agentID int64) (*entity.PublishInfo, error) {
-	return s.PublishInfoRepo.Get(ctx, conv.Int64ToStr(agentID))
+	return s.PublishInfoRepo.Get(ctx, consts.PublishInfoKeyPrefix, conv.Int64ToStr(agentID))
 }
 
 func (s *singleAgentImpl) GetPublishConnectorList(ctx context.Context, agentID int64) (*entity.PublishConnectorData, error) {

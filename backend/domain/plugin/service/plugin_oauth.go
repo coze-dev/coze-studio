@@ -28,7 +28,7 @@ import (
 	"golang.org/x/oauth2"
 
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	"github.com/coze-dev/coze-studio/backend/bizpkg/env"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
@@ -293,7 +293,10 @@ func (p *pluginServiceImpl) OAuthCode(ctx context.Context, code string, state *d
 		return errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "plugin auth info is nil"))
 	}
 
-	config := getStanderOAuthConfig(authInfo.AuthOfOAuthAuthorizationCode)
+	config, err := getStanderOAuthConfig(ctx, authInfo.AuthOfOAuthAuthorizationCode)
+	if err != nil {
+		return errorx.Wrapf(err, "getStanderOAuthConfig failed, pluginID=%d", state.PluginID)
+	}
 
 	token, err := config.Exchange(ctx, code)
 	if err != nil {
@@ -427,7 +430,7 @@ func (p *pluginServiceImpl) getPluginOAuthStatus(ctx context.Context, userID int
 
 	needAuth = accessToken == ""
 
-	authURL, err = genAuthURL(authCode)
+	authURL, err = genAuthURL(ctx, authCode)
 	if err != nil {
 		return false, "", err
 	}
@@ -435,8 +438,11 @@ func (p *pluginServiceImpl) getPluginOAuthStatus(ctx context.Context, userID int
 	return needAuth, authURL, nil
 }
 
-func genAuthURL(info *dto.AuthorizationCodeInfo) (string, error) {
-	config := getStanderOAuthConfig(info.Config)
+func genAuthURL(ctx context.Context, info *dto.AuthorizationCodeInfo) (string, error) {
+	config, err := getStanderOAuthConfig(ctx, info.Config)
+	if err != nil {
+		return "", err
+	}
 
 	state := &dto.OAuthState{
 		ClientName: "",
@@ -464,20 +470,26 @@ func genAuthURL(info *dto.AuthorizationCodeInfo) (string, error) {
 	return authURL, nil
 }
 
-func getStanderOAuthConfig(config *model.OAuthAuthorizationCodeConfig) *oauth2.Config {
-	if config == nil {
-		return nil
+func getStanderOAuthConfig(ctx context.Context, authConfig *model.OAuthAuthorizationCodeConfig) (*oauth2.Config, error) {
+	if authConfig == nil {
+		return nil, nil
 	}
+
+	host, err := config.Base().GetServerHost(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("GetServerHost failed, err=%w", err)
+	}
+
 	return &oauth2.Config{
-		ClientID:     config.ClientID,
-		ClientSecret: config.ClientSecret,
+		ClientID:     authConfig.ClientID,
+		ClientSecret: authConfig.ClientSecret,
 		Endpoint: oauth2.Endpoint{
-			TokenURL: config.AuthorizationURL,
-			AuthURL:  config.ClientURL,
+			TokenURL: authConfig.AuthorizationURL,
+			AuthURL:  authConfig.ClientURL,
 		},
-		RedirectURL: fmt.Sprintf("%s/api/oauth/authorization_code", env.GetServerHost()),
-		Scopes:      strings.Split(config.Scope, " "),
-	}
+		RedirectURL: fmt.Sprintf("%s/api/oauth/authorization_code", host),
+		Scopes:      strings.Split(authConfig.Scope, " "),
+	}, nil
 }
 
 func (p *pluginServiceImpl) GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*dto.AgentPluginOAuthStatus, err error) {

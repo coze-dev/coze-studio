@@ -19,8 +19,8 @@ import (
 	"context"
 	"path/filepath"
 
-	"github.com/coze-dev/coze-studio/backend/bizpkg/buildinmodel"
 	"github.com/coze-dev/coze-studio/backend/bizpkg/fileutil"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql"
 	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql/impl/builtin"
 )
@@ -28,7 +28,7 @@ import (
 type NL2SQL = nl2sql.NL2SQL
 
 func New(ctx context.Context) (nl2sql.NL2SQL, error) {
-	n2sChatModel, _, err := buildinmodel.GetBuiltinChatModel(ctx, "NL2SQL_")
+	n2sChatModel, _, err := modelbuilder.GetBuiltinChatModel(ctx, "NL2SQL_")
 	if err != nil {
 		return nil, err
 	}

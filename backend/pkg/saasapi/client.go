@@ -24,12 +24,11 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"os"
 	"strconv"
 	"time"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 // CozeAPIClient represents a client for coze.cn OpenAPI
@@ -264,15 +263,21 @@ func (c *CozeAPIClient) requestWithQuery(ctx context.Context, method, path strin
 
 // getEnvOrDefault returns environment variable value or default if not set
 func getSaasOpenAPIUrl() string {
-	if value := os.Getenv(consts.CozeSaasAPIBaseURL); value != "" {
-		return value
+	baseConfig, err := config.Base().GetBaseConfig(context.Background())
+	if err != nil {
+		logs.CtxErrorf(context.Background(), "GetBaseConfig failed: %v", err)
+		return "https://api.coze.cn"
 	}
-	return "https://api.coze.cn"
+
+	return baseConfig.PluginConfiguration.CozeSaasAPIBaseURL
 }
 
 func getSaasOpenAPIKey() string {
-	if value := os.Getenv(consts.CozeSaasAPIKey); value != "" {
-		return value
+	baseConfig, err := config.Base().GetBaseConfig(context.Background())
+	if err != nil {
+		logs.CtxErrorf(context.Background(), "GetBaseConfig failed: %v", err)
+		return ""
 	}
-	return ""
+
+	return baseConfig.PluginConfiguration.CozeAPIToken
 }

@@ -28,29 +28,22 @@ import (
 
 	"github.com/volcengine/volc-sdk-golang/base"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/infra/document/rerank"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
-type Config struct {
-	AK     string
-	SK     string
-	Domain string
-	Model  string
-	Region string // default cn-north-1
-}
-
-func NewReranker(config *Config) rerank.Reranker {
-	if config.Region == "" {
-		config.Region = "cn-north-1"
+func NewReranker(cfg *config.VikingDBConfig) rerank.Reranker {
+	if cfg.Region == "" {
+		cfg.Region = "cn-north-1"
 	}
-	if config.Domain == "" {
-		config.Domain = domain
+	if cfg.Host == "" {
+		cfg.Host = domain
 	}
-	if config.Model == "" {
-		config.Model = defaultModel
+	if cfg.Model == "" {
+		cfg.Model = defaultModel
 	}
-	return &reranker{config: config}
+	return &reranker{config: cfg}
 }
 
 const (
@@ -59,7 +52,7 @@ const (
 )
 
 type reranker struct {
-	config *Config
+	config *config.VikingDBConfig
 }
 
 type rerankReq struct {
@@ -169,7 +162,7 @@ func (r *reranker) Rerank(ctx context.Context, req *rerank.Request) (*rerank.Res
 func (r *reranker) prepareRequest(body []byte) *http.Request {
 	u := url.URL{
 		Scheme: "https",
-		Host:   r.config.Domain,
+		Host:   r.config.Host,
 		Path:   "/api/knowledge/service/rerank",
 	}
 	req, _ := http.NewRequest(http.MethodPost, u.String(), bytes.NewReader(body))
@@ -177,8 +170,8 @@ func (r *reranker) prepareRequest(body []byte) *http.Request {
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Host", domain)
 	credential := base.Credentials{
-		AccessKeyID:     r.config.AK,
-		SecretAccessKey: r.config.SK,
+		AccessKeyID:     r.config.Ak,
+		SecretAccessKey: r.config.Sk,
 		Service:         "air",
 		Region:          r.config.Region,
 	}

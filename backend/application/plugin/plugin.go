@@ -18,12 +18,11 @@ package plugin
 
 import (
 	"context"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 
-	typesConsts "github.com/coze-dev/coze-studio/backend/types/consts"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	productCommon "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
@@ -633,10 +632,16 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 
 func (p *PluginApplicationService) GetMarketPluginConfig(ctx context.Context, req *productAPI.GetMarketPluginConfigRequest) (resp *productAPI.GetMarketPluginConfigResponse, err error) {
 
-	enableSaasPluginEnv := os.Getenv(typesConsts.CozeSaasPluginEnabled)
-	saasAPIiKey := os.Getenv(typesConsts.CozeSaasAPIKey)
+	baseConfig, err := config.Base().GetBaseConfig(ctx)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetBaseConfig failed: %v", err)
+		return nil, err
+	}
 
-	enableSaasPlugin := enableSaasPluginEnv == "true" && len(saasAPIiKey) > 0
+	cozeSaasPluginEnabled := baseConfig.PluginConfiguration.CozeSaasPluginEnabled
+	saasAPIKey := baseConfig.PluginConfiguration.CozeAPIToken
+
+	enableSaasPlugin := cozeSaasPluginEnabled && len(saasAPIKey) > 0
 
 	resp = &productAPI.GetMarketPluginConfigResponse{
 		Code:    0,

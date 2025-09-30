@@ -17,34 +17,32 @@ package impl
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/volcengine/volc-sdk-golang/service/visual"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/infra/document/ocr"
 	"github.com/coze-dev/coze-studio/backend/infra/document/ocr/impl/ppocr"
 	"github.com/coze-dev/coze-studio/backend/infra/document/ocr/impl/veocr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
-	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 type OCR = ocr.OCR
 
-func New() ocr.OCR {
+func New(conf *config.KnowledgeConfig) ocr.OCR {
 	var ocr ocr.OCR
-	switch os.Getenv(consts.OCRType) {
-	case "ve":
-		ocrAK := os.Getenv(consts.VeOCRAK)
-		ocrSK := os.Getenv(consts.VeOCRSK)
-		if ocrAK == "" || ocrSK == "" {
+
+	switch conf.OcrConfig.Type {
+	case config.OCRType_Volcengine:
+		if conf.OcrConfig.VolcengineAk == "" || conf.OcrConfig.VolcengineSk == "" {
 			logs.Warnf("[ve_ocr] ak / sk not configured, ocr might not work well")
 		}
 		inst := visual.NewInstance()
-		inst.Client.SetAccessKey(ocrAK)
-		inst.Client.SetSecretKey(ocrSK)
+		inst.Client.SetAccessKey(conf.OcrConfig.VolcengineAk)
+		inst.Client.SetSecretKey(conf.OcrConfig.VolcengineSk)
 		ocr = veocr.NewOCR(&veocr.Config{Client: inst})
-	case "paddleocr":
-		url := os.Getenv(consts.PPOCRAPIURL)
+	case config.OCRType_Paddleocr:
+		url := conf.OcrConfig.PaddleocrAPIURL
 		client := &http.Client{}
 		ocr = ppocr.NewOCR(&ppocr.Config{Client: client, URL: url})
 	default:

@@ -33,6 +33,7 @@ import (
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -42,7 +43,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/repo/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/cache"
-	cm "github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -68,17 +68,24 @@ type RepositoryImpl struct {
 	workflow.InterruptEventStore
 	workflow.CancelSignalStore
 	workflow.ExecuteHistoryStore
-	builtinModel cm.BaseChatModel
+	builtinModel modelbuilder.BaseChatModel
 	workflow.WorkflowConfig
 	workflow.Suggester
 }
 
 func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, tos storage.Storage,
-	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel, workflowConfig workflow.WorkflowConfig) (workflow.Repository, error) {
-	sg, err := NewSuggester(chatModel)
-	if err != nil {
-		return nil, err
+	cpStore einoCompose.CheckPointStore, chatModel modelbuilder.BaseChatModel, workflowConfig workflow.WorkflowConfig) (workflow.Repository, error) {
+	var sg workflow.Suggester
+	var err error
+	if chatModel != nil {
+		sg, err = NewSuggester(chatModel)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		logs.Warnf("[NewRepository] Failed to create suggester: %v", err)
 	}
+
 	return &RepositoryImpl{
 		IDGenerator:     idgen,
 		query:           query.Use(db),
@@ -101,6 +108,13 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, to
 		WorkflowConfig: workflowConfig,
 	}, nil
 
+}
+
+func (r *RepositoryImpl) Suggest(ctx context.Context, input *vo.SuggestInfo) ([]string, error) {
+	if r.Suggester == nil {
+		return []string{}, nil
+	}
+	return r.Suggester.Suggest(ctx, input)
 }
 
 func (r *RepositoryImpl) CreateMeta(ctx context.Context, meta *vo.Meta) (int64, error) {
@@ -1753,7 +1767,7 @@ func (r *RepositoryImpl) BatchCreateConnectorWorkflowVersion(ctx context.Context
 	return nil
 }
 
-func (r *RepositoryImpl) GetKnowledgeRecallChatModel() cm.BaseChatModel {
+func (r *RepositoryImpl) GetKnowledgeRecallChatModel() modelbuilder.BaseChatModel {
 	return r.builtinModel
 }
 

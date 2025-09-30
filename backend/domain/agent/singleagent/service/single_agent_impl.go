@@ -32,10 +32,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/agentflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/jsoncache"
+	"github.com/coze-dev/coze-studio/backend/pkg/kvstore"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -46,12 +44,9 @@ type singleAgentImpl struct {
 }
 
 type Components struct {
-	ModelMgr     modelmgr.Manager
-	ModelFactory chatmodel.Factory
-
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
-	PublishInfoRepo  *jsoncache.JsonCache[entity.PublishInfo]
+	PublishInfoRepo  *kvstore.KVStore[entity.PublishInfo]
 	CounterRepo      repository.CounterRepository
 
 	CPStore compose.CheckPointStore
@@ -106,12 +101,10 @@ func (s *singleAgentImpl) StreamExecute(ctx context.Context, req *entity.Execute
 	}
 
 	conf := &agentflow.Config{
-		Agent:        ae,
-		UserID:       req.UserID,
-		Identity:     req.Identity,
-		ModelMgr:     s.ModelMgr,
-		ModelFactory: s.ModelFactory,
-		CPStore:      s.CPStore,
+		Agent:    ae,
+		UserID:   req.UserID,
+		Identity: req.Identity,
+		CPStore:  s.CPStore,
 
 		CustomVariables: req.CustomVariables,
 

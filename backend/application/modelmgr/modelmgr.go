@@ -18,47 +18,53 @@ package modelmgr
 
 import (
 	"context"
+	"time"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type ModelmgrApplicationService struct {
-	Mgr       modelmgr.Manager
 	TosClient storage.Storage
 }
 
 var ModelmgrApplicationSVC = &ModelmgrApplicationService{}
 
+const (
+	deprecatedModelTimeAfterDelete = 7 * 24 * time.Hour
+)
+
 func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *developer_api.GetTypeListRequest) (
 	resp *developer_api.GetTypeListResponse, err error,
 ) {
-	// It is generally not possible to configure so many models simultaneously
-	const modelMaxLimit = 300
 
-	modelResp, err := m.Mgr.ListModel(ctx, &modelmgr.ListModelRequest{
-		Limit:  modelMaxLimit,
-		Cursor: nil,
-	})
+	mList, err := config.ModelConf().GetAllModelList(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	locale := i18n.GetLocale(ctx)
-	modelList, err := slices.TransformWithErrorCheck(modelResp.ModelList, func(mm *modelmgr.Model) (*developer_api.Model, error) {
-		logs.CtxInfof(ctx, "ChatModel DefaultParameters: %v", mm.DefaultParameters)
-		if mm.IconURI != "" {
-			iconUrl, err := m.TosClient.GetObjectUrl(ctx, mm.IconURI)
-			if err == nil {
-				mm.IconURL = iconUrl
+	filteredModels := make([]*modelmgr.Model, 0, len(mList))
+	for _, mm := range mList {
+		if mm.Status == config.ModelStatus_StatusDeleted {
+			deleteAt := time.Unix(mm.DeleteAtMs/1000, 0)
+			if time.Since(deleteAt) > deprecatedModelTimeAfterDelete {
+				logs.CtxDebugf(ctx, "ignore deprecated model, mm: %v", conv.DebugJsonToStr(mm))
+				continue
 			}
 		}
+
+		filteredModels = append(filteredModels, mm)
+	}
+
+	locale := i18n.GetLocale(ctx)
+	modelList, err := slices.TransformWithErrorCheck(filteredModels, func(mm *modelmgr.Model) (*developer_api.Model, error) {
 		return modelDo2To(mm, locale)
 	})
 	if err != nil {
@@ -74,27 +80,30 @@ func (m *ModelmgrApplicationService) GetModelList(ctx context.Context, _ *develo
 	}, nil
 }
 
-func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model, error) {
-	mm := model.Meta
+func modelDo2To(m *modelmgr.Model, locale i18n.Locale) (*developer_api.Model, error) {
+	model := m.Model
+	desc := ""
+	if model.DisplayInfo.Description != nil {
+		desc = ternary.IFElse(locale == i18n.LocaleZH, model.DisplayInfo.Description.ZhCn, model.DisplayInfo.Description.EnUs)
+	}
 
-	mps := slices.Transform(model.DefaultParameters,
-		func(param *modelmgr.Parameter) *developer_api.ModelParameter {
-			return parameterDo2To(param, locale)
-		},
-	)
-
-	modalSet := sets.FromSlice(mm.Capability.InputModal)
+	modelStatusDetails := &developer_api.ModelStatusDetails{}
+	if model.Status == config.ModelStatus_StatusDeleted {
+		modelStatusDetails.IsUpcomingDeprecated = true
+		hideDate := time.Unix(model.DeleteAtMs/1000, 0).Add(deprecatedModelTimeAfterDelete)
+		modelStatusDetails.DeprecatedDate = hideDate.Format(time.DateTime)
+	}
 
 	return &developer_api.Model{
-		Name:             model.Name,
+		Name:             model.DisplayInfo.Name,
 		ModelType:        model.ID,
-		ModelClass:       mm.Protocol.TOModelClass(),
-		ModelIcon:        model.IconURL,
+		ModelClass:       model.Provider.ModelClass,
+		ModelIcon:        model.Provider.IconURL,
 		ModelInputPrice:  0,
 		ModelOutputPrice: 0,
 		ModelQuota: &developer_api.ModelQuota{
-			TokenLimit: int32(mm.Capability.MaxTokens),
-			TokenResp:  int32(mm.Capability.OutputTokens),
+			TokenLimit: int32(model.DisplayInfo.MaxTokens),
+			TokenResp:  int32(model.DisplayInfo.OutputTokens),
 			// TokenSystem:       0,
 			// TokenUserIn:       0,
 			// TokenToolsIn:      0,
@@ -106,106 +115,25 @@ func modelDo2To(model *modelmgr.Model, locale i18n.Locale) (*developer_api.Model
 			PriceOut:          0,
 			SystemPromptLimit: nil,
 		},
-		ModelName:      model.Name,
-		ModelClassName: mm.Protocol.TOModelClass().String(),
-		IsOffline:      mm.Status != modelmgr.StatusInUse,
-		ModelParams:    mps,
+		ModelName:      model.DisplayInfo.Name,
+		ModelClassName: model.Provider.ModelClass.String(),
+		IsOffline:      false,
+		ModelParams:    model.Parameters,
 		ModelDesc: []*developer_api.ModelDescGroup{
 			{
 				GroupName: "Description",
-				Desc:      []string{model.Description.Read(locale)},
+				Desc:      []string{desc},
 			},
 		},
 		FuncConfig:     nil,
 		EndpointName:   nil,
 		ModelTagList:   nil,
 		IsUpRequired:   nil,
-		ModelBriefDesc: model.Description.Read(locale),
+		ModelBriefDesc: desc,
 		ModelSeries: &developer_api.ModelSeriesInfo{ // TODO: Replace with real configuration
 			SeriesName: "热门模型",
 		},
-		ModelStatusDetails: nil,
-		ModelAbility: &developer_api.ModelAbility{
-			CotDisplay:         ptr.Of(mm.Capability.Reasoning),
-			FunctionCall:       ptr.Of(mm.Capability.FunctionCall),
-			ImageUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalImage)),
-			VideoUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalVideo)),
-			AudioUnderstanding: ptr.Of(modalSet.Contains(modelmgr.ModalAudio)),
-			SupportMultiModal:  ptr.Of(len(modalSet) > 1),
-			PrefillResp:        ptr.Of(mm.Capability.PrefillResponse),
-		},
+		ModelStatusDetails: modelStatusDetails,
+		ModelAbility:       model.Capability,
 	}, nil
-}
-
-func parameterDo2To(param *modelmgr.Parameter, locale i18n.Locale) *developer_api.ModelParameter {
-	if param == nil {
-		return nil
-	}
-
-	apiOptions := make([]*developer_api.Option, 0, len(param.Options))
-	for _, opt := range param.Options {
-		apiOptions = append(apiOptions, &developer_api.Option{
-			Label: opt.Label,
-			Value: opt.Value,
-		})
-	}
-
-	var custom string
-	var creative, balance, precise *string
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypeDefault]; ok {
-		custom = val
-	}
-
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypeCreative]; ok {
-		creative = ptr.Of(val)
-	}
-
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypeBalance]; ok {
-		balance = ptr.Of(val)
-	}
-
-	if val, ok := param.DefaultVal[modelmgr.DefaultTypePrecise]; ok {
-		precise = ptr.Of(val)
-	}
-
-	return &developer_api.ModelParameter{
-		Name:  string(param.Name),
-		Label: param.Label.Read(locale),
-		Desc:  param.Desc.Read(locale),
-		Type: func() developer_api.ModelParamType {
-			switch param.Type {
-			case modelmgr.ValueTypeBoolean:
-				return developer_api.ModelParamType_Boolean
-			case modelmgr.ValueTypeInt:
-				return developer_api.ModelParamType_Int
-			case modelmgr.ValueTypeFloat:
-				return developer_api.ModelParamType_Float
-			default:
-				return developer_api.ModelParamType_String
-			}
-		}(),
-		Min:       param.Min,
-		Max:       param.Max,
-		Precision: int32(param.Precision),
-		DefaultVal: &developer_api.ModelParamDefaultValue{
-			DefaultVal: custom,
-			Creative:   creative,
-			Balance:    balance,
-			Precise:    precise,
-		},
-		Options: apiOptions,
-		ParamClass: &developer_api.ModelParamClass{
-			ClassID: func() int32 {
-				switch param.Style.Widget {
-				case modelmgr.WidgetSlider:
-					return 1
-				case modelmgr.WidgetRadioButtons:
-					return 2
-				default:
-					return 0
-				}
-			}(),
-			Label: param.Style.Label.Read(locale),
-		},
-	}
 }

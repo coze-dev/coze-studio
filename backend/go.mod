@@ -29,7 +29,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/ollama v0.1.3
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.1
 	github.com/cloudwego/eino-ext/components/model/qwen v0.0.0-20250612061754-5a3deb091dc5
-	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250918130948-16e3a249e721
+	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250918130948-16e3a249e721 // indirect
 	github.com/cloudwego/hertz v0.10.2
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/elastic/go-elasticsearch/v7 v7.17.10

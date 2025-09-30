@@ -25,28 +25,6 @@ import (
 )
 
 func TestBuildAgent(t *testing.T) {
-	// TODO: fix me later
-	// 	ctx := context.Background()
-	// 	ctrl := gomock.NewController(t)
-	// 	modelMgr := agentMock.NewMockModelMgr(ctrl)
-	// 	modelMgr.EXPECT().MGetModelByID(gomock.Any(), gomock.Any()).Return(
-	// 		[]*modelMgrEntity.Model{{
-	// 			ID: 888,
-	// 			Meta: modelMgrEntity.ModelMeta{
-	// 				Protocol: chatmodel.ProtocolArk,
-	// 				ConnConfig: &chatmodel.Config{
-	// 					Model:  "ep-20250116140937-fhwc2",
-	// 					APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
-	// 				},
-	// 			},
-	// 		}}, nil).AnyTimes()
-
-	// 	// mc := &ark.ChatModelConfig{
-	// 	// 	Model:  "ep-20250116140937-fhwc2",
-	// 	// 	APIKey: "01945a34-8497-471d-821c-3695cbe2e4ba",
-	// 	// }
-	// 	// arkModel, err := ark.NewChatModel(ctx, mc)
-	// 	// assert.NoError(t, err)
 
 	// 	sr, sw := schema.Pipe[*schema.Message](2)
 	// 	sw.Send(schema.AssistantMessage("to be great", nil), nil)

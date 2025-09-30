@@ -23,10 +23,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/bizpkg/buildinmodel"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/infra/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/cache/impl/redis"
-	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	coderunner "github.com/coze-dev/coze-studio/backend/infra/coderunner/impl"
 	messages2query "github.com/coze-dev/coze-studio/backend/infra/document/messages2query/impl"
 	nl2sql "github.com/coze-dev/coze-studio/backend/infra/document/nl2sql/impl"
@@ -39,7 +39,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/idgen/impl/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/imagex/impl/veimagex"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/orm/impl/mysql"
 	storage "github.com/coze-dev/coze-studio/backend/infra/storage/impl"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -52,25 +51,23 @@ type AppDependencies struct {
 	IDGenSVC                 idgen.IDGenerator
 	ESClient                 es.Client
 	ImageXClient             imagex.ImageX
-	TOSClient                storage.Storage
+	OSS                      storage.Storage
 	ResourceEventProducer    eventbus.Producer
 	AppEventProducer         eventbus.Producer
 	KnowledgeEventProducer   eventbus.Producer
-	ModelMgr                 modelmgr.Manager
 	CodeRunner               coderunner.Runner
-	OCR                      ocr.OCR
 	ParserManager            parser.Manager
 	SearchStoreManagers      []searchstore.Manager
 	Reranker                 rerank.Reranker
 	Rewriter                 messages2query.MessagesToQuery
 	NL2SQL                   nl2sql.NL2SQL
-	WorkflowBuildInChatModel chatmodel.BaseChatModel
+	WorkflowBuildInChatModel modelbuilder.BaseChatModel
 }
 
 func Init(ctx context.Context) (*AppDependencies, error) {
 	deps := &AppDependencies{}
 	var err error
-	deps.TOSClient, err = storage.New(ctx)
+	deps.OSS, err = storage.New(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("init tos client failed, err=%w", err)
 	}
@@ -85,6 +82,20 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	deps.IDGenSVC, err = idgen.New(deps.CacheCli)
 	if err != nil {
 		return nil, fmt.Errorf("init id gen svc failed, err=%w", err)
+	}
+
+	err = config.Init(ctx, deps.DB, deps.OSS) // Depends on MySQL、Idgen and OSS initialization
+	if err != nil {
+		return nil, fmt.Errorf("init model config failed, err=%w", err)
+	}
+
+	knowledgeConfig, err := config.Knowledge().GetKnowledgeConfig(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get knowledge config failed, err=%w", err)
+	}
+	basicConfig, err := config.Base().GetBaseConfig(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("get basic config failed, err=%w", err)
 	}
 
 	deps.ESClient, err = es.New()
@@ -112,7 +123,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, fmt.Errorf("init knowledge event bus producer failed, err=%w", err)
 	}
 
-	deps.Reranker = rerank.New()
+	deps.Reranker = rerank.New(knowledgeConfig)
 
 	deps.Rewriter, err = messages2query.New(ctx)
 	if err != nil {
@@ -124,17 +135,12 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		return nil, fmt.Errorf("init nl2sql failed, err=%w", err)
 	}
 
-	deps.ModelMgr, err = initModelMgr()
-	if err != nil {
-		return nil, fmt.Errorf("init model manager failed, err=%w", err)
-	}
+	deps.CodeRunner = coderunner.New(basicConfig)
 
-	deps.CodeRunner = coderunner.New()
-
-	deps.OCR = ocr.New()
+	ocrIns := ocr.New(knowledgeConfig)
 
 	var ok bool
-	deps.WorkflowBuildInChatModel, ok, err = buildinmodel.GetBuiltinChatModel(ctx, "WKR_")
+	deps.WorkflowBuildInChatModel, ok, err = modelbuilder.GetBuiltinChatModel(ctx, "WKR_")
 	if err != nil {
 		return nil, fmt.Errorf("get workflow builtin chat model failed, err=%w", err)
 	}
@@ -143,12 +149,12 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		logs.CtxWarnf(ctx, "workflow builtin chat model for knowledge recall not configured")
 	}
 
-	deps.ParserManager, err = parser.New(ctx, deps.TOSClient, deps.OCR)
+	deps.ParserManager, err = parser.New(ctx, knowledgeConfig, deps.OSS, ocrIns)
 	if err != nil {
 		return nil, fmt.Errorf("init parser manager failed, err=%w", err)
 	}
 
-	deps.SearchStoreManagers, err = searchstore.New(ctx, deps.ESClient)
+	deps.SearchStoreManagers, err = searchstore.New(ctx, knowledgeConfig, deps.ESClient)
 	if err != nil {
 		return nil, fmt.Errorf("init search store managers failed, err=%w", err)
 	}
