@@ -83,7 +83,7 @@ services:
       - coze-network
 
   redis:
-    image: bitnami/redis:8.0
+    image: bitnamilegacy/redis:8.0
     container_name: coze-redis
     user: root
     privileged: true
@@ -227,7 +227,7 @@ services:
   #     start_period: 10s
 
   elasticsearch:
-    image: bitnami/elasticsearch:8.18.0
+    image: bitnamilegacy/elasticsearch:8.18.0
     container_name: coze-elasticsearch
     user: root
     privileged: true
@@ -344,7 +344,7 @@ services:
       - coze-network
 
   etcd:
-    image: bitnami/etcd:3.5
+    image: bitnamilegacy/etcd:3.5
     container_name: coze-etcd
     user: root
     privileged: true

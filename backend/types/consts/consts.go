@@ -45,7 +45,6 @@ const (
 	TOSSecretKey       = "TOS_SECRET_KEY"
 	TOSRegion          = "TOS_REGION"
 	TOSEndpoint        = "TOS_ENDPOINT"
-	TOSBucketEndpoint  = "TOS_BUCKET_ENDPOINT"
 	S3AccessKey        = "S3_ACCESS_KEY"
 	S3SecretKey        = "S3_SECRET_KEY"
 	S3Region           = "S3_REGION"
