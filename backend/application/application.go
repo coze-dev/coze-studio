@@ -143,7 +143,7 @@ func Init(ctx context.Context) (err error) {
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
 	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
 	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
-	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC, infra.TOSClient))
+	crossplugin.SetDefaultSVC(pluginImpl.InitDomainService(primaryServices.pluginSVC.DomainSVC, infra.OSS))
 	crossvariables.SetDefaultSVC(variablesImpl.InitDomainService(primaryServices.memorySVC.VariablesDomainSVC))
 	crossworkflow.SetDefaultSVC(workflowImpl.InitDomainService(primaryServices.workflowSVC.DomainSVC))
 	crossconversation.SetDefaultSVC(conversationImpl.InitDomainService(complexServices.conversationSVC.ConversationDomainSVC))
@@ -170,16 +170,16 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 
 // initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	uploadSVC := upload.InitService(&upload.UploadComponents{Cache: infra.CacheCli, Oss: infra.TOSClient, DB: infra.DB, Idgen: infra.IDGenSVC})
+	uploadSVC := upload.InitService(&upload.UploadComponents{Cache: infra.CacheCli, Oss: infra.OSS, DB: infra.DB, Idgen: infra.IDGenSVC})
 	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
-	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.TOSClient)
-	connectorSVC := connector.InitService(infra.TOSClient)
-	userSVC := user.InitService(ctx, infra.DB, infra.TOSClient, infra.IDGenSVC)
+	modelMgrSVC := modelmgr.InitService(infra.ModelMgr, infra.OSS)
+	connectorSVC := connector.InitService(infra.OSS)
+	userSVC := user.InitService(ctx, infra.DB, infra.OSS, infra.IDGenSVC)
 	templateSVC := template.InitService(ctx, &template.ServiceComponents{
 		DB:      infra.DB,
 		IDGen:   infra.IDGenSVC,
-		Storage: infra.TOSClient,
+		Storage: infra.OSS,
 	})
 
 	return &basicServices{
@@ -263,7 +263,7 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 		IDGen:    b.infra.IDGenSVC,
 		DB:       b.infra.DB,
 		EventBus: b.eventbus.resourceEventBus,
-		OSS:      b.infra.TOSClient,
+		OSS:      b.infra.OSS,
 		UserSVC:  b.userSVC.DomainSVC,
 	}
 }
@@ -276,7 +276,7 @@ func (b *basicServices) toKnowledgeServiceComponents(memoryService *memory.Memor
 		Producer:            b.infra.KnowledgeEventProducer,
 		SearchStoreManagers: b.infra.SearchStoreManagers,
 		ParseManager:        b.infra.ParserManager,
-		Storage:             b.infra.TOSClient,
+		Storage:             b.infra.OSS,
 		Rewriter:            b.infra.Rewriter,
 		Reranker:            b.infra.Reranker,
 		NL2Sql:              b.infra.NL2SQL,
@@ -291,7 +291,7 @@ func (b *basicServices) toMemoryServiceComponents() *memory.ServiceComponents {
 		IDGen:                  b.infra.IDGenSVC,
 		DB:                     b.infra.DB,
 		EventBus:               b.eventbus.resourceEventBus,
-		TosClient:              b.infra.TOSClient,
+		TosClient:              b.infra.OSS,
 		ResourceDomainNotifier: b.eventbus.resourceEventBus,
 		CacheCli:               b.infra.CacheCli,
 	}
@@ -302,7 +302,7 @@ func (b *basicServices) toWorkflowServiceComponents(pluginSVC *plugin.PluginAppl
 		IDGen:                    b.infra.IDGenSVC,
 		DB:                       b.infra.DB,
 		Cache:                    b.infra.CacheCli,
-		Tos:                      b.infra.TOSClient,
+		Tos:                      b.infra.OSS,
 		ImageX:                   b.infra.ImageXClient,
 		DatabaseDomainSVC:        memorySVC.DatabaseDomainSVC,
 		VariablesDomainSVC:       memorySVC.VariablesDomainSVC,
@@ -320,7 +320,7 @@ func (p *primaryServices) toSingleAgentServiceComponents() *singleagent.ServiceC
 		IDGen:                p.basicServices.infra.IDGenSVC,
 		DB:                   p.basicServices.infra.DB,
 		Cache:                p.basicServices.infra.CacheCli,
-		TosClient:            p.basicServices.infra.TOSClient,
+		TosClient:            p.basicServices.infra.OSS,
 		ImageX:               p.basicServices.infra.ImageXClient,
 		ModelMgr:             p.infra.ModelMgr,
 		UserDomainSVC:        p.basicServices.userSVC.DomainSVC,
@@ -342,7 +342,7 @@ func (p *primaryServices) toSearchServiceComponents(singleAgentSVC *singleagent.
 	return &search.ServiceComponents{
 		DB:                   infra.DB,
 		Cache:                infra.CacheCli,
-		TOS:                  infra.TOSClient,
+		TOS:                  infra.OSS,
 		ESClient:             infra.ESClient,
 		ProjectEventBus:      p.basicServices.eventbus.projectEventBus,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
@@ -363,7 +363,7 @@ func (p *primaryServices) toAPPServiceComponents() *app.ServiceComponents {
 	return &app.ServiceComponents{
 		IDGen:           infra.IDGenSVC,
 		DB:              infra.DB,
-		OSS:             infra.TOSClient,
+		OSS:             infra.OSS,
 		CacheCli:        infra.CacheCli,
 		ModelMgr:        infra.ModelMgr,
 		ProjectEventBus: basic.eventbus.projectEventBus,
@@ -379,7 +379,7 @@ func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.S
 	return &conversation.ServiceComponents{
 		DB:                   infra.DB,
 		IDGen:                infra.IDGenSVC,
-		TosClient:            infra.TOSClient,
+		TosClient:            infra.OSS,
 		ImageX:               infra.ImageXClient,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 	}

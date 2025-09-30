@@ -30,182 +30,186 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	"github.com/coze-dev/coze-studio/backend/api/model/playground"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
-	appEntity "github.com/coze-dev/coze-studio/backend/domain/app/entity"
-	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
+	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 )
 
 var path2Table2Columns2Model = map[string]map[string]map[string]any{
-	"domain/datacopy/internal/dal/query": {
-		"data_copy_task": {},
-	},
-	"domain/agent/singleagent/internal/dal/query": {
-		"single_agent_draft": {
-			// "variable":        []*bot_common.Variable{},
-			"model_info":                 &bot_common.ModelInfo{},
-			"onboarding_info":            &bot_common.OnboardingInfo{},
-			"prompt":                     &bot_common.PromptInfo{},
-			"plugin":                     []*bot_common.PluginInfo{},
-			"knowledge":                  &bot_common.Knowledge{},
-			"workflow":                   []*bot_common.WorkflowInfo{},
-			"suggest_reply":              &bot_common.SuggestReplyInfo{},
-			"jump_config":                &bot_common.JumpConfig{},
-			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
-			"database_config":            []*bot_common.Database{},
-			"shortcut_command":           []string{},
-			"layout_info":                &bot_common.LayoutInfo{},
-		},
-		"single_agent_version": {
-			// "variable":        []*bot_common.Variable{},
-			"model_info":                 &bot_common.ModelInfo{},
-			"onboarding_info":            &bot_common.OnboardingInfo{},
-			"prompt":                     &bot_common.PromptInfo{},
-			"plugin":                     []*bot_common.PluginInfo{},
-			"knowledge":                  &bot_common.Knowledge{},
-			"workflow":                   []*bot_common.WorkflowInfo{},
-			"suggest_reply":              &bot_common.SuggestReplyInfo{},
-			"jump_config":                &bot_common.JumpConfig{},
-			"background_image_info_list": []*bot_common.BackgroundImageInfo{},
-			"database_config":            []*bot_common.Database{},
-			"shortcut_command":           []string{},
-			"layout_info":                &bot_common.LayoutInfo{},
-		},
-		"single_agent_publish": {
-			"connector_ids": []int64{},
-		},
-	},
-	"domain/plugin/internal/dal/query": {
-		"plugin": {
-			"manifest":    &plugin.PluginManifest{},
-			"openapi_doc": &plugin.Openapi3T{},
-		},
-		"plugin_draft": {
-			"manifest":    &plugin.PluginManifest{},
-			"openapi_doc": &plugin.Openapi3T{},
-		},
-		"plugin_version": {
-			"manifest":    &plugin.PluginManifest{},
-			"openapi_doc": &plugin.Openapi3T{},
-		},
-		"agent_tool_draft": {
-			"operation": &plugin.Openapi3Operation{},
-		},
-		"agent_tool_version": {
-			"operation": &plugin.Openapi3Operation{},
-		},
-		"tool": {
-			"operation": &plugin.Openapi3Operation{},
-		},
-		"tool_draft": {
-			"operation": &plugin.Openapi3Operation{},
-		},
-		"tool_version": {
-			"operation": &plugin.Openapi3Operation{},
-		},
-		"plugin_oauth_auth": {
-			"oauth_config": &plugin.OAuthAuthorizationCodeConfig{},
-		},
-	},
-	"domain/conversation/agentrun/internal/dal/query": {
-		"run_record": {
-			"usage": &agentrun.Usage{},
-		},
-	},
-	"domain/conversation/conversation/internal/dal/query": {
-		"conversation": {},
-	},
-	"domain/conversation/message/internal/dal/query": {
-		"message": {},
-	},
-	"domain/prompt/internal/dal/query": {
-		"prompt_resource": {},
-	},
-	// "domain/knowledge/internal/query": {
-	//	"knowledge":                {},
-	//	"knowledge_document":       {},
-	//	"knowledge_document_slice": {},
+	// "domain/datacopy/internal/dal/query": {
+	// 	"data_copy_task": {},
 	// },
-	"domain/memory/variables/internal/dal/query": {
-		"variables_meta": {
-			"variable_list": []*variableEntity.VariableMeta{},
-		},
-		"variable_instance": {},
-	},
-	// "domain/modelmgr/internal/dal/query": {
-	// 	"model_meta": {
-	// 		"capability":  &modelmgr.Capability{},
-	// 		"conn_config": &chatmodel.Config{},
-	// 		"status":      modelmgr.ModelStatus(0),
+	// "domain/agent/singleagent/internal/dal/query": {
+	// 	"single_agent_draft": {
+	// 		// "variable":        []*bot_common.Variable{},
+	// 		"model_info":                 &bot_common.ModelInfo{},
+	// 		"onboarding_info":            &bot_common.OnboardingInfo{},
+	// 		"prompt":                     &bot_common.PromptInfo{},
+	// 		"plugin":                     []*bot_common.PluginInfo{},
+	// 		"knowledge":                  &bot_common.Knowledge{},
+	// 		"workflow":                   []*bot_common.WorkflowInfo{},
+	// 		"suggest_reply":              &bot_common.SuggestReplyInfo{},
+	// 		"jump_config":                &bot_common.JumpConfig{},
+	// 		"background_image_info_list": []*bot_common.BackgroundImageInfo{},
+	// 		"database_config":            []*bot_common.Database{},
+	// 		"shortcut_command":           []string{},
+	// 		"layout_info":                &bot_common.LayoutInfo{},
 	// 	},
-	// 	"model_entity": {
-	// 		"scenario":       modelmgr.Scenario(0),
-	// 		"default_params": []*modelmgr.Parameter{},
-	// 		"status":         modelmgr.ModelStatus(0),
+	// 	"single_agent_version": {
+	// 		// "variable":        []*bot_common.Variable{},
+	// 		"model_info":                 &bot_common.ModelInfo{},
+	// 		"onboarding_info":            &bot_common.OnboardingInfo{},
+	// 		"prompt":                     &bot_common.PromptInfo{},
+	// 		"plugin":                     []*bot_common.PluginInfo{},
+	// 		"knowledge":                  &bot_common.Knowledge{},
+	// 		"workflow":                   []*bot_common.WorkflowInfo{},
+	// 		"suggest_reply":              &bot_common.SuggestReplyInfo{},
+	// 		"jump_config":                &bot_common.JumpConfig{},
+	// 		"background_image_info_list": []*bot_common.BackgroundImageInfo{},
+	// 		"database_config":            []*bot_common.Database{},
+	// 		"shortcut_command":           []string{},
+	// 		"layout_info":                &bot_common.LayoutInfo{},
+	// 	},
+	// 	"single_agent_publish": {
+	// 		"connector_ids": []int64{},
 	// 	},
 	// },
-	"domain/workflow/internal/repo/dal/query": {
-		"workflow_meta":              {},
-		"workflow_draft":             {},
-		"workflow_version":           {},
-		"workflow_reference":         {},
-		"workflow_execution":         {},
-		"node_execution":             {},
-		"workflow_snapshot":          {},
-		"connector_workflow_version": {},
+	// "domain/plugin/internal/dal/query": {
+	// 	"plugin": {
+	// 		"manifest":    &plugin.PluginManifest{},
+	// 		"openapi_doc": &plugin.Openapi3T{},
+	// 	},
+	// 	"plugin_draft": {
+	// 		"manifest":    &plugin.PluginManifest{},
+	// 		"openapi_doc": &plugin.Openapi3T{},
+	// 	},
+	// 	"plugin_version": {
+	// 		"manifest":    &plugin.PluginManifest{},
+	// 		"openapi_doc": &plugin.Openapi3T{},
+	// 	},
+	// 	"agent_tool_draft": {
+	// 		"operation": &plugin.Openapi3Operation{},
+	// 	},
+	// 	"agent_tool_version": {
+	// 		"operation": &plugin.Openapi3Operation{},
+	// 	},
+	// 	"tool": {
+	// 		"operation": &plugin.Openapi3Operation{},
+	// 	},
+	// 	"tool_draft": {
+	// 		"operation": &plugin.Openapi3Operation{},
+	// 	},
+	// 	"tool_version": {
+	// 		"operation": &plugin.Openapi3Operation{},
+	// 	},
+	// 	"plugin_oauth_auth": {
+	// 		"oauth_config": &plugin.OAuthAuthorizationCodeConfig{},
+	// 	},
+	// },
+	// "domain/conversation/agentrun/internal/dal/query": {
+	// 	"run_record": {
+	// 		"usage": &agentrun.Usage{},
+	// 	},
+	// },
+	// "domain/conversation/conversation/internal/dal/query": {
+	// 	"conversation": {},
+	// },
+	// "domain/conversation/message/internal/dal/query": {
+	// 	"message": {},
+	// },
+	// "domain/prompt/internal/dal/query": {
+	// 	"prompt_resource": {},
+	// },
+	// // "domain/knowledge/internal/query": {
+	// //	"knowledge":                {},
+	// //	"knowledge_document":       {},
+	// //	"knowledge_document_slice": {},
+	// // },
+	// "domain/memory/variables/internal/dal/query": {
+	// 	"variables_meta": {
+	// 		"variable_list": []*variableEntity.VariableMeta{},
+	// 	},
+	// 	"variable_instance": {},
+	// },
+	// // "domain/modelmgr/internal/dal/query": {
+	// // 	"model_meta": {
+	// // 		"capability":  &modelmgr.Capability{},
+	// // 		"conn_config": &chatmodel.Config{},
+	// // 		"status":      modelmgr.ModelStatus(0),
+	// // 	},
+	// // 	"model_entity": {
+	// // 		"scenario":       modelmgr.Scenario(0),
+	// // 		"default_params": []*modelmgr.Parameter{},
+	// // 		"status":         modelmgr.ModelStatus(0),
+	// // 	},
+	// // },
+	// "domain/workflow/internal/repo/dal/query": {
+	// 	"workflow_meta":              {},
+	// 	"workflow_draft":             {},
+	// 	"workflow_version":           {},
+	// 	"workflow_reference":         {},
+	// 	"workflow_execution":         {},
+	// 	"node_execution":             {},
+	// 	"workflow_snapshot":          {},
+	// 	"connector_workflow_version": {},
 
-		"chat_flow_role_config": {},
+	// 	"chat_flow_role_config": {},
 
-		"app_conversation_template_draft":  {},
-		"app_conversation_template_online": {},
+	// 	"app_conversation_template_draft":  {},
+	// 	"app_conversation_template_online": {},
 
-		"app_static_conversation_draft":  {},
-		"app_static_conversation_online": {},
+	// 	"app_static_conversation_draft":  {},
+	// 	"app_static_conversation_online": {},
 
-		"app_dynamic_conversation_draft":  {},
-		"app_dynamic_conversation_online": {},
-	},
+	// 	"app_dynamic_conversation_draft":  {},
+	// 	"app_dynamic_conversation_online": {},
+	// },
 
-	"domain/openauth/openapiauth/internal/dal/query": {
-		"api_key": {},
-	},
-	"domain/shortcutcmd/internal/dal/query": {
-		"shortcut_command": {
-			"tool_info":     &playground.ToolInfo{},
-			"components":    []*playground.Components{},
-			"shortcut_icon": &playground.ShortcutFileInfo{},
+	// "domain/openauth/openapiauth/internal/dal/query": {
+	// 	"api_key": {},
+	// },
+	// "domain/shortcutcmd/internal/dal/query": {
+	// 	"shortcut_command": {
+	// 		"tool_info":     &playground.ToolInfo{},
+	// 		"components":    []*playground.Components{},
+	// 		"shortcut_icon": &playground.ShortcutFileInfo{},
+	// 	},
+	// },
+
+	// "domain/memory/database/internal/dal/query": {
+	// 	"online_database_info": {
+	// 		"table_field": []*database.FieldItem{},
+	// 	},
+	// 	"draft_database_info": {
+	// 		"table_field": []*database.FieldItem{},
+	// 	},
+	// 	"agent_to_database": {},
+	// },
+	// "domain/user/internal/dal/query": {
+	// 	"user":       {},
+	// 	"space":      {},
+	// 	"space_user": {},
+	// },
+	// "domain/app/internal/dal/query": {
+	// 	"app_draft": {},
+	// 	"app_release_record": {
+	// 		"connector_ids": []int64{},
+	// 		"extra_info":    &appEntity.PublishRecordExtraInfo{},
+	// 	},
+	// 	"app_connector_release_ref": {
+	// 		"publish_config": appEntity.PublishConfig{},
+	// 	},
+	// },
+	// "domain/upload/internal/dal/query": {
+	// 	"files": {},
+	// },
+	"bizpkg/config/internal/query": {
+		"model_instance": {
+			"provider":     &config.ModelProvider{},
+			"display_info": &config.DisplayInfo{},
+			"connection":   &config.Connection{},
+			"capability":   &developer_api.ModelAbility{},
+			"parameters":   []*developer_api.ModelParameter{},
 		},
-	},
-
-	"domain/memory/database/internal/dal/query": {
-		"online_database_info": {
-			"table_field": []*database.FieldItem{},
-		},
-		"draft_database_info": {
-			"table_field": []*database.FieldItem{},
-		},
-		"agent_to_database": {},
-	},
-	"domain/user/internal/dal/query": {
-		"user":       {},
-		"space":      {},
-		"space_user": {},
-	},
-	"domain/app/internal/dal/query": {
-		"app_draft": {},
-		"app_release_record": {
-			"connector_ids": []int64{},
-			"extra_info":    &appEntity.PublishRecordExtraInfo{},
-		},
-		"app_connector_release_ref": {
-			"publish_config": appEntity.PublishConfig{},
-		},
-	},
-	"domain/upload/internal/dal/query": {
-		"files": {},
 	},
 }
 
@@ -216,7 +220,9 @@ var fieldNullablePath = map[string]bool{
 func main() {
 	dsn := os.Getenv("MYSQL_DSN")
 	os.Setenv("LANG", "en_US.UTF-8")
-	dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
+	if dsn == "" {
+		dsn = "root:root@tcp(localhost:3306)/opencoze?charset=utf8mb4&parseTime=True"
+	}
 	gormDB, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
