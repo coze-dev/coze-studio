@@ -57,7 +57,7 @@ func getS3Client(ctx context.Context, ak, sk, bucketName, endpoint, region strin
 			PartitionID:       "aws",
 			URL:               endpoint,
 			SigningRegion:     region,
-			HostnameImmutable: true,
+			HostnameImmutable: false,
 			Source:            aws.EndpointSourceCustom,
 		}, nil
 	})
