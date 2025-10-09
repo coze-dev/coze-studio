@@ -26,7 +26,11 @@ import { PageList } from '../../components/page-list';
 
 export const TemplatePage = () => (
   <PageList
-    title={I18n.t('template_name')}
+    title={
+      <h2 className="leading-[72px] text-[20px] m-[0] pl-[24px] pr-[24px]">
+        {I18n.t('template_name')}
+      </h2>
+    }
     getDataList={() => getTemplateData()}
     renderCard={data => <TemplateCard {...(data as TemplateCardProps)} />}
     renderCardSkeleton={() => <TemplateCardSkeleton />}

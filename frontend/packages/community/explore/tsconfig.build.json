@@ -24,13 +24,31 @@
       "path": "../../arch/bot-hooks/tsconfig.build.json"
     },
     {
+      "path": "../../arch/bot-store/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-tea/tsconfig.build.json"
+    },
+    {
       "path": "../../arch/bot-typings/tsconfig.build.json"
+    },
+    {
+      "path": "../../arch/bot-utils/tsconfig.build.json"
     },
     {
       "path": "../../arch/i18n/tsconfig.build.json"
     },
     {
+      "path": "../../arch/responsive-kit/tsconfig.build.json"
+    },
+    {
       "path": "../component/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-icons/tsconfig.build.json"
+    },
+    {
+      "path": "../../components/bot-semi/tsconfig.build.json"
     },
     {
       "path": "../../../config/eslint-config/tsconfig.build.json"
@@ -43,6 +61,12 @@
     },
     {
       "path": "../../../config/vitest-config/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/components/tsconfig.build.json"
+    },
+    {
+      "path": "../../studio/entity-adapter/tsconfig.build.json"
     }
   ]
 }

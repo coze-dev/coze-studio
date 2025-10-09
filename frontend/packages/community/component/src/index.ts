@@ -39,3 +39,5 @@ export {
   PluginCardSkeleton,
   type PluginCardProps,
 } from './card/plugin';
+export { SearchInput } from './search-input';
+export { useUsageModal } from './usage-invoke/use-usage-modal';

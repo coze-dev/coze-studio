@@ -38,10 +38,18 @@ export type PluginCardProps = ProductInfo & {
 };
 
 export const PluginCard: FC<PluginCardProps> = props => (
-  <CardContainer className={styles.plugin} shadowMode="default">
+  <CardContainer
+    className={styles.plugin}
+    shadowMode="default"
+    onClick={() => {
+      window.open(
+        `https://www.coze.cn/store/plugin/${props?.meta_info?.id}`,
+        '_blank',
+      );
+    }}
+  >
     <div className={styles['plugin-wrapper']}>
       <PluginCardBody {...props} />
-
       <Space
         className={cls(styles['btn-container'], {
           [styles['one-column-grid']]:

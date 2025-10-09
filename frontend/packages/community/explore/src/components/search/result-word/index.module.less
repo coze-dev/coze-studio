@@ -1,0 +1,26 @@
+div.container {
+  overflow: hidden;
+  flex-shrink: 1;
+  max-width: calc(100% - 180px);
+  margin-right: 16px;
+
+  .result {
+    overflow: hidden;
+    flex-shrink: 1;
+
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 22px;
+    color: rgba(0, 0, 0, 100%);
+    text-align: left;
+
+    @apply coz-fg-plus;
+  }
+
+  &.isMobile {
+    .result {
+      font-size: 14px;
+      line-height: 20px
+    }
+  }
+}

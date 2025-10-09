@@ -1,0 +1,50 @@
+.popoverContainer {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+
+  .title {
+    height: 16px;
+    margin-bottom: 8px;
+    padding: 0 8px;
+
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    text-align: left;
+
+    @apply coz-fg-primary;
+  }
+
+  .loadMoreContainer {
+    cursor: pointer;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 32px;
+    margin: 4px 0;
+
+    .loading {
+      .loadingIcon {
+        animation: 1s linear 0s infinite normal roating;
+      }
+
+      svg path {
+        fill: var(--coz-fg-hglt);
+        fill-opacity: 1;
+      }
+    }
+  }
+}
+
+@keyframes roating {
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
+}
