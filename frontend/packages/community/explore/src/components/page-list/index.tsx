@@ -25,11 +25,18 @@ import { EmptyState } from '@coze-arch/coze-design';
 import styles from './index.module.less';
 
 export const PageList: FC<{
-  title: string;
+  title: React.ReactNode;
   renderCard: (cardData: ProductInfo) => React.ReactNode;
   renderCardSkeleton: () => React.ReactNode;
   getDataList: () => Promise<unknown[]>;
-}> = ({ title, renderCard, getDataList, renderCardSkeleton }) => {
+  customFilters?: React.ReactNode;
+}> = ({
+  title,
+  renderCard,
+  getDataList,
+  renderCardSkeleton,
+  customFilters,
+}) => {
   const {
     data: cardList,
     loading,
@@ -39,11 +46,12 @@ export const PageList: FC<{
     const dataList = await getDataList();
     return dataList;
   });
+
   return (
     <div className={styles['explore-list-container']}>
-      <h2 className="leading-[72px] text-[20px] m-[0] pl-[24px] pr-[24px]">
-        {title}
-      </h2>
+      {title}
+
+      {customFilters}
 
       {error && !loading ? (
         <EmptyState

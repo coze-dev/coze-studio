@@ -14,25 +14,85 @@
  * limitations under the License.
  */
 
-import { I18n } from '@coze-arch/i18n';
 import { explore } from '@coze-studio/api-schema';
-
 import {
   PluginCard,
   type PluginCardProps,
   PluginCardSkeleton,
 } from '@coze-community/components';
+import { SearchInput, useUsageModal } from '@coze-community/components';
+import { I18n } from '@coze-arch/i18n';
+import { TabBar, Button } from '@coze-arch/coze-design';
+import { ProductEntityType } from '@coze-arch/bot-api/product_api';
+import useUrlState from '@ahooksjs/use-url-state';
 
 import { PageList } from '../../components/page-list';
+enum PluginCateTab {
+  Local = 'local',
+  Coze = 'coze',
+}
+const { TabPanel } = TabBar;
+export const PluginPage = () => {
+  const { node: usageInvokeModal, open: openUsageInvokeModal } = useUsageModal(
+    {},
+  );
 
-export const PluginPage = () => (
-  <PageList
-    title={I18n.t('Plugins')}
-    getDataList={getPluginData}
-    renderCard={data => <PluginCard {...(data as PluginCardProps)} />}
-    renderCardSkeleton={() => <PluginCardSkeleton />}
-  />
-);
+  const [{ tab }, setState] = useUrlState<{ tab: PluginCateTab }>(
+    {
+      tab: PluginCateTab.Local,
+    },
+    {
+      navigateMode: 'replace',
+    },
+  );
+
+  const customFilters = (
+    <TabBar
+      className="mt-[24px] mx-[24px]"
+      tabBarClassName="mb-[20px]"
+      type="button"
+      activeKey={tab}
+      onChange={newTab => {
+        setState({ tab: newTab as PluginCateTab });
+      }}
+    >
+      <TabPanel tab="本地插件" itemKey={PluginCateTab.Local} />
+      <TabPanel tab="Coze插件" itemKey={PluginCateTab.Coze} />
+    </TabBar>
+  );
+
+  return (
+    <>
+      <PageList
+        title={
+          <div className="flex justify-between items-center">
+            <h2 className="leading-[72px] text-[20px] m-[0] pl-[24px] pr-[24px]">
+              {I18n.t('Plugins')}
+            </h2>
+            {tab === PluginCateTab.Coze && (
+              <>
+                <SearchInput border entityType={ProductEntityType.Plugin} />
+                <Button
+                  className="mx-[24px]"
+                  onClick={() => {
+                    openUsageInvokeModal();
+                  }}
+                >
+                  用量查看
+                </Button>
+              </>
+            )}
+          </div>
+        }
+        getDataList={getPluginData}
+        customFilters={customFilters}
+        renderCard={data => <PluginCard {...(data as PluginCardProps)} />}
+        renderCardSkeleton={() => <PluginCardSkeleton />}
+      />
+      {usageInvokeModal}
+    </>
+  );
+};
 
 const getPluginData = async () => {
   const result = await explore.PublicGetProductList({

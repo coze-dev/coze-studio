@@ -16,6 +16,7 @@
 
 import classNames from 'classnames';
 import { I18n } from '@coze-arch/i18n';
+import { IconCozDesktopFill } from '@coze-arch/coze-design/icons';
 import { useSpaceStore } from '@coze-arch/bot-studio-store';
 import { UICompositionModalSider } from '@coze-arch/bot-semi';
 import { IconMyTools, IconTeamTools } from '@coze-arch/bot-icons';
@@ -97,7 +98,20 @@ export const PluginFilter: React.FC<PluginFilterProps> = ({
               })}
               onClick={() => onChangeAfterDiff(defaultId)}
             >
+              <IconCozDesktopFill className={s['tool-tag-list-cell-icon']} />
               {I18n.t('explore_tools')}
+            </div>
+          </div>
+
+          <div className={s['tool-content-area']}>
+            <div
+              className={classNames(s['tool-tag-list-cell'], {
+                [s.active]: type === '1',
+              })}
+              onClick={() => onChangeAfterDiff('1')}
+            >
+              <IconCozDesktopFill className={s['tool-tag-list-cell-icon']} />
+              Coze.cn 插件
             </div>
           </div>
         </>

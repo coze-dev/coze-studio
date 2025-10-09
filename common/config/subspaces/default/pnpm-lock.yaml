@@ -11740,6 +11740,12 @@ importers:
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
+      '@coze-arch/bot-tea':
+        specifier: workspace:*
+        version: link:../../arch/bot-tea
+      '@coze-arch/bot-utils':
+        specifier: workspace:*
+        version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
         specifier: 0.0.6-alpha.eec92c
         version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
@@ -11770,9 +11776,24 @@ importers:
       ahooks:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
+      axios:
+        specifier: ^1.4.0
+        version: 1.10.0(debug@4.3.3)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
+      dayjs:
+        specifier: ^1.11.7
+        version: 1.11.13
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
+      query-string:
+        specifier: ^8.1.0
+        version: 8.2.0
+      zustand:
+        specifier: ^4.4.7
+        version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
     devDependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -11936,30 +11957,60 @@ importers:
 
   ../../../frontend/packages/community/explore:
     dependencies:
+      '@ahooksjs/use-url-state':
+        specifier: ^3.5.1
+        version: 3.5.1(react-router@6.30.1)(react@18.2.0)
       '@coze-arch/bot-api':
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/bot-hooks':
         specifier: workspace:*
         version: link:../../arch/bot-hooks
+      '@coze-arch/bot-icons':
+        specifier: workspace:*
+        version: link:../../components/bot-icons
+      '@coze-arch/bot-semi':
+        specifier: workspace:*
+        version: link:../../components/bot-semi
+      '@coze-arch/bot-studio-store':
+        specifier: workspace:*
+        version: link:../../arch/bot-store
+      '@coze-arch/bot-tea':
+        specifier: workspace:*
+        version: link:../../arch/bot-tea
+      '@coze-arch/bot-utils':
+        specifier: workspace:*
+        version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
         specifier: 0.0.6-alpha.eec92c
         version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
+      '@coze-arch/responsive-kit':
+        specifier: workspace:*
+        version: link:../../arch/responsive-kit
       '@coze-community/components':
         specifier: workspace:*
         version: link:../component
       '@coze-studio/api-schema':
         specifier: workspace:*
         version: link:../../arch/api-schema
+      '@coze-studio/components':
+        specifier: workspace:*
+        version: link:../../studio/components
+      '@coze-studio/entity-adapter':
+        specifier: workspace:*
+        version: link:../../studio/entity-adapter
       ahooks:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
+      query-string:
+        specifier: ^8.1.0
+        version: 8.2.0
       react-router-dom:
         specifier: ^6.11.1
         version: 6.30.1(react-dom@18.2.0)(react@18.2.0)
@@ -23516,6 +23567,19 @@ packages:
       ua-parser-js: 0.7.40
     transitivePeerDependencies:
       - debug
+    dev: false
+
+  /@ahooksjs/use-url-state@3.5.1(react-router@6.30.1)(react@18.2.0):
+    resolution: {integrity: sha512-XTrOLZKOAXahDD1Evg+aSN6qNzoh/FuvRKbUtB/0RhYvz57tyXRPbED0KXK4h2C3ZyHUKBJcVCSDcd6EsTyMyQ==}
+    peerDependencies:
+      react: 18.2.0
+      react-router: ^5.0.0 || ^6.0.0
+    dependencies:
+      ahooks: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
+      query-string: 6.14.1
+      react: 18.2.0
+      react-router: 6.30.1(react@18.2.0)
+      tslib: 2.8.1
     dev: false
 
   /@alloc/quick-lru@5.2.0:
@@ -42252,6 +42316,11 @@ packages:
     dependencies:
       to-regex-range: 5.0.1
 
+  /filter-obj@1.1.0:
+    resolution: {integrity: sha512-8rXg1ZnX7xzy2NGDVkBVaAy+lSlPNwad13BtgSlLuxfIslyt5Vg64U7tFcCt4WS1R0hvtnQybT/IyCkGZ3DpXQ==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
   /filter-obj@5.1.0:
     resolution: {integrity: sha512-qWeTREPoT7I0bifpPUXtxkZJ1XJzxWtfoWWkdVGqa+eCr3SHW/Ocp89o8vLvbUuQnadybJpjOKu4V+RwO6sGng==}
     engines: {node: '>=14.16'}
@@ -49041,6 +49110,16 @@ packages:
     engines: {node: '>=0.6'}
     dev: false
 
+  /query-string@6.14.1:
+    resolution: {integrity: sha512-XDxAeVmpfu1/6IjyT/gXHOl+S0vQ9owggJ30hhWKdHAsNPOcasn5o9BW0eejZqL2e4vMjhAxoW3jVHcD6mbcYw==}
+    engines: {node: '>=6'}
+    dependencies:
+      decode-uri-component: 0.2.2
+      filter-obj: 1.1.0
+      split-on-first: 1.1.0
+      strict-uri-encode: 2.0.0
+    dev: false
+
   /query-string@8.2.0:
     resolution: {integrity: sha512-tUZIw8J0CawM5wyGBiDOAp7ObdRQh4uBor/fUR9ZjmbZVvw95OD9If4w3MQxr99rg0DJZ/9CIORcpEqU5hQG7g==}
     engines: {node: '>=14.16'}
@@ -51856,6 +51935,11 @@ packages:
       wicked-good-xpath: 1.3.0
     dev: false
 
+  /split-on-first@1.1.0:
+    resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==}
+    engines: {node: '>=6'}
+    dev: false
+
   /split-on-first@3.0.0:
     resolution: {integrity: sha512-qxQJTx2ryR0Dw0ITYyekNQWpz6f8dGd7vffGNflQQ3Iqj9NJ6qiZ7ELpZsJ/QBhIVAiDfXdag3+Gp8RvWa62AA==}
     engines: {node: '>=12'}
@@ -52199,6 +52283,11 @@ packages:
 
   /stream-source@0.3.5:
     resolution: {integrity: sha512-ZuEDP9sgjiAwUVoDModftG0JtYiLUV8K4ljYD1VyUMRWtbVf92474o4kuuul43iZ8t/hRuiDAx1dIJSvirrK/g==}
+    dev: false
+
+  /strict-uri-encode@2.0.0:
+    resolution: {integrity: sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==}
+    engines: {node: '>=4'}
     dev: false
 
   /string-hash@1.1.3:

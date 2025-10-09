@@ -1,0 +1,118 @@
+/* stylelint-disable no-descending-specificity -- 历史代码，为避免引入新BUG暂不修复 */
+/* stylelint-disable selector-class-pattern -- 历史代码，为避免引入新BUG暂不修复 */
+div.container {
+  position: relative;
+  z-index: 20;
+  width: 480px;
+  height: 32px;
+
+  .inputContainer {
+    z-index: 20;
+    height: 100%;
+    // background: transparent;
+    border: 1px solid transparent;
+    // border-bottom: none; 意义不明，暂时先注释
+    border-radius: 8px;
+
+    @apply coz-fg-primary;
+    @apply coz-bg-max;
+
+    :global {
+      .semi-input-clearbtn {
+        z-index: 20;
+      }
+
+      .semi-input-prefix {
+        margin-right: -8px;
+      }
+
+      .semi-input {
+        padding-right: 16px;
+        padding-left: 16px;
+        font-weight: 500;
+
+        &::placeholder {
+          @apply coz-fg-dim;
+        }
+      }
+    }
+
+    .clear-icon {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 16px;
+      height: 16px;
+      margin-right: 12px;
+      padding: 2px;
+
+      border-radius: 50%;
+
+      @apply coz-fg-secondary;
+      @apply hover:coz-mg-secondary-hovered;
+    }
+  }
+
+  &.focus {
+    width: 600px;
+
+    &:not(.popoverVisible) {
+      .inputContainer {
+        border: 1px solid;
+        border-radius: 8px;
+        box-shadow: 0 -2px 2px 0;
+
+        @apply coz-shadow-default;
+        @apply coz-stroke-primary;
+        @apply coz-bg-max;
+      }
+    }
+  }
+
+
+  &.popoverVisible {
+    .inputContainer {
+      border: 1px solid;
+      border-bottom: none;
+      border-radius: 12px 12px 0 0;
+      box-shadow: none;
+
+      @apply coz-shadow-default;
+      @apply coz-stroke-primary;
+      @apply coz-bg-max;
+    }
+  }
+}
+
+.icon-search {
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 16px;
+
+  .active {
+    svg {
+      transition: color 0.2s ease;
+
+      @apply coz-fg-primary;
+    }
+  }
+}
+
+.mask {
+  position: fixed;
+  z-index: 19;
+  top: 0;
+  left: 0;
+
+  display: none;
+
+  width: 100vw;
+  height: 100vh;
+
+  background-color: transparent;
+
+  &.visible {
+    display: block;
+  }
+}

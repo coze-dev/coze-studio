@@ -39,7 +39,8 @@ EXCLUDE_PATTERNS=(
   '**/e2e/**'
   'common/changes/**'
   'apps/fornax/**',
-  "packages/arch/semi-theme-hand01"
+  "packages/arch/semi-theme-hand01",
+  "frontend/packages/arch/resources/studio-i18n-resource/src/**"
 )
 
 for pattern in "${EXCLUDE_PATTERNS[@]}"; do
