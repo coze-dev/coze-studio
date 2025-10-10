@@ -93,7 +93,6 @@ func (s *CozeUserService) GetEnterpriseBenefit(ctx context.Context, req *entity.
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "API call failed"))
 	}
 
-
 	var benefitData entity.BenefitData
 	if err := json.Unmarshal(resp.Data, &benefitData); err != nil {
 		logs.CtxErrorf(ctx, "failed to parse benefit data: %v", err)

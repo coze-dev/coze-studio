@@ -99,10 +99,10 @@ func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *dto.Lis
 
 	// official plugins
 	officialPlugins, _, err := p.pluginRepo.ListCustomOnlinePlugins(ctx, 999999, dto.PageInfo{
-		Page: 1,
-		Size: 1000,
+		Page:       1,
+		Size:       1000,
 		OrderByACS: ptr.Of(true),
-		SortBy:ptr.Of(dto.SortByCreatedAt),
+		SortBy:     ptr.Of(dto.SortByCreatedAt),
 	})
 	if err != nil {
 		return nil, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=999999")

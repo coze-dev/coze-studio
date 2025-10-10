@@ -56,8 +56,8 @@ func (t toolVersionPO) ToDO() *entity.ToolInfo {
 		Method:    ptr.Of(t.Method),
 		Operation: t.Operation,
 
-		Source:    bot_common.PluginSourcePtr(bot_common.PluginSource(t.Source)),
-		Extra:     t.Ext,
+		Source: bot_common.PluginSourcePtr(bot_common.PluginSource(t.Source)),
+		Extra:  t.Ext,
 	}
 }
 

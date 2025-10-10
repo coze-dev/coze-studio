@@ -49,12 +49,12 @@ type CozePlugin struct {
 
 func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *domainDto.ListSaasPluginProductsRequest) (resp *domainDto.ListPluginProductsResponse, err error) {
 	searchReq := &domainDto.SearchSaasPluginRequest{
-		PageNum:  ptr.Of(int(*req.PageNum)),
-		PageSize: ptr.Of(int(*req.PageSize)),
-		Keyword:  req.Keyword,
+		PageNum:    ptr.Of(int(*req.PageNum)),
+		PageSize:   ptr.Of(int(*req.PageSize)),
+		Keyword:    req.Keyword,
 		IsOfficial: req.IsOfficial,
 	}
-	plugins, hasMore,err := p.fetchSaasPluginsFromCoze(ctx, searchReq)
+	plugins, hasMore, err := p.fetchSaasPluginsFromCoze(ctx, searchReq)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "fetchSaasPluginsFromCoze failed")
 	}
@@ -88,25 +88,25 @@ func (p *pluginServiceImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, plu
 	}
 
 	var apiResp struct {
-		Plugins []struct {
+		Items []struct {
 			Tools []struct {
-				ToolID        string                 `json:"tool_id"`
-				Description   string                 `json:"description"`
-				InputSchema   *domainDto.JsonSchema  `json:"inputSchema"`
-				Name          string                 `json:"name"`
-				OutputSchema  *domainDto.JsonSchema  `json:"outputSchema"`
+				ToolID       string                `json:"tool_id"`
+				Description  string                `json:"description"`
+				InputSchema  *domainDto.JsonSchema `json:"inputSchema"`
+				Name         string                `json:"name"`
+				OutputSchema *domainDto.JsonSchema `json:"outputSchema"`
 			} `json:"tools"`
 			McpJSON string `json:"mcp_json"`
-		} `json:"plugins"`
+		} `json:"items"`
 	}
-
+	logs.CtxInfof(ctx, "call coze.cn /v1/plugins/mget API, resp: %v", string(resp.Data))
 	if err := json.Unmarshal(resp.Data, &apiResp); err != nil {
 		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
 	}
 
 	result := make(map[int64][]*entity.ToolInfo)
 
-	for i, plugin := range apiResp.Plugins {
+	for i, plugin := range apiResp.Items {
 		if i >= len(pluginIDs) {
 			break
 		}
@@ -186,11 +186,11 @@ func convertFromJsonSchema(schema *domainDto.JsonSchema) []*pluginCommon.APIPara
 			}
 
 			param := &pluginCommon.APIParameter{
-				Name:        name,
-				Desc:        propSchema.Description,
-				IsRequired:  requiredFields[name],
-				Type:        mapJsonSchemaTypeToParameterType(propSchema.Type),
-				Location:    pluginCommon.ParameterLocation_Body,
+				Name:       name,
+				Desc:       propSchema.Description,
+				IsRequired: requiredFields[name],
+				Type:       mapJsonSchemaTypeToParameterType(propSchema.Type),
+				Location:   pluginCommon.ParameterLocation_Body,
 			}
 			// Handle nested object type
 			if propSchema.Type == domainDto.JsonSchemaType_OBJECT && len(propSchema.Properties) > 0 {
@@ -211,7 +211,6 @@ func convertFromJsonSchema(schema *domainDto.JsonSchema) []*pluginCommon.APIPara
 
 	return parameters
 }
-
 
 func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context, searchReq *domainDto.SearchSaasPluginRequest) ([]*entity.PluginInfo, bool, error) {
 
@@ -271,6 +270,7 @@ func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.Plugi
 		CreatedAt:   metaInfo.ListedAt,
 		UpdatedAt:   metaInfo.ListedAt,
 		Manifest:    manifest,
+		Source:      ptr.Of(bot_common.PluginSource_FromSaas),
 	}
 
 	return entity.NewPluginInfo(pluginInfo)

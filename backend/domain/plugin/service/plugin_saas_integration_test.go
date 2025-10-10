@@ -53,15 +53,15 @@ func TestConvertSaasPluginItemToEntity_WithNewFields(t *testing.T) {
 			IsOfficial: true,
 		},
 		PluginInfo: &domainDto.SaasPluginInfo{
-			FavoriteCount:            1,
-			Heat:                     0,
-			AvgExecDurationMs:        114.61111,
-			CallCount:                20,
-			Description:              "Test plugin description",
-			TotalToolsCount:          2,
-			BotsUseCount:             7,
-			AssociatedBotsUseCount:   0,
-			SuccessRate:              0.8333349999999999,
+			FavoriteCount:          1,
+			Heat:                   0,
+			AvgExecDurationMs:      114.61111,
+			CallCount:              20,
+			Description:            "Test plugin description",
+			TotalToolsCount:        2,
+			BotsUseCount:           7,
+			AssociatedBotsUseCount: 0,
+			SuccessRate:            0.8333349999999999,
 		},
 	}
 
@@ -73,7 +73,7 @@ func TestConvertSaasPluginItemToEntity_WithNewFields(t *testing.T) {
 	assert.Equal(t, "Test Plugin", plugin.GetName())
 	assert.Equal(t, "Test plugin description", plugin.GetDesc())
 	assert.Equal(t, "https://example.com/icon.png", plugin.GetIconURI())
-	
+
 	// This test verifies that:
 	// 1. ProductURL field is accessible (even if not directly used in conversion)
 	// 2. UserID string type works correctly

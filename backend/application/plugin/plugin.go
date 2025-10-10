@@ -357,26 +357,11 @@ func (p *PluginApplicationService) getSaasPluginToolsList(ctx context.Context, p
 	return p.DomainSVC.BatchGetSaasPluginToolsInfo(ctx, pluginIDs)
 }
 
-func convertPluginsToSuggestions(plugins []*entity.PluginInfo) []*productAPI.ProductInfo {
-	suggestionProducts := make([]*productAPI.ProductInfo, 0, len(plugins))
-	suggestionSet := make(map[string]bool) // Use map to avoid duplicates
-
-	for _, plugin := range plugins {
-
-		if plugin.GetName() != "" && !suggestionSet[plugin.GetName()] {
-			suggestionProducts = append(suggestionProducts, convertPluginToProductInfo(plugin))
-			suggestionSet[plugin.GetName()] = true
-		}
-	}
-
-	return suggestionProducts
-}
-
 func (p *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
 	domainResp, err := p.getSaasPluginList(ctx, &dto.ListSaasPluginProductsRequest{
-		PageNum:  ptr.Of(req.PageNum),
-		PageSize: ptr.Of(req.PageSize),
-		Keyword:  req.Keyword,
+		PageNum:     ptr.Of(req.PageNum),
+		PageSize:    ptr.Of(req.PageSize),
+		Keyword:     req.Keyword,
 		EntityTypes: req.EntityTypes,
 	})
 	if err != nil {
@@ -389,7 +374,7 @@ func (p *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, re
 
 	// tools
 	pluginIDs := make([]int64, 0, len(domainResp.Plugins))
-	for _,product := range domainResp.Plugins{
+	for _, product := range domainResp.Plugins {
 		pluginIDs = append(pluginIDs, product.ID)
 	}
 
@@ -434,7 +419,7 @@ func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req 
 	}
 	// tools
 	pluginIDs := make([]int64, 0, len(domainResp.Plugins))
-	for _,product := range domainResp.Plugins{
+	for _, product := range domainResp.Plugins {
 		pluginIDs = append(pluginIDs, product.ID)
 	}
 
@@ -466,7 +451,6 @@ func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req 
 		PageSize:    req.PageSize,
 		Keyword:     req.Keyword,
 		EntityTypes: req.EntityTypes,
-
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts for suggestions failed: %v", err)
@@ -476,7 +460,22 @@ func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req 
 		}, nil
 	}
 
-	suggestionProducts := convertPluginsToSuggestions(domainResp.Plugins)
+	// tools
+	pluginIDs := make([]int64, 0, len(domainResp.Plugins))
+	for _, product := range domainResp.Plugins {
+		pluginIDs = append(pluginIDs, product.ID)
+	}
+
+	tools, err := p.getSaasPluginToolsList(ctx, pluginIDs)
+	if err != nil {
+		logs.CtxErrorf(ctx, "BatchGetSaasPluginToolsInfo failed: %v", err)
+		return &productAPI.SearchSuggestResponse{
+			Code:    -1,
+			Message: "Failed to get SaaS plugin tools list",
+		}, nil
+	}
+
+	suggestionProducts := p.convertPluginsToProductInfos(ctx, domainResp.Plugins, tools)
 
 	return &productAPI.SearchSuggestResponse{
 		Code:    0,
@@ -559,7 +558,6 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 	data := &productAPI.GetProductCallInfoData{
 		UserLevel: productAPI.UserLevel_Free,
 	}
-
 
 	data.CallCountLimit = &productAPI.ProductCallCountLimit{
 		IsUnlimited: benefit.IsUnlimited,

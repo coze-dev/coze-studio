@@ -40,7 +40,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/search"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/template"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
@@ -55,7 +54,6 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	req.EntityType = ptr.Of(product_common.ProductEntityType_SaasPlugin)
 	var resp *product_public_api.GetProductListResponse
 	switch req.GetEntityType() {
 	case product_common.ProductEntityType_Plugin:
