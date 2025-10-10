@@ -186,15 +186,15 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *mo
 	}
 
 	var (
-		exist        bool
+		exist bool
 	)
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas{
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas {
 		//TODO：：get plugin info from saas
 
 	} else {
 		onlineTool, exist, err = p.toolRepo.GetOnlineTool(ctx, req.ToolID)
 		if err != nil {
-		return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
+			return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
 		}
 		if !exist {
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)

@@ -30,8 +30,6 @@ type SearchSaasPluginRequest struct {
 	IsOfficial *bool   `json:"is_official,omitempty"`
 }
 
-
-
 // SearchSaasPluginResponse represents the response from coze.cn search API
 type SearchSaasPluginResponse struct {
 	Code   int                   `json:"code"`
@@ -136,7 +134,6 @@ type GetSaasPluginCallInfoResponse struct {
 type GetSaasPluginCallInfoData struct {
 }
 
-
 type JsonSchemaType int32
 
 const (
@@ -162,10 +159,10 @@ type JsonSchema struct {
 	Defs        map[string]*JsonSchema `json:"$defs,omitempty"`
 	Definitions map[string]*JsonSchema `json:"definitions,omitempty"` // deprecated but still allowed
 
-	Anchor        string           `json:"$anchor,omitempty"`
-	DynamicAnchor string           `json:"$dynamicAnchor,omitempty"`
-	DynamicRef    string           `json:"$dynamicRef,omitempty"`
-	Vocabulary    map[string]bool  `json:"$vocabulary,omitempty"`
+	Anchor        string          `json:"$anchor,omitempty"`
+	DynamicAnchor string          `json:"$dynamicAnchor,omitempty"`
+	DynamicRef    string          `json:"$dynamicRef,omitempty"`
+	Vocabulary    map[string]bool `json:"$vocabulary,omitempty"`
 
 	// metadata
 	Title       string `json:"title,omitempty"`
@@ -177,17 +174,17 @@ type JsonSchema struct {
 
 	// validation
 	// Use Type for a single type, or Types for multiple types; never both.
-	Type       JsonSchemaType   `json:"type,omitempty"`
-	Types      []JsonSchemaType `json:"types,omitempty"`
-	Enum       []*AnyValue       `json:"enum,omitempty"`
-	MultipleOf *float64         `json:"multipleOf,omitempty"`
-	Minimum    *float64         `json:"minimum,omitempty"`
-	Maximum    *float64         `json:"maximum,omitempty"`
-	ExclusiveMinimum *bool      `json:"exclusiveMinimum,omitempty"`
-	ExclusiveMaximum *bool      `json:"exclusiveMaximum,omitempty"`
-	MinLength  *int32           `json:"minLength,omitempty"`
-	MaxLength  *int32           `json:"maxLength,omitempty"`
-	Pattern    string           `json:"pattern,omitempty"`
+	Type             JsonSchemaType   `json:"type,omitempty"`
+	Types            []JsonSchemaType `json:"types,omitempty"`
+	Enum             []*AnyValue      `json:"enum,omitempty"`
+	MultipleOf       *float64         `json:"multipleOf,omitempty"`
+	Minimum          *float64         `json:"minimum,omitempty"`
+	Maximum          *float64         `json:"maximum,omitempty"`
+	ExclusiveMinimum *bool            `json:"exclusiveMinimum,omitempty"`
+	ExclusiveMaximum *bool            `json:"exclusiveMaximum,omitempty"`
+	MinLength        *int32           `json:"minLength,omitempty"`
+	MaxLength        *int32           `json:"maxLength,omitempty"`
+	Pattern          string           `json:"pattern,omitempty"`
 
 	// arrays
 	PrefixItems      []*JsonSchema `json:"prefixItems,omitempty"`
@@ -202,15 +199,15 @@ type JsonSchema struct {
 	UnevaluatedItems *JsonSchema   `json:"unevaluatedItems,omitempty"`
 
 	// objects
-	MinProperties         *int32                     `json:"minProperties,omitempty"`
-	MaxProperties         *int32                     `json:"maxProperties,omitempty"`
-	Required              []string                   `json:"required,omitempty"`
-	DependentRequired     map[string][]string        `json:"dependentRequired,omitempty"`
-	Properties            map[string]*JsonSchema     `json:"properties,omitempty"`
-	PatternProperties     map[string]*JsonSchema     `json:"patternProperties,omitempty"`
-	AdditionalProperties  *JsonSchema                `json:"additionalProperties,omitempty"`
-	PropertyNames         *JsonSchema                `json:"propertyNames,omitempty"`
-	UnevaluatedProperties *JsonSchema                `json:"unevaluatedProperties,omitempty"`
+	MinProperties         *int32                 `json:"minProperties,omitempty"`
+	MaxProperties         *int32                 `json:"maxProperties,omitempty"`
+	Required              []string               `json:"required,omitempty"`
+	DependentRequired     map[string][]string    `json:"dependentRequired,omitempty"`
+	Properties            map[string]*JsonSchema `json:"properties,omitempty"`
+	PatternProperties     map[string]*JsonSchema `json:"patternProperties,omitempty"`
+	AdditionalProperties  *JsonSchema            `json:"additionalProperties,omitempty"`
+	PropertyNames         *JsonSchema            `json:"propertyNames,omitempty"`
+	UnevaluatedProperties *JsonSchema            `json:"unevaluatedProperties,omitempty"`
 
 	// logic
 	AllOf []*JsonSchema `json:"allOf,omitempty"`
@@ -265,12 +262,15 @@ func (js *JsonSchema) UnmarshalJSON(data []byte) error {
 		TypeString interface{} `json:"type"`
 		*Alias
 	}{
-		Alias: (*Alias)(js),
+		Alias: (*Alias)(&JsonSchema{}),
 	}
 
 	if err := json.Unmarshal(data, &aux); err != nil {
 		return err
 	}
+
+	// Copy all fields from aux.Alias to js
+	*js = JsonSchema(*aux.Alias)
 
 	// Handle the type field conversion
 	if aux.TypeString != nil {

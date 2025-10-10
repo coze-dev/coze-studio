@@ -39,7 +39,7 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 	defer ctrl.Finish()
 
 	mockDomainSVC := mockPlugin.NewMockPluginService(ctrl)
-	
+
 	service := &PluginApplicationService{
 		DomainSVC: mockDomainSVC,
 	}
@@ -53,7 +53,7 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 			createTestPluginInfo(1, "Test Plugin 1", "Description 1"),
 			createTestPluginInfo(2, "Test Plugin 2", "Description 2"),
 		}
-		
+
 		domainResp := &dto.ListPluginProductsResponse{
 			Plugins: testPlugins,
 			Total:   2,
@@ -146,7 +146,7 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 			createTestPluginInfo(400, "News Plugin", "Get latest news updates"),
 			createTestPluginInfo(500, "Email Plugin", "Send and manage emails"),
 		}
-		
+
 		domainResp := &dto.ListPluginProductsResponse{
 			Plugins: testPlugins,
 			Total:   5,
@@ -174,7 +174,7 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 		// Verify all plugins are converted correctly
 		expectedNames := []string{"Weather Plugin", "Translation Plugin", "Calculator Plugin", "News Plugin", "Email Plugin"}
 		expectedIDs := []int64{100, 200, 300, 400, 500}
-		
+
 		for i, product := range resp.Data.Products {
 			assert.Equal(t, expectedIDs[i], product.MetaInfo.ID)
 			assert.Equal(t, expectedIDs[i], product.MetaInfo.EntityID)

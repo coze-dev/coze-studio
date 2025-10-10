@@ -285,7 +285,7 @@ func (h *httpCallImpl) buildRequestBody(ctx context.Context, op *model.Openapi3O
 	return body, contentType, nil
 }
 
-func(h *httpCallImpl) injectCozeSaasAPIToken (ctx context.Context, httpReq *http.Request) (errMsg string, err error){
+func (h *httpCallImpl) injectCozeSaasAPIToken(ctx context.Context, httpReq *http.Request) (errMsg string, err error) {
 
 	// apiToken := os.Getenv(consts.CozeSaasAPIKey)
 	apiToken := "pat_OjlRXGYdXDLHDv10dZuav02A7SomHZkXTjx0fbZ9xUDIrssE7tZ07gI2TzABBQ7M"

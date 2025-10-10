@@ -44,8 +44,8 @@ type ToolInfo struct {
 	ActivatedStatus *consts.ActivatedStatus
 	DebugStatus     *common.APIDebugStatus
 
-	Source    *bot_common.PluginSource
-	Extra     map[string]any
+	Source *bot_common.PluginSource
+	Extra  map[string]any
 
 	Method    *string
 	SubURL    *string
@@ -622,7 +622,7 @@ type ExecuteToolRequest struct {
 	ExecDraftTool bool // if true, execute draft tool
 	ExecScene     consts.ExecuteScene
 
-	PluginSource  *bot_common.PluginSource
+	PluginSource *bot_common.PluginSource
 
 	ArgumentsInJson string
 }

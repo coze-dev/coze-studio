@@ -70,7 +70,7 @@ type GetEnterpriseBenefitResponse struct {
 
 // BenefitData represents the benefit data
 type BenefitData struct {
-	BasicInfo   *BasicInfo    `json:"basic_info,omitempty"`
+	BasicInfo   *BasicInfo     `json:"basic_info,omitempty"`
 	BenefitInfo []*BenefitInfo `json:"benefit_info,omitempty"`
 }
 
@@ -81,27 +81,27 @@ type BasicInfo struct {
 
 // BenefitInfo represents the benefit information
 type BenefitInfo struct {
-	ResourceID  string                `json:"resource_id,omitempty"`
-	BenefitType BenefitType           `json:"benefit_type,omitempty"`
-	Basic       *BenefitTypeInfoItem  `json:"basic,omitempty"` // Basic value
+	ResourceID  string                 `json:"resource_id,omitempty"`
+	BenefitType BenefitType            `json:"benefit_type,omitempty"`
+	Basic       *BenefitTypeInfoItem   `json:"basic,omitempty"` // Basic value
 	Extra       []*BenefitTypeInfoItem `json:"extra,omitempty"` // Extra values, may not exist
 }
 
 // BenefitTypeInfoItem represents a benefit type info item
 type BenefitTypeInfoItem struct {
-	ItemID    string               `json:"item_id,omitempty"`
-	ItemInfo  *CommonCounter       `json:"item_info,omitempty"`
-	Status    EntityBenefitStatus  `json:"status,omitempty"`
-	BenefitID string               `json:"benefit_id,omitempty"`
+	ItemID    string              `json:"item_id,omitempty"`
+	ItemInfo  *CommonCounter      `json:"item_info,omitempty"`
+	Status    EntityBenefitStatus `json:"status,omitempty"`
+	BenefitID string              `json:"benefit_id,omitempty"`
 }
 
 // CommonCounter represents a common counter
 type CommonCounter struct {
-	Used     float64                `json:"used,omitempty"`     // Used amount when Strategy == ByQuota, returns 0 if no usage data
-	Total    float64                `json:"total,omitempty"`    // Total limit when Strategy == ByQuota
-	Strategy ResourceUsageStrategy  `json:"strategy,omitempty"` // Resource usage strategy
-	StartAt  int64                  `json:"start_at,omitempty"` // Start time in seconds
-	EndAt    int64                  `json:"end_at,omitempty"`   // End time in seconds
+	Used     float64               `json:"used,omitempty"`     // Used amount when Strategy == ByQuota, returns 0 if no usage data
+	Total    float64               `json:"total,omitempty"`    // Total limit when Strategy == ByQuota
+	Strategy ResourceUsageStrategy `json:"strategy,omitempty"` // Resource usage strategy
+	StartAt  int64                 `json:"start_at,omitempty"` // Start time in seconds
+	EndAt    int64                 `json:"end_at,omitempty"`   // End time in seconds
 }
 
 // String methods for enums (for better debugging and logging)

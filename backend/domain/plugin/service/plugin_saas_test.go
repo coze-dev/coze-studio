@@ -83,21 +83,21 @@ func TestSearchSaasPluginResponse_JSONUnmarshal(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, 0, searchResp.Code)
 	assert.Equal(t, "", searchResp.Msg)
-	
+
 	// Verify detail field
 	assert.NotNil(t, searchResp.Detail)
 	assert.Equal(t, "2025092821165570E59640C37BF984D370", searchResp.Detail.LogID)
-	
+
 	// Verify data field
 	assert.NotNil(t, searchResp.Data)
 	assert.True(t, searchResp.Data.HasMore)
 	assert.Len(t, searchResp.Data.Items, 1)
-	
+
 	// Verify plugin item
 	item := searchResp.Data.Items[0]
 	assert.NotNil(t, item.MetaInfo)
 	assert.NotNil(t, item.PluginInfo)
-	
+
 	// Verify metainfo fields
 	metaInfo := item.MetaInfo
 	assert.Equal(t, "7546432661141602358", metaInfo.ProductID)
@@ -105,12 +105,12 @@ func TestSearchSaasPluginResponse_JSONUnmarshal(t *testing.T) {
 	assert.Equal(t, "ppe_test_官方付费", metaInfo.Name)
 	assert.Equal(t, "https://www.coze.cn/store/plugin/7546432661141602358", metaInfo.ProductURL)
 	assert.True(t, metaInfo.IsOfficial)
-	
+
 	// Verify user_info field (should be string now)
 	assert.NotNil(t, metaInfo.UserInfo)
 	assert.Equal(t, "3235179593473241", metaInfo.UserInfo.UserID)
 	assert.Equal(t, "testlbsZEOkZJP", metaInfo.UserInfo.NickName)
-	
+
 	// Verify plugin_info fields
 	pluginInfo := item.PluginInfo
 	assert.Equal(t, 1, pluginInfo.FavoriteCount)
