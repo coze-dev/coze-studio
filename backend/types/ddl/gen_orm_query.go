@@ -82,6 +82,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"plugin": {
 			"manifest":    &plugin.PluginManifest{},
 			"openapi_doc": &plugin.Openapi3T{},
+			"ext":       map[string]any{},
 		},
 		"plugin_draft": {
 			"manifest":    &plugin.PluginManifest{},
@@ -90,6 +91,7 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		"plugin_version": {
 			"manifest":    &plugin.PluginManifest{},
 			"openapi_doc": &plugin.Openapi3T{},
+			"ext":       map[string]any{},
 		},
 		"agent_tool_draft": {
 			"operation": &plugin.Openapi3Operation{},
@@ -99,12 +101,14 @@ var path2Table2Columns2Model = map[string]map[string]map[string]any{
 		},
 		"tool": {
 			"operation": &plugin.Openapi3Operation{},
+			"ext":       map[string]any{},
 		},
 		"tool_draft": {
 			"operation": &plugin.Openapi3Operation{},
 		},
 		"tool_version": {
 			"operation": &plugin.Openapi3Operation{},
+			"ext":       map[string]any{},
 		},
 		"plugin_oauth_auth": {
 			"oauth_config": &plugin.OAuthAuthorizationCodeConfig{},

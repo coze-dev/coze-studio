@@ -22,6 +22,7 @@ import (
 
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
@@ -54,6 +55,9 @@ func (t toolVersionPO) ToDO() *entity.ToolInfo {
 		SubURL:    &t.SubURL,
 		Method:    ptr.Of(t.Method),
 		Operation: t.Operation,
+
+		Source:    bot_common.PluginSourcePtr(bot_common.PluginSource(t.Source)),
+		Extra:     t.Ext,
 	}
 }
 

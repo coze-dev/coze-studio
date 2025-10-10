@@ -21,9 +21,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"strings"
+
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert/api"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	domainDto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -43,9 +47,14 @@ type CozePlugin struct {
 	UpdatedAt   int64  `json:"updated_at"`
 }
 
-func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *domainDto.ListPluginProductsRequest) (resp *domainDto.ListPluginProductsResponse, err error) {
-
-	plugins, err := p.fetchSaasPluginsFromCoze(ctx)
+func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *domainDto.ListSaasPluginProductsRequest) (resp *domainDto.ListPluginProductsResponse, err error) {
+	searchReq := &domainDto.SearchSaasPluginRequest{
+		PageNum:  ptr.Of(int(*req.PageNum)),
+		PageSize: ptr.Of(int(*req.PageSize)),
+		Keyword:  req.Keyword,
+		IsOfficial: req.IsOfficial,
+	}
+	plugins, hasMore,err := p.fetchSaasPluginsFromCoze(ctx, searchReq)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "fetchSaasPluginsFromCoze failed")
 	}
@@ -53,14 +62,166 @@ func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *dom
 	return &domainDto.ListPluginProductsResponse{
 		Plugins: plugins,
 		Total:   int64(len(plugins)),
+		HasMore: hasMore,
 	}, nil
 }
+func (p *pluginServiceImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, err error) {
+	if len(pluginIDs) == 0 {
+		return make(map[int64][]*entity.ToolInfo), nil
+	}
 
-func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context) ([]*entity.PluginInfo, error) {
-	searchReq := &domainDto.SearchSaasPluginRequest{}
+	client := saasapi.NewCozeAPIClient()
+
+	var idStrings []string
+	for _, id := range pluginIDs {
+		idStrings = append(idStrings, strconv.FormatInt(id, 10))
+	}
+	idsStr := strings.Join(idStrings, ",")
+
+	queryParams := map[string]interface{}{
+		"ids": idsStr,
+	}
+
+	resp, err := client.GetWithQuery(ctx, "/v1/plugins/mget", queryParams)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "failed to call coze.cn /v1/plugins/mget API")
+	}
+
+	var apiResp struct {
+		Plugins []struct {
+			Tools []struct {
+				ToolID        string                 `json:"tool_id"`
+				Description   string                 `json:"description"`
+				InputSchema   *domainDto.JsonSchema  `json:"inputSchema"`
+				Name          string                 `json:"name"`
+				OutputSchema  *domainDto.JsonSchema  `json:"outputSchema"`
+			} `json:"tools"`
+			McpJSON string `json:"mcp_json"`
+		} `json:"plugins"`
+	}
+
+	if err := json.Unmarshal(resp.Data, &apiResp); err != nil {
+		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
+	}
+
+	result := make(map[int64][]*entity.ToolInfo)
+
+	for i, plugin := range apiResp.Plugins {
+		if i >= len(pluginIDs) {
+			break
+		}
+		pluginID := pluginIDs[i]
+		toolInfos := make([]*entity.ToolInfo, 0, len(plugin.Tools))
+
+		for _, tool := range plugin.Tools {
+
+			openapi3Operation, err := api.APIParamsToOpenapiOperation(convertFromJsonSchema(tool.InputSchema), convertFromJsonSchema(tool.OutputSchema))
+			if err != nil {
+				return nil, errorx.Wrapf(err, "failed to convert input schema to openapi operation parameters")
+			}
+			openapi3Operation.OperationID = tool.Name
+			openapi3Operation.Summary = tool.Description
+			operation := &model.Openapi3Operation{
+				Operation: openapi3Operation,
+			}
+			id, err := strconv.ParseInt(tool.ToolID, 10, 64)
+			if err != nil {
+				return nil, errorx.Wrapf(err, "failed to parse tool ID %s", tool.ToolID)
+			}
+			toolInfo := &entity.ToolInfo{
+				ID:        id,
+				PluginID:  pluginID,
+				Operation: operation,
+				Source:    ptr.Of(bot_common.PluginSource_FromSaas),
+			}
+
+			toolInfos = append(toolInfos, toolInfo)
+		}
+
+		result[pluginID] = toolInfos
+	}
+
+	logs.CtxInfof(ctx, "fetched SaaS plugin tools info from coze.cn, pluginIDs: %v, total tools: %d", pluginIDs, len(result))
+	return result, nil
+}
+
+func mapJsonSchemaTypeToParameterType(schemaType domainDto.JsonSchemaType) pluginCommon.ParameterType {
+	switch schemaType {
+	case domainDto.JsonSchemaType_STRING:
+		return pluginCommon.ParameterType_String
+	case domainDto.JsonSchemaType_NUMBER:
+		return pluginCommon.ParameterType_Number
+	case domainDto.JsonSchemaType_INTEGER:
+		return pluginCommon.ParameterType_Integer
+	case domainDto.JsonSchemaType_BOOLEAN:
+		return pluginCommon.ParameterType_Bool
+	case domainDto.JsonSchemaType_OBJECT:
+		return pluginCommon.ParameterType_Object
+	case domainDto.JsonSchemaType_ARRAY:
+		return pluginCommon.ParameterType_Array
+	default:
+		return pluginCommon.ParameterType_String
+	}
+}
+
+func convertFromJsonSchema(schema *domainDto.JsonSchema) []*pluginCommon.APIParameter {
+	if schema == nil {
+		return []*pluginCommon.APIParameter{}
+	}
+
+	var parameters []*pluginCommon.APIParameter
+
+	// Handle object type with properties
+	if schema.Type == domainDto.JsonSchemaType_OBJECT && len(schema.Properties) > 0 {
+		// Create a set of required fields for quick lookup
+		requiredFields := make(map[string]bool)
+		for _, field := range schema.Required {
+			requiredFields[field] = true
+		}
+
+		// Convert each property to a parameter
+		for name, propSchema := range schema.Properties {
+			if propSchema == nil {
+				continue
+			}
+
+			param := &pluginCommon.APIParameter{
+				Name:        name,
+				Desc:        propSchema.Description,
+				IsRequired:  requiredFields[name],
+				Type:        mapJsonSchemaTypeToParameterType(propSchema.Type),
+				Location:    pluginCommon.ParameterLocation_Body,
+			}
+			// Handle nested object type
+			if propSchema.Type == domainDto.JsonSchemaType_OBJECT && len(propSchema.Properties) > 0 {
+				param.SubParameters = convertFromJsonSchema(propSchema)
+			}
+
+			// Handle array type
+			if propSchema.Type == domainDto.JsonSchemaType_ARRAY && propSchema.Items != nil {
+				param.Type = (mapJsonSchemaTypeToParameterType(propSchema.Items.Type))
+
+				if propSchema.Items.Type == domainDto.JsonSchemaType_OBJECT && len(propSchema.Items.Properties) > 0 {
+					param.SubParameters = convertFromJsonSchema(propSchema.Items)
+				}
+			}
+			parameters = append(parameters, param)
+		}
+	}
+
+	return parameters
+}
+
+
+func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context, searchReq *domainDto.SearchSaasPluginRequest) ([]*entity.PluginInfo, bool, error) {
+
 	searchResp, err := p.searchSaasPlugin(ctx, searchReq)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "failed to search SaaS plugins")
+		return nil, false, errorx.Wrapf(err, "failed to search SaaS plugins")
+	}
+
+	if searchResp == nil || searchResp.Data == nil {
+		return nil, false, nil
 	}
 
 	plugins := make([]*entity.PluginInfo, 0, len(searchResp.Data.Items))
@@ -69,9 +230,7 @@ func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context) ([]*en
 		plugins = append(plugins, plugin)
 	}
 
-	logs.CtxInfof(ctx, "fetched %d SaaS plugins from coze.cn", len(plugins))
-
-	return plugins, nil
+	return plugins, searchResp.Data.HasMore, nil
 }
 
 func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.PluginInfo {
@@ -81,11 +240,8 @@ func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.Plugi
 
 	metaInfo := item.MetaInfo
 	var pluginID int64
-	if id, err := strconv.ParseInt(metaInfo.ProductID, 10, 64); err == nil {
+	if id, err := strconv.ParseInt(metaInfo.EntityID, 10, 64); err == nil {
 		pluginID = id
-	} else {
-		// 如果ID不是数字，使用简单的hash算法生成ID
-		pluginID = int64(simpleHash(metaInfo.ProductID))
 	}
 
 	// 创建插件清单
@@ -124,8 +280,6 @@ func convertCozePluginToEntity(cozePlugin CozePlugin) *entity.PluginInfo {
 	var pluginID int64
 	if id, err := strconv.ParseInt(cozePlugin.ID, 10, 64); err == nil {
 		pluginID = id
-	} else {
-		pluginID = int64(simpleHash(cozePlugin.ID))
 	}
 
 	manifest := &model.PluginManifest{
@@ -157,14 +311,6 @@ func convertCozePluginToEntity(cozePlugin CozePlugin) *entity.PluginInfo {
 	}
 
 	return entity.NewPluginInfo(pluginInfo)
-}
-
-func simpleHash(s string) uint32 {
-	var hash uint32 = 5381
-	for _, c := range s {
-		hash = ((hash << 5) + hash) + uint32(c)
-	}
-	return hash
 }
 
 func (p *pluginServiceImpl) GetSaasPluginInfo(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error) {

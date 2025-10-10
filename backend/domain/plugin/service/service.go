@@ -80,7 +80,8 @@ type PluginService interface {
 	GetOAuthStatus(ctx context.Context, userID, pluginID int64) (resp *dto.GetOAuthStatusResponse, err error)
 	GetAgentPluginsOAuthStatus(ctx context.Context, userID, agentID int64) (status []*dto.AgentPluginOAuthStatus, err error)
 	//Saas Plugin Product
-	ListSaasPluginProducts(ctx context.Context, req *dto.ListPluginProductsRequest) (resp *dto.ListPluginProductsResponse, err error)
+	ListSaasPluginProducts(ctx context.Context, req *dto.ListSaasPluginProductsRequest) (resp *dto.ListPluginProductsResponse, err error)
+	BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, err error)
 	GetSaasPluginInfo(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
 	ListSaasPluginCategories(ctx context.Context, req *dto.ListPluginCategoriesRequest) (resp *dto.ListPluginCategoriesResponse, err error)
 

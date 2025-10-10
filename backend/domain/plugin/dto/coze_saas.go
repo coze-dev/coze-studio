@@ -16,6 +16,10 @@
 
 package dto
 
+import (
+	"encoding/json"
+)
+
 // SearchSaasPluginRequest represents the request parameters for searching SaaS plugins
 type SearchSaasPluginRequest struct {
 	Keyword    *string `json:"keyword,omitempty"`
@@ -25,6 +29,8 @@ type SearchSaasPluginRequest struct {
 	CategoryID *string `json:"category_id,omitempty"`
 	IsOfficial *bool   `json:"is_official,omitempty"`
 }
+
+
 
 // SearchSaasPluginResponse represents the response from coze.cn search API
 type SearchSaasPluginResponse struct {
@@ -128,4 +134,159 @@ type GetSaasPluginCallInfoResponse struct {
 }
 
 type GetSaasPluginCallInfoData struct {
+}
+
+
+type JsonSchemaType int32
+
+const (
+	JsonSchemaType_STRING  JsonSchemaType = 1
+	JsonSchemaType_NUMBER  JsonSchemaType = 2
+	JsonSchemaType_INTEGER JsonSchemaType = 3
+	JsonSchemaType_BOOLEAN JsonSchemaType = 4
+	JsonSchemaType_OBJECT  JsonSchemaType = 5
+	JsonSchemaType_ARRAY   JsonSchemaType = 6
+	JsonSchemaType_NULL    JsonSchemaType = 7
+)
+
+type AnyValue struct {
+	Type        JsonSchemaType `json:"type,omitempty"`
+	StringValue string         `json:"stringValue,omitempty"`
+}
+type JsonSchema struct {
+	// core
+	ID          string                 `json:"$id,omitempty"`
+	Schema      string                 `json:"$schema,omitempty"`
+	Ref         string                 `json:"$ref,omitempty"`
+	Comment     string                 `json:"$comment,omitempty"`
+	Defs        map[string]*JsonSchema `json:"$defs,omitempty"`
+	Definitions map[string]*JsonSchema `json:"definitions,omitempty"` // deprecated but still allowed
+
+	Anchor        string           `json:"$anchor,omitempty"`
+	DynamicAnchor string           `json:"$dynamicAnchor,omitempty"`
+	DynamicRef    string           `json:"$dynamicRef,omitempty"`
+	Vocabulary    map[string]bool  `json:"$vocabulary,omitempty"`
+
+	// metadata
+	Title       string `json:"title,omitempty"`
+	Description string `json:"description,omitempty"`
+	Default     []byte `json:"default,omitempty"`
+	Deprecated  bool   `json:"deprecated,omitempty"`
+	ReadOnly    bool   `json:"readOnly,omitempty"`
+	WriteOnly   bool   `json:"writeOnly,omitempty"`
+
+	// validation
+	// Use Type for a single type, or Types for multiple types; never both.
+	Type       JsonSchemaType   `json:"type,omitempty"`
+	Types      []JsonSchemaType `json:"types,omitempty"`
+	Enum       []*AnyValue       `json:"enum,omitempty"`
+	MultipleOf *float64         `json:"multipleOf,omitempty"`
+	Minimum    *float64         `json:"minimum,omitempty"`
+	Maximum    *float64         `json:"maximum,omitempty"`
+	ExclusiveMinimum *bool      `json:"exclusiveMinimum,omitempty"`
+	ExclusiveMaximum *bool      `json:"exclusiveMaximum,omitempty"`
+	MinLength  *int32           `json:"minLength,omitempty"`
+	MaxLength  *int32           `json:"maxLength,omitempty"`
+	Pattern    string           `json:"pattern,omitempty"`
+
+	// arrays
+	PrefixItems      []*JsonSchema `json:"prefixItems,omitempty"`
+	Items            *JsonSchema   `json:"items,omitempty"`
+	MinItems         *int32        `json:"minItems,omitempty"`
+	MaxItems         *int32        `json:"maxItems,omitempty"`
+	AdditionalItems  *JsonSchema   `json:"additionalItems,omitempty"`
+	UniqueItems      bool          `json:"uniqueItems,omitempty"`
+	Contains         *JsonSchema   `json:"contains,omitempty"`
+	MinContains      *int32        `json:"minContains,omitempty"`
+	MaxContains      *int32        `json:"maxContains,omitempty"`
+	UnevaluatedItems *JsonSchema   `json:"unevaluatedItems,omitempty"`
+
+	// objects
+	MinProperties         *int32                     `json:"minProperties,omitempty"`
+	MaxProperties         *int32                     `json:"maxProperties,omitempty"`
+	Required              []string                   `json:"required,omitempty"`
+	DependentRequired     map[string][]string        `json:"dependentRequired,omitempty"`
+	Properties            map[string]*JsonSchema     `json:"properties,omitempty"`
+	PatternProperties     map[string]*JsonSchema     `json:"patternProperties,omitempty"`
+	AdditionalProperties  *JsonSchema                `json:"additionalProperties,omitempty"`
+	PropertyNames         *JsonSchema                `json:"propertyNames,omitempty"`
+	UnevaluatedProperties *JsonSchema                `json:"unevaluatedProperties,omitempty"`
+
+	// logic
+	AllOf []*JsonSchema `json:"allOf,omitempty"`
+	AnyOf []*JsonSchema `json:"anyOf,omitempty"`
+	OneOf []*JsonSchema `json:"oneOf,omitempty"`
+	Not   *JsonSchema   `json:"not,omitempty"`
+
+	// conditional
+	If               map[string]*JsonSchema `json:"if,omitempty"`
+	Then             map[string]*JsonSchema `json:"then,omitempty"`
+	Else             map[string]*JsonSchema `json:"else,omitempty"`
+	DependentSchemas map[string]*JsonSchema `json:"dependentSchemas,omitempty"`
+
+	// other
+	ContentEncoding  *JsonSchema `json:"contentEncoding,omitempty"`
+	ContentMediaType *JsonSchema `json:"contentMediaType,omitempty"`
+	ContentSchema    *JsonSchema `json:"contentSchema,omitempty"`
+
+	Format string `json:"format,omitempty"`
+
+	// Extra allows for additional keywords beyond those specified.
+	Extra map[string]*JsonSchema `json:"-"`
+}
+
+// stringToJsonSchemaType converts a string to JsonSchemaType
+func stringToJsonSchemaType(s string) JsonSchemaType {
+	switch s {
+	case "string":
+		return JsonSchemaType_STRING
+	case "number":
+		return JsonSchemaType_NUMBER
+	case "integer":
+		return JsonSchemaType_INTEGER
+	case "boolean":
+		return JsonSchemaType_BOOLEAN
+	case "object":
+		return JsonSchemaType_OBJECT
+	case "array":
+		return JsonSchemaType_ARRAY
+	case "null":
+		return JsonSchemaType_NULL
+	default:
+		return JsonSchemaType_STRING // default fallback
+	}
+}
+
+// UnmarshalJSON implements custom JSON unmarshaling for JsonSchema
+func (js *JsonSchema) UnmarshalJSON(data []byte) error {
+	// Create a temporary struct with the same fields but string type for Type field
+	type Alias JsonSchema
+	aux := &struct {
+		TypeString interface{} `json:"type"`
+		*Alias
+	}{
+		Alias: (*Alias)(js),
+	}
+
+	if err := json.Unmarshal(data, &aux); err != nil {
+		return err
+	}
+
+	// Handle the type field conversion
+	if aux.TypeString != nil {
+		switch v := aux.TypeString.(type) {
+		case string:
+			js.Type = stringToJsonSchemaType(v)
+		case []interface{}:
+			// Handle array of types
+			js.Types = make([]JsonSchemaType, len(v))
+			for i, typeVal := range v {
+				if typeStr, ok := typeVal.(string); ok {
+					js.Types[i] = stringToJsonSchemaType(typeStr)
+				}
+			}
+		}
+	}
+
+	return nil
 }
