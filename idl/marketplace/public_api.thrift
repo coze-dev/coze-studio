@@ -37,7 +37,7 @@ struct SearchProductRequest{
     17 : optional bool IsOfficial (api.query = "is_official"), // Is official
     18 : optional bool IsRecommend (api.query = "is_recommend"), // Is recommended
 
-    19 : optional list<product_common.ProductEntityType> EntityTypes ( api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
+    19 : optional string EntityTypes ( api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
     20 : optional product_common.PluginType PluginType (agw.key = "plugin_type"), // Plugin type
     21 : optional product_common.ProductPaidType ProductPaidType (agw.key = "product_paid_type"), // Product paid type
 
@@ -77,7 +77,7 @@ struct SearchSuggestRequest {
     2: optional product_common.ProductEntityType EntityType (api.query = "entity_type"), // Optional, defaults to bot recommendation if not provided
     3: optional i32 PageNum (api.query = "page_num"),
     4: optional i32 PageSize (api.query = "page_size"),
-    5: optional list<product_common.ProductEntityType> EntityTypes (api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
+    5: optional string EntityTypes (api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
 
     255: optional base.Base                        Base                                  ,
 }

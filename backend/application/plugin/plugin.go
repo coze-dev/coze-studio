@@ -405,7 +405,7 @@ func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req 
 		PageNum:     ptr.Of(req.PageNum),
 		PageSize:    ptr.Of(req.PageSize),
 		Keyword:     ptr.Of(req.Keyword),
-		EntityTypes: req.EntityTypes,
+		EntityTypes: p.convertEntityTypesStrToSlice(*req.EntityTypes),
 		CategoryIDs: req.CategoryIDs,
 		IsOfficial:  req.IsOfficial,
 		PluginType:  req.PluginType,
@@ -445,12 +445,27 @@ func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req 
 	}, nil
 }
 
+func (p *PluginApplicationService) convertEntityTypesStrToSlice(entityTypesStr string) []productCommon.ProductEntityType {
+	var entityTypes []productCommon.ProductEntityType
+	if entityTypesStr != "" {
+		typeStrs := strings.Split(entityTypesStr, ",")
+		for _, typeStr := range typeStrs {
+			typeStr = strings.TrimSpace(typeStr)
+			if typeStr != "" {
+				if entityType, err := productCommon.ProductEntityTypeFromString(typeStr); err == nil {
+					entityTypes = append(entityTypes, entityType)
+				}
+			}
+		}
+	}
+	return entityTypes
+}
 func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req *productAPI.SearchSuggestRequest) (resp *productAPI.SearchSuggestResponse, err error) {
 	domainResp, err := p.getSaasPluginList(ctx, &dto.ListSaasPluginProductsRequest{
 		PageNum:     req.PageNum,
 		PageSize:    req.PageSize,
 		Keyword:     req.Keyword,
-		EntityTypes: req.EntityTypes,
+		EntityTypes: p.convertEntityTypesStrToSlice(*req.EntityTypes),
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts for suggestions failed: %v", err)
