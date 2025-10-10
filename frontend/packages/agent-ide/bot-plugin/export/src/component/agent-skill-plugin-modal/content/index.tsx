@@ -200,6 +200,7 @@ export const PluginModalContent: FC<PluginModalContentProps> = ({
                       ...item?.pluginInfo,
                       id: pluginId,
                       listed_at: item?.productInfo?.listed_at,
+                      entity_type: item?.productInfo?.entity_type,
                       plugin_apis: sortBy(
                         item?.pluginInfo?.plugin_apis,
                         p => p.name,

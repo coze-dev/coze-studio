@@ -15,8 +15,8 @@
  */
 
 import semver from 'semver';
-import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { type ApiNodeDataDTO } from '@coze-workflow/nodes';
+import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { BlockInput } from '@coze-workflow/base';
 
 interface PluginApi {
@@ -29,16 +29,24 @@ interface PluginApi {
   plugin_product_status: number;
   version_name?: string;
   version_ts?: string;
+  entity_type?: number;
 }
 
 export const createApiNodeInfo = (
   apiParams: Partial<PluginApi> | undefined,
   templateIcon?: string,
 ): ApiNodeDataDTO => {
-  const { name, plugin_name, api_id, plugin_id, desc, version_ts } =
-    apiParams || {};
+  const {
+    name,
+    plugin_name,
+    api_id,
+    plugin_id,
+    desc,
+    version_ts,
+    entity_type,
+  } = apiParams || {};
 
-  return {
+  const result: ApiNodeDataDTO = {
     data: {
       nodeMeta: {
         title: name,
@@ -59,6 +67,17 @@ export const createApiNodeInfo = (
       },
     },
   };
+
+  // SaaS plugin entity_type is 901
+  // todo zxh 这里需要修改 901 为枚举 ProductEntityType
+  const isFromSaaSPlugin = entity_type === 901;
+
+  // 开源版本，如果选择来自 Coze.cn 插件，设置 pluginSource 为 1
+  if (isFromSaaSPlugin && IS_OPEN_SOURCE) {
+    result.data.inputs.pluginSource = 1;
+  }
+
+  return result;
 };
 
 export const createSubWorkflowNodeInfo = ({

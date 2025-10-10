@@ -99,6 +99,7 @@ export interface ApiNodeDataDTO {
       apiParam: BlockInput[];
       inputParameters?: BlockInput[];
       inputDefs?: DTODefine.InputVariableDTO[];
+      pluginSource?: number;
       batch?: {
         batchEnable: boolean;
         batchSize: number;
