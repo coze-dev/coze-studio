@@ -584,7 +584,7 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 		}, nil
 	}
 
-	_, err = p.userSVC.GetSaasUserInfo(ctx)
+	userInfo, err := p.userSVC.GetSaasUserInfo(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
 		return &productAPI.GetProductCallInfoResponse{
@@ -605,6 +605,10 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 	// Build response data
 	data := &productAPI.GetProductCallInfoData{
 		UserLevel: productAPI.UserLevel_Free,
+		UserInfo: &productAPI.UserInfo{
+			Name: userInfo.NickName,
+			Icon: userInfo.AvatarURL,
+		},
 	}
 
 	data.CallCountLimit = &productAPI.ProductCallCountLimit{

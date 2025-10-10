@@ -81,6 +81,6 @@ type User interface {
 }
 
 type SaasUserProvider interface {
-	GetSaasUserInfo(ctx context.Context) (user *entity.User, err error)
+	GetSaasUserInfo(ctx context.Context) (user *entity.SaasUserData, err error)
 	GetUserBenefit(ctx context.Context) (benefit *entity.UserBenefit, err error)
 }
