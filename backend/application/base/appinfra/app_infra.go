@@ -24,6 +24,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/bizpkg/buildinmodel"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/infra/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/cache/impl/redis"
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
@@ -52,7 +53,7 @@ type AppDependencies struct {
 	IDGenSVC                 idgen.IDGenerator
 	ESClient                 es.Client
 	ImageXClient             imagex.ImageX
-	TOSClient                storage.Storage
+	OSS                      storage.Storage
 	ResourceEventProducer    eventbus.Producer
 	AppEventProducer         eventbus.Producer
 	KnowledgeEventProducer   eventbus.Producer
@@ -70,7 +71,7 @@ type AppDependencies struct {
 func Init(ctx context.Context) (*AppDependencies, error) {
 	deps := &AppDependencies{}
 	var err error
-	deps.TOSClient, err = storage.New(ctx)
+	deps.OSS, err = storage.New(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("init tos client failed, err=%w", err)
 	}
@@ -79,6 +80,8 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 	if err != nil {
 		return nil, fmt.Errorf("init db failed, err=%w", err)
 	}
+
+	config.Init(deps.DB, deps.OSS) // Depends on MySQL and OSS initialization
 
 	deps.CacheCli = redis.New()
 
@@ -143,7 +146,7 @@ func Init(ctx context.Context) (*AppDependencies, error) {
 		logs.CtxWarnf(ctx, "workflow builtin chat model for knowledge recall not configured")
 	}
 
-	deps.ParserManager, err = parser.New(ctx, deps.TOSClient, deps.OCR)
+	deps.ParserManager, err = parser.New(ctx, deps.OSS, deps.OCR)
 	if err != nil {
 		return nil, fmt.Errorf("init parser manager failed, err=%w", err)
 	}

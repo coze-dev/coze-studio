@@ -34,7 +34,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/chatmodel"
 	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/jsoncache"
+	"github.com/coze-dev/coze-studio/backend/pkg/kvstore"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -50,7 +50,7 @@ type Components struct {
 
 	AgentDraftRepo   repository.SingleAgentDraftRepo
 	AgentVersionRepo repository.SingleAgentVersionRepo
-	PublishInfoRepo  *jsoncache.JsonCache[entity.PublishInfo]
+	PublishInfoRepo  *kvstore.KVStore[entity.PublishInfo]
 	CounterRepo      repository.CounterRepository
 
 	CPStore compose.CheckPointStore

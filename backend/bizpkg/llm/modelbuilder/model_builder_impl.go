@@ -14,17 +14,21 @@
  * limitations under the License.
  */
 
-package env
+package modelbuilder
 
 import (
-	"os"
-	"strings"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 )
 
-func GetServerHost() string {
-	host := os.Getenv("SERVER_HOST")
-	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {
-		return host
+func SupportProtocol(modelClass developer_api.ModelClass) bool {
+	if modelClass == developer_api.ModelClass_GPT ||
+		modelClass == developer_api.ModelClass_Claude ||
+		modelClass == developer_api.ModelClass_DeekSeek ||
+		modelClass == developer_api.ModelClass_SEED ||
+		modelClass == developer_api.ModelClass_Gemini ||
+		modelClass == developer_api.ModelClass_Llama ||
+		modelClass == developer_api.ModelClass_QWen {
+		return true
 	}
-	return "https://" + host
+	return false
 }
