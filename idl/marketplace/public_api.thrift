@@ -45,30 +45,30 @@ struct SearchProductRequest{
 }
 
 struct SearchProductResponse{
-    1  : required i32                       Code     (agw.key = "code")   ,
-    2  : required string                    Message  (agw.key = "message"),
-    3  : optional SearchProductResponseData Data     (agw.key = "data")   ,
+    1  : required i32                       Code     (agw.key = "code",api.body = "code")   ,
+    2  : required string                    Message  (agw.key = "message",api.body = "message"),
+    3  : optional SearchProductResponseData Data     (agw.key = "data",api.body = "data")   ,
     255: optional base.BaseResp             BaseResp                      ,
 }
 
 struct SearchProductResponseData{
-    1: optional list<ProductInfo> Products (agw.key = "products"),
-    2: optional i32               Total    (agw.key = "total")   ,
-    3: optional bool              HasMore  (agw.key = "has_more"),
-    4: optional map<product_common.ProductEntityType, i32> EntityTotal (agw.key = "entity_total"), // Entity count
+    1: optional list<ProductInfo> Products (agw.key = "products",api.body = "products"),
+    2: optional i32               Total    (agw.key = "total",api.body = "total")   ,
+    3: optional bool              HasMore  (agw.key = "has_more",api.body = "has_more"),
+    4: optional map<product_common.ProductEntityType, i32> EntityTotal (agw.key = "entity_total",api.body = "entity_total"), // Entity count
 }
 
 struct SearchSuggestResponse{
-    1  : required i32                       Code     (agw.key = "code")   ,
-    2  : required string                    Message  (agw.key = "message"),
-    3  : optional SearchSuggestResponseData Data     (agw.key = "data")   ,
+    1  : required i32                       Code     (agw.key = "code",api.body = "code")   ,
+    2  : required string                    Message  (agw.key = "message",api.body = "message"),
+    3  : optional SearchSuggestResponseData Data     (agw.key = "data",api.body = "data")   ,
     255: optional base.BaseResp             BaseResp                      ,
 }
 
 struct SearchSuggestResponseData{
-    1: optional list<ProductMetaInfo> Suggestions (agw.key = "suggestions"), // Deprecated
-    2: optional bool HasMore (agw.key = "has_more"),
-    3: optional list<ProductInfo> SuggestionV2(agw.key = "suggestion_v2"),
+    1: optional list<ProductMetaInfo> Suggestions (agw.key = "suggestions",api.body = "suggestions"), // Deprecated
+    2: optional bool HasMore (agw.key = "has_more",api.body = "has_more"),
+    3: optional list<ProductInfo> SuggestionV2(agw.key = "suggestion_v2",api.body = "suggestion_v2"),
 }
 
 
@@ -648,14 +648,14 @@ struct GetProductCategoryListRequest {
 }
 
 struct GetProductCategoryListData{
-    1: required product_common.ProductEntityType EntityType (agw.key = "entity_type"),
-    2: optional list<ProductCategory>            Categories (agw.key = "categories") ,
+    1: required product_common.ProductEntityType EntityType (agw.key = "entity_type", api.body= "entity_type"),
+    2: optional list<ProductCategory>            Categories (agw.key = "categories", api.body= "categories") ,
 }
 
 struct GetProductCategoryListResponse {
-    1  : required i32                        Code     (agw.key = "code")   ,
-    2  : required string                     Message  (agw.key = "message"),
-    3  :          GetProductCategoryListData Data     (agw.key = "data")   ,
+    1  : required i32                        Code     (agw.key = "code", api.body= "code")   ,
+    2  : required string                     Message  (agw.key = "message", api.body= "message"),
+    3  :          GetProductCategoryListData Data     (agw.key = "data", api.body= "data")   ,
 
     255: optional base.BaseResp              BaseResp                      ,
 }

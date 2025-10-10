@@ -331,7 +331,7 @@ func PublicGetProductCategoryList(ctx context.Context, c *app.RequestContext) {
 	}
 
 	var resp *product_public_api.GetProductCategoryListResponse
-
+	req.EntityType = product_common.ProductEntityType_SaasPlugin
 	switch req.GetEntityType() {
 	case product_common.ProductEntityType_SaasPlugin:
 		resp, err = plugin.PluginApplicationSVC.GetSaasProductCategoryList(ctx, &req)
