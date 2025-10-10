@@ -232,6 +232,26 @@ type JsonSchema struct {
 	Extra map[string]*JsonSchema `json:"-"`
 }
 
+
+type SaasPluginToolsListResponse struct {
+	Items []SaasPluginToolsList `json:"items"`
+}
+type SaasPluginToolsList struct {
+	Tools []Tools `json:"tools"`
+	PluginID string `json:"plugin_id"`
+	McpJSON  string `json:"mcp_json"`
+}
+
+type Tools struct {
+	ToolID       string                `json:"tool_id"`
+	Description  string                `json:"description"`
+	InputSchema  *JsonSchema           `json:"inputSchema"`
+	Name         string                `json:"name"`
+	OutputSchema *JsonSchema           `json:"outputSchema"`
+}
+
+
+
 // stringToJsonSchemaType converts a string to JsonSchemaType
 func stringToJsonSchemaType(s string) JsonSchemaType {
 	switch s {
