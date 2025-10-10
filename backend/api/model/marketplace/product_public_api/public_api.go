@@ -370,7 +370,7 @@ type SearchProductRequest struct {
 	// Is recommended
 	IsRecommend *bool `thrift:"IsRecommend,18,optional" json:"IsRecommend,omitempty" query:"is_recommend"`
 	// Product type list, use this parameter first, then EntityType
-	EntityTypes []product_common.ProductEntityType `thrift:"EntityTypes,19,optional" json:"EntityTypes,omitempty" query:"entity_types"`
+	EntityTypes *string `thrift:"EntityTypes,19,optional" json:"EntityTypes,omitempty" query:"entity_types"`
 	// Plugin type
 	PluginType *product_common.PluginType `thrift:"PluginType,20,optional" form:"PluginType" json:"PluginType,omitempty" query:"PluginType"`
 	// Product paid type
@@ -487,13 +487,13 @@ func (p *SearchProductRequest) GetIsRecommend() (v bool) {
 	return *p.IsRecommend
 }
 
-var SearchProductRequest_EntityTypes_DEFAULT []product_common.ProductEntityType
+var SearchProductRequest_EntityTypes_DEFAULT string
 
-func (p *SearchProductRequest) GetEntityTypes() (v []product_common.ProductEntityType) {
+func (p *SearchProductRequest) GetEntityTypes() (v string) {
 	if !p.IsSetEntityTypes() {
 		return SearchProductRequest_EntityTypes_DEFAULT
 	}
-	return p.EntityTypes
+	return *p.EntityTypes
 }
 
 var SearchProductRequest_PluginType_DEFAULT product_common.PluginType
@@ -728,7 +728,7 @@ func (p *SearchProductRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 19:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField19(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -1000,24 +1000,12 @@ func (p *SearchProductRequest) ReadField18(iprot thrift.TProtocol) error {
 	return nil
 }
 func (p *SearchProductRequest) ReadField19(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]product_common.ProductEntityType, 0, size)
-	for i := 0; i < size; i++ {
 
-		var _elem product_common.ProductEntityType
-		if v, err := iprot.ReadI32(); err != nil {
-			return err
-		} else {
-			_elem = product_common.ProductEntityType(v)
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
+	} else {
+		_field = &v
 	}
 	p.EntityTypes = _field
 	return nil
@@ -1409,18 +1397,10 @@ WriteFieldEndError:
 }
 func (p *SearchProductRequest) writeField19(oprot thrift.TProtocol) (err error) {
 	if p.IsSetEntityTypes() {
-		if err = oprot.WriteFieldBegin("EntityTypes", thrift.LIST, 19); err != nil {
+		if err = oprot.WriteFieldBegin("EntityTypes", thrift.STRING, 19); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I32, len(p.EntityTypes)); err != nil {
-			return err
-		}
-		for _, v := range p.EntityTypes {
-			if err := oprot.WriteI32(int32(v)); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
+		if err := oprot.WriteString(*p.EntityTypes); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
@@ -2784,8 +2764,8 @@ type SearchSuggestRequest struct {
 	PageNum    *int32                            `thrift:"PageNum,3,optional" json:"PageNum,omitempty" query:"page_num"`
 	PageSize   *int32                            `thrift:"PageSize,4,optional" json:"PageSize,omitempty" query:"page_size"`
 	// Product type list, use this parameter first, then EntityType
-	EntityTypes []product_common.ProductEntityType `thrift:"EntityTypes,5,optional" json:"EntityTypes,omitempty" query:"entity_types"`
-	Base        *base.Base                         `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
+	EntityTypes *string    `thrift:"EntityTypes,5,optional" json:"EntityTypes,omitempty" query:"entity_types"`
+	Base        *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
 
 func NewSearchSuggestRequest() *SearchSuggestRequest {
@@ -2831,13 +2811,13 @@ func (p *SearchSuggestRequest) GetPageSize() (v int32) {
 	return *p.PageSize
 }
 
-var SearchSuggestRequest_EntityTypes_DEFAULT []product_common.ProductEntityType
+var SearchSuggestRequest_EntityTypes_DEFAULT string
 
-func (p *SearchSuggestRequest) GetEntityTypes() (v []product_common.ProductEntityType) {
+func (p *SearchSuggestRequest) GetEntityTypes() (v string) {
 	if !p.IsSetEntityTypes() {
 		return SearchSuggestRequest_EntityTypes_DEFAULT
 	}
-	return p.EntityTypes
+	return *p.EntityTypes
 }
 
 var SearchSuggestRequest_Base_DEFAULT *base.Base
@@ -2933,7 +2913,7 @@ func (p *SearchSuggestRequest) Read(iprot thrift.TProtocol) (err error) {
 				goto SkipFieldError
 			}
 		case 5:
-			if fieldTypeId == thrift.LIST {
+			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
@@ -3023,24 +3003,12 @@ func (p *SearchSuggestRequest) ReadField4(iprot thrift.TProtocol) error {
 	return nil
 }
 func (p *SearchSuggestRequest) ReadField5(iprot thrift.TProtocol) error {
-	_, size, err := iprot.ReadListBegin()
-	if err != nil {
-		return err
-	}
-	_field := make([]product_common.ProductEntityType, 0, size)
-	for i := 0; i < size; i++ {
 
-		var _elem product_common.ProductEntityType
-		if v, err := iprot.ReadI32(); err != nil {
-			return err
-		} else {
-			_elem = product_common.ProductEntityType(v)
-		}
-
-		_field = append(_field, _elem)
-	}
-	if err := iprot.ReadListEnd(); err != nil {
+	var _field *string
+	if v, err := iprot.ReadString(); err != nil {
 		return err
+	} else {
+		_field = &v
 	}
 	p.EntityTypes = _field
 	return nil
@@ -3176,18 +3144,10 @@ WriteFieldEndError:
 }
 func (p *SearchSuggestRequest) writeField5(oprot thrift.TProtocol) (err error) {
 	if p.IsSetEntityTypes() {
-		if err = oprot.WriteFieldBegin("EntityTypes", thrift.LIST, 5); err != nil {
+		if err = oprot.WriteFieldBegin("EntityTypes", thrift.STRING, 5); err != nil {
 			goto WriteFieldBeginError
 		}
-		if err := oprot.WriteListBegin(thrift.I32, len(p.EntityTypes)); err != nil {
-			return err
-		}
-		for _, v := range p.EntityTypes {
-			if err := oprot.WriteI32(int32(v)); err != nil {
-				return err
-			}
-		}
-		if err := oprot.WriteListEnd(); err != nil {
+		if err := oprot.WriteString(*p.EntityTypes); err != nil {
 			return err
 		}
 		if err = oprot.WriteFieldEnd(); err != nil {
