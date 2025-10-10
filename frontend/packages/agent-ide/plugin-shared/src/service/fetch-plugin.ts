@@ -157,7 +157,7 @@ async function getPluginFromMarket(
   // @ts-expect-error -- linter-disable-autofix
   commParams,
 ): Promise<RequestServiceResp<PluginContentListItem> | undefined> {
-  const { nextPage } = commParams;
+  const { nextPage, isCoze } = commParams;
 
   const {
     search,
@@ -170,7 +170,9 @@ async function getPluginFromMarket(
 
   const res = await ProductApi.PublicGetProductList(
     {
-      entity_type: ProductEntityType.Plugin,
+      entity_type: isCoze
+        ? ProductEntityType.SaasPlugin
+        : ProductEntityType.Plugin,
       category_id: type === 'recommend' || IS_OPEN_SOURCE ? undefined : type,
       sort_type: orderByPublic,
       page_num: nextPage,

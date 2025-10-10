@@ -147,6 +147,43 @@ export interface BotVoiceInfo {
   is_support_voice_call?: boolean;
 }
 
+export interface BuildLeadsFormField {
+  /** 字段名 */
+  name?: string;
+  /** 字段类型 */
+  type?: string;
+  /** 字段标签 */
+  label?: string;
+  /** 占位符 */
+  placeholder?: string;
+  /** 是否必填 */
+  required?: boolean;
+  /** 下拉选择选项 */
+  options?: Array<string>;
+  /** 最大长度 */
+  max_length?: number;
+  /** 最小长度 */
+  min_length?: number;
+  /** 可见条件 */
+  visible?: BuildLeadsFormFieldVisible;
+}
+
+export interface BuildLeadsFormFieldVisible {
+  /** 字段名 */
+  field?: string;
+  /** 操作符 */
+  op?: string;
+  /** 操作值 */
+  value?: string;
+}
+
+export interface BuildLeadsFormStep {
+  /** 步骤名 */
+  name?: string;
+  /** 表单字段 */
+  fields?: Array<BuildLeadsFormField>;
+}
+
 export interface CardConfig {
   wide_screen_mode?: boolean;
   enable_forward?: boolean;
@@ -355,6 +392,22 @@ export interface GenerateProductListingInfoResponse {
   code: number;
   message: string;
   data?: GenerateProductListingInfoData;
+}
+
+export interface GetBuildLeadsFormSchemaRequest {
+  /** 商品ID */
+  product_id?: string;
+}
+
+export interface GetBuildLeadsFormSchemaResponse {
+  code: number;
+  message: string;
+  data?: GetBuildLeadsFormSchemaResponseData;
+}
+
+export interface GetBuildLeadsFormSchemaResponseData {
+  /** 表单步骤 */
+  steps?: Array<BuildLeadsFormStep>;
 }
 
 export interface GetCurrentFeaturedProductData {
@@ -598,6 +651,7 @@ export interface GetProductDetailData {
   can_create_user_extra_benefit?: boolean;
   /** 用户是否有扩容权限（插件详情页，控制扩容按钮是否置灰）：免费版和个人进阶版 - true（跳转到付费墙）；团队版和企业版 - 接入权限校验 */
   has_create_user_extra_benefit_permission?: boolean;
+  build_setting?: product_common.BuildSetting;
   plugin_extra?: PluginExtraInfo;
   bot_extra?: BotExtraInfo;
   workflow_extra?: WorkflowExtraInfo;
@@ -1196,6 +1250,7 @@ export interface ProductInfo {
   product_availability?: product_common.ProductAvailability;
   /** 社区付费插件 */
   community_paid_plugins?: Array<CommunityPaidPlugin>;
+  build_setting?: product_common.BuildSetting;
 }
 
 export interface ProductLabel {
@@ -1436,6 +1491,22 @@ export interface SocialScenePlayerInfo {
   id?: string;
   name?: string;
   role_type?: product_common.SocialSceneRoleType;
+}
+
+export interface SubmitBuildLeadsFormRequest {
+  /** 验证码ticket */
+  verify_ticket?: string;
+  /** 手机号 */
+  phone?: string;
+  /** 表单数据 */
+  form_data?: Record<string, string>;
+  /** 商品ID */
+  product_id?: string;
+}
+
+export interface SubmitBuildLeadsFormResponse {
+  code: number;
+  message: string;
 }
 
 export interface SupportLanguageData {

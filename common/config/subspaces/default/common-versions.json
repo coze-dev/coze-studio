@@ -2,10 +2,10 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/common-versions.schema.json",
   "ensureConsistentVersions": true,
   "preferredVersions": {
-    "@coze-arch/coze-design": "0.0.6-alpha.eec92c"
+    "@coze-arch/coze-design": "0.0.7-alpha.985c0d"
   },
   "allowedAlternativeVersions": {
-    "@coze-arch/coze-design": ["0.0.6-alpha.eec92c"],
+    "@coze-arch/coze-design": ["0.0.7-alpha.985c0d"],
     "@rspack/cli": ["0.6.0"],
     "@rspack/core": ["0.6.0", ">=0.7"],
     "@rspack/plugin-react-refresh": ["0.6.0"],

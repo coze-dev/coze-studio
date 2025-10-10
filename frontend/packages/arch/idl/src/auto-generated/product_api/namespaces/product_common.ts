@@ -145,6 +145,8 @@ export enum ProductEntityType {
   Common = 99,
   /** 专题（兼容之前的设计） */
   Topic = 101,
+  /** 开源版本区分是否是saas插件使用 */
+  SaasPlugin = 901,
 }
 
 export enum ProductListingPeriodType {
@@ -317,6 +319,11 @@ export enum WorkflowNodeType {
   Database = 12,
   /** 消息 */
   Message = 13,
+}
+
+export interface BuildSetting {
+  /** 支持线索提交 */
+  support_build_leads?: boolean;
 }
 
 export interface CapacityExtension {
