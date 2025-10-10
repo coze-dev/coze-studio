@@ -28165,6 +28165,238 @@ func (p *ProductCallRateLimit) String() string {
 
 }
 
+type UserInfo struct {
+	// User name
+	Name string `thrift:"name,1" form:"name" json:"name" query:"name"`
+	// User icon
+	Icon string `thrift:"icon,2" form:"icon" json:"icon" query:"icon"`
+	// User role
+	Role string `thrift:"role,3" form:"role" json:"role" query:"role"`
+}
+
+func NewUserInfo() *UserInfo {
+	return &UserInfo{}
+}
+
+func (p *UserInfo) InitDefault() {
+}
+
+func (p *UserInfo) GetName() (v string) {
+	return p.Name
+}
+
+func (p *UserInfo) GetIcon() (v string) {
+	return p.Icon
+}
+
+func (p *UserInfo) GetRole() (v string) {
+	return p.Role
+}
+
+var fieldIDToName_UserInfo = map[int16]string{
+	1: "name",
+	2: "icon",
+	3: "role",
+}
+
+func (p *UserInfo) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+
+		switch fieldId {
+		case 1:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 2:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField2(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 3:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		default:
+			if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+ReadFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d '%s' error: ", p, fieldId, fieldIDToName_UserInfo[fieldId]), err)
+SkipFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T field %d skip type %d error: ", p, fieldId, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *UserInfo) ReadField1(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Name = _field
+	return nil
+}
+func (p *UserInfo) ReadField2(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Icon = _field
+	return nil
+}
+func (p *UserInfo) ReadField3(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Role = _field
+	return nil
+}
+
+func (p *UserInfo) Write(oprot thrift.TProtocol) (err error) {
+	var fieldId int16
+	if err = oprot.WriteStructBegin("UserInfo"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+		if err = p.writeField1(oprot); err != nil {
+			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField2(oprot); err != nil {
+			fieldId = 2
+			goto WriteFieldError
+		}
+		if err = p.writeField3(oprot); err != nil {
+			fieldId = 3
+			goto WriteFieldError
+		}
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldError:
+	return thrift.PrependError(fmt.Sprintf("%T write field %d error: ", p, fieldId), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *UserInfo) writeField1(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("name", thrift.STRING, 1); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Name); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *UserInfo) writeField2(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("icon", thrift.STRING, 2); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Icon); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 2 end error: ", p), err)
+}
+func (p *UserInfo) writeField3(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("role", thrift.STRING, 3); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Role); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+
+func (p *UserInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("UserInfo(%+v)", *p)
+
+}
+
 type GetProductCallInfoData struct {
 	// mcp configuration json string
 	McpJSON string `thrift:"mcp_json,1" form:"mcp_json" json:"mcp_json" query:"mcp_json"`
@@ -28174,6 +28406,8 @@ type GetProductCallInfoData struct {
 	CallCountLimit *ProductCallCountLimit `thrift:"call_count_limit,3" form:"call_count_limit" json:"call_count_limit" query:"call_count_limit"`
 	// Plugin tool call rate limit
 	CallRateLimit *ProductCallRateLimit `thrift:"call_rate_limit,4" form:"call_rate_limit" json:"call_rate_limit" query:"call_rate_limit"`
+	// User info
+	UserInfo *UserInfo `thrift:"user_info,5" form:"user_info" json:"user_info" query:"user_info"`
 }
 
 func NewGetProductCallInfoData() *GetProductCallInfoData {
@@ -28209,11 +28443,21 @@ func (p *GetProductCallInfoData) GetCallRateLimit() (v *ProductCallRateLimit) {
 	return p.CallRateLimit
 }
 
+var GetProductCallInfoData_UserInfo_DEFAULT *UserInfo
+
+func (p *GetProductCallInfoData) GetUserInfo() (v *UserInfo) {
+	if !p.IsSetUserInfo() {
+		return GetProductCallInfoData_UserInfo_DEFAULT
+	}
+	return p.UserInfo
+}
+
 var fieldIDToName_GetProductCallInfoData = map[int16]string{
 	1: "mcp_json",
 	2: "user_level",
 	3: "call_count_limit",
 	4: "call_rate_limit",
+	5: "user_info",
 }
 
 func (p *GetProductCallInfoData) IsSetCallCountLimit() bool {
@@ -28222,6 +28466,10 @@ func (p *GetProductCallInfoData) IsSetCallCountLimit() bool {
 
 func (p *GetProductCallInfoData) IsSetCallRateLimit() bool {
 	return p.CallRateLimit != nil
+}
+
+func (p *GetProductCallInfoData) IsSetUserInfo() bool {
+	return p.UserInfo != nil
 }
 
 func (p *GetProductCallInfoData) Read(iprot thrift.TProtocol) (err error) {
@@ -28269,6 +28517,14 @@ func (p *GetProductCallInfoData) Read(iprot thrift.TProtocol) (err error) {
 		case 4:
 			if fieldTypeId == thrift.STRUCT {
 				if err = p.ReadField4(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 5:
+			if fieldTypeId == thrift.STRUCT {
+				if err = p.ReadField5(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -28341,6 +28597,14 @@ func (p *GetProductCallInfoData) ReadField4(iprot thrift.TProtocol) error {
 	p.CallRateLimit = _field
 	return nil
 }
+func (p *GetProductCallInfoData) ReadField5(iprot thrift.TProtocol) error {
+	_field := NewUserInfo()
+	if err := _field.Read(iprot); err != nil {
+		return err
+	}
+	p.UserInfo = _field
+	return nil
+}
 
 func (p *GetProductCallInfoData) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -28362,6 +28626,10 @@ func (p *GetProductCallInfoData) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField4(oprot); err != nil {
 			fieldId = 4
+			goto WriteFieldError
+		}
+		if err = p.writeField5(oprot); err != nil {
+			fieldId = 5
 			goto WriteFieldError
 		}
 	}
@@ -28446,6 +28714,22 @@ WriteFieldBeginError:
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
+func (p *GetProductCallInfoData) writeField5(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("user_info", thrift.STRUCT, 5); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := p.UserInfo.Write(oprot); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
+}
 
 func (p *GetProductCallInfoData) String() string {
 	if p == nil {
@@ -28456,9 +28740,9 @@ func (p *GetProductCallInfoData) String() string {
 }
 
 type GetProductCallInfoResponse struct {
-	Code     int32                   `thrift:"Code,1,required" form:"Code,required" json:"Code,required" query:"Code,required"`
-	Message  string                  `thrift:"Message,2,required" form:"Message,required" json:"Message,required" query:"Message,required"`
-	Data     *GetProductCallInfoData `thrift:"Data,3,optional" form:"Data" json:"Data,omitempty" query:"Data"`
+	Code     int32                   `thrift:"Code,1,required" form:"code,required" json:"code,required"`
+	Message  string                  `thrift:"Message,2,required" form:"message,required" json:"message,required"`
+	Data     *GetProductCallInfoData `thrift:"Data,3,optional" form:"data" json:"data,omitempty"`
 	BaseResp *base.BaseResp          `thrift:"BaseResp,255,optional" form:"BaseResp" json:"BaseResp,omitempty" query:"BaseResp"`
 }
 

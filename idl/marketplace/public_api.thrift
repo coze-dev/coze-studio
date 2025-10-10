@@ -697,17 +697,24 @@ struct ProductCallRateLimit {
     2: map<UserLevel, ProductCallRateLimit> call_rate_limit_by_user_level, // Plugin tool call rate limit by user level
 }
 
+struct UserInfo {
+    1: string name, // User name
+    2: string icon, // User icon
+    3: string role, // User role
+}
+
 struct GetProductCallInfoData {
     1: string mcp_json, // mcp configuration json string
     2: UserLevel user_level, // Payment level
     3: ProductCallCountLimit call_count_limit, // Plugin tool call count limit
     4: ProductCallRateLimit call_rate_limit, // Plugin tool call rate limit
+    5: UserInfo user_info, // User info
 }
 
 struct GetProductCallInfoResponse {
-    1  : required i32                        Code     (agw.key = "code")   ,
-    2  : required string                     Message  (agw.key = "message"),
-    3  : optional GetProductCallInfoData    Data     (agw.key = "data")   ,
+    1  : required i32                        Code     (agw.key = "code", api.body= "code")   ,
+    2  : required string                     Message  (agw.key = "message", api.body= "message"),
+    3  : optional GetProductCallInfoData    Data     (agw.key = "data", api.body= "data")   ,
 
     255: optional base.BaseResp      BaseResp
 }

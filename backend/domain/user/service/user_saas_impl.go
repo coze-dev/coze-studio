@@ -19,7 +19,6 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -41,7 +40,7 @@ func NewCozeUserService() *CozeUserService {
 }
 
 // GetUserInfo calls the /v1/users/me endpoint
-func (s *CozeUserService) GetUserInfo(ctx context.Context) (*entity.User, error) {
+func (s *CozeUserService) GetUserInfo(ctx context.Context) (*entity.SaasUserData, error) {
 	resp, err := s.client.Get(ctx, "/v1/users/me")
 	if err != nil {
 		logs.CtxErrorf(ctx, "failed to call GetUserInfo API: %v", err)
@@ -49,31 +48,19 @@ func (s *CozeUserService) GetUserInfo(ctx context.Context) (*entity.User, error)
 	}
 
 	// Parse the data field
-	var userData struct {
-		UserID    string `json:"user_id"`
-		UserName  string `json:"user_name"`
-		NickName  string `json:"nick_name"`
-		AvatarURL string `json:"avatar_url"`
-	}
+	var userData entity.SaasUserData
 
 	if err := json.Unmarshal(resp.Data, &userData); err != nil {
 		logs.CtxErrorf(ctx, "failed to parse user data: %v", err)
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "data parse failed"))
 	}
 
-	// Convert user_id from string to int64
-	userIDInt64, err := strconv.ParseInt(userData.UserID, 10, 64)
-	if err != nil {
-		logs.CtxErrorf(ctx, "failed to parse user_id: %v", err)
-		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "invalid user_id format"))
-	}
-
-	// Map to entity.User
-	return &entity.User{
-		UserID:     userIDInt64,
-		Name:       userData.NickName,  // nick_name maps to Name (nickname)
-		UniqueName: userData.UserName,  // user_name maps to UniqueName
-		IconURL:    userData.AvatarURL, // avatar_url maps to IconURL
+	// Map to entity.SaasUserData
+	return &entity.SaasUserData{
+		UserID:    userData.UserID,
+		UserName:  userData.UserName,
+		NickName:  userData.NickName,
+		AvatarURL: userData.AvatarURL,
 	}, nil
 }
 
@@ -157,7 +144,7 @@ func getCozeUserService() *CozeUserService {
 	return cozeUserService
 }
 
-func (u *userImpl) GetSaasUserInfo(ctx context.Context) (*entity.User, error) {
+func (u *userImpl) GetSaasUserInfo(ctx context.Context) (*entity.SaasUserData, error) {
 	return getCozeUserService().GetUserInfo(ctx)
 }
 
