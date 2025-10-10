@@ -326,6 +326,12 @@ func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductIn
 			Description: plugin.GetDesc(),
 			IconURL:     plugin.GetIconURI(),
 			ListedAt:    plugin.CreatedAt,
+			EntityType:  productCommon.ProductEntityType_Plugin,
+			IsOfficial:  true,
+			Status:      productCommon.ProductStatus_Listed,
+			UserInfo: &productCommon.UserInfo{
+				Name: "Coze Official",
+			},
 		},
 	}
 }
@@ -344,6 +350,21 @@ func (p *PluginApplicationService) convertPluginsToProductInfos(ctx context.Cont
 		}
 		pi := convertPluginToProductInfo(plugin)
 		pi.PluginExtra = pExtra
+		products = append(products, pi)
+	}
+	return products
+}
+func (p *PluginApplicationService) convertPluginsToMetaInfos(ctx context.Context, plugins []*entity.PluginInfo, tools map[int64][]*entity.ToolInfo) []*productAPI.ProductMetaInfo {
+	products := make([]*productAPI.ProductMetaInfo, 0, len(plugins))
+	for _, plugin := range plugins {
+		pi := &productAPI.ProductMetaInfo{
+			ID:          plugin.ID,
+			Name:        plugin.GetName(),
+			Description: plugin.GetDesc(),
+			IconURL:     plugin.GetIconURI(),
+			ListedAt:    plugin.CreatedAt,
+			EntityID:    plugin.ID,
+		}
 		products = append(products, pi)
 	}
 	return products
@@ -402,10 +423,15 @@ func (p *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, re
 
 func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req *productAPI.SearchProductRequest) (resp *productAPI.SearchProductResponse, err error) {
 	domainResp, err := p.getSaasPluginList(ctx, &dto.ListSaasPluginProductsRequest{
-		PageNum:     ptr.Of(req.PageNum),
-		PageSize:    ptr.Of(req.PageSize),
-		Keyword:     ptr.Of(req.Keyword),
-		EntityTypes: p.convertEntityTypesStrToSlice(*req.EntityTypes),
+		PageNum:  ptr.Of(req.PageNum),
+		PageSize: ptr.Of(req.PageSize),
+		Keyword:  ptr.Of(req.Keyword),
+		EntityTypes: func() []productCommon.ProductEntityType {
+			if req.EntityTypes == nil {
+				return nil
+			}
+			return p.convertEntityTypesStrToSlice(*req.EntityTypes)
+		}(),
 		CategoryIDs: req.CategoryIDs,
 		IsOfficial:  req.IsOfficial,
 		PluginType:  req.PluginType,
@@ -462,11 +488,17 @@ func (p *PluginApplicationService) convertEntityTypesStrToSlice(entityTypesStr s
 }
 func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req *productAPI.SearchSuggestRequest) (resp *productAPI.SearchSuggestResponse, err error) {
 	domainResp, err := p.getSaasPluginList(ctx, &dto.ListSaasPluginProductsRequest{
-		PageNum:     req.PageNum,
-		PageSize:    req.PageSize,
-		Keyword:     req.Keyword,
-		EntityTypes: p.convertEntityTypesStrToSlice(*req.EntityTypes),
+		PageNum:  req.PageNum,
+		PageSize: req.PageSize,
+		Keyword:  req.Keyword,
+		EntityTypes: func() []productCommon.ProductEntityType {
+			if req.EntityTypes == nil {
+				return nil
+			}
+			return p.convertEntityTypesStrToSlice(*req.EntityTypes)
+		}(),
 	})
+
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts for suggestions failed: %v", err)
 		return &productAPI.SearchSuggestResponse{
@@ -497,6 +529,7 @@ func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req 
 		Message: "success",
 		Data: &productAPI.SearchSuggestResponseData{
 			SuggestionV2: suggestionProducts,
+			Suggestions:  p.convertPluginsToMetaInfos(ctx, domainResp.Plugins, tools),
 			HasMore:      ptr.Of(domainResp.HasMore),
 		},
 	}, nil
