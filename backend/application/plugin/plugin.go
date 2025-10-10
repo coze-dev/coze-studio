@@ -327,54 +327,58 @@ func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductIn
 			IconURL:     plugin.GetIconURI(),
 			ListedAt:    plugin.CreatedAt,
 		},
-		PluginExtra: &productAPI.PluginExtraInfo{
-			IsOfficial: plugin.IsOfficial(),
-		},
 	}
 }
 
-// convertPluginsToProductInfos converts a slice of plugins to ProductInfo slice
-func convertPluginsToProductInfos(plugins []*entity.PluginInfo) []*productAPI.ProductInfo {
+func (p *PluginApplicationService) convertPluginsToProductInfos(ctx context.Context, plugins []*entity.PluginInfo, tools map[int64][]*entity.ToolInfo) []*productAPI.ProductInfo {
 	products := make([]*productAPI.ProductInfo, 0, len(plugins))
 	for _, plugin := range plugins {
-		products = append(products, convertPluginToProductInfo(plugin))
+		var pExtra *productAPI.PluginExtraInfo
+		if tool, exist := tools[plugin.ID]; exist {
+			pluginExtra, err := p.buildPluginProductExtraInfo(ctx, plugin, tool)
+			if err != nil {
+				logs.CtxErrorf(ctx, "buildPluginProductExtraInfo failed: %v", err)
+			} else {
+				pExtra = pluginExtra
+			}
+		}
+		pi := convertPluginToProductInfo(plugin)
+		pi.PluginExtra = pExtra
+		products = append(products, pi)
 	}
 	return products
 }
 
-// getSaasPluginList is a common method to get SaaS plugin list from domain service
-func (t *PluginApplicationService) getSaasPluginList(ctx context.Context) ([]*entity.PluginInfo, int64, error) {
-	domainReq := &dto.ListPluginProductsRequest{}
-	domainResp, err := t.DomainSVC.ListSaasPluginProducts(ctx, domainReq)
-	if err != nil {
-		return nil, 0, err
-	}
-	return domainResp.Plugins, domainResp.Total, nil
+func (p *PluginApplicationService) getSaasPluginList(ctx context.Context, domainReq *dto.ListSaasPluginProductsRequest) (*dto.ListPluginProductsResponse, error) {
+	return p.DomainSVC.ListSaasPluginProducts(ctx, domainReq)
 }
 
-// convertPluginsToSuggestions converts plugins to suggestion products with deduplication and limit
-func convertPluginsToSuggestions(plugins []*entity.PluginInfo, limit int) []*productAPI.ProductInfo {
+func (p *PluginApplicationService) getSaasPluginToolsList(ctx context.Context, pluginIDs []int64) (map[int64][]*entity.ToolInfo, error) {
+	return p.DomainSVC.BatchGetSaasPluginToolsInfo(ctx, pluginIDs)
+}
+
+func convertPluginsToSuggestions(plugins []*entity.PluginInfo) []*productAPI.ProductInfo {
 	suggestionProducts := make([]*productAPI.ProductInfo, 0, len(plugins))
 	suggestionSet := make(map[string]bool) // Use map to avoid duplicates
 
 	for _, plugin := range plugins {
-		// Add plugin as suggestion if name is unique
+
 		if plugin.GetName() != "" && !suggestionSet[plugin.GetName()] {
 			suggestionProducts = append(suggestionProducts, convertPluginToProductInfo(plugin))
 			suggestionSet[plugin.GetName()] = true
-		}
-
-		// Limit suggestions to avoid too many results
-		if len(suggestionProducts) >= limit {
-			break
 		}
 	}
 
 	return suggestionProducts
 }
 
-func (t *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
-	plugins, total, err := t.getSaasPluginList(ctx)
+func (p *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {
+	domainResp, err := p.getSaasPluginList(ctx, &dto.ListSaasPluginProductsRequest{
+		PageNum:  ptr.Of(req.PageNum),
+		PageSize: ptr.Of(req.PageSize),
+		Keyword:  req.Keyword,
+		EntityTypes: req.EntityTypes,
+	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts failed: %v", err)
 		return &productAPI.GetProductListResponse{
@@ -383,21 +387,44 @@ func (t *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, re
 		}, nil
 	}
 
-	products := convertPluginsToProductInfos(plugins)
+	// tools
+	pluginIDs := make([]int64, 0, len(domainResp.Plugins))
+	for _,product := range domainResp.Plugins{
+		pluginIDs = append(pluginIDs, product.ID)
+	}
+
+	tools, err := p.getSaasPluginToolsList(ctx, pluginIDs)
+	if err != nil {
+		logs.CtxErrorf(ctx, "BatchGetSaasPluginToolsInfo failed: %v", err)
+		return &productAPI.GetProductListResponse{
+			Code:    -1,
+			Message: "Failed to get SaaS plugin tools list",
+		}, nil
+	}
+
+	products := p.convertPluginsToProductInfos(ctx, domainResp.Plugins, tools)
 
 	return &productAPI.GetProductListResponse{
 		Code:    0,
 		Message: "success",
 		Data: &productAPI.GetProductListData{
 			Products: products,
-			Total:    int32(total),
-			HasMore:  false,
+			Total:    int32(domainResp.Total),
+			HasMore:  domainResp.HasMore,
 		},
 	}, nil
 }
 
-func (t *PluginApplicationService) PublicSearchProduct(ctx context.Context, req *productAPI.SearchProductRequest) (resp *productAPI.SearchProductResponse, err error) {
-	plugins, total, err := t.getSaasPluginList(ctx)
+func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req *productAPI.SearchProductRequest) (resp *productAPI.SearchProductResponse, err error) {
+	domainResp, err := p.getSaasPluginList(ctx, &dto.ListSaasPluginProductsRequest{
+		PageNum:     ptr.Of(req.PageNum),
+		PageSize:    ptr.Of(req.PageSize),
+		Keyword:     ptr.Of(req.Keyword),
+		EntityTypes: req.EntityTypes,
+		CategoryIDs: req.CategoryIDs,
+		IsOfficial:  req.IsOfficial,
+		PluginType:  req.PluginType,
+	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts failed: %v", err)
 		return &productAPI.SearchProductResponse{
@@ -405,22 +432,42 @@ func (t *PluginApplicationService) PublicSearchProduct(ctx context.Context, req 
 			Message: "Failed to search SaaS plugins",
 		}, nil
 	}
+	// tools
+	pluginIDs := make([]int64, 0, len(domainResp.Plugins))
+	for _,product := range domainResp.Plugins{
+		pluginIDs = append(pluginIDs, product.ID)
+	}
 
-	products := convertPluginsToProductInfos(plugins)
+	tools, err := p.getSaasPluginToolsList(ctx, pluginIDs)
+	if err != nil {
+		logs.CtxErrorf(ctx, "BatchGetSaasPluginToolsInfo failed: %v", err)
+		return &productAPI.SearchProductResponse{
+			Code:    -1,
+			Message: "Failed to get SaaS plugin tools list",
+		}, nil
+	}
+
+	products := p.convertPluginsToProductInfos(ctx, domainResp.Plugins, tools)
 
 	return &productAPI.SearchProductResponse{
 		Code:    0,
 		Message: "success",
 		Data: &productAPI.SearchProductResponseData{
 			Products: products,
-			Total:    ptr.Of(int32(total)),
-			HasMore:  ptr.Of(false),
+			Total:    ptr.Of(int32(domainResp.Total)),
+			HasMore:  ptr.Of(domainResp.HasMore),
 		},
 	}, nil
 }
 
-func (t *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req *productAPI.SearchSuggestRequest) (resp *productAPI.SearchSuggestResponse, err error) {
-	plugins, _, err := t.getSaasPluginList(ctx)
+func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req *productAPI.SearchSuggestRequest) (resp *productAPI.SearchSuggestResponse, err error) {
+	domainResp, err := p.getSaasPluginList(ctx, &dto.ListSaasPluginProductsRequest{
+		PageNum:     req.PageNum,
+		PageSize:    req.PageSize,
+		Keyword:     req.Keyword,
+		EntityTypes: req.EntityTypes,
+
+	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts for suggestions failed: %v", err)
 		return &productAPI.SearchSuggestResponse{
@@ -429,30 +476,27 @@ func (t *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req 
 		}, nil
 	}
 
-	// Convert plugins to suggestions with limit of 10
-	suggestionProducts := convertPluginsToSuggestions(plugins, 10)
+	suggestionProducts := convertPluginsToSuggestions(domainResp.Plugins)
 
 	return &productAPI.SearchSuggestResponse{
 		Code:    0,
 		Message: "success",
 		Data: &productAPI.SearchSuggestResponseData{
 			SuggestionV2: suggestionProducts,
-			HasMore:      ptr.Of(false),
+			HasMore:      ptr.Of(domainResp.HasMore),
 		},
 	}, nil
 }
 
-func (t *PluginApplicationService) GetSaasProductCategoryList(ctx context.Context, req *productAPI.GetProductCategoryListRequest) (resp *productAPI.GetProductCategoryListResponse, err error) {
-	// 构建 domain 层请求
+func (p *PluginApplicationService) GetSaasProductCategoryList(ctx context.Context, req *productAPI.GetProductCategoryListRequest) (resp *productAPI.GetProductCategoryListResponse, err error) {
+
 	domainReq := &dto.ListPluginCategoriesRequest{}
 
-	// 根据请求参数设置查询条件
 	if req.GetEntityType() == productCommon.ProductEntityType_SaasPlugin {
 		domainReq.EntityType = ptr.Of("plugin")
 	}
 
-	// 调用 domain 层服务
-	domainResp, err := t.DomainSVC.ListSaasPluginCategories(ctx, domainReq)
+	domainResp, err := p.DomainSVC.ListSaasPluginCategories(ctx, domainReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginCategories failed: %v", err)
 		return &productAPI.GetProductCategoryListResponse{
@@ -484,7 +528,7 @@ func (t *PluginApplicationService) GetSaasProductCategoryList(ctx context.Contex
 	}, nil
 }
 
-func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *productAPI.GetProductCallInfoRequest) (resp *productAPI.GetProductCallInfoResponse, err error) {
+func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *productAPI.GetProductCallInfoRequest) (resp *productAPI.GetProductCallInfoResponse, err error) {
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
 		return &productAPI.GetProductCallInfoResponse{
@@ -493,8 +537,7 @@ func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 		}, nil
 	}
 
-	// Call GetSaasUserInfo
-	_, err = t.userSVC.GetSaasUserInfo(ctx)
+	_, err = p.userSVC.GetSaasUserInfo(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
 		return &productAPI.GetProductCallInfoResponse{
@@ -503,8 +546,7 @@ func (t *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 		}, nil
 	}
 
-	// Call GetUserBenefit
-	benefit, err := t.userSVC.GetUserBenefit(ctx)
+	benefit, err := p.userSVC.GetUserBenefit(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
 		return &productAPI.GetProductCallInfoResponse{

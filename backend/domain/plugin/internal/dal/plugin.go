@@ -25,6 +25,7 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
@@ -63,6 +64,8 @@ func (p pluginPO) ToDO() *entity.PluginInfo {
 		VersionDesc: &p.VersionDesc,
 		Manifest:    p.Manifest,
 		OpenapiDoc:  p.OpenapiDoc,
+		Source:      bot_common.PluginSourcePtr(bot_common.PluginSource(p.Source)),
+		Extra:       p.Ext,
 	})
 }
 

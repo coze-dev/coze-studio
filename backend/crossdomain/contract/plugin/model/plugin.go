@@ -17,6 +17,7 @@
 package model
 
 import (
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 )
 
@@ -43,6 +44,9 @@ type PluginInfo struct {
 
 	CreatedAt int64
 	UpdatedAt int64
+
+	Source *bot_common.PluginSource
+	Extra  map[string]any
 
 	Manifest   *PluginManifest
 	OpenapiDoc *Openapi3T

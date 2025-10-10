@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	domainDto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 )
 
@@ -167,4 +168,282 @@ func TestSearchSaasPluginResponse_WithAllNewFields(t *testing.T) {
 	assert.NotNil(t, item.PluginInfo)
 	assert.Equal(t, 5, item.PluginInfo.FavoriteCount)
 	assert.Equal(t, int64(100), item.PluginInfo.CallCount)
+}
+
+func TestJsonSchemaTypeUnmarshaling(t *testing.T) {
+	// Test JSON data with inputSchema containing type field
+	jsonData := `{
+		"plugins": [{
+			"tools": [{
+				"tool_id": "7379227817307029513",
+				"description": "当你需要获取网页、pdf、doc、docx、xlsx、csv、text 内容时，使用此工具",
+				"name": "LinkReaderPlugin",
+				"inputSchema": {
+					"required": ["url"],
+					"properties": {
+						"need_image_url": {
+							"description": "是否需要返回图片url",
+							"type": "boolean"
+						},
+						"url": {
+							"description": "网页url、pdf url、docx url、csv url、 xlsx url。",
+							"type": "string"
+						}
+					},
+					"type": "object"
+				},
+				"outputSchema": {
+					"properties": {
+						"data": {
+							"properties": {
+								"content": {
+									"type": "string"
+								}
+							},
+							"type": "object"
+						}
+					},
+					"type": "object"
+				}
+			}]
+		}]
+	}`
+
+	var apiResp struct {
+		Plugins []struct {
+			Tools []struct {
+				ToolID       string                `json:"tool_id"`
+				Description  string                `json:"description"`
+				InputSchema  *domainDto.JsonSchema `json:"inputSchema"`
+				Name         string                `json:"name"`
+				OutputSchema *domainDto.JsonSchema `json:"outputSchema"`
+			} `json:"tools"`
+		} `json:"plugins"`
+	}
+
+	err := json.Unmarshal([]byte(jsonData), &apiResp)
+	assert.NoError(t, err)
+
+	// Verify that we have the expected structure
+	assert.Len(t, apiResp.Plugins, 1)
+	assert.Len(t, apiResp.Plugins[0].Tools, 1)
+
+	tool := apiResp.Plugins[0].Tools[0]
+	assert.Equal(t, "7379227817307029513", tool.ToolID)
+	assert.Equal(t, "LinkReaderPlugin", tool.Name)
+
+	// Verify InputSchema type field is correctly parsed
+	assert.NotNil(t, tool.InputSchema)
+	assert.Equal(t, domainDto.JsonSchemaType_OBJECT, tool.InputSchema.Type)
+	assert.Len(t, tool.InputSchema.Required, 1)
+	assert.Equal(t, "url", tool.InputSchema.Required[0])
+
+	// Verify properties are correctly parsed with their types
+	assert.NotNil(t, tool.InputSchema.Properties)
+	assert.Len(t, tool.InputSchema.Properties, 2)
+
+	urlProp := tool.InputSchema.Properties["url"]
+	assert.NotNil(t, urlProp)
+	assert.Equal(t, domainDto.JsonSchemaType_STRING, urlProp.Type)
+	assert.Equal(t, "网页url、pdf url、docx url、csv url、 xlsx url。", urlProp.Description)
+
+	needImageProp := tool.InputSchema.Properties["need_image_url"]
+	assert.NotNil(t, needImageProp)
+	assert.Equal(t, domainDto.JsonSchemaType_BOOLEAN, needImageProp.Type)
+	assert.Equal(t, "是否需要返回图片url", needImageProp.Description)
+
+	// Verify OutputSchema type field is correctly parsed
+	assert.NotNil(t, tool.OutputSchema)
+	assert.Equal(t, domainDto.JsonSchemaType_OBJECT, tool.OutputSchema.Type)
+}
+
+func TestConvertFromJsonSchemaWithFixedType(t *testing.T) {
+	// Create a JsonSchema with the type field properly set
+	schema := &domainDto.JsonSchema{
+		Type: domainDto.JsonSchemaType_OBJECT,
+		Properties: map[string]*domainDto.JsonSchema{
+			"url": {
+				Type:        domainDto.JsonSchemaType_STRING,
+				Description: "网页url",
+			},
+			"need_image_url": {
+				Type:        domainDto.JsonSchemaType_BOOLEAN,
+				Description: "是否需要返回图片url",
+			},
+		},
+		Required: []string{"url"},
+	}
+
+	// Test the convertFromJsonSchema function
+	parameters := convertFromJsonSchema(schema)
+
+	// Debug: print the actual values
+	t.Logf("Number of parameters: %d", len(parameters))
+	for i, param := range parameters {
+		t.Logf("Parameter %d: Name=%s, Location=%d, Type=%d", i, param.Name, param.Location, param.Type)
+	}
+
+	// Verify that parameters are correctly generated
+	assert.Len(t, parameters, 2)
+
+	// Find the url parameter
+	var urlParam, imageParam *pluginCommon.APIParameter
+	for _, param := range parameters {
+		if param.Name == "url" {
+			urlParam = param
+		} else if param.Name == "need_image_url" {
+			imageParam = param
+		}
+	}
+
+	// Verify url parameter
+	assert.NotNil(t, urlParam)
+	assert.Equal(t, "url", urlParam.Name)
+	assert.Equal(t, "网页url", urlParam.Desc)
+	assert.True(t, urlParam.IsRequired)
+	assert.Equal(t, pluginCommon.ParameterType_String, urlParam.Type)
+	assert.Equal(t, pluginCommon.ParameterLocation_Body, urlParam.Location)
+
+	// Verify need_image_url parameter
+	assert.NotNil(t, imageParam)
+	assert.Equal(t, "need_image_url", imageParam.Name)
+	assert.Equal(t, "是否需要返回图片url", imageParam.Desc)
+	assert.False(t, imageParam.IsRequired) // not in required array
+	assert.Equal(t, pluginCommon.ParameterType_Bool, imageParam.Type)
+	assert.Equal(t, pluginCommon.ParameterLocation_Body, imageParam.Location)
+}
+
+func TestBatchGetSaasPluginToolsInfoIntegration(t *testing.T) {
+	// This test simulates the original issue scenario
+	// Create mock response data similar to what was provided in the issue
+	respData := `{
+		"plugins": [{
+			"tools": [{
+				"tool_id": "7379227817307029513",
+				"description": "当你需要获取网页、pdf、doc、docx、xlsx、csv、text 内容时，使用此工具，可以获取url链接下的标题和内容。由于个别网站自身站点限制，无法获取网页内容。",
+				"name": "LinkReaderPlugin",
+				"inputSchema": {
+					"required": ["url"],
+					"properties": {
+						"need_image_url": {
+							"description": "是否需要返回图片url",
+							"type": "boolean"
+						},
+						"url": {
+							"description": "网页url、pdf url、docx url、csv url、 xlsx url。",
+							"type": "string"
+						}
+					},
+					"type": "object"
+				},
+				"outputSchema": {
+					"properties": {
+						"data": {
+							"properties": {
+								"images": {
+									"items": {
+										"properties": {
+											"title": {"type": "string"},
+											"url": {"type": "string"},
+											"width": {"type": "integer"},
+											"alt": {"type": "string"},
+											"height": {"type": "integer"}
+										},
+										"type": "object"
+									},
+									"type": "array"
+								},
+								"title": {"type": "string"},
+								"content": {"type": "string"}
+							},
+							"type": "object"
+						},
+						"err_msg": {
+							"description": "错误信息",
+							"type": "string"
+						},
+						"error_code": {
+							"description": "错误码",
+							"type": "string"
+						},
+						"error_msg": {
+							"description": "错误信息",
+							"type": "string"
+						},
+						"message": {
+							"description": "错误信息",
+							"type": "string"
+						},
+						"pdf_content": {
+							"description": "pdf的内容",
+							"type": "string"
+						},
+						"code": {
+							"description": "错误码",
+							"type": "integer"
+						}
+					},
+					"type": "object"
+				}
+			}]
+		}]
+	}`
+
+	// Simulate the unmarshaling process that happens in BatchGetSaasPluginToolsInfo
+	var apiResp struct {
+		Plugins []struct {
+			Tools []struct {
+				ToolID       string                `json:"tool_id"`
+				Description  string                `json:"description"`
+				InputSchema  *domainDto.JsonSchema `json:"inputSchema"`
+				Name         string                `json:"name"`
+				OutputSchema *domainDto.JsonSchema `json:"outputSchema"`
+			} `json:"tools"`
+			McpJSON string `json:"mcp_json"`
+		} `json:"plugins"`
+	}
+
+	err := json.Unmarshal([]byte(respData), &apiResp)
+	assert.NoError(t, err)
+
+	// Verify the structure is correctly parsed
+	assert.Len(t, apiResp.Plugins, 1)
+	assert.Len(t, apiResp.Plugins[0].Tools, 1)
+
+	tool := apiResp.Plugins[0].Tools[0]
+
+	// Verify InputSchema type is correctly parsed (this was the original issue)
+	assert.NotNil(t, tool.InputSchema)
+	assert.Equal(t, domainDto.JsonSchemaType_OBJECT, tool.InputSchema.Type)
+
+	// Now test the convertFromJsonSchema function with the parsed schema
+	parameters := convertFromJsonSchema(tool.InputSchema)
+
+	// This should NOT be empty anymore (this was the original problem)
+	assert.NotEmpty(t, parameters)
+	assert.Len(t, parameters, 2)
+
+	// Verify the parameters are correctly generated
+	paramMap := make(map[string]*pluginCommon.APIParameter)
+	for _, param := range parameters {
+		paramMap[param.Name] = param
+	}
+
+	// Check url parameter
+	urlParam := paramMap["url"]
+	assert.NotNil(t, urlParam)
+	assert.Equal(t, "url", urlParam.Name)
+	assert.True(t, urlParam.IsRequired)
+	assert.Equal(t, pluginCommon.ParameterType_String, urlParam.Type)
+	assert.Equal(t, pluginCommon.ParameterLocation_Body, urlParam.Location)
+	assert.Equal(t, "网页url、pdf url、docx url、csv url、 xlsx url。", urlParam.Desc)
+
+	// Check need_image_url parameter
+	imageParam := paramMap["need_image_url"]
+	assert.NotNil(t, imageParam)
+	assert.Equal(t, "need_image_url", imageParam.Name)
+	assert.False(t, imageParam.IsRequired)
+	assert.Equal(t, pluginCommon.ParameterType_Bool, imageParam.Type)
+	assert.Equal(t, pluginCommon.ParameterLocation_Body, imageParam.Location)
+	assert.Equal(t, "是否需要返回图片url", imageParam.Desc)
 }

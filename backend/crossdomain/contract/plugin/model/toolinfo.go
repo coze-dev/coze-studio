@@ -44,6 +44,9 @@ type ToolInfo struct {
 	ActivatedStatus *consts.ActivatedStatus
 	DebugStatus     *common.APIDebugStatus
 
+	Source    *bot_common.PluginSource
+	Extra     map[string]any
+
 	Method    *string
 	SubURL    *string
 	Operation *Openapi3Operation
