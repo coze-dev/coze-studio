@@ -33,7 +33,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/saasapi"
 )
 
@@ -87,30 +86,20 @@ func (p *pluginServiceImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, plu
 		return nil, errorx.Wrapf(err, "failed to call coze.cn /v1/plugins/mget API")
 	}
 
-	var apiResp struct {
-		Items []struct {
-			Tools []struct {
-				ToolID       string                `json:"tool_id"`
-				Description  string                `json:"description"`
-				InputSchema  *domainDto.JsonSchema `json:"inputSchema"`
-				Name         string                `json:"name"`
-				OutputSchema *domainDto.JsonSchema `json:"outputSchema"`
-			} `json:"tools"`
-			McpJSON string `json:"mcp_json"`
-		} `json:"items"`
-	}
-	logs.CtxInfof(ctx, "call coze.cn /v1/plugins/mget API, resp: %v", string(resp.Data))
+	var apiResp domainDto.SaasPluginToolsListResponse
+
 	if err := json.Unmarshal(resp.Data, &apiResp); err != nil {
 		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
 	}
 
 	result := make(map[int64][]*entity.ToolInfo)
 
-	for i, plugin := range apiResp.Items {
-		if i >= len(pluginIDs) {
-			break
+	for _, plugin := range apiResp.Items {
+
+		pluginID, err := strconv.ParseInt(plugin.PluginID, 10, 64)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "failed to parse plugin ID %s", plugin.PluginID)
 		}
-		pluginID := pluginIDs[i]
 		toolInfos := make([]*entity.ToolInfo, 0, len(plugin.Tools))
 
 		for _, tool := range plugin.Tools {
@@ -141,7 +130,6 @@ func (p *pluginServiceImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, plu
 		result[pluginID] = toolInfos
 	}
 
-	logs.CtxInfof(ctx, "fetched SaaS plugin tools info from coze.cn, pluginIDs: %v, total tools: %d", pluginIDs, len(result))
 	return result, nil
 }
 
@@ -192,12 +180,11 @@ func convertFromJsonSchema(schema *domainDto.JsonSchema) []*pluginCommon.APIPara
 				Type:       mapJsonSchemaTypeToParameterType(propSchema.Type),
 				Location:   pluginCommon.ParameterLocation_Body,
 			}
-			// Handle nested object type
+
 			if propSchema.Type == domainDto.JsonSchemaType_OBJECT && len(propSchema.Properties) > 0 {
 				param.SubParameters = convertFromJsonSchema(propSchema)
 			}
 
-			// Handle array type
 			if propSchema.Type == domainDto.JsonSchemaType_ARRAY && propSchema.Items != nil {
 				param.Type = (mapJsonSchemaTypeToParameterType(propSchema.Items.Type))
 
@@ -328,8 +315,6 @@ func (p *pluginServiceImpl) GetSaasPluginInfo(ctx context.Context, pluginID int6
 	}
 
 	plugin = convertCozePluginToEntity(cozePlugin)
-
-	logs.CtxInfof(ctx, "fetched SaaS plugin info from coze.cn, pluginID: %d, name: %s", pluginID, plugin.GetName())
 
 	return plugin, nil
 }
