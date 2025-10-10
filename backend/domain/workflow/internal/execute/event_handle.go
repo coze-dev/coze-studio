@@ -315,44 +315,42 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 		}
 
 		// TODO: there maybe time gap here
-
 		if err := repo.SaveInterruptEvents(ctx, event.RootExecuteID, event.InterruptEvents); err != nil {
 			return noTerminate, fmt.Errorf("failed to save interrupt events: %v", err)
 		}
 
-		if sw != nil && event.SubWorkflowCtx == nil { // only send interrupt event when is root workflow
+		if event.SubWorkflowCtx == nil {
 			firstIE, found, err := repo.GetFirstInterruptEvent(ctx, event.RootExecuteID)
 			if err != nil {
 				return noTerminate, fmt.Errorf("failed to get first interrupt event: %v", err)
 			}
-
 			if !found {
 				return noTerminate, fmt.Errorf("interrupt event does not exist, wfExeID: %d", event.RootExecuteID)
 			}
-
-			nodeKey := firstIE.NodeKey
-
-			sw.Send(&entity.Message{
-				DataMessage: &entity.DataMessage{
-					ExecuteID: event.RootExecuteID,
-					Role:      schema.Assistant,
-					Type:      entity.Answer,
-					Content:   firstIE.InterruptData, // TODO: may need to extract from InterruptData the actual info for user
-					NodeID:    string(nodeKey),
-					NodeType:  firstIE.NodeType,
-					NodeTitle: firstIE.NodeTitle,
-					Last:      true,
-				},
-			}, nil)
-
-			sw.Send(&entity.Message{
-				StateMessage: &entity.StateMessage{
-					ExecuteID:      event.RootExecuteID,
-					EventID:        event.GetResumedEventID(),
-					Status:         entity.WorkflowInterrupted,
-					InterruptEvent: firstIE,
-				},
-			}, nil)
+			event.InterruptEvents = []*entity.InterruptEvent{firstIE}
+			if sw != nil { // only send interrupt event when is root workflow
+				nodeKey := firstIE.NodeKey
+				sw.Send(&entity.Message{
+					DataMessage: &entity.DataMessage{
+						ExecuteID: event.RootExecuteID,
+						Role:      schema.Assistant,
+						Type:      entity.Answer,
+						Content:   firstIE.InterruptData, // TODO: may need to extract from InterruptData the actual info for user
+						NodeID:    string(nodeKey),
+						NodeType:  firstIE.NodeType,
+						NodeTitle: firstIE.NodeTitle,
+						Last:      true,
+					},
+				}, nil)
+				sw.Send(&entity.Message{
+					StateMessage: &entity.StateMessage{
+						ExecuteID:      event.RootExecuteID,
+						EventID:        event.GetResumedEventID(),
+						Status:         entity.WorkflowInterrupted,
+						InterruptEvent: firstIE,
+					},
+				}, nil)
+			}
 		}
 
 		return workflowAbort, nil
