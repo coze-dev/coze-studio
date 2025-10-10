@@ -148,6 +148,8 @@ export interface ProductMetainfo {
   paid_type?: string;
   /** 商品是否官方 */
   is_official?: boolean;
+  /** 商店商品链接 */
+  product_url?: string;
 }
 
 export interface ProductPluginInfo {

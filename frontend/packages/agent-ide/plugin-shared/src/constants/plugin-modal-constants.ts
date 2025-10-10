@@ -26,4 +26,6 @@ export enum PluginFilterType {
   Team = 'team',
   Favorite = 'favorite',
   Project = 'project',
+  Local = 'local',
+  Coze = 'coze',
 }

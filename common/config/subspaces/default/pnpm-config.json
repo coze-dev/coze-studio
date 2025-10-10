@@ -9,7 +9,7 @@
     }
   },
   "globalOverrides": {
-    "@coze-arch/coze-design": "0.0.6-alpha.eec92c",
+    "@coze-arch/coze-design": "0.0.7-alpha.985c0d",
     "inversify": "6.0.2",
     "sass@1.74.1>immutable": "3.8.2",
     "web-streams-polyfill": "3.3.2",

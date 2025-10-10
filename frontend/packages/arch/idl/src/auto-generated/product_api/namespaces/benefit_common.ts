@@ -58,6 +58,8 @@ export enum BenefitEntityType {
   CozeUserID = 18,
   /** CozeRole */
   CozeRole = 19,
+  /** LongTermMemory */
+  LongTermMemory = 20,
   /** 企业配置类
 企业安心用配置 */
   EnterpriseConfConfidenceUsing = 51,
@@ -109,6 +111,10 @@ export enum BenefitRootHistoryType {
   FornaxConsume = 5,
   /** 模型评测消耗 */
   EvaluateModelConsume = 6,
+  /** 长期记忆 */
+  LongTermMemoryConsume = 7,
+  /** 插件消耗 */
+  PluginConsume = 8,
 }
 
 /** 权益类型
@@ -227,6 +233,9 @@ Space 总量 */
   /** 270-300 实体对用户是否可用
 插件是否可用 */
   PluginAvailable = 270,
+  /** 301-310 记忆库
+单记忆库存储的记忆条数上限 */
+  LongTermMemoryNum = 301,
   /** 500
 计费资源提示信息 */
   ResourcePromptInfo = 500,
@@ -284,6 +293,7 @@ export enum ChargeResourceEntityType {
   Seat = 7,
   ModelTPM = 8,
   WorkSpace = 9,
+  LongTermMemory = 10,
 }
 
 /** Type为BotRequest(5)的子类型SubType */
@@ -296,6 +306,14 @@ export enum ChargeResourceSubTypeBotRequest {
 export enum ChargeResourceSubTypeKnowledge {
   /** 容量 */
   Capacity = 1,
+}
+
+/** Type为LongTermMemory(10)的子类型SubType */
+export enum ChargeResourceSubTypeLongTermMemory {
+  /** 说明：记忆库运行时计费 */
+  Running = 1,
+  /** 说明：记忆库存储时计费 */
+  Storage = 2,
 }
 
 /** Type为Model(1)的子类型SubType */
@@ -406,6 +424,10 @@ export enum CheckType {
   VoiceUnifiedUseFinish = 52,
   /** Trace日志落库前，用于限额 */
   FornaxTraceBefore = 61,
+  /** 知识库调用前 */
+  MemoryLibraryCallBefore = 71,
+  /** 知识库执行完成 */
+  MemoryLibraryExecFinish = 72,
 }
 
 /** 权益流水对应消耗的资源类型 */
@@ -422,6 +444,8 @@ export enum ConsumeResourceType {
   RTC = 4,
   /** 知识库（暂不对外暴露该类型） */
   Dateset = 5,
+  /** 长期记忆 */
+  LongTermMemory = 6,
 }
 
 export enum CostBalanceType {
@@ -540,6 +564,17 @@ export enum LimitationTriggerUnit {
   Day = 3,
   Month = 4,
   Second = 5,
+}
+
+export enum LongTermMemoryType {
+  BuildVolcanoMemory = 1,
+  FetchVolcanoMemory = 2,
+}
+
+/** 用量维度标识（当前用于分账） */
+export enum MeasureDimensionType {
+  Workspace = 1,
+  Organization = 2,
 }
 
 export enum MonetizationEntityType {

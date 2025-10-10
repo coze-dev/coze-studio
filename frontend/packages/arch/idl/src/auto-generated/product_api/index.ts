@@ -1476,6 +1476,49 @@ export default class ProductApiService<T> {
     return this.request({ url, method, data }, options);
   }
 
+  /**
+   * GET /api/marketplace/product/build_leads_form/schema
+   *
+   * 代搭
+   *
+   * 获取代搭线索自定义表单定义
+   */
+  PublicGetBuildLeadsFormSchema(
+    req?: public_api.GetBuildLeadsFormSchemaRequest,
+    options?: T,
+  ): Promise<public_api.GetBuildLeadsFormSchemaResponse> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      '/api/marketplace/product/build_leads_form/schema',
+    );
+    const method = 'GET';
+    const params = { product_id: _req['product_id'] };
+    return this.request({ url, method, params }, options);
+  }
+
+  /**
+   * POST /api/marketplace/product/build_leads_form/submit
+   *
+   * 提交代搭线索表单
+   */
+  PublicSubmitBuildLeadsForm(
+    req?: public_api.SubmitBuildLeadsFormRequest,
+    options?: T,
+  ): Promise<public_api.SubmitBuildLeadsFormResponse> {
+    const _req = req || {};
+    const url = this.genBaseURL(
+      '/api/marketplace/product/build_leads_form/submit',
+    );
+    const method = 'POST';
+    const data = {
+      verify_ticket: _req['verify_ticket'],
+      phone: _req['phone'],
+      form_data: _req['form_data'],
+      product_id: _req['product_id'],
+    };
+    return this.request({ url, method, data }, options);
+  }
+
   /** GET /v1/stores/plugins */
   OpenAPIListPlugin(
     req?: open_api.ListPluginRequest,

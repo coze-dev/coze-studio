@@ -73,7 +73,7 @@ export const useUsageModal = ({ entity_id }: UsageModalProps) => {
         onCancel={onClose}
         maskClosable={false}
         closeOnEsc={true}
-        title="账号付费插件调用量1"
+        title="账号付费插件调用量"
         width={525}
         footer={null}
       >

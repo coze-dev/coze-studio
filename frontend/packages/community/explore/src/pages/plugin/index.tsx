@@ -26,12 +26,15 @@ import { TabBar, Button } from '@coze-arch/coze-design';
 import { ProductEntityType } from '@coze-arch/bot-api/product_api';
 import useUrlState from '@ahooksjs/use-url-state';
 
-import { PageList } from '../../components/page-list';
-enum PluginCateTab {
-  Local = 'local',
-  Coze = 'coze',
-}
+import { PageList, PluginCateTab } from '../../components/page-list';
+
 const { TabPanel } = TabBar;
+
+const entityTypeMap = {
+  [PluginCateTab.Local]: ProductEntityType.Plugin,
+  [PluginCateTab.Coze]: ProductEntityType.SaasPlugin,
+};
+
 export const PluginPage = () => {
   const { node: usageInvokeModal, open: openUsageInvokeModal } = useUsageModal(
     {},
@@ -84,6 +87,7 @@ export const PluginPage = () => {
             )}
           </div>
         }
+        type={tab}
         getDataList={getPluginData}
         customFilters={customFilters}
         renderCard={data => <PluginCard {...(data as PluginCardProps)} />}
@@ -94,9 +98,9 @@ export const PluginPage = () => {
   );
 };
 
-const getPluginData = async () => {
+const getPluginData = async (type?: PluginCateTab) => {
   const result = await explore.PublicGetProductList({
-    entity_type: explore.product_common.ProductEntityType.Plugin,
+    entity_type: entityTypeMap[type || PluginCateTab.Local],
     sort_type: explore.product_common.SortType.Newest,
     page_num: 0,
     page_size: 1000,
