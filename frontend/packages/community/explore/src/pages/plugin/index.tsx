@@ -26,7 +26,11 @@ import { TabBar, Button } from '@coze-arch/coze-design';
 import { ProductEntityType } from '@coze-arch/bot-api/product_api';
 import useUrlState from '@ahooksjs/use-url-state';
 
-import { PageList, PluginCateTab } from '../../components/page-list';
+import {
+  PageList,
+  PluginCateTab,
+  type TaskListServiceRes,
+} from '../../components/plugin-page-list';
 
 const { TabPanel } = TabBar;
 
@@ -50,18 +54,38 @@ export const PluginPage = () => {
   );
 
   const customFilters = (
-    <TabBar
-      className="mt-[24px] mx-[24px]"
-      tabBarClassName="mb-[20px]"
-      type="button"
-      activeKey={tab}
-      onChange={newTab => {
-        setState({ tab: newTab as PluginCateTab });
-      }}
-    >
-      <TabPanel tab="本地插件" itemKey={PluginCateTab.Local} />
-      <TabPanel tab="Coze插件" itemKey={PluginCateTab.Coze} />
-    </TabBar>
+    <div className="flex justify-between items-center mt-[12px] mx-[24px]">
+      <TabBar
+        tabBarClassName="mb-[20px]"
+        type="button"
+        activeKey={tab}
+        onChange={newTab => {
+          setState({ tab: newTab as PluginCateTab });
+        }}
+      >
+        <TabPanel tab="本地插件" itemKey={PluginCateTab.Local} />
+        <TabPanel tab="Coze插件" itemKey={PluginCateTab.Coze} />
+      </TabBar>
+      {tab === PluginCateTab.Coze ? (
+        <Button
+          className="mx-[24px]"
+          onClick={() => {
+            openUsageInvokeModal();
+          }}
+        >
+          用量查看
+        </Button>
+      ) : (
+        <Button
+          className="mx-[24px]"
+          onClick={() => {
+            window.open('https://www.coze.cn/open/docs/guides', '_blank');
+          }}
+        >
+          配置 coze.cn 插件
+        </Button>
+      )}
+    </div>
   );
 
   return (
@@ -75,14 +99,7 @@ export const PluginPage = () => {
             {tab === PluginCateTab.Coze && (
               <>
                 <SearchInput border entityType={ProductEntityType.Plugin} />
-                <Button
-                  className="mx-[24px]"
-                  onClick={() => {
-                    openUsageInvokeModal();
-                  }}
-                >
-                  用量查看
-                </Button>
+                <div className="w-[88px]" />
               </>
             )}
           </div>
@@ -98,12 +115,26 @@ export const PluginPage = () => {
   );
 };
 
-const getPluginData = async (type?: PluginCateTab) => {
-  const result = await explore.PublicGetProductList({
-    entity_type: entityTypeMap[type || PluginCateTab.Local],
+const PAGE_SIZE = 20;
+
+// 滚动加载
+const getPluginData = async (
+  tab?: PluginCateTab,
+  curData?: TaskListServiceRes,
+): Promise<TaskListServiceRes> => {
+  const reqPageNum = curData ? curData.page + 1 : 1;
+
+  const res = await explore.PublicGetProductList({
+    entity_type: entityTypeMap[tab || PluginCateTab.Local],
     sort_type: explore.product_common.SortType.Newest,
-    page_num: 0,
-    page_size: 1000,
+    page_num: reqPageNum,
+    page_size: PAGE_SIZE,
   });
-  return result.data?.products || [];
+  const { products = [], has_more = false } = res.data || {};
+
+  return {
+    list: products,
+    page: reqPageNum,
+    has_more,
+  };
 };
