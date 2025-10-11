@@ -69,6 +69,8 @@ import {
   PluginType,
 } from '@coze-arch/bot-api/plugin_develop';
 import { type Int64 } from '@coze-arch/bot-api/developer_api';
+import { ProductEntityType } from '@coze-arch/bot-api/product_api';
+import { PluginSource } from '@coze-arch/bot-api/playground_api';
 
 import s from './index.module.less';
 import { type SimplifyProductInfo } from '../../service/fetch-plugin';
@@ -249,14 +251,14 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
   const timePrefixText = showPublishTime
     ? I18n.t('mkl_plugin_publish')
     : showCreateTime
-    ? I18n.t('mkl_plugin_created')
-    : I18n.t('mkl_plugin_updated');
+      ? I18n.t('mkl_plugin_created')
+      : I18n.t('mkl_plugin_updated');
   const timeToShow =
     (showPublishTime
       ? Number(listed_at)
       : showCreateTime
-      ? Number(create_time)
-      : Number(update_time)) || 0;
+        ? Number(create_time)
+        : Number(update_time)) || 0;
 
   const renderAuthStatus = () => {
     if (isUndefined(auth_mode) || auth_mode === PluginAuthMode.NoAuth) {
@@ -531,6 +533,10 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                   project_id,
                   version_name,
                   version_ts,
+                  plugin_source:
+                    productInfo?.entity_type === ProductEntityType.SaasPlugin
+                      ? PluginSource.FromSaas
+                      : PluginSource.Default,
                 };
                 // Check whether the name of the Plugins currently to be added has a duplicate name in the added list (the model does not support it, so this is added)
                 if (
@@ -559,6 +565,10 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                             PluginType.PLUGIN,
                             PluginType.APP,
                             PluginType.LOCAL,
+                            ...(productInfo?.entity_type ===
+                            ProductEntityType.SaasPlugin
+                              ? [ProductEntityType.SaasPlugin]
+                              : []),
                           ],
                           space_id: useSpaceStore.getState().getSpaceId(),
                         });
