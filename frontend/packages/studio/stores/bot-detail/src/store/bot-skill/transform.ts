@@ -318,6 +318,7 @@ export const transformVo2Dto = {
       api_id: plugin.api_id,
       plugin_id: plugin.plugin_id,
       api_name: plugin.name,
+      plugin_source: plugin.plugin_source,
     })),
 
   workflow: (
@@ -331,7 +332,7 @@ export const transformVo2Dto = {
           flow_mode: w.flow_mode,
           workflow_name: w.name,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any),
+        }) as any,
     ),
 
   knowledge: (knowledge: KnowledgeConfig): BotInfoForUpdate['knowledge'] => ({
