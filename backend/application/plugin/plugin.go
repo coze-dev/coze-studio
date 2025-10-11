@@ -35,6 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
+	entityUser "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -576,38 +577,42 @@ func (p *PluginApplicationService) GetSaasProductCategoryList(ctx context.Contex
 }
 
 func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *productAPI.GetProductCallInfoRequest) (resp *productAPI.GetProductCallInfoResponse, err error) {
-	userID := ctxutil.GetUIDFromCtx(ctx)
-	if userID == nil {
-		return &productAPI.GetProductCallInfoResponse{
-			Code:    -1,
-			Message: "User not authenticated",
-		}, nil
-	}
+	// userInfo, err := p.userSVC.GetSaasUserInfo(ctx)
+	// if err != nil {
+	// 	logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
+	// 	return &productAPI.GetProductCallInfoResponse{
+	// 		Code:    -1,
+	// 		Message: "Failed to get user info",
+	// 	}, nil
+	// }
 
-	userInfo, err := p.userSVC.GetSaasUserInfo(ctx)
-	if err != nil {
-		logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
-		return &productAPI.GetProductCallInfoResponse{
-			Code:    -1,
-			Message: "Failed to get user info",
-		}, nil
-	}
+	// benefit, err := p.userSVC.GetUserBenefit(ctx)
+	// if err != nil {
+	// 	logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
+	// 	return &productAPI.GetProductCallInfoResponse{
+	// 		Code:    -1,
+	// 		Message: "Failed to get user benefit",
+	// 	}, nil
+	// }
 
-	benefit, err := p.userSVC.GetUserBenefit(ctx)
-	if err != nil {
-		logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
-		return &productAPI.GetProductCallInfoResponse{
-			Code:    -1,
-			Message: "Failed to get user benefit",
-		}, nil
+	//todo:: need to move
+	userInfo := &entityUser.SaasUserData{
+		UserName: "gigoo",
+		NickName: "gigoo",
+		AvatarURL: "https://p6-passport.byteacctimg.com/img/user-avatar/cae85f2778fc38b29f5930be8f954bed~300x300.image",
 	}
-
+	benefit := &entityUser.UserBenefit{
+		UsedCount:   10,
+		TotalCount:  100,
+		IsUnlimited: false,
+	}
 	// Build response data
 	data := &productAPI.GetProductCallInfoData{
 		UserLevel: productAPI.UserLevel_Free,
 		UserInfo: &productAPI.UserInfo{
-			Name: userInfo.NickName,
-			Icon: userInfo.AvatarURL,
+			UserName: ptr.Of(userInfo.UserName),
+			NickName: ptr.Of(userInfo.NickName),
+			AvatarURL: ptr.Of(userInfo.AvatarURL),
 		},
 	}
 

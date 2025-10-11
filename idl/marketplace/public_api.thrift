@@ -698,9 +698,9 @@ struct ProductCallRateLimit {
 }
 
 struct UserInfo {
-    1: string name, // User name
-    2: string icon, // User icon
-    3: string role, // User role
+    1: optional string user_name, // User name
+    2: optional string nick_name, // User nickname
+    3: optional string avatar_url, // User avatar url
 }
 
 struct GetProductCallInfoData {
@@ -709,6 +709,7 @@ struct GetProductCallInfoData {
     3: ProductCallCountLimit call_count_limit, // Plugin tool call count limit
     4: ProductCallRateLimit call_rate_limit, // Plugin tool call rate limit
     5: UserInfo user_info, // User info
+    6: optional string revert_time, // Enterprise revert time
 }
 
 struct GetProductCallInfoResponse {
