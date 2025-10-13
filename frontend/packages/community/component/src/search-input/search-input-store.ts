@@ -109,13 +109,13 @@ const getEntityType = (params: GetEntityTypeParams): AllEntityType => {
 
 // eslint-disable-next-line max-lines-per-function
 export const useSearchInputStore = create<StoreProps>((set, get) => ({
-  currentEntitySort: [ProductEntityType.Bot],
+  currentEntitySort: [ProductEntityType.SaasPlugin],
   setCurrentEntitySort: (entityTypeList: ProductEntityType[]) => {
     set({
       currentEntitySort: entityTypeList,
     });
   },
-  entityTypeIn: ProductEntityType.Bot,
+  entityTypeIn: ProductEntityType.SaasPlugin,
   setEntityTypeIn: (entityType: ProductEntityType) => {
     set({
       entityTypeIn: entityType,
@@ -145,7 +145,7 @@ export const useSearchInputStore = create<StoreProps>((set, get) => ({
     });
   },
   currentSelectedIndex: {
-    type: ProductEntityType.Bot,
+    type: ProductEntityType.SaasPlugin,
     index: -1,
   },
   setCurrentSelectIndex: (type: AllEntityType, index: number) => {
