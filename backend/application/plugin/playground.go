@@ -26,9 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -118,20 +116,22 @@ func (p *PluginApplicationService) convertSaasPluginListToPlayground(ctx context
 }
 
 func (p *PluginApplicationService) getSaasPluginListByIDs(ctx context.Context, pluginIDs []string) ([]*entity.PluginInfo, int64, error) {
-	//todo need to move
-	return []*entity.PluginInfo{
-		{
-			PluginInfo: &model.PluginInfo{
-				ID:         7449357316584996883,
-				PluginType: 1,
-				Manifest: &model.PluginManifest{
-					Auth: &model.AuthV2{
-						Type:    consts.AuthzTypeOfNone,
-					},
-				},
-			},
-		},
-	}, 1, nil
+	ids := make([]int64, 0, len(pluginIDs))
+
+	for _, pluginIDStr := range pluginIDs {
+		pluginID, err := strconv.ParseInt(pluginIDStr, 10, 64)
+		if err != nil {
+			return nil, 0, fmt.Errorf("invalid pluginID '%s': %w", pluginIDStr, err)
+		}
+		ids = append(ids, pluginID)
+	}
+
+	plugins, err := p.DomainSVC.GetSaasPluginInfo(ctx, ids)
+	if err != nil {
+		return nil, 0, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginIDs=%v", pluginIDs)
+	}
+
+	return plugins, int64(len(plugins)), nil
 }
 
 func (p *PluginApplicationService) getPlaygroundPluginListByIDs(ctx context.Context, pluginIDs []string) (plugins []*entity.PluginInfo, total int64, err error) {
@@ -209,7 +209,6 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 			}
 		}
 	}
-
 
 	iconURL, err := p.oss.GetObjectUrl(ctx, pl.GetIconURI())
 	if err != nil {

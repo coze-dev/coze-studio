@@ -63,7 +63,7 @@ type PluginService interface {
 	MoveAPPPluginToLibrary(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
 
 	// Agent Tool
-	BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
+	BindAgentTools(ctx context.Context, agentID int64, bindTools []*model.BindToolInfo) (err error)
 	DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error)
 	GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, err error)
 	MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error)
@@ -82,7 +82,7 @@ type PluginService interface {
 	//Saas Plugin Product
 	ListSaasPluginProducts(ctx context.Context, req *dto.ListSaasPluginProductsRequest) (resp *dto.ListPluginProductsResponse, err error)
 	BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, err error)
-	GetSaasPluginInfo(ctx context.Context, pluginID int64) (plugin *entity.PluginInfo, err error)
+	GetSaasPluginInfo(ctx context.Context, pluginIDs []int64) (plugins []*entity.PluginInfo, err error)
 	ListSaasPluginCategories(ctx context.Context, req *dto.ListPluginCategoriesRequest) (resp *dto.ListPluginCategoriesResponse, err error)
 
 	OAuthCode(ctx context.Context, code string, state *dto.OAuthState) (err error)

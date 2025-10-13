@@ -41,7 +41,7 @@ type ToolRepository interface {
 	GetVersionTool(ctx context.Context, vTool model.VersionTool) (tool *entity.ToolInfo, exist bool, err error)
 	MGetVersionTools(ctx context.Context, vTools []model.VersionTool) (tools []*entity.ToolInfo, err error)
 
-	BindDraftAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
+	BindDraftAgentTools(ctx context.Context, agentID int64, bindTools []*model.BindToolInfo) (err error)
 	DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error)
 	GetDraftAgentTool(ctx context.Context, agentID, toolID int64) (tool *entity.ToolInfo, exist bool, err error)
 	GetDraftAgentToolWithToolName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, exist bool, err error)
@@ -58,6 +58,9 @@ type ToolRepository interface {
 	GetPluginAllDraftTools(ctx context.Context, pluginID int64, opts ...ToolSelectedOptions) (tools []*entity.ToolInfo, err error)
 	GetPluginAllOnlineTools(ctx context.Context, pluginID int64) (tools []*entity.ToolInfo, err error)
 	ListPluginDraftTools(ctx context.Context, pluginID int64, pageInfo dto.PageInfo) (tools []*entity.ToolInfo, total int64, err error)
+
+	// SaaS plugin tools
+	BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, err error)
 }
 
 type GetVersionAgentToolWithToolNameRequest struct {

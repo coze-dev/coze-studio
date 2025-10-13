@@ -27,7 +27,7 @@ import (
 
 //go:generate  mockgen -destination pluginmock/plugin_mock.go --package pluginmock -source plugin.go
 type PluginService interface {
-	BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error)
+	BindAgentTools(ctx context.Context, agentID int64, bindTools []*model.BindToolInfo) (err error)
 	MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*model.ToolInfo, err error)
 	ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error)
 	PublishAPPPlugins(ctx context.Context, req *model.PublishAPPPluginsRequest) (resp *model.PublishAPPPluginsResponse, err error)

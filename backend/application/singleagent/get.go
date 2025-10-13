@@ -206,27 +206,55 @@ func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, ag
 		IsDraft: true,
 		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *bot_common.PluginInfo) model.VersionAgentTool {
 			return model.VersionAgentTool{
-				ToolID: a.GetApiId(),
+				ToolID:       a.GetApiId(),
+				PluginSource: a.PluginSource,
+				PluginID:     a.GetPluginId(),
 			}
 		}),
 	})
 }
 
 func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, agentInfo *entity.SingleAgent, toolInfos []*pluginEntity.ToolInfo) ([]*pluginEntity.PluginInfo, error) {
-	vPlugins := make([]model.VersionPlugin, 0, len(agentInfo.Plugin))
+	vLocalPlugins := make([]model.VersionPlugin, 0, len(agentInfo.Plugin))
 	vPluginMap := make(map[string]bool, len(agentInfo.Plugin))
+	vSaasPlugin := make([]model.VersionPlugin, 0, len(agentInfo.Plugin))
 	for _, v := range toolInfos {
-		k := fmt.Sprintf("%d:%s", v.PluginID, v.GetVersion())
+		k := fmt.Sprintf("%d:%s:%s", v.PluginID, v.GetVersion(), v.GetPluginSource())
 		if vPluginMap[k] {
 			continue
 		}
 		vPluginMap[k] = true
-		vPlugins = append(vPlugins, model.VersionPlugin{
-			PluginID: v.PluginID,
-			Version:  v.GetVersion(),
-		})
+		if v.GetPluginSource() == bot_common.PluginSource_FromSaas {
+			vSaasPlugin = append(vSaasPlugin, model.VersionPlugin{
+				PluginID: v.PluginID,
+				Version:  v.GetVersion(),
+			})
+		} else {
+			vLocalPlugins = append(vLocalPlugins, model.VersionPlugin{
+				PluginID: v.PluginID,
+				Version:  v.GetVersion(),
+			})
+		}
 	}
-	return s.appContext.PluginDomainSVC.MGetVersionPlugins(ctx, vPlugins)
+	pluginInfos := make([]*pluginEntity.PluginInfo, 0, len(vLocalPlugins)+len(vSaasPlugin))
+	if len(vLocalPlugins) > 0 {
+		localPluginInfos, err := s.appContext.PluginDomainSVC.MGetVersionPlugins(ctx, vLocalPlugins)
+		if err != nil {
+			return nil, fmt.Errorf("fetch local plugin details failed: %v", err)
+		}
+		pluginInfos = append(pluginInfos, localPluginInfos...)
+	}
+
+	if len(vSaasPlugin) > 0 {
+		saasPluginInfos, err := s.appContext.PluginDomainSVC.GetSaasPluginInfo(ctx, slices.Transform(vSaasPlugin, func(v model.VersionPlugin) int64 {
+			return v.PluginID
+		}))
+		if err != nil {
+			return nil, fmt.Errorf("fetch saas plugin details failed: %v", err)
+		}
+		pluginInfos = append(pluginInfos, saasPluginInfos...)
+	}
+	return pluginInfos, nil
 }
 
 func (s *SingleAgentApplicationService) fetchWorkflowDetails(ctx context.Context, agentInfo *entity.SingleAgent) ([]*workflowEntity.Workflow, error) {
@@ -305,7 +333,9 @@ func (s *SingleAgentApplicationService) pluginInfoDo2Vo(ctx context.Context, plu
 		e := v.PluginInfo
 
 		var iconURL string
-		if e.GetIconURI() != "" {
+		if e.IconURL != nil {
+			iconURL = *e.IconURL
+		} else if e.GetIconURI() != "" {
 			var err error
 			iconURL, err = s.appContext.TosClient.GetObjectUrl(ctx, e.GetIconURI())
 			if err != nil {
