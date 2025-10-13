@@ -51,13 +51,18 @@ type PluginInfo struct {
 	CreatedAt int64
 	UpdatedAt int64
 
-	Source *bot_common.PluginSource
-	Extra  map[string]any
+	Source          *bot_common.PluginSource
+	SaasPluginExtra *SaasPluginExtraInfo
+	Extra           map[string]any
 
 	Manifest   *PluginManifest
 	OpenapiDoc *Openapi3T
 }
 
+type SaasPluginExtraInfo struct {
+	IsOfficial  bool
+	JumpSaasURL *string
+}
 type ToolExample struct {
 	RequestExample  string
 	ResponseExample string

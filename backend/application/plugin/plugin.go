@@ -223,6 +223,12 @@ func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Conte
 			}
 			return ptr.Of(productCommon.PluginType_CLoudPlugin)
 		}(),
+		JumpSaasURL: func() *string {
+			if plugin.SaasPluginExtra != nil && plugin.SaasPluginExtra.JumpSaasURL != nil {
+				return plugin.SaasPluginExtra.JumpSaasURL
+			}
+			return nil
+		}(),
 	}
 
 	toolInfos := make([]*productAPI.PluginToolInfo, 0, len(tools))
@@ -264,6 +270,8 @@ func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Conte
 			} else {
 				authMode = ptr.Of(productAPI.PluginAuthMode_Configured)
 			}
+		} else if authInfo.Type == consts.AuthTypeOfSaasInstalled {
+			authMode = ptr.Of(productAPI.PluginAuthMode_NeedInstalled)
 		}
 	}
 
@@ -328,14 +336,14 @@ func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductIn
 			Description: plugin.GetDesc(),
 			IconURL:     plugin.GetIconURI(),
 			ListedAt:    plugin.CreatedAt,
-			EntityType:  func() productCommon.ProductEntityType {
+			EntityType: func() productCommon.ProductEntityType {
 				if ptr.From(plugin.Source) == bot_common.PluginSource_FromSaas {
 					return productCommon.ProductEntityType_SaasPlugin
 				}
 				return productCommon.ProductEntityType_Plugin
 			}(),
-			IsOfficial:  true,
-			Status:      productCommon.ProductStatus_Listed,
+			IsOfficial: true,
+			Status:     productCommon.ProductStatus_Listed,
 			UserInfo: &productCommon.UserInfo{
 				Name: "Coze Official",
 			},

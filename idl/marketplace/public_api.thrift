@@ -213,6 +213,8 @@ enum PluginAuthMode {
     Required   = 1, // Authorization required, but no authorization configuration
     Configured = 2, // Authorization is required and has been configured
     Supported  = 3, // Authorization is required, but the authorization configuration may be user-level and can be configured by the user himself
+
+    NeedInstalled = 9, // the third-party of coze saas plugin needs to be installed in the saas before it can be used.
 }
 
 struct PluginExtraInfo {
@@ -235,6 +237,7 @@ struct PluginExtraInfo {
 
     // for opencoze
     50: optional PluginAuthMode AuthMode (agw.key = "auth_mode", api.body= "auth_mode"),
+    51: optional string JumpSaasURL (agw.key = "jump_saas_url", api.body= "jump_saas_url"),
 }
 
 struct ToolParameter {
