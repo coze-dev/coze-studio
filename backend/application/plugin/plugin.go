@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	productCommon "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
 	productAPI "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
@@ -327,7 +328,12 @@ func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductIn
 			Description: plugin.GetDesc(),
 			IconURL:     plugin.GetIconURI(),
 			ListedAt:    plugin.CreatedAt,
-			EntityType:  productCommon.ProductEntityType_Plugin,
+			EntityType:  func() productCommon.ProductEntityType {
+				if ptr.From(plugin.Source) == bot_common.PluginSource_FromSaas {
+					return productCommon.ProductEntityType_SaasPlugin
+				}
+				return productCommon.ProductEntityType_Plugin
+			}(),
 			IsOfficial:  true,
 			Status:      productCommon.ProductStatus_Listed,
 			UserInfo: &productCommon.UserInfo{
