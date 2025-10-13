@@ -109,7 +109,12 @@ func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.Plugi
 		DescriptionForHuman: metaInfo.Description,
 		LogoURL:             metaInfo.IconURL,
 		Auth: &model.AuthV2{
-			Type: consts.AuthzTypeOfNone,
+			Type: func() consts.AuthzType {
+				if !metaInfo.IsCallAvailable {
+					return consts.AuthTypeOfSaasInstalled
+				}
+				return consts.AuthzTypeOfNone
+			}(),
 		},
 		API: model.APIDesc{
 			Type: "openapi",
@@ -128,6 +133,16 @@ func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.Plugi
 		UpdatedAt:   metaInfo.ListedAt,
 		Manifest:    manifest,
 		Source:      ptr.Of(bot_common.PluginSource_FromSaas),
+		SaasPluginExtra: &model.SaasPluginExtraInfo{
+			IsOfficial:  metaInfo.IsOfficial,
+			JumpSaasURL: &metaInfo.ProductURL,
+		},
+		RefProductID: func() *int64 {
+			if id, err := strconv.ParseInt(metaInfo.ProductID, 10, 64); err == nil {
+				return ptr.Of(id)
+			}
+			return nil
+		}(),
 	}
 
 	return entity.NewPluginInfo(pluginInfo)
@@ -147,7 +162,12 @@ func convertCozePluginToEntity(cozePlugin *dto.SaasPluginToolsList) *entity.Plug
 		DescriptionForHuman: cozePlugin.Description,
 		LogoURL:             cozePlugin.IconURL,
 		Auth: &model.AuthV2{
-			Type: consts.AuthzTypeOfNone,
+			Type: func() consts.AuthzType {
+				if !cozePlugin.IsCallAvailable {
+					return consts.AuthTypeOfSaasInstalled
+				}
+				return consts.AuthzTypeOfNone
+			}(),
 		},
 		API: model.APIDesc{
 			Type: "openapi",

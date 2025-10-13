@@ -32,6 +32,8 @@ const (
 	AuthzTypeOfNone    AuthzType = "none"
 	AuthzTypeOfService AuthzType = "service_http"
 	AuthzTypeOfOAuth   AuthzType = "oauth"
+
+	AuthTypeOfSaasInstalled AuthzType = "saas_installed"
 )
 
 type AuthzSubType string
