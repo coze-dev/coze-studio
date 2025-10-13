@@ -28,6 +28,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/internal/agentflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/repository"
@@ -148,10 +149,13 @@ func (s *singleAgentImpl) GetSingleAgent(ctx context.Context, agentID int64, ver
 
 func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo *entity.SingleAgent) (err error) {
 	if agentInfo.Plugin != nil {
-		toolIDs := slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) int64 {
-			return item.GetApiId()
-		})
-		err = crossplugin.DefaultSVC().BindAgentTools(ctx, agentInfo.AgentID, toolIDs)
+		err = crossplugin.DefaultSVC().BindAgentTools(ctx, agentInfo.AgentID, slices.Transform(agentInfo.Plugin, func(item *bot_common.PluginInfo) *model.BindToolInfo {
+			return &model.BindToolInfo{
+				ToolID:   item.GetApiId(),
+				PluginID: item.GetPluginId(),
+				Source:   item.PluginSource,
+			}
+		}))
 		if err != nil {
 			return fmt.Errorf("bind agent tools failed, err=%v", err)
 		}

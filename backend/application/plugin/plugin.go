@@ -34,8 +34,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
-	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	entityUser "github.com/coze-dev/coze-studio/backend/domain/user/entity"
+	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -597,8 +597,8 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 
 	//todo:: need to move
 	userInfo := &entityUser.SaasUserData{
-		UserName: "gigoo",
-		NickName: "gigoo",
+		UserName:  "gigoo",
+		NickName:  "gigoo",
 		AvatarURL: "https://p6-passport.byteacctimg.com/img/user-avatar/cae85f2778fc38b29f5930be8f954bed~300x300.image",
 	}
 	benefit := &entityUser.UserBenefit{
@@ -610,8 +610,8 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 	data := &productAPI.GetProductCallInfoData{
 		UserLevel: productAPI.UserLevel_Free,
 		UserInfo: &productAPI.UserInfo{
-			UserName: ptr.Of(userInfo.UserName),
-			NickName: ptr.Of(userInfo.NickName),
+			UserName:  ptr.Of(userInfo.UserName),
+			NickName:  ptr.Of(userInfo.NickName),
 			AvatarURL: ptr.Of(userInfo.AvatarURL),
 		},
 	}

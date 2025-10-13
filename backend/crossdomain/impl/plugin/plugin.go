@@ -43,8 +43,8 @@ func InitDomainService(c plugin.PluginService, tos storage.Storage) crossplugin.
 	return defaultSVC
 }
 
-func (s *impl) BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {
-	return s.DomainSVC.BindAgentTools(ctx, agentID, toolIDs)
+func (s *impl) BindAgentTools(ctx context.Context, agentID int64, bindTools []*model.BindToolInfo) (err error) {
+	return s.DomainSVC.BindAgentTools(ctx, agentID, bindTools)
 }
 
 func (s *impl) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*model.ToolInfo, err error) {

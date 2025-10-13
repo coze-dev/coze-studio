@@ -21,6 +21,11 @@ import (
 	api "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 )
 
+type BindToolInfo struct {
+	ToolID   int64
+	PluginID int64
+	Source   *bot_common.PluginSource
+}
 type VersionPlugin struct {
 	PluginID int64
 	Version  string
@@ -38,6 +43,7 @@ type PluginInfo struct {
 	APPID        *int64
 	RefProductID *int64 // for product plugin
 	IconURI      *string
+	IconURL      *string
 	ServerURL    *string
 	Version      *string
 	VersionDesc  *string

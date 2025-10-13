@@ -70,6 +70,10 @@ func (t ToolInfo) GetVersion() string {
 	return ptr.FromOrDefault(t.Version, "")
 }
 
+func (t ToolInfo) GetPluginSource() bot_common.PluginSource {
+	return ptr.FromOrDefault(t.Source, 0)
+}
+
 func (t ToolInfo) GetActivatedStatus() consts.ActivatedStatus {
 	return ptr.FromOrDefault(t.ActivatedStatus, consts.ActivateTool)
 }
@@ -604,7 +608,9 @@ type VersionAgentTool struct {
 	ToolName *string
 	ToolID   int64
 
+	PluginID     int64
 	AgentVersion *string
+	PluginSource *bot_common.PluginSource
 }
 
 type MGetAgentToolsRequest struct {

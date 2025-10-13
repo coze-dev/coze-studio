@@ -20,21 +20,24 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {
-	return p.toolRepo.BindDraftAgentTools(ctx, agentID, toolIDs)
+func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, bindTools []*model.BindToolInfo) (err error) {
+	return p.toolRepo.BindDraftAgentTools(ctx, agentID, bindTools)
 }
 
 func (p *pluginServiceImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
@@ -67,14 +70,35 @@ func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID
 }
 
 func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error) {
-	toolIDs := make([]int64, 0, len(req.VersionAgentTools))
+	localToolIDs := make([]int64, 0, len(req.VersionAgentTools))
+	saasToolIDs := make([]int64, 0, len(req.VersionAgentTools))
+	saasToolPluginIDs := make([]int64, 0, len(req.VersionAgentTools))
 	for _, v := range req.VersionAgentTools {
-		toolIDs = append(toolIDs, v.ToolID)
+		if ptr.From(v.PluginSource) == bot_common.PluginSource_FromSaas {
+			saasToolIDs = append(saasToolIDs, v.ToolID)
+			saasToolPluginIDs = append(saasToolPluginIDs, v.PluginID)
+		} else {
+			localToolIDs = append(localToolIDs, v.ToolID)
+		}
 	}
 	// todo :: saas plugin or local plugin
-	existTools, err := p.toolRepo.MGetOnlineTools(ctx, toolIDs, repository.WithToolID())
+	existTools, err := p.toolRepo.MGetOnlineTools(ctx, localToolIDs, repository.WithToolID())
 	if err != nil {
-		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", toolIDs)
+		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", localToolIDs)
+	}
+
+	if len(saasToolIDs) > 0 {
+		saasToolPluginInfos, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, saasToolPluginIDs)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginIDs=%v", saasToolPluginIDs)
+		}
+		for _, tools := range saasToolPluginInfos {
+			for _, saasTool := range tools {
+				if slices.Contains(saasToolIDs, saasTool.ID) {
+					existTools = append(existTools, saasTool)
+				}
+			}
+		}
 	}
 
 	if len(existTools) == 0 {

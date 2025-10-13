@@ -236,9 +236,17 @@ type SaasPluginToolsListResponse struct {
 	Items []SaasPluginToolsList `json:"items"`
 }
 type SaasPluginToolsList struct {
-	Tools    []Tools `json:"tools"`
-	PluginID string  `json:"plugin_id"`
-	McpJSON  string  `json:"mcp_json"`
+	Tools           []Tools `json:"tools"`
+	PluginID        string  `json:"plugin_id"`
+	Name            string  `json:"name"`
+	NameForModel    string  `json:"name_for_model"`
+	Description     string  `json:"description"`
+	IconURL         string  `json:"icon_url"`
+	Category        string  `json:"category"`
+	CreatedAt       int64   `json:"created_at"`
+	UpdatedAt       int64   `json:"updated_at"`
+	IsCallAvailable bool    `json:"is_call_available"`
+	McpJSON         string  `json:"mcp_json"`
 }
 
 type Tools struct {
