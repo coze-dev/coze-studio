@@ -98,7 +98,6 @@ export interface PluginPanelProps extends PluginModalModeProps {
     listed_at?: Int64;
     version_name?: string;
     version_ts?: string;
-    entity_type?: number;
   };
   highlightWords?: string[];
   showButton?: boolean;
@@ -179,7 +178,6 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
     is_official,
     version_name,
     version_ts,
-    entity_type,
   } = info;
   const botId = useBotInfoStore(state => state.botId);
   const { id: productId, status: marketStatus, auth_mode } = productInfo || {};
@@ -621,7 +619,6 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                       const cbResult = await openModeCallback?.({
                         ...apiToSend,
                         ...pluginInfo,
-                        entity_type,
                       });
                       /** Allow to add failed scenarios  */
                       if (isBoolean(cbResult)) {

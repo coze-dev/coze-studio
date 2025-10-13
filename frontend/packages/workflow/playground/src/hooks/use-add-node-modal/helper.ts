@@ -18,7 +18,7 @@ import semver from 'semver';
 import { type ApiNodeDataDTO } from '@coze-workflow/nodes';
 import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { BlockInput } from '@coze-workflow/base';
-import { PluginSource } from '@coze-arch/bot-api/playground_api';
+import { type PluginSource } from '@coze-arch/bot-api/playground_api';
 
 interface PluginApi {
   name: string;
@@ -30,7 +30,7 @@ interface PluginApi {
   plugin_product_status: number;
   version_name?: string;
   version_ts?: string;
-  entity_type?: number;
+  plugin_source?: PluginSource;
 }
 
 export const createApiNodeInfo = (
@@ -44,7 +44,7 @@ export const createApiNodeInfo = (
     plugin_id,
     desc,
     version_ts,
-    entity_type,
+    plugin_source,
   } = apiParams || {};
 
   const result: ApiNodeDataDTO = {
@@ -69,12 +69,9 @@ export const createApiNodeInfo = (
     },
   };
 
-  // SaaS plugin entity_type is 901
-  const isFromSaaSPlugin = entity_type === PluginSource.FromSaas;
-
   // 开源版本，如果选择来自 Coze.cn 插件，设置 pluginSource 为 1
-  if (isFromSaaSPlugin && IS_OPEN_SOURCE) {
-    result.data.inputs.pluginSource = 1;
+  if (IS_OPEN_SOURCE) {
+    result.data.inputs.pluginSource = plugin_source;
   }
 
   return result;
