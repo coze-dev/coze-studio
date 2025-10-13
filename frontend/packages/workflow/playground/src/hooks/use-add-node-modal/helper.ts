@@ -18,6 +18,7 @@ import semver from 'semver';
 import { type ApiNodeDataDTO } from '@coze-workflow/nodes';
 import { type BotPluginWorkFlowItem } from '@coze-workflow/components';
 import { BlockInput } from '@coze-workflow/base';
+import { PluginSource } from '@coze-arch/bot-api/playground_api';
 
 interface PluginApi {
   name: string;
@@ -69,8 +70,7 @@ export const createApiNodeInfo = (
   };
 
   // SaaS plugin entity_type is 901
-  // todo zxh 这里需要修改 901 为枚举 ProductEntityType
-  const isFromSaaSPlugin = entity_type === 901;
+  const isFromSaaSPlugin = entity_type === PluginSource.FromSaas;
 
   // 开源版本，如果选择来自 Coze.cn 插件，设置 pluginSource 为 1
   if (isFromSaaSPlugin && IS_OPEN_SOURCE) {
