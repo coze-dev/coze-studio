@@ -56,7 +56,7 @@ func (a agentToolDraftPO) ToDO() *entity.ToolInfo {
 		Method:    &a.Method,
 		SubURL:    &a.SubURL,
 		Operation: a.Operation,
-		Source:    ptr.Of(bot_common.PluginSource_FromSaas),
+		Source:    ptr.Of(bot_common.PluginSource(a.Source)),
 	}
 }
 
