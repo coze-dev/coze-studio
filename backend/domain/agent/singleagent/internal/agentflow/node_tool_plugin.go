@@ -51,6 +51,8 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			return model.VersionAgentTool{
 				ToolID:       a.GetApiId(),
 				AgentVersion: ptr.Of(conf.agentIdentity.Version),
+				PluginSource: a.PluginSource,
+				PluginID:     a.GetPluginId(),
 			}
 		}),
 	}
@@ -69,10 +71,11 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 	tools := make([]tool.InvokableTool, 0, len(agentTools))
 	for _, ti := range agentTools {
 		tools = append(tools, &pluginInvokableTool{
-			userID:      conf.userID,
-			isDraft:     conf.agentIdentity.IsDraft,
-			projectInfo: projectInfo,
-			toolInfo:    ti,
+			userID:       conf.userID,
+			isDraft:      conf.agentIdentity.IsDraft,
+			projectInfo:  projectInfo,
+			toolInfo:     ti,
+			pluginSource: ti.Source,
 
 			conversationID: conf.conversationID,
 		})
@@ -86,6 +89,8 @@ type pluginInvokableTool struct {
 	isDraft     bool
 	toolInfo    *pluginEntity.ToolInfo
 	projectInfo *model.ProjectInfo
+
+	pluginSource *bot_common.PluginSource
 
 	conversationID int64
 }
@@ -117,6 +122,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		PluginID:        p.toolInfo.PluginID,
 		ToolID:          p.toolInfo.ID,
 		ExecDraftTool:   false,
+		PluginSource:    p.pluginSource,
 		ArgumentsInJson: argumentsInJSON,
 		ExecScene: func() consts.ExecuteScene {
 			if p.isDraft {

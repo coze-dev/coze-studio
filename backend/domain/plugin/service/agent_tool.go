@@ -81,7 +81,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 			localToolIDs = append(localToolIDs, v.ToolID)
 		}
 	}
-	// todo :: saas plugin or local plugin
+
 	existTools, err := p.toolRepo.MGetOnlineTools(ctx, localToolIDs, repository.WithToolID())
 	if err != nil {
 		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", localToolIDs)

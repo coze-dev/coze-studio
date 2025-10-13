@@ -181,7 +181,7 @@ func convertCozePluginToEntity(cozePlugin *dto.SaasPluginToolsList) *entity.Plug
 		DeveloperID: 0,
 		APPID:       nil,
 		IconURL:     &cozePlugin.IconURL,
-		ServerURL:   ptr.Of(""),
+		ServerURL:   ptr.Of("https://api.coze.cn"),
 		CreatedAt:   cozePlugin.CreatedAt,
 		UpdatedAt:   cozePlugin.UpdatedAt,
 		Manifest:    manifest,
