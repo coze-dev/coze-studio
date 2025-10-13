@@ -35,11 +35,12 @@ interface ProductInfo extends explore.ProductInfo {
 export type PluginCardProps = ProductInfo & {
   isInstalled?: boolean;
   isShowInstallButton?: boolean;
+  className?: string;
 };
 
 export const PluginCard: FC<PluginCardProps> = props => (
   <CardContainer
-    className={styles.plugin}
+    className={cls(styles.plugin, props.className)}
     shadowMode="default"
     onClick={() => {
       window.open(

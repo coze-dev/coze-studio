@@ -32,14 +32,18 @@ import {
 interface SearchCardProps {
   detail: ProductInfo;
   entityType: ProductEntityType;
+  className?: string;
 }
 
 export const SearchCard = (props: SearchCardProps) => {
-  const { detail, entityType } = props;
+  const { detail, entityType, className } = props;
 
   switch (detail.meta_info.entity_type ?? entityType) {
     case ProductEntityType.Plugin:
-      return <PluginCard {...(detail as PluginCardProps)} />;
+    case ProductEntityType.SaasPlugin:
+      return (
+        <PluginCard {...(detail as PluginCardProps)} className={className} />
+      );
     case ProductEntityType.BotTemplate:
     case ProductEntityType.ImageflowTemplateV2:
     case ProductEntityType.WorkflowTemplateV2:

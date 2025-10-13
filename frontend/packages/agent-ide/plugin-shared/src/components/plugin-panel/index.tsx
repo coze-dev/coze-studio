@@ -86,7 +86,7 @@ import {
   IconCozDesktop,
   IconCozInfoCircle,
 } from '@coze-arch/coze-design/icons';
-
+import { ActivatePopover } from './activate-popover';
 import { isBoolean, isUndefined } from 'lodash-es';
 import {
   type CommercialSetting,
@@ -264,6 +264,16 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
     if (isUndefined(auth_mode) || auth_mode === PluginAuthMode.NoAuth) {
       return null;
     }
+    if (auth_mode === PluginAuthMode.NeedInstalled) {
+      return (
+        <ActivatePopover>
+          <Tag color="yellow" className="font-medium !py-2px !px-4px !h-20px">
+            待开通
+          </Tag>
+        </ActivatePopover>
+      );
+    }
+
     if (
       auth_mode === PluginAuthMode.Required ||
       auth_mode === PluginAuthMode.Supported
@@ -482,6 +492,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
             isAdded={isAdded}
             pluginApi={api}
             from={from}
+            auth_mode={auth_mode}
             workflowNodes={
               pluginApiNodesMap[`${api?.plugin_id}_${api?.api_id}`] ?? []
             }

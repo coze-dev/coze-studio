@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /*
  * Copyright 2025 coze-dev Authors
  *
@@ -47,6 +48,7 @@ import {
   SuggestedQuestionsShowMode,
   type LayoutInfo,
   DisablePromptCalling,
+  type PluginSource,
 } from '@coze-arch/bot-api/playground_api';
 import { SuggestReplyMode } from '@coze-arch/bot-api/developer_api';
 import { type ShortCutStruct } from '@coze-agent-ide/tool-config';
@@ -104,6 +106,7 @@ export const transformDto2Vo = {
           // The historical reason for this type is that each service on the server level is not unified, and the actual business use is the enumeration type
           plugin_type: plugin?.plugin_type as unknown as PluginType,
           status: plugin?.plugin_status as unknown as PluginStatus,
+          plugin_source: plugin?.plugin_source as unknown as PluginSource,
         };
       }) ?? [],
 
