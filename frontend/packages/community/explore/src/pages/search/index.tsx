@@ -287,6 +287,7 @@ export const SearchPage = () => {
                   key={productInfo.meta_info.id}
                   detail={productInfo}
                   entityType={entityType}
+                  className="!mb-[16px]"
                 />
               )}
               renderFooter={({ isLoading, isError, noMore }) => {

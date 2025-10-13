@@ -32,7 +32,7 @@ export const useEntityType = (): {
     const queryParam = queryString.parse(location.search);
     const entityTypeParam =
       Number(queryParam.entityType as unknown as string) ||
-      ProductEntityType.Bot;
+      ProductEntityType.SaasPlugin;
 
     const allowEntityType = getAllowEntitySortList({
       isLogin,
@@ -40,7 +40,7 @@ export const useEntityType = (): {
     if (allowEntityType.includes(entityTypeParam)) {
       return entityTypeParam;
     }
-    return ProductEntityType.Bot;
+    return ProductEntityType.SaasPlugin;
   });
   const [entityType, setEntityType] = useState(entityTypeDefaylt);
   return {

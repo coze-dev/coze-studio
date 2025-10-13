@@ -70,7 +70,7 @@ export const SearchInput = React.forwardRef(
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-      setEntityTypeIn(entityType || ProductEntityType.Bot);
+      setEntityTypeIn(entityType || ProductEntityType.SaasPlugin);
     }, [entityType]);
     useEffect(() => {
       let inputValueTemp = defaultValue;
