@@ -21,14 +21,14 @@ import { IconCozDiamondFill } from '@coze-arch/coze-design/icons';
 import { AIButton, Popover, Space } from '@coze-arch/coze-design';
 
 export interface ActivatePopoverProps {
-  url?: string;
+  id?: string;
   show?: boolean;
 }
 
 // 去开通popover弹窗
 export const ActivatePopover: FC<PropsWithChildren<ActivatePopoverProps>> = ({
   children,
-  url,
+  id,
   show = true,
 }) =>
   !show ? (
@@ -52,7 +52,10 @@ export const ActivatePopover: FC<PropsWithChildren<ActivatePopoverProps>> = ({
               color="aiplus"
               hideIcon={true}
               onClick={() => {
-                window.open(url ?? 'https://www.coze.cn');
+                window.open(
+                  `https://www.coze.cn/store/plugin/${id}?from=coze-studio-open`,
+                  '_blank',
+                );
               }}
             >
               去开通

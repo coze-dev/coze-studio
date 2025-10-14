@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import { useRequest } from 'ahooks';
 import { explore } from '@coze-studio/api-schema';
 import {
   PluginCard,
@@ -44,6 +45,11 @@ export const PluginPage = () => {
     {},
   );
 
+  const { data: enableSaaSPlugin } = useRequest(async () => {
+    const res = await explore.PublicGetMarketPluginConfig({});
+    return res.data?.enable_saas_plugin || false;
+  });
+
   const [{ tab }, setState] = useUrlState<{ tab: PluginCateTab }>(
     {
       tab: PluginCateTab.Local,
@@ -64,7 +70,9 @@ export const PluginPage = () => {
         }}
       >
         <TabPanel tab="本地插件" itemKey={PluginCateTab.Local} />
-        <TabPanel tab="Coze插件" itemKey={PluginCateTab.Coze} />
+        {enableSaaSPlugin ? (
+          <TabPanel tab="Coze插件" itemKey={PluginCateTab.Coze} />
+        ) : null}
       </TabBar>
       {tab === PluginCateTab.Coze ? (
         <Button

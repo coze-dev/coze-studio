@@ -135,6 +135,25 @@ export const PublicGetProductCallInfo = /*#__PURE__*/createAPI<GetProductCallInf
   "schemaRoot": "api://schemas/idl_marketplace_public_api",
   "service": "explore"
 });
+export const PublicGetMarketPluginConfig = /*#__PURE__*/createAPI<GetMarketPluginConfigRequest, GetMarketPluginConfigResponse>({
+  "url": "/api/marketplace/product/config",
+  "method": "GET",
+  "name": "PublicGetMarketPluginConfig",
+  "reqType": "GetMarketPluginConfigRequest",
+  "reqMapping": {},
+  "resType": "GetMarketPluginConfigResponse",
+  "schemaRoot": "api://schemas/idl_marketplace_public_api",
+  "service": "explore"
+});
+export interface GetMarketPluginConfigRequest {}
+export interface GetMarketPluginConfigResponse {
+  code: number,
+  message: string,
+  data?: Configuration,
+}
+export interface Configuration {
+  enable_saas_plugin?: boolean
+}
 export interface SearchProductRequest {
   keyword: string,
   page_num: number,

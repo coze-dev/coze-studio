@@ -56,7 +56,6 @@ export const useUsageModal = ({ entity_id }: UsageModalProps) => {
       await explore.PublicGetProductCallInfo({
         entity_type: explore.product_common.ProductEntityType.Plugin,
         entity_id,
-        enterprise_id: '',
       }),
     {
       ready: visible,
