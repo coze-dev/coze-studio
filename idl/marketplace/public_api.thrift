@@ -19,6 +19,21 @@ service PublicProductService {
 
     GetProductCallInfoResponse PublicGetProductCallInfo(1: GetProductCallInfoRequest req)(api.get = "/api/marketplace/product/call_info")
 
+    GetMarketPluginConfigResponse PublicGetMarketPluginConfig(1: GetMarketPluginConfigRequest req)(api.get = "/api/marketplace/product/config", api.category = "PublicAPI")
+}
+
+struct GetMarketPluginConfigRequest{
+}
+
+struct GetMarketPluginConfigResponse{
+    1  : required i32                       Code     (agw.key = "code",api.body = "code")   ,
+    2  : required string                    Message  (agw.key = "message",api.body = "message"),
+    3  : optional Configuration             Data     (agw.key = "data",api.body = "data")   ,
+    255: optional base.BaseResp             BaseResp                                                  ,
+}
+
+struct Configuration {
+    1: optional bool enable_saas_plugin
 }
 
 struct SearchProductRequest{

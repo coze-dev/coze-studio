@@ -1600,3 +1600,8 @@ func _publicgetproductcategorylistMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _publicgetmarketpluginconfigMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
