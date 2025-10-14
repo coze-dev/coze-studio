@@ -158,7 +158,7 @@ export interface SearchProductRequest {
   /** Is recommended */
   is_recommend?: boolean,
   /** Product type list, use this parameter first, then EntityType */
-  entity_types?: product_common.ProductEntityType[],
+  entity_types?: string,
   /** Plugin type */
   plugin_type?: product_common.PluginType,
   /** Product paid type */
@@ -196,7 +196,7 @@ export interface SearchSuggestRequest {
   page_num?: number,
   page_size?: number,
   /** Product type list, use this parameter first, then EntityType */
-  entity_types?: product_common.ProductEntityType[],
+  entity_types?: string,
 }
 export interface FavoriteProductResponse {
   code: number,
@@ -345,6 +345,8 @@ export enum PluginAuthMode {
   Configured = 2,
   /** Authorization is required, but the authorization configuration may be user-level and can be configured by the user himself */
   Supported = 3,
+  /** the third-party of coze saas plugin needs to be installed in the saas before it can be used. */
+  NeedInstalled = 9,
 }
 export interface PluginExtraInfo {
   tools?: PluginToolInfo[],
@@ -370,6 +372,7 @@ export interface PluginExtraInfo {
   plugin_type?: product_common.PluginType,
   /** for opencoze */
   auth_mode?: PluginAuthMode,
+  jump_saas_url?: string,
 }
 export interface ToolParameter {
   name: string,
@@ -903,6 +906,14 @@ export interface ProductCallRateLimit {
     [key: string | number]: ProductCallRateLimit
   },
 }
+export interface UserInfo {
+  /** User name */
+  user_name?: string,
+  /** User nickname */
+  nick_name?: string,
+  /** User avatar url */
+  avatar_url?: string,
+}
 export interface GetProductCallInfoData {
   /** mcp configuration json string */
   mcp_json: string,
@@ -912,6 +923,10 @@ export interface GetProductCallInfoData {
   call_count_limit: ProductCallCountLimit,
   /** Plugin tool call rate limit */
   call_rate_limit: ProductCallRateLimit,
+  /** User info */
+  user_info: UserInfo,
+  /** Enterprise revert time */
+  revert_time?: string,
 }
 export interface GetProductCallInfoResponse {
   code: number,
