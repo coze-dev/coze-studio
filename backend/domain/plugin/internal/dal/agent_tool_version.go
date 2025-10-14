@@ -24,11 +24,13 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -54,6 +56,7 @@ func (a agentToolVersionPO) ToDO() *entity.ToolInfo {
 		Method:    &a.Method,
 		SubURL:    &a.SubURL,
 		Operation: a.Operation,
+		Source:    ptr.Of(bot_common.PluginSource(a.Source)),
 	}
 }
 
@@ -215,6 +218,7 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64, a
 			Method:       tl.GetMethod(),
 			ToolName:     tl.GetName(),
 			Operation:    tl.Operation,
+			Source:       int32(ptr.From(tl.Source)),
 		})
 	}
 
