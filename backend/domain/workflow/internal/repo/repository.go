@@ -77,7 +77,7 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, to
 	cpStore einoCompose.CheckPointStore, chatModel cm.BaseChatModel, workflowConfig workflow.WorkflowConfig) (workflow.Repository, error) {
 	sg, err := NewSuggester(chatModel)
 	if err != nil {
-		return nil, err
+		logs.Warnf("[NewRepository] Failed to create suggester: %v", err)
 	}
 	return &RepositoryImpl{
 		IDGenerator:     idgen,
@@ -101,6 +101,13 @@ func NewRepository(idgen idgen.IDGenerator, db *gorm.DB, redis cache.Cmdable, to
 		WorkflowConfig: workflowConfig,
 	}, nil
 
+}
+
+func (r *RepositoryImpl) Suggest(ctx context.Context, input *vo.SuggestInfo) ([]string, error) {
+	if r.Suggester == nil {
+		return []string{}, nil
+	}
+	return r.Suggester.Suggest(ctx, input)
 }
 
 func (r *RepositoryImpl) CreateMeta(ctx context.Context, meta *vo.Meta) (int64, error) {
