@@ -540,6 +540,7 @@ func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginID
 				Source:    ptr.Of(bot_common.PluginSource_FromSaas),
 				Version:   ptr.Of("0"),
 				Method:    ptr.Of("POST"),
+				SubURL:    ptr.Of(convertSaasToolSubUrl(pluginID)),
 			}
 
 			toolInfos = append(toolInfos, toolInfo)
@@ -551,8 +552,26 @@ func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginID
 	return result, nil
 }
 
+func convertSaasToolSubUrl(pluginID int64) string {
+	return fmt.Sprintf("/v1/plugins/%d/tools/call", pluginID)
+}
+
 // convertFromJsonSchema converts JSON schema to API parameters
 func convertFromJsonSchema(schema *dto.JsonSchema) []*pluginCommon.APIParameter {
+	if schema == nil {
+		return []*pluginCommon.APIParameter{}
+	}
+
+	return convertJsonSchemaToParameters(schema, pluginCommon.ParameterLocation_Body)
+}
+
+// ConvertFromJsonSchemaForTest is an exported version for testing purposes
+func ConvertFromJsonSchemaForTest(schema *dto.JsonSchema) []*pluginCommon.APIParameter {
+	return convertFromJsonSchema(schema)
+}
+
+// convertJsonSchemaToParameters recursively converts JSON schema to API parameters
+func convertJsonSchemaToParameters(schema *dto.JsonSchema, location pluginCommon.ParameterLocation) []*pluginCommon.APIParameter {
 	if schema == nil {
 		return []*pluginCommon.APIParameter{}
 	}
@@ -578,22 +597,62 @@ func convertFromJsonSchema(schema *dto.JsonSchema) []*pluginCommon.APIParameter 
 				Desc:       propSchema.Description,
 				IsRequired: requiredFields[name],
 				Type:       mapJsonSchemaTypeToParameterType(propSchema.Type),
-				Location:   pluginCommon.ParameterLocation_Body,
+				Location:   location,
 			}
 
+			// Handle nested object properties
 			if propSchema.Type == dto.JsonSchemaType_OBJECT && len(propSchema.Properties) > 0 {
-				param.SubParameters = convertFromJsonSchema(propSchema)
+				param.SubParameters = convertJsonSchemaToParameters(propSchema, location)
 			}
 
+			// Handle array properties
 			if propSchema.Type == dto.JsonSchemaType_ARRAY && propSchema.Items != nil {
-				param.Type = (mapJsonSchemaTypeToParameterType(propSchema.Items.Type))
-
-				if propSchema.Items.Type == dto.JsonSchemaType_OBJECT && len(propSchema.Items.Properties) > 0 {
-					param.SubParameters = convertFromJsonSchema(propSchema.Items)
+				// Create a parameter for the array item
+				arrayItemParam := &pluginCommon.APIParameter{
+					Name:       "[Array Item]",
+					Desc:       propSchema.Items.Description,
+					IsRequired: true, // Array items are typically required
+					Type:       mapJsonSchemaTypeToParameterType(propSchema.Items.Type),
+					Location:   location,
 				}
+
+				// If array item is an object, recursively convert its properties
+				if propSchema.Items.Type == dto.JsonSchemaType_OBJECT && len(propSchema.Items.Properties) > 0 {
+					arrayItemParam.SubParameters = convertJsonSchemaToParameters(propSchema.Items, location)
+				}
+
+				// If array item is also an array, handle nested arrays
+				if propSchema.Items.Type == dto.JsonSchemaType_ARRAY && propSchema.Items.Items != nil {
+					// For nested arrays, create sub-parameters recursively
+					nestedArraySchema := &dto.JsonSchema{
+						Type:       propSchema.Items.Type,
+						Items:      propSchema.Items.Items,
+						Properties: propSchema.Items.Properties,
+						Required:   propSchema.Items.Required,
+					}
+					arrayItemParam.SubParameters = convertJsonSchemaToParameters(nestedArraySchema, location)
+				}
+
+				param.SubParameters = []*pluginCommon.APIParameter{arrayItemParam}
 			}
+
 			parameters = append(parameters, param)
 		}
+	} else if schema.Type == dto.JsonSchemaType_ARRAY && schema.Items != nil {
+		// Handle top-level array (though this is less common for API parameters)
+		arrayItemParam := &pluginCommon.APIParameter{
+			Name:       "[Array Item]",
+			Desc:       schema.Items.Description,
+			IsRequired: true,
+			Type:       mapJsonSchemaTypeToParameterType(schema.Items.Type),
+			Location:   location,
+		}
+
+		if schema.Items.Type == dto.JsonSchemaType_OBJECT && len(schema.Items.Properties) > 0 {
+			arrayItemParam.SubParameters = convertJsonSchemaToParameters(schema.Items, location)
+		}
+
+		parameters = append(parameters, arrayItemParam)
 	}
 
 	return parameters

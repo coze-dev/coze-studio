@@ -139,10 +139,6 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 		return nil, errorx.Wrapf(err, "MGetVersionAgentTool failed, agentID=%d, vTools=%v", req.AgentID, vTools)
 	}
 
-	// TODO::saas plugin
-
-	// TODO::merge saas plugin or local plugin
-
 	return tools, nil
 }
 

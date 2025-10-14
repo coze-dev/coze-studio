@@ -273,7 +273,7 @@ func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Conte
 				authMode = ptr.Of(productAPI.PluginAuthMode_Configured)
 			}
 		} else if authInfo.Type == consts.AuthTypeOfSaasInstalled {
-			authMode = ptr.Of(productAPI.PluginAuthMode_NeedInstalled)
+			// authMode = ptr.Of(productAPI.PluginAuthMode_NeedInstalled)
 		}
 	}
 

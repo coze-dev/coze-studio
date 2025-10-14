@@ -268,12 +268,32 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 		return nil, nil, fmt.Errorf("draft tool is not supported in online agent")
 	}
 
-	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
-	if err != nil {
-		return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
-	}
-	if !exist {
-		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+	var (
+		exist bool
+	)
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas {
+
+		tools, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
+		}
+		if len(tools) == 0 {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		for _, tool := range tools[req.PluginID] {
+			if tool.ID == req.ToolID {
+				onlineTool = tool
+				break
+			}
+		}
+	} else {
+		onlineTool, exist, err = p.toolRepo.GetOnlineTool(ctx, req.ToolID)
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
+		}
+		if !exist {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
 	}
 
 	agentTool, exist, err := p.toolRepo.GetVersionAgentTool(ctx, execOpt.ProjectInfo.ProjectID, model.VersionAgentTool{
@@ -288,24 +308,35 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	if execOpt.ToolVersion == "" {
-		onlinePlugin, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas {
+		saasPlugins, err := p.GetSaasPluginInfo(ctx, []int64{req.PluginID})
 		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+			return nil, nil, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginID=%d", req.PluginID)
 		}
-		if !exist {
+		if len(saasPlugins) == 0 {
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 		}
+		onlinePlugin = saasPlugins[0]
 	} else {
-		onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
-			PluginID: req.PluginID,
-			Version:  execOpt.ToolVersion,
-		})
-		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetVersionPlugin failed, pluginID=%d, version=%s", req.PluginID, execOpt.ToolVersion)
-		}
-		if !exist {
-			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		if execOpt.ToolVersion == "" {
+			onlinePlugin, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+			if err != nil {
+				return nil, nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+			}
+			if !exist {
+				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+			}
+		} else {
+			onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
+				PluginID: req.PluginID,
+				Version:  execOpt.ToolVersion,
+			})
+			if err != nil {
+				return nil, nil, errorx.Wrapf(err, "GetVersionPlugin failed, pluginID=%d, version=%s", req.PluginID, execOpt.ToolVersion)
+			}
+			if !exist {
+				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+			}
 		}
 	}
 
