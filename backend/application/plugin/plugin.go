@@ -18,9 +18,12 @@ package plugin
 
 import (
 	"context"
+	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	typesConsts "github.com/coze-dev/coze-studio/backend/types/consts"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	productCommon "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
@@ -35,7 +38,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
-	entityUser "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -591,35 +593,24 @@ func (p *PluginApplicationService) GetSaasProductCategoryList(ctx context.Contex
 }
 
 func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *productAPI.GetProductCallInfoRequest) (resp *productAPI.GetProductCallInfoResponse, err error) {
-	// userInfo, err := p.userSVC.GetSaasUserInfo(ctx)
-	// if err != nil {
-	// 	logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
-	// 	return &productAPI.GetProductCallInfoResponse{
-	// 		Code:    -1,
-	// 		Message: "Failed to get user info",
-	// 	}, nil
-	// }
-
-	// benefit, err := p.userSVC.GetUserBenefit(ctx)
-	// if err != nil {
-	// 	logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
-	// 	return &productAPI.GetProductCallInfoResponse{
-	// 		Code:    -1,
-	// 		Message: "Failed to get user benefit",
-	// 	}, nil
-	// }
-
-	//todo:: need to move
-	userInfo := &entityUser.SaasUserData{
-		UserName:  "gigoo",
-		NickName:  "gigoo",
-		AvatarURL: "https://p6-passport.byteacctimg.com/img/user-avatar/cae85f2778fc38b29f5930be8f954bed~300x300.image",
+	userInfo, err := p.userSVC.GetSaasUserInfo(ctx)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
+		return &productAPI.GetProductCallInfoResponse{
+			Code:    -1,
+			Message: "Failed to get user info",
+		}, nil
 	}
-	benefit := &entityUser.UserBenefit{
-		UsedCount:   10,
-		TotalCount:  100,
-		IsUnlimited: false,
+
+	benefit, err := p.userSVC.GetUserBenefit(ctx)
+	if err != nil {
+		logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
+		return &productAPI.GetProductCallInfoResponse{
+			Code:    -1,
+			Message: "Failed to get user benefit",
+		}, nil
 	}
+
 	// Build response data
 	data := &productAPI.GetProductCallInfoData{
 		UserLevel: productAPI.UserLevel_Free,
@@ -641,4 +632,20 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 		Message: "success",
 		Data:    data,
 	}, nil
+}
+
+func (p *PluginApplicationService) GetMarketPluginConfig(ctx context.Context, req *productAPI.GetMarketPluginConfigRequest) (resp *productAPI.GetMarketPluginConfigResponse, err error) {
+
+	enableSaasPluginEnv := os.Getenv(typesConsts.CozeSaasPluginEnabled)
+	enableSaasPlugin := enableSaasPluginEnv == "true"
+
+	resp = &productAPI.GetMarketPluginConfigResponse{
+		Code:    0,
+		Message: "success",
+		Data: &productAPI.Configuration{
+			EnableSaasPlugin: &enableSaasPlugin,
+		},
+	}
+
+	return resp, nil
 }

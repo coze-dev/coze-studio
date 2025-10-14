@@ -362,3 +362,23 @@ func PublicGetProductCallInfo(ctx context.Context, c *app.RequestContext) {
 
 	c.JSON(consts.StatusOK, resp)
 }
+
+// PublicGetMarketPluginConfig .
+// @router /api/marketplace/product/config [GET]
+func PublicGetMarketPluginConfig(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetMarketPluginConfigRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetMarketPluginConfig(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
