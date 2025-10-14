@@ -64,6 +64,9 @@ export const renderEmpty = (
   }
   return (
     <ResponsiveList
+      gridGapYs={{
+        basic: 4,
+      }}
       dataSource={Array(24).fill(0)}
       renderItem={(_, idx) => (
         <SearchSkeleton key={idx} entityType={entityType} />

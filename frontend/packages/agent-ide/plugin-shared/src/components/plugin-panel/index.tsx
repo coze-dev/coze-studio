@@ -266,7 +266,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
     }
     if (auth_mode === PluginAuthMode.NeedInstalled) {
       return (
-        <ActivatePopover>
+        <ActivatePopover id={id}>
           <Tag color="yellow" className="font-medium !py-2px !px-4px !h-20px">
             待开通
           </Tag>

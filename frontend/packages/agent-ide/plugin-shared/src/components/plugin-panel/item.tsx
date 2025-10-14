@@ -82,7 +82,7 @@ export const PluginItem: React.FC<PluginItemProps> = ({
   connectors,
   auth_mode,
 }) => {
-  const { name, desc, parameters, debug_example } = pluginApi;
+  const { name, desc, parameters, debug_example, plugin_id } = pluginApi;
   const { exampleNode, doShowExample } = useViewExample();
   const [isMouseIn, { setFalse, setTrue }] = useBoolean(false);
 
@@ -225,6 +225,7 @@ export const PluginItem: React.FC<PluginItemProps> = ({
                   trigger={isDisabled ? 'hover' : 'custom'}
                 >
                   <ActivatePopover
+                    id={plugin_id}
                     show={auth_mode === PluginAuthMode.NeedInstalled}
                   >
                     <UIButton
