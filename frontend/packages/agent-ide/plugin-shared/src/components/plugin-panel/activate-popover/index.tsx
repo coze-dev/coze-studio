@@ -32,10 +32,10 @@ export const ActivatePopover: FC<PropsWithChildren<ActivatePopoverProps>> = ({
   show = true,
 }) => {
   console.log('children');
-  if (!show) {
-    return null;
-  }
-  return (
+
+  return !show ? (
+    children
+  ) : (
     <Popover
       content={
         <div>
