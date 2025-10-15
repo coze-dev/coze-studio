@@ -273,7 +273,7 @@ func (p *PluginApplicationService) buildPluginProductExtraInfo(ctx context.Conte
 				authMode = ptr.Of(productAPI.PluginAuthMode_Configured)
 			}
 		} else if authInfo.Type == consts.AuthTypeOfSaasInstalled {
-			// authMode = ptr.Of(productAPI.PluginAuthMode_NeedInstalled)
+			authMode = ptr.Of(productAPI.PluginAuthMode_NeedInstalled)
 		}
 	}
 
@@ -332,7 +332,7 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductInfo {
 	return &productAPI.ProductInfo{
 		MetaInfo: &productAPI.ProductMetaInfo{
-			ID:          plugin.ID,
+			ID:          plugin.GetRefProductID(),
 			Name:        plugin.GetName(),
 			EntityID:    plugin.ID,
 			Description: plugin.GetDesc(),
@@ -626,6 +626,7 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 		IsUnlimited: benefit.IsUnlimited,
 		UsedCount:   benefit.UsedCount,
 		TotalCount:  benefit.TotalCount,
+		ResetDatetime: benefit.ResetDatetime,
 	}
 
 	return &productAPI.GetProductCallInfoResponse{
