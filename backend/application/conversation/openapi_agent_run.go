@@ -238,11 +238,31 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 						Text: ptr.From(one.Text),
 					})
 				case message.InputTypeImage, message.InputTypeFile:
+					// 🔥 关键修复：对于图片/文件，尝试从URL中提取URI并重新生成签名URL
+					fileURL := one.GetFileURL()
+
+					// 尝试从URL中提取URI（例如从MinIO URL中提取对象路径）
+					uri, extractErr := a.extractURIFromURL(fileURL)
+					if extractErr == nil && uri != "" {
+						// 成功提取URI，重新生成访问URL
+						logs.CtxInfof(ctx, "Extracted URI from URL: %s -> %s", fileURL, uri)
+						regeneratedURL, urlErr := a.getUrlByUri(ctx, uri)
+						if urlErr == nil && regeneratedURL != "" {
+							logs.CtxInfof(ctx, "Regenerated URL for multimodal content: %s", regeneratedURL)
+							fileURL = regeneratedURL
+						} else {
+							logs.CtxWarnf(ctx, "Failed to regenerate URL from URI %s, using original URL: %v", uri, urlErr)
+						}
+					} else {
+						logs.CtxInfof(ctx, "Using original file URL (no URI extraction needed): %s", fileURL)
+					}
+
 					multiContents = append(multiContents, &message.InputMetaData{
 						Type: message.InputType(one.Type),
 						FileData: []*message.FileData{
 							{
-								Url: one.GetFileURL(),
+								Url: fileURL,
+								URI: uri,  // 保存URI以便后续使用
 							},
 						},
 					})
@@ -255,6 +275,51 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 	}
 
 	return multiContents, contentType, nil
+}
+
+// getUrlByUri 从URI重新生成带签名的访问URL（与Web接口保持一致）
+func (a *OpenapiAgentRunApplication) getUrlByUri(ctx context.Context, uri string) (string, error) {
+	if a.appContext == nil || a.appContext.ImageX == nil {
+		return "", errors.New("ImageX service not available")
+	}
+
+	url, err := a.appContext.ImageX.GetResourceURL(ctx, uri)
+	if err != nil {
+		return "", err
+	}
+
+	return url.URL, nil
+}
+
+// extractURIFromURL 从完整URL中提取URI
+// 例如：http://localhost:8889/opencoze/BIZ_BOT_ICON/xxx.jpg -> tos-cn-i-v4nquku3lp/xxx.jpg
+// 或者：https://agents.finmall.com/api/storage/tos-cn-i-v4nquku3lp/xxx.jpg -> tos-cn-i-v4nquku3lp/xxx.jpg
+func (a *OpenapiAgentRunApplication) extractURIFromURL(fileURL string) (string, error) {
+	if fileURL == "" {
+		return "", errors.New("empty file URL")
+	}
+
+	// 情况1: 如果URL包含 "/api/storage/"，提取后面的部分作为URI
+	if idx := strings.Index(fileURL, "/api/storage/"); idx >= 0 {
+		uri := fileURL[idx+len("/api/storage/"):]
+		return uri, nil
+	}
+
+	// 情况2: 如果URL包含 "/opencoze/"，提取后面的部分并转换为tos格式
+	if idx := strings.Index(fileURL, "/opencoze/"); idx >= 0 {
+		path := fileURL[idx+len("/opencoze/"):]
+		// 这个路径可能是 "BIZ_BOT_ICON/xxx.jpg"，需要转换为 "tos-cn-i-v4nquku3lp/xxx.jpg"
+		// 但我们不知道确切的bucket名称，所以直接返回path
+		return path, nil
+	}
+
+	// 情况3: URL本身可能已经是URI（例如："tos-cn-i-v4nquku3lp/xxx.jpg"）
+	if strings.Contains(fileURL, "tos-cn-") && !strings.HasPrefix(fileURL, "http") {
+		return fileURL, nil
+	}
+
+	// 无法提取URI，返回空字符串（使用原始URL）
+	return "", errors.New("cannot extract URI from URL: " + fileURL)
 }
 
 func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *sseImpl.SSenderImpl, streamer *schema.StreamReader[*entity.AgentRunResponse]) {

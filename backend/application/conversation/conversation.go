@@ -47,6 +47,8 @@ type ConversationApplicationService struct {
 var ConversationSVC = new(ConversationApplicationService)
 
 type OpenapiAgentRunApplication struct {
+	appContext *ServiceComponents  // 添加appContext以访问ImageX服务
+
 	ShortcutDomainSVC service.ShortcutCmd
 }
 
