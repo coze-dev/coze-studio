@@ -20,7 +20,6 @@ package project
 
 import (
 	"fmt"
-
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/base"

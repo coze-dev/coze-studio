@@ -28,6 +28,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert/api"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
@@ -298,7 +299,7 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, b
 	})
 
 	for _, tool := range bindTools {
-		if ptr.From(tool.Source) == bot_common.PluginSource_FromSaas {
+		if ptr.From(tool.Source) == bot_common.PluginFrom_FromSaas {
 			saasToolIDs = append(saasToolIDs, tool.ToolID)
 			saasToolPluginIDs = append(saasToolPluginIDs, tool.PluginID)
 		} else {
@@ -340,7 +341,7 @@ func (t *toolRepoImpl) BindDraftAgentTools(ctx context.Context, agentID int64, b
 
 	var onlineTools []*entity.ToolInfo
 	if len(newSaasBindToolIDs) > 0 {
-		saasPluginTools, err := t.BatchGetSaasPluginToolsInfo(ctx, saasToolPluginIDs)
+		saasPluginTools, _, err := t.BatchGetSaasPluginToolsInfo(ctx, saasToolPluginIDs)
 		if err != nil {
 			return err
 		}
@@ -480,9 +481,9 @@ func (t *toolRepoImpl) BatchCreateVersionAgentTools(ctx context.Context, agentID
 }
 
 // BatchGetSaasPluginToolsInfo retrieves tools information for SaaS plugins
-func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, err error) {
+func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, plugins map[int64]*entity.PluginInfo, err error) {
 	if len(pluginIDs) == 0 {
-		return make(map[int64][]*entity.ToolInfo), nil
+		return make(map[int64][]*entity.ToolInfo), make(map[int64]*entity.PluginInfo), nil
 	}
 
 	client := saasapi.NewCozeAPIClient()
@@ -499,30 +500,35 @@ func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginID
 
 	resp, err := client.GetWithQuery(ctx, "/v1/plugins/mget", queryParams)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "failed to call coze.cn /v1/plugins/mget API")
+		return nil, nil, errorx.Wrapf(err, "failed to call coze.cn /v1/plugins/mget API")
 	}
 
 	var apiResp dto.SaasPluginToolsListResponse
 
 	if err := json.Unmarshal(resp.Data, &apiResp); err != nil {
-		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
+		return nil, nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
 	}
 
 	result := make(map[int64][]*entity.ToolInfo)
-
+	plugins = make(map[int64]*entity.PluginInfo)
+		
 	for _, plugin := range apiResp.Items {
 
 		pluginID, err := strconv.ParseInt(plugin.PluginID, 10, 64)
 		if err != nil {
-			return nil, errorx.Wrapf(err, "failed to parse plugin ID %s", plugin.PluginID)
+			return nil, nil, errorx.Wrapf(err, "failed to parse plugin ID %s", plugin.PluginID)
 		}
+
+		pluginInfo := convertCozePluginToEntity(&plugin)
+		plugins[pluginID] = pluginInfo
+
 		toolInfos := make([]*entity.ToolInfo, 0, len(plugin.Tools))
 
 		for _, tool := range plugin.Tools {
 
 			openapi3Operation, err := api.APIParamsToOpenapiOperation(convertFromJsonSchema(tool.InputSchema), convertFromJsonSchema(tool.OutputSchema))
 			if err != nil {
-				return nil, errorx.Wrapf(err, "failed to convert input schema to openapi operation parameters")
+				return nil, nil, errorx.Wrapf(err, "failed to convert input schema to openapi operation parameters")
 			}
 			openapi3Operation.OperationID = tool.Name
 			openapi3Operation.Summary = tool.Description
@@ -531,13 +537,13 @@ func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginID
 			}
 			id, err := strconv.ParseInt(tool.ToolID, 10, 64)
 			if err != nil {
-				return nil, errorx.Wrapf(err, "failed to parse tool ID %s", tool.ToolID)
+				return nil, nil, errorx.Wrapf(err, "failed to parse tool ID %s", tool.ToolID)
 			}
 			toolInfo := &entity.ToolInfo{
 				ID:        id,
 				PluginID:  pluginID,
 				Operation: operation,
-				Source:    ptr.Of(bot_common.PluginSource_FromSaas),
+				Source:    ptr.Of(bot_common.PluginFrom_FromSaas),
 				Version:   ptr.Of("0"),
 				Method:    ptr.Of("POST"),
 				SubURL:    ptr.Of(convertSaasToolSubUrl(pluginID)),
@@ -549,7 +555,50 @@ func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginID
 		result[pluginID] = toolInfos
 	}
 
-	return result, nil
+	return result, plugins, nil
+}
+
+func convertCozePluginToEntity(cozePlugin *dto.SaasPluginToolsList) *entity.PluginInfo {
+	var pluginID int64
+	if id, err := strconv.ParseInt(cozePlugin.PluginID, 10, 64); err == nil {
+		pluginID = id
+	}
+
+	manifest := &model.PluginManifest{
+		SchemaVersion:       "v1",
+		NameForModel:        cozePlugin.Name,
+		NameForHuman:        cozePlugin.Name,
+		DescriptionForModel: cozePlugin.Description,
+		DescriptionForHuman: cozePlugin.Description,
+		LogoURL:             cozePlugin.IconURL,
+		Auth: &model.AuthV2{
+			Type: func() consts.AuthzType {
+				if !cozePlugin.IsCallAvailable {
+					return consts.AuthTypeOfSaasInstalled
+				}
+				return consts.AuthzTypeOfNone
+			}(),
+		},
+		API: model.APIDesc{
+			Type: "openapi",
+		},
+	}
+
+	pluginInfo := &model.PluginInfo{
+		ID:          pluginID,
+		PluginType:  pluginCommon.PluginType_PLUGIN,
+		SpaceID:     0,
+		DeveloperID: 0,
+		APPID:       nil,
+		IconURL:     &cozePlugin.IconURL,
+		ServerURL:   ptr.Of("https://api.coze.cn"),
+		CreatedAt:   cozePlugin.CreatedAt,
+		UpdatedAt:   cozePlugin.UpdatedAt,
+		Manifest:    manifest,
+		Source:      ptr.Of(bot_common.PluginFrom_FromSaas),
+	}
+
+	return entity.NewPluginInfo(pluginInfo)
 }
 
 func convertSaasToolSubUrl(pluginID int64) string {

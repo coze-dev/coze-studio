@@ -63,7 +63,7 @@ func (p pluginVersionPO) ToDO() *entity.PluginInfo {
 		VersionDesc: &p.VersionDesc,
 		Manifest:    p.Manifest,
 		OpenapiDoc:  p.OpenapiDoc,
-		Source:      bot_common.PluginSourcePtr(bot_common.PluginSource(p.Source)),
+		Source:      bot_common.PluginFromPtr(bot_common.PluginFrom(p.Source)),
 		Extra:       p.Ext,
 	})
 }

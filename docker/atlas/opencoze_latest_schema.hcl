@@ -106,6 +106,12 @@ table "agent_tool_draft" {
     type    = json
     comment = "Tool Openapi Operation Schema"
   }
+  column "source" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "tool source 1 coze saas 0 default"
+  }
   primary_key {
     columns = [column.id]
   }
@@ -196,6 +202,12 @@ table "agent_tool_version" {
     default  = 0
     unsigned = true
     comment  = "Create Time in Milliseconds"
+  }
+  column "source" {
+    null    = false
+    type    = tinyint
+    default = 0
+    comment = "tool source 1 coze saas 0 default"
   }
   primary_key {
     columns = [column.id]

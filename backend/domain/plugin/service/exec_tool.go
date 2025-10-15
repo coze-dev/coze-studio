@@ -188,9 +188,9 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *mo
 	var (
 		exist bool
 	)
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas {
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
 
-		tools, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
+		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
 		if err != nil {
 			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
 		}
@@ -221,7 +221,7 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *mo
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas {
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
 		saasPlugins, err := p.GetSaasPluginInfo(ctx, []int64{req.PluginID})
 		if err != nil {
 			return nil, nil, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginID=%d", req.PluginID)
@@ -271,9 +271,9 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 	var (
 		exist bool
 	)
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas {
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
 
-		tools, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
+		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
 		if err != nil {
 			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
 		}
@@ -308,7 +308,7 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginSource_FromSaas {
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
 		saasPlugins, err := p.GetSaasPluginInfo(ctx, []int64{req.PluginID})
 		if err != nil {
 			return nil, nil, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginID=%d", req.PluginID)
@@ -350,6 +350,27 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 
 func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
+
+	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
+		tools, plugin, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
+		}
+		if len(tools) == 0 {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		for _, tool := range tools[req.PluginID] {
+			if tool.ID == req.ToolID {
+				tl = tool
+				break
+			}
+		}
+		if plugin != nil {
+			pl = plugin[req.PluginID]
+		}
+
+		return pl, tl, nil
+	}
 
 	if req.ExecDraftTool {
 		var exist bool
@@ -621,7 +642,7 @@ func (t *toolExecutor) execute(ctx context.Context, argumentsInJson, accessToken
 	}
 
 	var requestStr, rawResp string
-	if t.plugin.Source != nil && *t.plugin.Source == bot_common.PluginSource_FromSaas {
+	if t.plugin.Source != nil && *t.plugin.Source == bot_common.PluginFrom_FromSaas {
 		requestStr, rawResp, err = tool.NewSaasCallImpl().Do(ctx, invocation)
 	} else {
 		requestStr, rawResp, err = newToolInvocation(t).Do(ctx, invocation)

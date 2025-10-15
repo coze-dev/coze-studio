@@ -1,4 +1,5 @@
 include "../base.thrift"
+include "../app/bot_common.thrift"
 
 namespace go workflow
 
@@ -1294,6 +1295,7 @@ struct GetApiDetailRequest {
     4  :          string    api_id  ,
     5  : optional string    project_id,
     6  : optional string    plugin_version,
+    7  : optional bot_common.PluginFrom plugin_from,
     255: optional base.Base Base    ,
 }
 
@@ -1548,6 +1550,7 @@ struct PluginFCItem {
     3: string api_name,
     4: bool is_draft,
     5: optional string plugin_version,
+    6: optional bot_common.PluginFrom plugin_from,
 }
 
 struct WorkflowFCItem {

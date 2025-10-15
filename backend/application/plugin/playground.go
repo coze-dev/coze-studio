@@ -195,7 +195,7 @@ func (p *PluginApplicationService) toPluginInfoForPlayground(ctx context.Context
 	}
 
 	var creator *common.Creator
-	if pl.Source != ptr.Of(bot_common.PluginSource_FromSaas) {
+	if pl.Source != ptr.Of(bot_common.PluginFrom_FromSaas) {
 		userInfo, err := p.userSVC.GetUserInfo(ctx, pl.DeveloperID)
 		if err != nil {
 			logs.CtxErrorf(ctx, "get user info failed, err=%v", err)

@@ -2654,6 +2654,7 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		PluginEntity: vo.PluginEntity{
 			PluginID:      pluginID,
 			PluginVersion: req.PluginVersion,
+			PluginSource: req.PluginFrom,
 		},
 		ToolIDs: []int64{toolID},
 	})
@@ -2726,6 +2727,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 
 	if len(req.GetPluginList()) > 0 {
 		for _, pl := range req.GetPluginList() {
+			pl.PluginFrom = ptr.Of(bot_common.PluginFrom_FromSaas)
 			pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
 			if err != nil {
 				return nil, err
@@ -2743,6 +2745,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 					PluginEntity: vo.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: pl.PluginVersion,
+						PluginSource: pl.PluginFrom,
 					},
 					ToolIDs: []int64{toolID},
 					IsDraft: pl.IsDraft,
