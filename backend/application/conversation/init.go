@@ -71,6 +71,8 @@ func InitService(s *ServiceComponents) *ConversationApplicationService {
 	ConversationSVC.appContext = s
 	ConversationSVC.ShortcutDomainSVC = shortcutCmdDomainSVC
 
+	// 🔥 关键修复：为OpenAPI服务也初始化appContext，以便访问ImageX服务
+	ConversationOpenAPISVC.appContext = s
 	ConversationOpenAPISVC.ShortcutDomainSVC = shortcutCmdDomainSVC
 
 	return ConversationSVC
