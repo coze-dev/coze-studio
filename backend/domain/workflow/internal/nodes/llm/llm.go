@@ -491,7 +491,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 						PluginEntity: vo.PluginEntity{
 							PluginID:      pid,
 							PluginVersion: ptr.Of(p.PluginVersion),
-							PluginSource:  p.PluginSource,
+							PluginFrom:    p.PluginFrom,
 						},
 						ToolsInvokableInfo: map[int64]*wrapPlugin.ToolsInvokableInfo{
 							toolID: {

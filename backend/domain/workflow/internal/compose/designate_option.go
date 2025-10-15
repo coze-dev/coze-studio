@@ -300,7 +300,7 @@ func llmToolCallbackOptions(ctx context.Context, ns *schema2.NodeSchema, eventCh
 					PluginEntity: vo.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: ptr.Of(p.PluginVersion),
-						PluginSource:  p.PluginSource,
+						PluginFrom:    p.PluginFrom,
 					},
 					ToolIDs: []int64{toolID},
 				})

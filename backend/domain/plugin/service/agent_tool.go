@@ -74,7 +74,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 	saasToolIDs := make([]int64, 0, len(req.VersionAgentTools))
 	saasToolPluginIDs := make([]int64, 0, len(req.VersionAgentTools))
 	for _, v := range req.VersionAgentTools {
-		if ptr.From(v.PluginSource) == bot_common.PluginFrom_FromSaas {
+		if ptr.From(v.PluginFrom) == bot_common.PluginFrom_FromSaas {
 			saasToolIDs = append(saasToolIDs, v.ToolID)
 			saasToolPluginIDs = append(saasToolPluginIDs, v.PluginID)
 		} else {

@@ -131,8 +131,8 @@ func (s *CozeUserService) GetUserBenefit(ctx context.Context) (*entity.UserBenef
 	}
 	return &entity.UserBenefit{
 		ResetDatetime: resetDatetime,
-		UsedCount:  int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Used),
-		TotalCount: int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Total),
+		UsedCount:     int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Used),
+		TotalCount:    int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Total),
 		IsUnlimited: func() bool {
 			return benefit.Data.BenefitInfo[0].Basic.ItemInfo.Strategy == entity.ResourceUsageStrategyUnlimit
 		}(),

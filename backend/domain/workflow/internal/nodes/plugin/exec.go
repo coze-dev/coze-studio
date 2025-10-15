@@ -56,7 +56,7 @@ func ExecutePlugin(ctx context.Context, input map[string]any, pe *vo.PluginEntit
 		ExecScene:       consts.ExecSceneOfWorkflow,
 		ArgumentsInJson: args,
 		ExecDraftTool:   pe.PluginVersion == nil || *pe.PluginVersion == "0",
-		PluginSource:    pe.PluginSource,
+		PluginFrom:      pe.PluginFrom,
 	}
 	execOpts := []model.ExecuteToolOpt{
 		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),

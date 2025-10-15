@@ -623,9 +623,9 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 	}
 
 	data.CallCountLimit = &productAPI.ProductCallCountLimit{
-		IsUnlimited: benefit.IsUnlimited,
-		UsedCount:   benefit.UsedCount,
-		TotalCount:  benefit.TotalCount,
+		IsUnlimited:   benefit.IsUnlimited,
+		UsedCount:     benefit.UsedCount,
+		TotalCount:    benefit.TotalCount,
 		ResetDatetime: benefit.ResetDatetime,
 	}
 
