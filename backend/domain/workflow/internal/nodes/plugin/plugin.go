@@ -65,7 +65,7 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 	pID, err := strconv.ParseInt(ps.Input.Value.Content.(string), 10, 64)
 
 	c.PluginID = pID
-	c.PluginFrom = inputs.PluginSource
+	c.PluginFrom = inputs.PluginFrom
 
 	ps, ok = apiParams["apiID"]
 	if !ok {
@@ -122,7 +122,7 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 	result, err := ExecutePlugin(ctx, parameters, &vo.PluginEntity{
 		PluginID:      p.pluginID,
 		PluginVersion: ptr.Of(p.pluginVersion),
-		PluginSource:  p.pluginFrom,
+		PluginFrom:    p.pluginFrom,
 	}, p.toolID, exeCfg)
 	if err != nil {
 		if extra, ok := compose.IsInterruptRerunError(err); ok {

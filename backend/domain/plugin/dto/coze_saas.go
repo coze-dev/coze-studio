@@ -57,19 +57,19 @@ type SaasPluginItem struct {
 
 // SaasPluginMetaInfo represents the metadata of a SaaS plugin
 type SaasPluginMetaInfo struct {
-	ProductID       string              `json:"product_id"`
-	EntityID        string              `json:"entity_id"`
-	EntityVersion   string              `json:"entity_version"`
-	EntityType      string              `json:"entity_type"`
-	Name            string              `json:"name"`
-	Description     string              `json:"description"`
-	UserInfo        *SaasPluginUserInfo `json:"user_info"`
-	Category        *SaasPluginCategory `json:"category"`
-	IconURL         string              `json:"icon_url"`
-	ProductURL      string              `json:"product_url"`
-	ListedAt        int64               `json:"listed_at"`
-	PaidType        string              `json:"paid_type"`
-	IsOfficial      bool                `json:"is_official"`
+	ProductID     string              `json:"product_id"`
+	EntityID      string              `json:"entity_id"`
+	EntityVersion string              `json:"entity_version"`
+	EntityType    string              `json:"entity_type"`
+	Name          string              `json:"name"`
+	Description   string              `json:"description"`
+	UserInfo      *SaasPluginUserInfo `json:"user_info"`
+	Category      *SaasPluginCategory `json:"category"`
+	IconURL       string              `json:"icon_url"`
+	ProductURL    string              `json:"product_url"`
+	ListedAt      int64               `json:"listed_at"`
+	PaidType      string              `json:"paid_type"`
+	IsOfficial    bool                `json:"is_official"`
 }
 
 // SaasPluginUserInfo represents the user information of a SaaS plugin

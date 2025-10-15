@@ -70,7 +70,7 @@ func (t ToolInfo) GetVersion() string {
 	return ptr.FromOrDefault(t.Version, "")
 }
 
-func (t ToolInfo) GetPluginSource() bot_common.PluginFrom {
+func (t ToolInfo) GetPluginFrom() bot_common.PluginFrom {
 	return ptr.FromOrDefault(t.Source, 0)
 }
 
@@ -610,7 +610,7 @@ type VersionAgentTool struct {
 
 	PluginID     int64
 	AgentVersion *string
-	PluginSource *bot_common.PluginFrom
+	PluginFrom   *bot_common.PluginFrom
 }
 
 type MGetAgentToolsRequest struct {
@@ -628,7 +628,7 @@ type ExecuteToolRequest struct {
 	ExecDraftTool bool // if true, execute draft tool
 	ExecScene     consts.ExecuteScene
 
-	PluginSource *bot_common.PluginFrom
+	PluginFrom *bot_common.PluginFrom
 
 	ArgumentsInJson string
 }

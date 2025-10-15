@@ -364,11 +364,11 @@ func (c *ConversationApplicationService) buildTools(ctx context.Context, tools [
 			argBytes, err := json.Marshal(arguments)
 			if err == nil {
 				ts = append(ts, &entity.Tool{
-					PluginID:  shortcutCMD.PluginID,
-					Arguments: string(argBytes),
-					ToolName:  shortcutCMD.PluginToolName,
-					ToolID:    shortcutCMD.PluginToolID,
-					Type:      agentrun.ToolType(shortcutCMD.ToolType),
+					PluginID:   shortcutCMD.PluginID,
+					Arguments:  string(argBytes),
+					ToolName:   shortcutCMD.PluginToolName,
+					ToolID:     shortcutCMD.PluginToolID,
+					Type:       agentrun.ToolType(shortcutCMD.ToolType),
 					PluginFrom: bot_common.PluginFromPtr(bot_common.PluginFrom(shortcutCMD.Source)),
 				})
 			}

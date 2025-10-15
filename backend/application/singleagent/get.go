@@ -207,9 +207,9 @@ func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, ag
 		IsDraft: true,
 		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *bot_common.PluginInfo) model.VersionAgentTool {
 			return model.VersionAgentTool{
-				ToolID:       a.GetApiId(),
-				PluginSource: a.PluginFrom,
-				PluginID:     a.GetPluginId(),
+				ToolID:     a.GetApiId(),
+				PluginFrom: a.PluginFrom,
+				PluginID:   a.GetPluginId(),
 			}
 		}),
 	})
@@ -220,12 +220,12 @@ func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, 
 	vPluginMap := make(map[string]bool, len(agentInfo.Plugin))
 	vSaasPlugin := make([]model.VersionPlugin, 0, len(agentInfo.Plugin))
 	for _, v := range toolInfos {
-		k := fmt.Sprintf("%d:%s:%s", v.PluginID, v.GetVersion(), v.GetPluginSource())
+		k := fmt.Sprintf("%d:%s:%s", v.PluginID, v.GetVersion(), v.GetPluginFrom())
 		if vPluginMap[k] {
 			continue
 		}
 		vPluginMap[k] = true
-		if v.GetPluginSource() == bot_common.PluginFrom_FromSaas {
+		if v.GetPluginFrom() == bot_common.PluginFrom_FromSaas {
 			vSaasPlugin = append(vSaasPlugin, model.VersionPlugin{
 				PluginID: v.PluginID,
 				Version:  v.GetVersion(),

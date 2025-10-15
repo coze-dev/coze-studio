@@ -85,7 +85,7 @@ func getPluginsWithTools(ctx context.Context, pluginEntity *vo.PluginEntity, too
 	var latestPluginInfo *model.PluginInfo
 	pluginID := pluginEntity.PluginID
 
-	if ptr.From(pluginEntity.PluginSource) == bot_common.PluginFrom_FromSaas {
+	if ptr.From(pluginEntity.PluginFrom) == bot_common.PluginFrom_FromSaas {
 		return getSaasPluginWithTools(ctx, pluginEntity, toolIDs)
 	}
 
@@ -177,7 +177,7 @@ func GetPluginToolsInfo(ctx context.Context, req *ToolsInfoRequest) (_ *ToolsInf
 	var toolsInfo []*entity.ToolInfo
 	var pInfo *pluginInfo
 	var url string
-	if ptr.From(req.PluginEntity.PluginSource) == bot_common.PluginFrom_FromSaas {
+	if ptr.From(req.PluginEntity.PluginFrom) == bot_common.PluginFrom_FromSaas {
 		pInfo, toolsInfo, err = getSaasPluginWithTools(ctx, &vo.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs)
 		if err != nil {
 			return nil, err
@@ -267,7 +267,7 @@ func GetPluginInvokableTools(ctx context.Context, req *ToolsInvokableRequest) (
 	pInfo, toolsInfo, err := getPluginsWithTools(ctx, &vo.PluginEntity{
 		PluginID:      req.PluginEntity.PluginID,
 		PluginVersion: req.PluginEntity.PluginVersion,
-		PluginSource:  req.PluginEntity.PluginSource,
+		PluginFrom:    req.PluginEntity.PluginFrom,
 	}, maps.Keys(req.ToolsInvokableInfo), isDraft)
 	if err != nil {
 		return nil, err
@@ -279,7 +279,7 @@ func GetPluginInvokableTools(ctx context.Context, req *ToolsInvokableRequest) (
 			pluginEntity: vo.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
-				PluginSource:  pInfo.Source,
+				PluginFrom:    pInfo.Source,
 			},
 			toolInfo: tf,
 			IsDraft:  isDraft,
@@ -343,7 +343,7 @@ func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON str
 		ExecScene:       consts.ExecSceneOfWorkflow,
 		ArgumentsInJson: argumentsInJSON,
 		ExecDraftTool:   p.IsDraft,
-		PluginSource:    p.pluginEntity.PluginSource,
+		PluginFrom:      p.pluginEntity.PluginFrom,
 	}
 	execOpts := []model.ExecuteToolOpt{
 		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),

@@ -188,7 +188,7 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *mo
 	var (
 		exist bool
 	)
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
 
 		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
 		if err != nil {
@@ -221,7 +221,7 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *mo
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
 		saasPlugins, err := p.GetSaasPluginInfo(ctx, []int64{req.PluginID})
 		if err != nil {
 			return nil, nil, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginID=%d", req.PluginID)
@@ -271,7 +271,7 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 	var (
 		exist bool
 	)
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
 
 		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
 		if err != nil {
@@ -308,7 +308,7 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
 		saasPlugins, err := p.GetSaasPluginInfo(ctx, []int64{req.PluginID})
 		if err != nil {
 			return nil, nil, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginID=%d", req.PluginID)
@@ -351,7 +351,7 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *m
 func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
 
-	if req.PluginSource != nil && *req.PluginSource == bot_common.PluginFrom_FromSaas {
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
 		tools, plugin, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
 		if err != nil {
 			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
