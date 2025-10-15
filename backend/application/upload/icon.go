@@ -54,6 +54,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -67,22 +68,25 @@ import (
 func InitService(components *UploadComponents) {
 	SVC.cache = components.Cache
 	SVC.oss = components.Oss
+	SVC.imagex = components.ImageX
 	SVC.svc = service.NewUploadSVC(components.DB, components.Idgen, components.Oss)
 }
 
 type UploadComponents struct {
-	Oss   storage.Storage
-	Cache cache.Cmdable
-	DB    *gorm.DB
-	Idgen idgen.IDGenerator
+	Oss    storage.Storage
+	Cache  cache.Cmdable
+	DB     *gorm.DB
+	Idgen  idgen.IDGenerator
+	ImageX imagex.ImageX
 }
 
 var SVC = &UploadService{}
 
 type UploadService struct {
-	oss   storage.Storage
-	cache cache.Cmdable
-	svc   service.UploadService
+	oss    storage.Storage
+	cache  cache.Cmdable
+	imagex imagex.ImageX
+	svc    service.UploadService
 }
 
 const (
@@ -434,10 +438,25 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.Up
 		return nil, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", "file upload to oss failed"))
 	}
 
-	// 🔥 关键修复：直接返回 URI 作为 URL（前端会自动拼接域名）
-	// 这样可以避免 MinIO 返回的 URL 中包含 :443 端口导致 OpenAI API 报错
+	// 🔥 关键修复：使用 ImageX 服务重新生成干净的访问URL（不带:443端口）
+	// 与Base64上传保持一致的处理方式，避免MinIO返回的URL导致OpenAI API报400错误
+	var fileURL string
+	if u.imagex != nil {
+		resourceURL, urlErr := u.imagex.GetResourceURL(ctx, objName)
+		if urlErr == nil && resourceURL != nil && resourceURL.URL != "" {
+			fileURL = resourceURL.URL
+			logs.CtxInfof(ctx, "Generated clean URL via ImageX: %s", fileURL)
+		} else {
+			logs.CtxWarnf(ctx, "Failed to generate URL via ImageX, using URI: %v", urlErr)
+			fileURL = objName  // 降级为URI
+		}
+	} else {
+		logs.CtxWarnf(ctx, "ImageX service not available, using URI")
+		fileURL = objName  // 降级为URI
+	}
+
 	resp.File.CreatedAt = time.Now().Unix()
-	resp.File.URL = objName  // 直接使用 URI，不调用 GetObjectUrl
+	resp.File.URL = fileURL
 	fileEntity := entity.File{
 		Name:          fileHeader.Filename,
 		FileSize:      fileHeader.Size,

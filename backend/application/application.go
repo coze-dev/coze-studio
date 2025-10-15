@@ -173,7 +173,13 @@ func initEventBus(infra *appinfra.AppDependencies) *eventbusImpl {
 
 // initBasicServices init basic services that only depends on infra.
 func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *eventbusImpl) (*basicServices, error) {
-	upload.InitService(&upload.UploadComponents{Cache: infra.CacheCli, Oss: infra.TOSClient, DB: infra.DB, Idgen: infra.IDGenSVC})
+	upload.InitService(&upload.UploadComponents{
+		Cache:  infra.CacheCli,
+		Oss:    infra.TOSClient,
+		DB:     infra.DB,
+		Idgen:  infra.IDGenSVC,
+		ImageX: infra.ImageXClient,
+	})
 	openAuthSVC := openauth.InitService(infra.DB, infra.IDGenSVC)
 	promptSVC := prompt.InitService(infra.DB, infra.IDGenSVC, e.resourceEventBus)
 	// Initialize model repository and service
