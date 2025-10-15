@@ -393,7 +393,7 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                 agent_task.cancel()
                 if agent:
                     agent.pause()
-                    agent.close()
+                    await agent.close()
                 raise
             except Exception as e:
                 ctx.logger.error(f"[{task_id}] Error in event streaming: {e}")
