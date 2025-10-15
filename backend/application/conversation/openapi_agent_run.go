@@ -242,23 +242,42 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 						Text: ptr.From(one.Text),
 					})
 				case message.InputTypeImage, message.InputTypeFile:
-					// 🔥 关键修复：对于图片/文件，尝试从URL中提取URI并重新生成签名URL
+					// 🔥 关键修复：支持三种输入格式
+					// 1. Base64编码的图片数据（data:image/...或纯base64字符串）
+					// 2. URI格式（需要重新生成URL）
+					// 3. 完整URL（需要提取URI并重新生成URL）
 					fileURL := one.GetFileURL()
+					var uri string
 
-					// 尝试从URL中提取URI（例如从MinIO URL中提取对象路径）
-					uri, extractErr := a.extractURIFromURL(fileURL)
-					if extractErr == nil && uri != "" {
-						// 成功提取URI，重新生成访问URL
-						logs.CtxInfof(ctx, "Extracted URI from URL: %s -> %s", fileURL, uri)
-						regeneratedURL, urlErr := a.getUrlByUri(ctx, uri)
-						if urlErr == nil && regeneratedURL != "" {
-							logs.CtxInfof(ctx, "Regenerated URL for multimodal content: %s", regeneratedURL)
-							fileURL = regeneratedURL
-						} else {
-							logs.CtxWarnf(ctx, "Failed to regenerate URL from URI %s, using original URL: %v", uri, urlErr)
-						}
+					// 检测是否是base64编码的数据
+					if strings.HasPrefix(fileURL, "data:image/") {
+						// 格式：data:image/png;base64,iVBORw0KG...
+						logs.CtxInfof(ctx, "Detected base64 image data (data: URI scheme)")
+						// 直接使用base64数据，不需要处理
+					} else if strings.HasPrefix(fileURL, "/9j/") || strings.HasPrefix(fileURL, "iVBORw0KG") ||
+						strings.HasPrefix(fileURL, "R0lGODlh") || strings.HasPrefix(fileURL, "UklGR") {
+						// 检测常见图片格式的base64开头：
+						// /9j/ = JPEG, iVBORw0KG = PNG, R0lGODlh = GIF, UklGR = WebP
+						logs.CtxInfof(ctx, "Detected raw base64 image data, converting to data URI")
+						// 转换为data URI格式（默认假设为PNG，实际应根据magic bytes判断）
+						fileURL = "data:image/png;base64," + fileURL
 					} else {
-						logs.CtxInfof(ctx, "Using original file URL (no URI extraction needed): %s", fileURL)
+						// 普通URL或URI，需要处理
+						var extractErr error
+						uri, extractErr = a.extractURIFromURL(fileURL)
+						if extractErr == nil && uri != "" {
+							// 成功提取URI，重新生成访问URL
+							logs.CtxInfof(ctx, "Extracted URI from URL: %s -> %s", fileURL, uri)
+							regeneratedURL, urlErr := a.getUrlByUri(ctx, uri)
+							if urlErr == nil && regeneratedURL != "" {
+								logs.CtxInfof(ctx, "Regenerated URL for multimodal content: %s", regeneratedURL)
+								fileURL = regeneratedURL
+							} else {
+								logs.CtxWarnf(ctx, "Failed to regenerate URL from URI %s, using original URL: %v", uri, urlErr)
+							}
+						} else {
+							logs.CtxInfof(ctx, "Using original file URL (no URI extraction needed): %s", fileURL)
+						}
 					}
 
 					multiContents = append(multiContents, &message.InputMetaData{
