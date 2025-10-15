@@ -276,5 +276,5 @@ func getSaasOpenAPIKey() string {
 	if value := os.Getenv(consts.CozeSaasAPIKey); value != "" {
 		return value
 	}
-	return "pat_plTmVjKF0d9qvYnSGemkShbABM4RJbR72gvjaCb8x5kyT1RWJGXvzIM3cRhrPSrh"
+	return ""
 }

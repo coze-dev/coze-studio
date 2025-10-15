@@ -2654,7 +2654,7 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		PluginEntity: vo.PluginEntity{
 			PluginID:      pluginID,
 			PluginVersion: req.PluginVersion,
-			PluginSource: req.PluginFrom,
+			PluginSource:  req.PluginFrom,
 		},
 		ToolIDs: []int64{toolID},
 	})
@@ -2745,7 +2745,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 					PluginEntity: vo.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: pl.PluginVersion,
-						PluginSource: pl.PluginFrom,
+						PluginSource:  pl.PluginFrom,
 					},
 					ToolIDs: []int64{toolID},
 					IsDraft: pl.IsDraft,

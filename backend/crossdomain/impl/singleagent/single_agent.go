@@ -78,6 +78,7 @@ func (c *impl) buildSingleAgentStreamExecuteReq(ctx context.Context, agentRuntim
 					}
 					return agentrun.ToolTypePlugin
 				}(tool.Type),
+				PluginFrom: tool.PluginFrom,
 			}
 		}),
 		ResumeInfo: agentRuntime.ResumeInfo,

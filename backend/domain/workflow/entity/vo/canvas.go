@@ -306,7 +306,7 @@ type VariableAggregator struct {
 }
 
 type PluginAPIParam struct {
-	APIParams    []*Param                 `json:"apiParam"`
+	APIParams    []*Param               `json:"apiParam"`
 	PluginSource *bot_common.PluginFrom `json:"pluginSource"`
 }
 

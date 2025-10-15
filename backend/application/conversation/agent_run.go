@@ -25,6 +25,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
@@ -367,6 +368,7 @@ func (c *ConversationApplicationService) buildTools(ctx context.Context, tools [
 					ToolName:  shortcutCMD.PluginToolName,
 					ToolID:    shortcutCMD.PluginToolID,
 					Type:      agentrun.ToolType(shortcutCMD.ToolType),
+					PluginFrom: bot_common.PluginFromPtr(bot_common.PluginFrom(shortcutCMD.Source)),
 				})
 			}
 

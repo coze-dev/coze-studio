@@ -87,6 +87,7 @@ func (dao *ShortCutCmdDAO) buildCreatePO(ctx context.Context, shortcut *entity.S
 		AgentID:         shortcut.AgentID,
 		ShortcutIcon:    shortcut.ShortcutIcon,
 		PluginToolID:    shortcut.PluginToolID,
+		Source:          shortcut.Source,
 	}
 	return po, nil
 }

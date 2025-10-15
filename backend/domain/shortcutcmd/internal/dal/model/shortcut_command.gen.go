@@ -49,6 +49,7 @@ type ShortcutCommand struct {
 	AgentID         int64                        `gorm:"column:agent_id;not null;comment:When executing a multi instruction, which node executes the instruction" json:"agent_id"` // When executing a multi instruction, which node executes the instruction
 	ShortcutIcon    *playground.ShortcutFileInfo `gorm:"column:shortcut_icon;comment:shortcut icon;serializer:json" json:"shortcut_icon"`                                          // shortcut icon
 	PluginToolID    int64                        `gorm:"column:plugin_tool_id;not null;comment:tool_id" json:"plugin_tool_id"`                                                     // tool_id
+	Source          int32                        `gorm:"column:source;comment:plugin source 1 coze saas 0 default" json:"source"`                                                  // plugin source 1 coze saas 0 default
 }
 
 // TableName ShortcutCommand's table name

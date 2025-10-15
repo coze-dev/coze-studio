@@ -93,6 +93,8 @@ func (s *ShortcutCmdApplicationService) buildReq(ctx context.Context, req *playg
 		PluginToolName:  req.GetShortcuts().PluginAPIName,
 		TemplateQuery:   req.GetShortcuts().TemplateQuery,
 		ShortcutIcon:    req.GetShortcuts().ShortcutIcon,
+		Source:          int32(req.GetShortcuts().GetPluginFrom()),
+
 	}, nil
 }
 

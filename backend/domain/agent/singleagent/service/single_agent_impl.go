@@ -153,7 +153,7 @@ func (s *singleAgentImpl) UpdateSingleAgentDraft(ctx context.Context, agentInfo 
 			return &model.BindToolInfo{
 				ToolID:   item.GetApiId(),
 				PluginID: item.GetPluginId(),
-				Source:   item.PluginSource,
+				Source:   item.PluginFrom,
 			}
 		}))
 		if err != nil {
