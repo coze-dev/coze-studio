@@ -27,6 +27,7 @@ import {
   ProductUnlistType,
 } from '@coze-arch/idl/developer_api';
 import { I18n } from '@coze-arch/i18n';
+import { type PluginFrom } from '@coze-arch/bot-api/playground_api';
 
 import { WorkflowGlobalStateEntity } from '@/entities';
 
@@ -141,7 +142,7 @@ export class PluginNodeService {
     this.state.clearError(identifier);
   }
 
-  async fetchData(identifier: ApiNodeIdentifier) {
+  async fetchData(identifier: ApiNodeIdentifier, pluginFrom?: PluginFrom) {
     const { spaceId, projectId } = this.globalState;
     return workflowQueryClient.fetchQuery({
       queryKey: [
@@ -152,6 +153,7 @@ export class PluginNodeService {
         identifier.apiName,
         identifier.api_id,
         projectId,
+        pluginFrom,
       ],
       // 1. Set up a 5s cache to ensure that the same request is only sent once in a process, and there will be no excessive performance degradation.
       // 2. api detail contains the input and output, version information of the plug-in, the data has real-time sensitivity, and there is no data lag.
@@ -162,6 +164,7 @@ export class PluginNodeService {
             ...identifier,
             space_id: spaceId,
             project_id: projectId,
+            plugin_from: pluginFrom,
           },
           {
             __disableErrorToast: true,
@@ -208,13 +211,13 @@ export class PluginNodeService {
     return false;
   }
 
-  async load(identifier: ApiNodeIdentifier) {
+  async load(identifier: ApiNodeIdentifier, pluginFrom?: PluginFrom) {
     let apiDetail: ApiNodeDetailDTO | undefined;
     let errorMessage = '';
 
     try {
       this.loading = true;
-      const response = await this.fetchData(identifier);
+      const response = await this.fetchData(identifier, pluginFrom);
       apiDetail = response.data as ApiNodeDetailDTO;
     } catch (error) {
       errorMessage = error.message;
