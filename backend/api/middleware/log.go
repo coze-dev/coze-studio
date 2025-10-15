@@ -60,7 +60,7 @@ func AccessLogMW() app.HandlerFunc {
 		case status >= http.StatusBadRequest:
 			logs.CtxWarnf(c, "%s", baseLog)
 		default:
-			urlQuery := ctx.Request.URI().QueryString()
+			// urlQuery := ctx.Request.URI().QueryString()
 			reqBody := bytesToString(ctx.Request.Body())
 			respBody := bytesToString(ctx.Response.Body())
 			maxPrintLen := 3 * 1024
