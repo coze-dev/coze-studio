@@ -27,7 +27,7 @@ import {
   type DisablePromptCalling,
   type RecallStrategy,
   type DefaultUserInputType,
-  type PluginSource,
+  type PluginFrom,
 } from '@coze-arch/bot-api/playground_api';
 import { type BotTableRWMode, type FieldItem } from '@coze-arch/bot-api/memory';
 import { type Dataset } from '@coze-arch/bot-api/knowledge';
@@ -48,7 +48,7 @@ interface DefaultPluginApi extends PluginApi {
   plugin_type?: PluginType;
   is_official?: boolean;
   plugin_icon?: string;
-  plugin_source?: PluginSource;
+  plugin_from?: PluginFrom;
   status?: PluginStatus;
   // #endregion
 }

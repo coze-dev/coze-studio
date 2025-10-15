@@ -15,7 +15,10 @@
  */
 
 import { type WorkFlowItemType } from '@coze-studio/bot-detail-store';
-import { type ToolParams } from '@coze-arch/bot-api/playground_api';
+import {
+  type ToolParams,
+  type PluginFrom,
+} from '@coze-arch/bot-api/playground_api';
 import { type Dataset } from '@coze-arch/bot-api/knowledge';
 import type { PluginApi } from '@coze-arch/bot-api/developer_api';
 import type { ShortCutCommand } from '@coze-agent-ide/tool-config';
@@ -61,6 +64,7 @@ export interface ToolInfo {
   api_id?: string;
   plugin_id?: string;
   work_flow_id?: string;
+  plugin_from?: PluginFrom;
 }
 
 export type ShortcutEditFormValues = Partial<ShortCutCommand> & {

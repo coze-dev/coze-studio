@@ -31,6 +31,7 @@ export const getToolInfoByShortcut = (
       tool_name: '',
       plugin_id: '',
       plugin_api_name: '',
+      plugin_from: undefined,
       tool_params_list: [],
     };
   }
@@ -39,6 +40,7 @@ export const getToolInfoByShortcut = (
     tool_type,
     plugin_id,
     plugin_api_name,
+    plugin_from,
     work_flow_id,
   } = shortcut;
   return {
@@ -46,6 +48,7 @@ export const getToolInfoByShortcut = (
     tool_name,
     plugin_id,
     plugin_api_name,
+    plugin_from,
     tool_params_list,
     work_flow_id,
   };

@@ -111,6 +111,7 @@ export const ActionSwitchArea = forwardRef<
       tool_name,
       work_flow_id,
       tool_params_list = [],
+      plugin_from,
     } = toolInfo || {};
     const newComponents = initComponentsByToolParams(tool_params_list);
     // TODO: hzf, it's a bit complicated, let's see if it can initValue
@@ -125,6 +126,7 @@ export const ActionSwitchArea = forwardRef<
       formRef.current?.formApi.setValue('work_flow_id', work_flow_id);
     formRef.current?.formApi.setValue('plugin_api_name', plugin_api_name);
     formRef.current?.formApi.setValue('plugin_api_id', api_id);
+    formRef.current?.formApi.setValue('plugin_from', plugin_from);
     formRef.current?.formApi.setValue('tool_info', {
       tool_name,
       tool_params_list,

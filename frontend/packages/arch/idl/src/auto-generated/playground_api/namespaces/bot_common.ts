@@ -294,7 +294,8 @@ export enum ParamSource {
   Variable = 1,
 }
 
-export enum PluginSource {
+export enum PluginFrom {
+  /** 插件来源 opencoze 使用 */
   Default = 0,
   FromSaas = 1,
 }
@@ -1035,7 +1036,7 @@ export interface PluginInfo {
   /** api name O项目用 */
   api_name?: string;
   /** 区分插件来源，开源版本使用字段 */
-  plugin_source?: PluginSource;
+  plugin_from?: PluginFrom;
 }
 
 export interface PluginParameter {

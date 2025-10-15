@@ -18,6 +18,8 @@
 /* tslint:disable */
 // @ts-nocheck
 
+import * as bot_common from './bot_common';
+
 export type Int64 = string | number;
 
 export enum InputType {
@@ -118,6 +120,8 @@ export interface ShortcutCommand {
   shortcut_icon?: ShortcutFileInfo;
   /** multi的指令时，该指令由哪个节点执行 */
   agent_id?: string;
+  /** 区分插件来源，开源版本使用字段 */
+  plugin_from?: bot_common.PluginFrom;
 }
 
 export interface ShortcutFileInfo {

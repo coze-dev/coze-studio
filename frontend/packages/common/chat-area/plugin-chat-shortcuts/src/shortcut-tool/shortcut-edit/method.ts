@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
 import {
   type Components,
   InputType,
   SendType,
   type ToolParams,
 } from '@coze-arch/bot-api/playground_api';
+import { type ShortCutCommand } from '@coze-agent-ide/tool-config';
 
 import type { ShortcutEditFormValues } from '../types';
 import { initToolEnabledByToolTYpe } from '../../utils/tool-params';
@@ -96,6 +96,7 @@ const mutableInitQueryFormValues = (values: ShortcutEditFormValues): void => {
   values.plugin_id = '';
   values.work_flow_id = '';
   values.plugin_api_name = '';
+  values.plugin_from = undefined;
   values.tool_info = {
     tool_name: '',
     tool_params_list: [],
@@ -112,6 +113,7 @@ const mutableInitNotUseToolFormValues = (
   values.plugin_id = '';
   values.work_flow_id = '';
   values.plugin_api_name = '';
+  values.plugin_from = undefined;
   values.tool_info = {
     tool_name: '',
     tool_params_list: [],
