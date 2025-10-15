@@ -65,7 +65,7 @@ func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *dom
 		HasMore: hasMore,
 	}, nil
 }
-func (p *pluginServiceImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, err error) {
+func (p *pluginServiceImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (tools map[int64][]*entity.ToolInfo, plugins map[int64]*entity.PluginInfo, err error) {
 	return p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, pluginIDs)
 }
 
@@ -132,7 +132,7 @@ func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.Plugi
 		CreatedAt:   metaInfo.ListedAt,
 		UpdatedAt:   metaInfo.ListedAt,
 		Manifest:    manifest,
-		Source:      ptr.Of(bot_common.PluginSource_FromSaas),
+		Source:      ptr.Of(bot_common.PluginFrom_FromSaas),
 		SaasPluginExtra: &model.SaasPluginExtraInfo{
 			IsOfficial:  metaInfo.IsOfficial,
 			JumpSaasURL: &metaInfo.ProductURL,
@@ -185,7 +185,7 @@ func convertCozePluginToEntity(cozePlugin *dto.SaasPluginToolsList) *entity.Plug
 		CreatedAt:   cozePlugin.CreatedAt,
 		UpdatedAt:   cozePlugin.UpdatedAt,
 		Manifest:    manifest,
-		Source:      ptr.Of(bot_common.PluginSource_FromSaas),
+		Source:      ptr.Of(bot_common.PluginFrom_FromSaas),
 	}
 
 	return entity.NewPluginInfo(pluginInfo)

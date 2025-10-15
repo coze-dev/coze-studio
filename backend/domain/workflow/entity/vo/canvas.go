@@ -254,7 +254,7 @@ type FCParam struct {
 			PluginVersion string `json:"plugin_version"`
 			IsDraft       bool   `json:"is_draft"`
 
-			PluginSource *bot_common.PluginSource `json:"plugin_source"`
+			PluginSource *bot_common.PluginFrom `json:"plugin_source"`
 			FCSetting    *struct {
 				RequestParameters  []*workflow.APIParameter `json:"request_params"`
 				ResponseParameters []*workflow.APIParameter `json:"response_params"`
@@ -307,7 +307,7 @@ type VariableAggregator struct {
 
 type PluginAPIParam struct {
 	APIParams    []*Param                 `json:"apiParam"`
-	PluginSource *bot_common.PluginSource `json:"pluginSource"`
+	PluginSource *bot_common.PluginFrom `json:"pluginSource"`
 }
 
 type CodeRunner struct {

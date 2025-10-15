@@ -21,7 +21,6 @@ package bot_open_api
 import (
 	"context"
 	"fmt"
-
 	"github.com/apache/thrift/lib/go/thrift"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/base"

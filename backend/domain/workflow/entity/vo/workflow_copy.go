@@ -16,9 +16,12 @@
 
 package vo
 
+import "github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+
 type PluginEntity struct {
 	PluginID      int64
 	PluginVersion *string // nil or "0" means draft, "" means latest/online version, otherwise is specific version
+	PluginSource  *bot_common.PluginFrom
 }
 
 type ExternalResourceRelated struct {

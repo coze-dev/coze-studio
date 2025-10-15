@@ -56,7 +56,7 @@ func (a agentToolVersionPO) ToDO() *entity.ToolInfo {
 		Method:    &a.Method,
 		SubURL:    &a.SubURL,
 		Operation: a.Operation,
-		Source:    ptr.Of(bot_common.PluginSource(a.Source)),
+		Source:    ptr.Of(bot_common.PluginFrom(a.Source)),
 	}
 }
 

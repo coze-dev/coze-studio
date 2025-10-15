@@ -224,7 +224,7 @@ func (s *SingleAgentApplicationService) fetchPluginDetails(ctx context.Context, 
 			continue
 		}
 		vPluginMap[k] = true
-		if v.GetPluginSource() == bot_common.PluginSource_FromSaas {
+		if v.GetPluginSource() == bot_common.PluginFrom_FromSaas {
 			vSaasPlugin = append(vSaasPlugin, model.VersionPlugin{
 				PluginID: v.PluginID,
 				Version:  v.GetVersion(),
@@ -356,6 +356,7 @@ func (s *SingleAgentApplicationService) pluginInfoDo2Vo(ctx context.Context, plu
 				}
 				return ptr.Of(false)
 			}(),
+			PluginFrom: e.Source,
 		}
 	})
 }

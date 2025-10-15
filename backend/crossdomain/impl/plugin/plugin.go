@@ -84,6 +84,26 @@ func (s *impl) MGetDraftPlugins(ctx context.Context, pluginIDs []int64) (plugins
 
 	return plugins, nil
 }
+func (s *impl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginIDs []int64) (map[int64][]*model.ToolInfo, map[int64]*model.PluginInfo, error) {
+
+	tools, plugins, err := s.DomainSVC.BatchGetSaasPluginToolsInfo(ctx, pluginIDs)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	var mPlugins map[int64]*model.PluginInfo
+	mPlugins = make(map[int64]*model.PluginInfo)
+	for _, p := range plugins {
+		mPlugins[p.ID] = p.PluginInfo
+	}
+	var mTools map[int64][]*model.ToolInfo
+	mTools = make(map[int64][]*model.ToolInfo)
+	for id, t := range tools {
+		mTools[id] = t
+	}
+
+	return mTools, mPlugins, nil
+}
 
 func (s *impl) MGetOnlinePlugins(ctx context.Context, pluginIDs []int64) (plugins []*model.PluginInfo, err error) {
 	ePlugins, err := s.DomainSVC.MGetOnlinePlugins(ctx, pluginIDs)

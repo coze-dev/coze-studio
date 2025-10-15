@@ -339,7 +339,7 @@ func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductIn
 			IconURL:     plugin.GetIconURI(),
 			ListedAt:    plugin.CreatedAt,
 			EntityType: func() productCommon.ProductEntityType {
-				if ptr.From(plugin.Source) == bot_common.PluginSource_FromSaas {
+				if ptr.From(plugin.Source) == bot_common.PluginFrom_FromSaas {
 					return productCommon.ProductEntityType_SaasPlugin
 				}
 				return productCommon.ProductEntityType_Plugin
@@ -392,7 +392,8 @@ func (p *PluginApplicationService) getSaasPluginList(ctx context.Context, domain
 }
 
 func (p *PluginApplicationService) getSaasPluginToolsList(ctx context.Context, pluginIDs []int64) (map[int64][]*entity.ToolInfo, error) {
-	return p.DomainSVC.BatchGetSaasPluginToolsInfo(ctx, pluginIDs)
+	tools, _, err := p.DomainSVC.BatchGetSaasPluginToolsInfo(ctx, pluginIDs)
+	return tools, err
 }
 
 func (p *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, req *productAPI.GetProductListRequest) (resp *productAPI.GetProductListResponse, err error) {

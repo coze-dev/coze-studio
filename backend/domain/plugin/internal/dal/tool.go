@@ -60,7 +60,7 @@ func (t toolPO) ToDO() *entity.ToolInfo {
 		Operation:       t.Operation,
 		ActivatedStatus: ptr.Of(consts.ActivatedStatus(t.ActivatedStatus)),
 
-		Source: bot_common.PluginSourcePtr(bot_common.PluginSource(t.Source)),
+		Source: bot_common.PluginFromPtr(bot_common.PluginFrom(t.Source)),
 		Extra:  t.Ext,
 	}
 }

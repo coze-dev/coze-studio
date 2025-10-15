@@ -23,6 +23,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -40,6 +41,7 @@ type Config struct {
 	PluginID      int64
 	ToolID        int64
 	PluginVersion string
+	PluginFrom    *bot_common.PluginFrom
 }
 
 func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
@@ -55,6 +57,7 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 		return e.Name, e
 	})
 
+
 	ps, ok := apiParams["pluginID"]
 	if !ok {
 		return nil, fmt.Errorf("plugin id param is not found")
@@ -63,6 +66,7 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 	pID, err := strconv.ParseInt(ps.Input.Value.Content.(string), 10, 64)
 
 	c.PluginID = pID
+	c.PluginFrom = inputs.PluginSource
 
 	ps, ok = apiParams["apiID"]
 	if !ok {
@@ -84,6 +88,7 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 
 	c.PluginVersion = version
 
+
 	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err
 	}
@@ -100,6 +105,7 @@ func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.Buil
 		pluginID:      c.PluginID,
 		toolID:        c.ToolID,
 		pluginVersion: c.PluginVersion,
+		pluginFrom:    c.PluginFrom,
 	}, nil
 }
 
@@ -107,6 +113,7 @@ type Plugin struct {
 	pluginID      int64
 	toolID        int64
 	pluginVersion string
+	pluginFrom    *bot_common.PluginFrom
 }
 
 func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map[string]any, err error) {
@@ -117,6 +124,7 @@ func (p *Plugin) Invoke(ctx context.Context, parameters map[string]any) (ret map
 	result, err := ExecutePlugin(ctx, parameters, &vo.PluginEntity{
 		PluginID:      p.pluginID,
 		PluginVersion: ptr.Of(p.pluginVersion),
+		PluginSource:  p.pluginFrom,
 	}, p.toolID, exeCfg)
 	if err != nil {
 		if extra, ok := compose.IsInterruptRerunError(err); ok {

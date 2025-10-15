@@ -74,7 +74,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 	saasToolIDs := make([]int64, 0, len(req.VersionAgentTools))
 	saasToolPluginIDs := make([]int64, 0, len(req.VersionAgentTools))
 	for _, v := range req.VersionAgentTools {
-		if ptr.From(v.PluginSource) == bot_common.PluginSource_FromSaas {
+		if ptr.From(v.PluginSource) == bot_common.PluginFrom_FromSaas {
 			saasToolIDs = append(saasToolIDs, v.ToolID)
 			saasToolPluginIDs = append(saasToolPluginIDs, v.PluginID)
 		} else {
@@ -88,7 +88,7 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetA
 	}
 
 	if len(saasToolIDs) > 0 {
-		saasToolPluginInfos, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, saasToolPluginIDs)
+		saasToolPluginInfos, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, saasToolPluginIDs)
 		if err != nil {
 			return nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginIDs=%v", saasToolPluginIDs)
 		}

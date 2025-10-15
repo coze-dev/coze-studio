@@ -24,7 +24,7 @@ import (
 type BindToolInfo struct {
 	ToolID   int64
 	PluginID int64
-	Source   *bot_common.PluginSource
+	Source   *bot_common.PluginFrom
 }
 type VersionPlugin struct {
 	PluginID int64
@@ -51,7 +51,7 @@ type PluginInfo struct {
 	CreatedAt int64
 	UpdatedAt int64
 
-	Source          *bot_common.PluginSource
+	Source          *bot_common.PluginFrom
 	SaasPluginExtra *SaasPluginExtraInfo
 	Extra           map[string]any
 

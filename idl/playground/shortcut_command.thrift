@@ -1,5 +1,6 @@
 namespace go playground
 include "../base.thrift"
+include "../app/bot_common.thrift"
 
 struct CreateShortcutCommandRequest {
      1:   string object_id
@@ -39,6 +40,7 @@ struct ShortcutCommand {
    18 : ShortcutFileInfo shortcut_icon // command icon
    21 : optional string agent_id //Multi instruction, which node executes the instruction
    22 : i64 plugin_api_id  (api.js_conv="true")
+   23 : optional bot_common.PluginFrom plugin_from 
 }
 
 struct ShortcutFileInfo {

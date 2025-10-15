@@ -101,6 +101,7 @@ struct PluginDetal {
     5: optional i64    plugin_type (agw.js_conv="str" api.js_conv="true")
     6: optional i64    plugin_status (agw.js_conv="str" api.js_conv="true")
     7: optional bool   is_official
+    9: optional bot_common.PluginFrom plugin_from // 
 }
 
 struct PluginAPIDetal {

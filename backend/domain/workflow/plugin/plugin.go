@@ -25,6 +25,7 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"golang.org/x/exp/maps"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -55,6 +56,23 @@ type pluginInfo struct {
 	LatestVersion *string
 }
 
+func getSaasPluginWithTools(ctx context.Context, pluginEntity *vo.PluginEntity, toolIDs []int64) (*pluginInfo, []*entity.ToolInfo, error) {
+	tools, plugin, err := crossplugin.DefaultSVC().BatchGetSaasPluginToolsInfo(ctx, []int64{pluginEntity.PluginID})
+	if err != nil {
+		return nil, nil, err
+	}
+	if len(tools) == 0 {
+		return nil, nil, vo.NewError(errno.ErrPluginIDNotFound, errorx.KV("id", strconv.FormatInt(pluginEntity.PluginID, 10)))
+	}
+	toolsInfo := make([]*entity.ToolInfo, 0, len(toolIDs))
+	for _, t := range tools[pluginEntity.PluginID] {
+		if slices.Contains(toolIDs, t.ID) {
+			toolsInfo = append(toolsInfo, t)
+		}
+	}
+	return &pluginInfo{PluginInfo: plugin[pluginEntity.PluginID]}, toolsInfo, nil
+}
+
 func getPluginsWithTools(ctx context.Context, pluginEntity *vo.PluginEntity, toolIDs []int64, isDraft bool) (
 	_ *pluginInfo, toolsInfo []*entity.ToolInfo, err error) {
 	defer func() {
@@ -66,6 +84,11 @@ func getPluginsWithTools(ctx context.Context, pluginEntity *vo.PluginEntity, too
 	var pluginsInfo []*model.PluginInfo
 	var latestPluginInfo *model.PluginInfo
 	pluginID := pluginEntity.PluginID
+
+	if ptr.From(pluginEntity.PluginSource) == bot_common.PluginFrom_FromSaas {
+		return getSaasPluginWithTools(ctx, pluginEntity, toolIDs)
+	}
+
 	if isDraft {
 		plugins, err := crossplugin.DefaultSVC().MGetDraftPlugins(ctx, []int64{pluginID})
 		if err != nil {
@@ -152,19 +175,33 @@ func GetPluginToolsInfo(ctx context.Context, req *ToolsInfoRequest) (_ *ToolsInf
 	}()
 
 	var toolsInfo []*entity.ToolInfo
-	isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
-	pInfo, toolsInfo, err := getPluginsWithTools(ctx, &vo.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs, isDraft)
-	if err != nil {
-		return nil, err
-	}
+	var pInfo *pluginInfo
+	var url string
+	if ptr.From(req.PluginEntity.PluginSource) == bot_common.PluginFrom_FromSaas {
+		pInfo, toolsInfo, err = getSaasPluginWithTools(ctx, &vo.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs)
+		if err != nil {
+			return nil, err
+		}
 
-	if oss == nil {
-		return nil, vo.NewError(errno.ErrTOSError, errorx.KV("msg", "oss is nil"))
-	}
+		if pInfo.IconURL != nil {
+			url = *pInfo.IconURL
+		}
 
-	url, err := oss.GetObjectUrl(ctx, pInfo.GetIconURI())
-	if err != nil {
-		return nil, vo.WrapIfNeeded(errno.ErrTOSError, err)
+	} else {
+		isDraft := req.IsDraft || (req.PluginEntity.PluginVersion != nil && *req.PluginEntity.PluginVersion == "0")
+		pInfo, toolsInfo, err = getPluginsWithTools(ctx, &vo.PluginEntity{PluginID: req.PluginEntity.PluginID, PluginVersion: req.PluginEntity.PluginVersion}, req.ToolIDs, isDraft)
+		if err != nil {
+			return nil, err
+		}
+
+		if oss == nil {
+			return nil, vo.NewError(errno.ErrTOSError, errorx.KV("msg", "oss is nil"))
+		}
+
+		url, err = oss.GetObjectUrl(ctx, pInfo.GetIconURI())
+		if err != nil {
+			return nil, vo.WrapIfNeeded(errno.ErrTOSError, err)
+		}
 	}
 
 	response := &ToolsInfoResponse{
@@ -230,6 +267,7 @@ func GetPluginInvokableTools(ctx context.Context, req *ToolsInvokableRequest) (
 	pInfo, toolsInfo, err := getPluginsWithTools(ctx, &vo.PluginEntity{
 		PluginID:      req.PluginEntity.PluginID,
 		PluginVersion: req.PluginEntity.PluginVersion,
+		PluginSource:  req.PluginEntity.PluginSource,
 	}, maps.Keys(req.ToolsInvokableInfo), isDraft)
 	if err != nil {
 		return nil, err
@@ -241,6 +279,7 @@ func GetPluginInvokableTools(ctx context.Context, req *ToolsInvokableRequest) (
 			pluginEntity: vo.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
+				PluginSource:  pInfo.Source,
 			},
 			toolInfo: tf,
 			IsDraft:  isDraft,
@@ -304,6 +343,7 @@ func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON str
 		ExecScene:       consts.ExecSceneOfWorkflow,
 		ArgumentsInJson: argumentsInJSON,
 		ExecDraftTool:   p.IsDraft,
+		PluginSource:    p.pluginEntity.PluginSource,
 	}
 	execOpts := []model.ExecuteToolOpt{
 		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),

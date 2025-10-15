@@ -90,7 +90,7 @@ type pluginInvokableTool struct {
 	toolInfo    *pluginEntity.ToolInfo
 	projectInfo *model.ProjectInfo
 
-	pluginSource *bot_common.PluginSource
+	pluginSource *bot_common.PluginFrom
 
 	conversationID int64
 }
