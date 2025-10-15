@@ -155,6 +155,7 @@ func (s *SingleAgentApplicationService) shortcutCMDDo2Vo(cmdDOs []*shortcutCMDEn
 			ComponentsList:  cmdDO.Components,
 			CardSchema:      cmdDO.CardSchema,
 			ToolInfo:        cmdDO.ToolInfo,
+			PluginFrom:      ptr.Of(bot_common.PluginFrom(cmdDO.Source)),
 		}
 	})
 }
@@ -207,7 +208,7 @@ func (s *SingleAgentApplicationService) fetchToolDetails(ctx context.Context, ag
 		VersionAgentTools: slices.Transform(agentInfo.Plugin, func(a *bot_common.PluginInfo) model.VersionAgentTool {
 			return model.VersionAgentTool{
 				ToolID:       a.GetApiId(),
-				PluginSource: a.PluginSource,
+				PluginSource: a.PluginFrom,
 				PluginID:     a.GetPluginId(),
 			}
 		}),

@@ -491,7 +491,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 						PluginEntity: vo.PluginEntity{
 							PluginID:      pid,
 							PluginVersion: ptr.Of(p.PluginVersion),
-							PluginSource: p.PluginSource,
+							PluginSource:  p.PluginSource,
 						},
 						ToolsInvokableInfo: map[int64]*wrapPlugin.ToolsInvokableInfo{
 							toolID: {
@@ -500,7 +500,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 								ResponseAPIParametersConfig: responseParameters,
 							},
 						},
-						IsDraft:      p.IsDraft,
+						IsDraft: p.IsDraft,
 					}
 					pluginToolsInvokableReq[pid] = pluginToolsInfoRequest
 				}

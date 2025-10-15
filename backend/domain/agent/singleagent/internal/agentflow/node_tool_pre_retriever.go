@@ -64,6 +64,7 @@ func (pr *toolPreCallConf) toolPreRetrieve(ctx context.Context, ar *AgentRequest
 						return consts.ExecSceneOfOnlineAgent
 					}
 				}(ar.Identity.IsDraft),
+				PluginSource: item.PluginFrom,
 			}
 
 			opts := []model.ExecuteToolOpt{

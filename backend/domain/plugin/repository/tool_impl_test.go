@@ -51,7 +51,7 @@ func TestConvertJsonSchemaToParameters(t *testing.T) {
 			expected: 2,
 			validate: func(t *testing.T, params []*pluginCommon.APIParameter) {
 				assert.Len(t, params, 2)
-				
+
 				// Find name parameter
 				var nameParam *pluginCommon.APIParameter
 				for _, p := range params {
@@ -92,20 +92,20 @@ func TestConvertJsonSchemaToParameters(t *testing.T) {
 			expected: 1,
 			validate: func(t *testing.T, params []*pluginCommon.APIParameter) {
 				assert.Len(t, params, 1)
-				
+
 				usersParam := params[0]
 				assert.Equal(t, "users", usersParam.Name)
 				assert.Equal(t, pluginCommon.ParameterType_Array, usersParam.Type)
-				
+
 				// Check array item parameter
 				assert.Len(t, usersParam.SubParameters, 1)
 				arrayItemParam := usersParam.SubParameters[0]
 				assert.Equal(t, "[Array Item]", arrayItemParam.Name)
 				assert.Equal(t, pluginCommon.ParameterType_Object, arrayItemParam.Type)
-				
+
 				// Check object properties in array item
 				assert.Len(t, arrayItemParam.SubParameters, 2)
-				
+
 				// Find name parameter in array item
 				var nameParam *pluginCommon.APIParameter
 				for _, p := range arrayItemParam.SubParameters {
@@ -139,17 +139,17 @@ func TestConvertJsonSchemaToParameters(t *testing.T) {
 			expected: 1,
 			validate: func(t *testing.T, params []*pluginCommon.APIParameter) {
 				assert.Len(t, params, 1)
-				
+
 				matrixParam := params[0]
 				assert.Equal(t, "matrix", matrixParam.Name)
 				assert.Equal(t, pluginCommon.ParameterType_Array, matrixParam.Type)
-				
+
 				// Check first level array item
 				assert.Len(t, matrixParam.SubParameters, 1)
 				firstLevelItem := matrixParam.SubParameters[0]
 				assert.Equal(t, "[Array Item]", firstLevelItem.Name)
 				assert.Equal(t, pluginCommon.ParameterType_Array, firstLevelItem.Type)
-				
+
 				// Check second level array item
 				assert.Len(t, firstLevelItem.SubParameters, 1)
 				secondLevelItem := firstLevelItem.SubParameters[0]

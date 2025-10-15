@@ -57,7 +57,6 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 		return e.Name, e
 	})
 
-
 	ps, ok := apiParams["pluginID"]
 	if !ok {
 		return nil, fmt.Errorf("plugin id param is not found")
@@ -87,7 +86,6 @@ func (c *Config) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOptio
 	version := ps.Input.Value.Content.(string)
 
 	c.PluginVersion = version
-
 
 	if err := convert.SetInputsForNodeSchema(n, ns); err != nil {
 		return nil, err

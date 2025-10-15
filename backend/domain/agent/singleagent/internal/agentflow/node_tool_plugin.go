@@ -51,7 +51,7 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			return model.VersionAgentTool{
 				ToolID:       a.GetApiId(),
 				AgentVersion: ptr.Of(conf.agentIdentity.Version),
-				PluginSource: a.PluginSource,
+				PluginSource: a.PluginFrom,
 				PluginID:     a.GetPluginId(),
 			}
 		}),

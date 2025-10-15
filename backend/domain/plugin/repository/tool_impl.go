@@ -511,7 +511,7 @@ func (t *toolRepoImpl) BatchGetSaasPluginToolsInfo(ctx context.Context, pluginID
 
 	result := make(map[int64][]*entity.ToolInfo)
 	plugins = make(map[int64]*entity.PluginInfo)
-		
+
 	for _, plugin := range apiResp.Items {
 
 		pluginID, err := strconv.ParseInt(plugin.PluginID, 10, 64)

@@ -16,12 +16,15 @@
 
 package agentrun
 
+import "github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+
 type Tool struct {
 	PluginID  int64    `json:"plugin_id"`
 	ToolID    int64    `json:"tool_id"`
 	Arguments string   `json:"arguments"`
 	ToolName  string   `json:"tool_name"`
 	Type      ToolType `json:"type"`
+	PluginFrom *bot_common.PluginFrom `json:"plugin_from"`
 }
 
 type ToolType int32
@@ -37,6 +40,7 @@ type ToolsRetriever struct {
 	ToolID    int64
 	Arguments string
 	Type      ToolType
+	PluginFrom *bot_common.PluginFrom `json:"plugin_from"`
 }
 
 type Usage struct {
