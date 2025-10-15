@@ -284,9 +284,6 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                 page = await agent.browser_session.get_current_page()
                 detector = VisualChangeDetector()
                 current_screenshot = await detector.capture_screenshot(page,upload_service=ctx.upload_service,logger=ctx.logger)
-                if not current_screenshot:
-                    ctx.logger.error(f"Failed to capture screenshot")
-                    return
                 agent.context = {'current_screenshot':current_screenshot}
                 ctx.logger.info(f'captured screenshot success')
             except Exception as e:
@@ -391,7 +388,13 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                     if agent_task.done():
                         break
                     continue
-                    
+            except asyncio.CancelledError:
+                ctx.logger.info(f"[{task_id}] Task was cancelled")
+                agent_task.cancel()
+                if agent:
+                    agent.pause()
+                    agent.close()
+                raise
             except Exception as e:
                 ctx.logger.error(f"[{task_id}] Error in event streaming: {e}")
                 break
