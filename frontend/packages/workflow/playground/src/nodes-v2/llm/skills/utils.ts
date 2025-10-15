@@ -50,6 +50,7 @@ export function getSkillsQueryParams(boundSkills?: BoundSkills) {
       api_name: item.api_name,
       is_draft: item.is_draft,
       plugin_version: item.plugin_version,
+      plugin_from: item.plugin_from,
     })),
     workflow_list: boundSkills?.workflowFCParam?.workflowList?.map(item => ({
       workflow_id: item.workflow_id,
