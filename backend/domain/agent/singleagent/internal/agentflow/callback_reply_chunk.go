@@ -106,7 +106,7 @@ func (r *replyChunkCallback) OnError(ctx context.Context, info *callbacks.RunInf
 }
 
 func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInfo, input callbacks.CallbackInput) context.Context {
-	logs.CtxInfof(ctx, "info-OnStart, info=%v, input=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(input))
+	// logs.CtxInfof(ctx, "info-OnStart, info=%v, input=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(input))
 
 	switch info.Component {
 	case compose.ComponentOfToolsNode:
@@ -124,7 +124,7 @@ func (r *replyChunkCallback) OnStart(ctx context.Context, info *callbacks.RunInf
 }
 
 func (r *replyChunkCallback) OnEnd(ctx context.Context, info *callbacks.RunInfo, output callbacks.CallbackOutput) context.Context {
-	logs.CtxInfof(ctx, "info-OnEnd, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
+	// logs.CtxInfof(ctx, "info-OnEnd, info=%v, output=%v", conv.DebugJsonToStr(info), conv.DebugJsonToStr(output))
 	switch info.Name {
 	case keyOfKnowledgeRetriever:
 		knowledgeEvent := &entity.AgentEvent{

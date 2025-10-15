@@ -18,13 +18,16 @@ package conversation
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"strconv"
 	"strings"
 
 	"github.com/cloudwego/eino/schema"
+	"github.com/google/uuid"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
@@ -32,6 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	"github.com/coze-dev/coze-studio/backend/application/upload"
 	saEntity "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
@@ -197,6 +201,45 @@ func (a *OpenapiAgentRunApplication) buildDisplayContent(_ context.Context, ar *
 	return ""
 }
 
+// uploadBase64ToStorage 将base64编码的图片上传到存储服务，返回URL
+func (a *OpenapiAgentRunApplication) uploadBase64ToStorage(ctx context.Context, base64Data string) (string, error) {
+	// 1. 去掉data URI前缀（如果有）
+	base64Content := base64Data
+	if strings.HasPrefix(base64Data, "data:image/") {
+		// 格式：data:image/png;base64,iVBORw0KG...
+		parts := strings.SplitN(base64Data, ",", 2)
+		if len(parts) == 2 {
+			base64Content = parts[1]
+		}
+	}
+
+	// 2. 解码base64
+	imageBytes, err := base64.StdEncoding.DecodeString(base64Content)
+	if err != nil {
+		logs.CtxErrorf(ctx, "Failed to decode base64 image: %v", err)
+		return "", err
+	}
+
+	// 3. 生成存储路径
+	imageUUID := uuid.NewString()
+	objName := fmt.Sprintf("bot_files/multimodal/%s.png", imageUUID)
+
+	// 4. 上传到OSS
+	logs.CtxInfof(ctx, "Uploading base64 image to storage: %s (size: %d bytes)", objName, len(imageBytes))
+
+	uploadResp, err := upload.SVC.UploadFile(ctx, imageBytes, objName)
+	if err != nil {
+		logs.CtxErrorf(ctx, "Failed to upload base64 image: %v", err)
+		return "", err
+	}
+
+	// 5. 获取上传后的URL
+	uploadURL := uploadResp.Data.UploadURL
+	logs.CtxInfof(ctx, "Base64 image uploaded successfully: %s", uploadURL)
+
+	return uploadURL, nil
+}
+
 func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request) ([]*message.InputMetaData, message.ContentType, error) {
 	var multiContents []*message.InputMetaData
 	contentType := message.ContentTypeText
@@ -223,17 +266,65 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 			var inputs []*run.AdditionalContent
 			err := json.Unmarshal([]byte(item.Content), &inputs)
 
-			logs.CtxInfof(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
+			// logs.CtxInfof(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
 			if err != nil {
 				continue
 			}
+
+			// 🔥 关键修复：在处理之前，先把inputs中的base64上传转成URL
+			// 这样后续序列化到数据库时就是短URL，不会超长
+			contentModified := false
 			for _, one := range inputs {
 				if one == nil {
 					continue
 				}
-				// 🔥 调试日志：输出one.Type的实际值
-				logs.CtxInfof(ctx, "DEBUG: Processing input type='%s', InputTypeImage='%s', InputTypeFile='%s'",
-					one.Type, message.InputTypeImage, message.InputTypeFile)
+
+				// 先处理图片类型，检测并上传base64
+				if message.InputType(one.Type) == message.InputTypeImage || message.InputType(one.Type) == message.InputTypeFile {
+					fileURL := one.GetFileURL()
+
+					// 检测是否是base64编码的数据
+					isBase64 := false
+					if strings.HasPrefix(fileURL, "data:image/") {
+						logs.CtxInfof(ctx, "Detected base64 image data (data: URI scheme)")
+						isBase64 = true
+					} else if strings.HasPrefix(fileURL, "/9j/") || strings.HasPrefix(fileURL, "iVBORw0KG") ||
+						strings.HasPrefix(fileURL, "R0lGODlh") || strings.HasPrefix(fileURL, "UklGR") {
+						logs.CtxInfof(ctx, "Detected raw base64 image data")
+						isBase64 = true
+						fileURL = "data:image/png;base64," + fileURL
+					}
+
+					// 如果是base64，先上传转成URL，并修改原始inputs
+					if isBase64 {
+						uploadedURL, uploadErr := a.uploadBase64ToStorage(ctx, fileURL)
+						if uploadErr != nil {
+							logs.CtxErrorf(ctx, "Failed to upload base64 image: %v", uploadErr)
+							continue // 跳过这个图片
+						}
+						logs.CtxInfof(ctx, "Base64 uploaded successfully, replacing with URL: %s", uploadedURL)
+
+						// 🔥 关键：修改原始inputs中的file_url，这样后续序列化时就是短URL
+						one.FileURL = &uploadedURL
+						contentModified = true
+					}
+				}
+			}
+
+			// 如果content被修改了，需要更新item.Content
+			if contentModified {
+				modifiedContent, _ := json.Marshal(inputs)
+				item.Content = string(modifiedContent)
+				logs.CtxInfof(ctx, "Updated AdditionalMessages content with uploaded URLs")
+			}
+
+			// 现在处理multiContents
+			for _, one := range inputs {
+				if one == nil {
+					continue
+				}
+
+				logs.CtxInfof(ctx, "DEBUG: Processing input type='%s'", one.Type)
 
 				switch message.InputType(one.Type) {
 				case message.InputTypeText:
@@ -242,42 +333,26 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 						Text: ptr.From(one.Text),
 					})
 				case message.InputTypeImage, message.InputTypeFile:
-					// 🔥 关键修复：支持三种输入格式
-					// 1. Base64编码的图片数据（data:image/...或纯base64字符串）
-					// 2. URI格式（需要重新生成URL）
-					// 3. 完整URL（需要提取URI并重新生成URL）
+					// 此时fileURL已经是上传后的URL（如果原来是base64）
 					fileURL := one.GetFileURL()
 					var uri string
 
-					// 检测是否是base64编码的数据
-					if strings.HasPrefix(fileURL, "data:image/") {
-						// 格式：data:image/png;base64,iVBORw0KG...
-						logs.CtxInfof(ctx, "Detected base64 image data (data: URI scheme)")
-						// 直接使用base64数据，不需要处理
-					} else if strings.HasPrefix(fileURL, "/9j/") || strings.HasPrefix(fileURL, "iVBORw0KG") ||
-						strings.HasPrefix(fileURL, "R0lGODlh") || strings.HasPrefix(fileURL, "UklGR") {
-						// 检测常见图片格式的base64开头：
-						// /9j/ = JPEG, iVBORw0KG = PNG, R0lGODlh = GIF, UklGR = WebP
-						logs.CtxInfof(ctx, "Detected raw base64 image data, converting to data URI")
-						// 转换为data URI格式（默认假设为PNG，实际应根据magic bytes判断）
-						fileURL = "data:image/png;base64," + fileURL
-					} else {
-						// 普通URL或URI，需要处理
-						var extractErr error
-						uri, extractErr = a.extractURIFromURL(fileURL)
-						if extractErr == nil && uri != "" {
-							// 成功提取URI，重新生成访问URL
-							logs.CtxInfof(ctx, "Extracted URI from URL: %s -> %s", fileURL, uri)
-							regeneratedURL, urlErr := a.getUrlByUri(ctx, uri)
-							if urlErr == nil && regeneratedURL != "" {
-								logs.CtxInfof(ctx, "Regenerated URL for multimodal content: %s", regeneratedURL)
-								fileURL = regeneratedURL
-							} else {
-								logs.CtxWarnf(ctx, "Failed to regenerate URL from URI %s, using original URL: %v", uri, urlErr)
-							}
+					// 不再是base64，按照普通URL处理
+					// 普通URL或URI，需要处理
+					var extractErr error
+					uri, extractErr = a.extractURIFromURL(fileURL)
+					if extractErr == nil && uri != "" {
+						// 成功提取URI，重新生成访问URL
+						logs.CtxInfof(ctx, "Extracted URI from URL: %s -> %s", fileURL, uri)
+						regeneratedURL, urlErr := a.getUrlByUri(ctx, uri)
+						if urlErr == nil && regeneratedURL != "" {
+							logs.CtxInfof(ctx, "Regenerated URL for multimodal content: %s", regeneratedURL)
+							fileURL = regeneratedURL
 						} else {
-							logs.CtxInfof(ctx, "Using original file URL (no URI extraction needed): %s", fileURL)
+							logs.CtxWarnf(ctx, "Failed to regenerate URL from URI %s, using original URL: %v", uri, urlErr)
 						}
+					} else {
+						logs.CtxInfof(ctx, "Using original file URL (no URI extraction needed): %s", fileURL)
 					}
 
 					multiContents = append(multiContents, &message.InputMetaData{
