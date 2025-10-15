@@ -5520,6 +5520,7 @@ export interface PluginDetal {
   plugin_status?: Int64;
   is_official?: boolean;
   plugin_source?: Array<PluginSource>;
+  plugin_from?: bot_common.PluginFrom;
 }
 
 export interface PluginParameter {

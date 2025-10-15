@@ -70,7 +70,7 @@ import {
 } from '@coze-arch/bot-api/plugin_develop';
 import { type Int64 } from '@coze-arch/bot-api/developer_api';
 import { ProductEntityType } from '@coze-arch/bot-api/product_api';
-import { PluginSource } from '@coze-arch/bot-api/playground_api';
+import { PluginFrom } from '@coze-arch/bot-api/playground_api';
 
 import s from './index.module.less';
 import { type SimplifyProductInfo } from '../../service/fetch-plugin';
@@ -544,10 +544,10 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                   project_id,
                   version_name,
                   version_ts,
-                  plugin_source:
+                  plugin_from:
                     productInfo?.entity_type === ProductEntityType.SaasPlugin
-                      ? PluginSource.FromSaas
-                      : PluginSource.Default,
+                      ? PluginFrom.FromSaas
+                      : PluginFrom.Default,
                 };
                 // Check whether the name of the Plugins currently to be added has a duplicate name in the added list (the model does not support it, so this is added)
                 if (

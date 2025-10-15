@@ -20,7 +20,7 @@ import {
   type APIParameter,
   type FCWorkflowSetting,
 } from '@coze-arch/idl/workflow_api';
-import { type PluginSource } from '@coze-arch/idl/playground_api';
+import { type PluginFrom } from '@coze-arch/idl/playground_api';
 
 export enum SkillType {
   Plugin = 'plugin',
@@ -59,7 +59,7 @@ export interface BoundPluginItem {
   // Fill in true if it is project, false for resource library
   is_draft: boolean;
   fc_setting?: PluginFCSetting;
-  plugin_source?: PluginSource;
+  plugin_from?: PluginFrom;
 }
 
 export interface BoundKnowledgeItem {
