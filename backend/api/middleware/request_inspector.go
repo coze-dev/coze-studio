@@ -38,7 +38,15 @@ func RequestInspectorMW() app.HandlerFunc {
 		authType := RequestAuthTypeWebAPI // default is web api, session auth
 
 		if isNeedOpenapiAuth(ctx) {
-			authType = RequestAuthTypeOpenAPI
+			// 检查是否有有效的Bearer token来判断使用哪种认证方式
+			authHeader := ctx.Request.Header.Get(HeaderAuthorizationKey)
+			if len(authHeader) > 0 && strings.HasPrefix(authHeader, "Bearer ") {
+				// 有Bearer token格式的Authorization header，使用OpenAPI认证
+				authType = RequestAuthTypeOpenAPI
+			} else {
+				// 没有Bearer token或格式不对，使用Session认证
+				authType = RequestAuthTypeWebAPI
+			}
 		} else if isStaticFile(ctx) {
 			authType = RequestAuthTypeStaticFile
 		}
