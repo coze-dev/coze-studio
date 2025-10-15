@@ -292,11 +292,16 @@ func (a *OpenapiAgentRunApplication) getUrlByUri(ctx context.Context, uri string
 }
 
 // extractURIFromURL 从完整URL中提取URI
-// 例如：http://localhost:8889/opencoze/BIZ_BOT_ICON/xxx.jpg -> tos-cn-i-v4nquku3lp/xxx.jpg
+// 例如：http://localhost:8889/opencoze/BIZ_BOT_ICON/xxx.jpg -> BIZ_BOT_ICON/xxx.jpg
 // 或者：https://agents.finmall.com/api/storage/tos-cn-i-v4nquku3lp/xxx.jpg -> tos-cn-i-v4nquku3lp/xxx.jpg
 func (a *OpenapiAgentRunApplication) extractURIFromURL(fileURL string) (string, error) {
 	if fileURL == "" {
 		return "", errors.New("empty file URL")
+	}
+
+	// 移除查询参数（?后面的部分）
+	if idx := strings.Index(fileURL, "?"); idx >= 0 {
+		fileURL = fileURL[:idx]
 	}
 
 	// 情况1: 如果URL包含 "/api/storage/"，提取后面的部分作为URI
@@ -305,11 +310,9 @@ func (a *OpenapiAgentRunApplication) extractURIFromURL(fileURL string) (string, 
 		return uri, nil
 	}
 
-	// 情况2: 如果URL包含 "/opencoze/"，提取后面的部分并转换为tos格式
+	// 情况2: 如果URL包含 "/opencoze/"，提取后面的部分作为URI
 	if idx := strings.Index(fileURL, "/opencoze/"); idx >= 0 {
 		path := fileURL[idx+len("/opencoze/"):]
-		// 这个路径可能是 "BIZ_BOT_ICON/xxx.jpg"，需要转换为 "tos-cn-i-v4nquku3lp/xxx.jpg"
-		// 但我们不知道确切的bucket名称，所以直接返回path
 		return path, nil
 	}
 
