@@ -231,6 +231,10 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 				if one == nil {
 					continue
 				}
+				// 🔥 调试日志：输出one.Type的实际值
+				logs.CtxInfof(ctx, "DEBUG: Processing input type='%s', InputTypeImage='%s', InputTypeFile='%s'",
+					one.Type, message.InputTypeImage, message.InputTypeFile)
+
 				switch message.InputType(one.Type) {
 				case message.InputTypeText:
 					multiContents = append(multiContents, &message.InputMetaData{
