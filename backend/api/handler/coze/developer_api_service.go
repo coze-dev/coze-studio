@@ -256,6 +256,20 @@ func GetUploadAuthToken(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	// 验证认证：支持 Session 或 API Key
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+		if apiKeyInfo != nil {
+			userID = &apiKeyInfo.UserID
+		}
+	}
+
+	if userID == nil {
+		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrUploadPermissionCode, errorx.KV("msg", "authentication required (session or API key)")))
+		return
+	}
+
 	resp, err := application.SingleAgentSVC.GetUploadAuthToken(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
@@ -299,9 +313,19 @@ func UploadFile(ctx context.Context, c *app.RequestContext) {
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
+
+	// 支持 Session 和 API Key 两种认证方式
 	userID := ctxutil.GetUIDFromCtx(ctx)
 	if userID == nil {
-		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrUploadPermissionCode, errorx.KV("msg", "session required")))
+		// 尝试从 API Key 认证中获取用户信息
+		apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+		if apiKeyInfo != nil {
+			userID = &apiKeyInfo.UserID
+		}
+	}
+
+	if userID == nil {
+		internalServerErrorResponse(ctx, c, errorx.New(errno.ErrUploadPermissionCode, errorx.KV("msg", "authentication required (session or API key)")))
 		return
 	}
 	secret := createSecret(ptr.From(userID), req.FileHead.FileType)

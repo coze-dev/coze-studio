@@ -38,22 +38,26 @@ import (
 const HeaderAuthorizationKey = "Authorization"
 
 var needAuthPath = map[string]bool{
-	"/v3/chat":                         true,
-	"/v1/conversations":                true,
-	"/v1/conversation/create":          true,
-	"/v1/conversation/message/list":    true,
-	"/v1/files/upload":                 true,
-	"/v1/workflow/run":                 true,
-	"/v1/workflow/stream_run":          true,
-	"/v1/workflow/stream_resume":       true,
-	"/v1/workflow/get_run_history":     true,
-	"/v1/bot/get_online_info":          true,
-	"/v1/workflows/chat":               true,
-	"/v1/workflow/conversation/create": true,
+	"/v3/chat":                              true,
+	"/v1/conversations":                     true,
+	"/v1/conversation/create":               true,
+	"/v1/conversation/message/list":         true,
+	"/v1/files/upload":                      true,
+	"/v1/workflow/run":                      true,
+	"/v1/workflow/stream_run":               true,
+	"/v1/workflow/stream_resume":            true,
+	"/v1/workflow/get_run_history":          true,
+	"/v1/bot/get_online_info":               true,
+	"/v1/workflows/chat":                    true,
+	"/v1/workflow/conversation/create":      true,
+	"/api/bot/upload_file":                  true, // 支持 API Key 上传文件
+	"/api/playground/upload/auth_token":     true, // 支持 API Key 获取上传凭证
+	"/api/common/upload/apply_upload_action": true, // 支持 API Key 申请上传地址
 }
 
 var needAuthFunc = map[string]bool{
 	"^/v1/conversations/[0-9]+/clear$": true, // v1/conversations/:conversation_id/clear
+	"^/api/common/upload/.*":            true, // api/common/upload/* 支持 API Key 通用上传
 }
 
 func parseBearerAuthToken(authHeader string) string {
