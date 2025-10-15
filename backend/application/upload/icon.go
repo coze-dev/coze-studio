@@ -433,12 +433,11 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.Up
 	if err != nil {
 		return nil, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", "file upload to oss failed"))
 	}
-	url, err := u.oss.GetObjectUrl(ctx, objName)
-	if err != nil {
-		return nil, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", "get object url failed"))
-	}
+
+	// 🔥 关键修复：直接返回 URI 作为 URL（前端会自动拼接域名）
+	// 这样可以避免 MinIO 返回的 URL 中包含 :443 端口导致 OpenAI API 报错
 	resp.File.CreatedAt = time.Now().Unix()
-	resp.File.URL = url
+	resp.File.URL = objName  // 直接使用 URI，不调用 GetObjectUrl
 	fileEntity := entity.File{
 		Name:          fileHeader.Filename,
 		FileSize:      fileHeader.Size,
