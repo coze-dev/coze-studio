@@ -38,6 +38,7 @@ type UserBenefit struct {
 	UsedCount   int32
 	TotalCount  int32
 	IsUnlimited bool
+	ResetDatetime int64
 }
 
 type SaasUserData struct {

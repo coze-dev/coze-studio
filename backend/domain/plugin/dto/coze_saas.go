@@ -57,7 +57,6 @@ type SaasPluginItem struct {
 
 // SaasPluginMetaInfo represents the metadata of a SaaS plugin
 type SaasPluginMetaInfo struct {
-	IsCallAvailable bool                `json:"is_call_available"`
 	ProductID       string              `json:"product_id"`
 	EntityID        string              `json:"entity_id"`
 	EntityVersion   string              `json:"entity_version"`
@@ -98,6 +97,7 @@ type SaasPluginInfo struct {
 	BotsUseCount           int64   `json:"bots_use_count"`
 	AssociatedBotsUseCount int64   `json:"associated_bots_use_count"`
 	CallCount              int64   `json:"call_count"`
+	IsCallAvailable        bool    `json:"is_call_available"`
 }
 
 type ListPluginCategoriesRequest struct {

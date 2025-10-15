@@ -110,7 +110,7 @@ func convertSaasPluginItemToEntity(item *domainDto.SaasPluginItem) *entity.Plugi
 		LogoURL:             metaInfo.IconURL,
 		Auth: &model.AuthV2{
 			Type: func() consts.AuthzType {
-				if !metaInfo.IsCallAvailable {
+				if !item.PluginInfo.IsCallAvailable {
 					return consts.AuthTypeOfSaasInstalled
 				}
 				return consts.AuthzTypeOfNone

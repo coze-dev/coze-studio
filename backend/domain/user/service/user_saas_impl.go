@@ -125,8 +125,12 @@ func (s *CozeUserService) GetUserBenefit(ctx context.Context) (*entity.UserBenef
 	if benefit.Data == nil || len(benefit.Data.BenefitInfo) == 0 {
 		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "benefit info not found"))
 	}
-
+	var resetDatetime int64
+	if benefit.Data.BenefitInfo[0].Basic != nil && benefit.Data.BenefitInfo[0].Basic.ItemInfo != nil {
+		resetDatetime = benefit.Data.BenefitInfo[0].Basic.ItemInfo.EndAt + 1
+	}
 	return &entity.UserBenefit{
+		ResetDatetime: resetDatetime,
 		UsedCount:  int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Used),
 		TotalCount: int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Total),
 		IsUnlimited: func() bool {
