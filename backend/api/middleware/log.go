@@ -74,8 +74,8 @@ func AccessLogMW() app.HandlerFunc {
 			requestAuthType := ctx.GetInt32(RequestAuthTypeStr)
 			if requestAuthType != int32(RequestAuthTypeStaticFile) && filepath.Ext(path) == "" {
 				logs.CtxInfof(c, "%s ", baseLog)
-				logs.CtxDebugf(c, "query : %s \nreq : %s \nresp: %s",
-					urlQuery, reqBody, respBody)
+				// logs.CtxDebugf(c, "query : %s \nreq : %s \nresp: %s",
+				// 	urlQuery, reqBody, respBody)
 			}
 		}
 	}
