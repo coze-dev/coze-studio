@@ -2692,6 +2692,7 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 			LatestVersion:       toolInfoResponse.LatestVersion,
 			PluginProductStatus: ternary.IFElse(toolInfoResponse.IsOfficial, int64(1), 0),
 			ProjectID:           ternary.IFElse(toolInfoResponse.AppID != 0, ptr.Of(strconv.FormatInt(toolInfoResponse.AppID, 10)), nil),
+			PluginFrom:          req.PluginFrom,
 		},
 		ToolInputs:  inputVars,
 		ToolOutputs: outputVars,
