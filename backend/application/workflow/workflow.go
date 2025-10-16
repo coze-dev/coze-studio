@@ -2728,7 +2728,6 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 
 	if len(req.GetPluginList()) > 0 {
 		for _, pl := range req.GetPluginList() {
-			pl.PluginFrom = ptr.Of(bot_common.PluginFrom_FromSaas)
 			pluginID, err := strconv.ParseInt(pl.PluginID, 10, 64)
 			if err != nil {
 				return nil, err
@@ -2944,7 +2943,8 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 
 		pluginReq := &plugin.ToolsInfoRequest{
 			PluginEntity: vo.PluginEntity{
-				PluginID: pluginID,
+				PluginID:   pluginID,
+				PluginFrom: pluginFcSetting.PluginFrom,
 			},
 			ToolIDs: []int64{toolID},
 			IsDraft: isDraft,

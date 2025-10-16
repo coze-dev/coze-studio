@@ -35,10 +35,12 @@ type User struct {
 
 type UserBenefit struct {
 	UserID        int64
+	UserLevel     UserLevel
 	UsedCount     int32
 	TotalCount    int32
 	IsUnlimited   bool
 	ResetDatetime int64
+	CallQPS       int32
 }
 
 type SaasUserData struct {
