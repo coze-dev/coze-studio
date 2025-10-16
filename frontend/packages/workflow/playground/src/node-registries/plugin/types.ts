@@ -24,6 +24,7 @@ import {
   type BatchDTO,
   type ValueExpression,
 } from '@coze-workflow/base';
+import { type PluginFrom } from '@coze-arch/bot-api/playground_api';
 
 import type { NodeMeta, SettingOnErrorDTO, SettingOnErrorVO } from '@/typing';
 
@@ -39,6 +40,7 @@ export interface ApiNodeFormData {
     inputParameters?: InputParametersMap;
     batch?: BatchVO;
     batchMode?: string;
+    pluginFrom?: PluginFrom;
     settingOnError?: SettingOnErrorDTO;
   };
   outputs: ViewVariableMeta[];
