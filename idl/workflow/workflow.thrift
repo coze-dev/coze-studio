@@ -1508,6 +1508,8 @@ struct FCPluginSetting {
     7: optional AsyncConf async_conf,  // This issue is temporarily not supported.
     8: bool is_draft,
     9: string plugin_version,
+
+    50: optional bot_common.PluginFrom plugin_from,
 }
 
 struct FCWorkflowSetting {

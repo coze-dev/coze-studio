@@ -21,7 +21,7 @@ type BenefitType string
 
 const (
 	BenefitTypeCallToolLimit BenefitType = "call_tool_limit"
-	// Add specific benefit types as needed
+	BenefitTypeAPIRunQPS     BenefitType = "api_run_qps"
 )
 
 // UserLevel represents the user level (string type to match API)
@@ -30,7 +30,7 @@ type UserLevel string
 const (
 	UserLevelUnknown    UserLevel = "unknown"
 	UserLevelBasic      UserLevel = "basic"
-	UserLevelPro        UserLevel = "pro"
+	UserLevelPro        UserLevel = "v1_pro_instance"
 	UserLevelEnterprise UserLevel = "enterprise"
 	// Add more levels as needed
 )
@@ -57,8 +57,8 @@ const (
 
 // GetEnterpriseBenefitRequest represents the request for getting enterprise benefit
 type GetEnterpriseBenefitRequest struct {
-	BenefitType *BenefitType `json:"benefit_type,omitempty" form:"benefit_type"`
-	ResourceID  *string      `json:"resource_id,omitempty" form:"resource_id"`
+	BenefitType *string `json:"benefit_type,omitempty" form:"benefit_type"`
+	ResourceID  *string `json:"resource_id,omitempty" form:"resource_id"`
 }
 
 // GetEnterpriseBenefitResponse represents the response for getting enterprise benefit
@@ -76,15 +76,15 @@ type BenefitData struct {
 
 // BasicInfo represents the basic information
 type BasicInfo struct {
-	UserLevel UserLevel `json:"user_level"`
+	UserLevel UserLevel `json:"user_level,omitempty"`
 }
 
 // BenefitInfo represents the benefit information
 type BenefitInfo struct {
-	ResourceID  string                 `json:"resource_id,omitempty"`
-	BenefitType BenefitType            `json:"benefit_type,omitempty"`
-	Basic       *BenefitTypeInfoItem   `json:"basic,omitempty"` // Basic value
-	Extra       []*BenefitTypeInfoItem `json:"extra,omitempty"` // Extra values, may not exist
+	BenefitType BenefitType          `json:"benefit_type,omitempty"`
+	Basic       *BenefitTypeInfoItem `json:"basic,omitempty"`
+	Effective   *BenefitTypeInfoItem `json:"effective,omitempty"`
+	ResourceID  string               `json:"resource_id,omitempty"`
 }
 
 // BenefitTypeInfoItem represents a benefit type info item

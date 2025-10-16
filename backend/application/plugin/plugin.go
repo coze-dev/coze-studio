@@ -38,6 +38,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
+	userEntity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -323,6 +324,13 @@ func (p *PluginApplicationService) validateDraftPluginAccess(ctx context.Context
 
 // convertPluginToProductInfo converts a plugin entity to ProductInfo
 func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductInfo {
+
+	isOfficial := func() bool {
+		if plugin.SaasPluginExtra == nil {
+			return true
+		}
+		return plugin.SaasPluginExtra.IsOfficial
+	}()
 	return &productAPI.ProductInfo{
 		MetaInfo: &productAPI.ProductMetaInfo{
 			ID:          plugin.GetRefProductID(),
@@ -337,10 +345,15 @@ func convertPluginToProductInfo(plugin *entity.PluginInfo) *productAPI.ProductIn
 				}
 				return productCommon.ProductEntityType_Plugin
 			}(),
-			IsOfficial: true,
+			IsOfficial: isOfficial,
 			Status:     productCommon.ProductStatus_Listed,
 			UserInfo: &productCommon.UserInfo{
-				Name: "Coze Official",
+				Name: func() string {
+					if isOfficial {
+						return "Coze Official"
+					}
+					return "Coze Community"
+				}(),
 			},
 		},
 	}
@@ -607,7 +620,6 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 
 	// Build response data
 	data := &productAPI.GetProductCallInfoData{
-		UserLevel: productAPI.UserLevel_Free,
 		UserInfo: &productAPI.UserInfo{
 			UserName:  ptr.Of(userInfo.UserName),
 			NickName:  ptr.Of(userInfo.NickName),
@@ -615,11 +627,26 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 		},
 	}
 
-	data.CallCountLimit = &productAPI.ProductCallCountLimit{
-		IsUnlimited:   benefit.IsUnlimited,
-		UsedCount:     benefit.UsedCount,
-		TotalCount:    benefit.TotalCount,
-		ResetDatetime: benefit.ResetDatetime,
+	if benefit != nil {
+		data.UserLevel = func() productAPI.UserLevel {
+			switch benefit.UserLevel {
+			case userEntity.UserLevelPro:
+				return productAPI.UserLevel_ProPersonal
+			case userEntity.UserLevelEnterprise:
+				return productAPI.UserLevel_Enterprise
+			default:
+				return productAPI.UserLevel_Free
+			}
+		}()
+		data.CallCountLimit = &productAPI.ProductCallCountLimit{
+			IsUnlimited:   benefit.IsUnlimited,
+			UsedCount:     benefit.UsedCount,
+			TotalCount:    benefit.TotalCount,
+			ResetDatetime: benefit.ResetDatetime,
+		}
+		data.CallRateLimit = &productAPI.ProductCallRateLimit{
+			QPS: benefit.CallQPS,
+		}
 	}
 
 	return &productAPI.GetProductCallInfoResponse{

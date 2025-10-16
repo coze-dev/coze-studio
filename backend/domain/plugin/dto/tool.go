@@ -63,12 +63,12 @@ type ConvertToOpenapi3DocResponse struct {
 }
 
 type UpdateBotDefaultParamsRequest struct {
-	PluginID    int64
-	AgentID     int64
-	ToolName    string
-	Parameters  openapi3.Parameters
-	RequestBody *openapi3.RequestBodyRef
-	Responses   openapi3.Responses
+	PluginID     int64
+	AgentID      int64
+	ToolName     string
+	Parameters   openapi3.Parameters
+	RequestBody  *openapi3.RequestBodyRef
+	Responses    openapi3.Responses
 	PluginFormat *common.PluginDataFormat
 }
 type UniqueToolAPI struct {

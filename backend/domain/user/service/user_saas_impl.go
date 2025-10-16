@@ -22,6 +22,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/saasapi"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -64,79 +65,63 @@ func (s *CozeUserService) GetUserInfo(ctx context.Context) (*entity.SaasUserData
 	}, nil
 }
 
-func (s *CozeUserService) GetEnterpriseBenefit(ctx context.Context, req *entity.GetEnterpriseBenefitRequest) (*entity.GetEnterpriseBenefitResponse, error) {
+func (s *CozeUserService) GetEnterpriseBenefit(ctx context.Context, req *entity.GetEnterpriseBenefitRequest) (*entity.UserBenefit, error) {
 
 	queryParams := make(map[string]interface{})
 	if req.BenefitType != nil {
-		queryParams["benefit_type"] = *req.BenefitType
+		queryParams["benefit_type_list"] = *req.BenefitType
 	}
 	if req.ResourceID != nil {
 		queryParams["resource_id"] = *req.ResourceID
 	}
 
-	resp, err := s.client.GetWithQuery(ctx, "/v1/commerce/benefit/benefits/get?benefit_type=call_tool_limit", queryParams)
+	resp, err := s.client.GetWithQuery(ctx, "/v1/commerce/benefit/benefits/get", queryParams)
 	if err != nil {
 		logs.CtxErrorf(ctx, "failed to call GetEnterpriseBenefit API: %v", err)
-		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "API call failed"))
+		return nil, nil
 	}
 
 	var benefitData entity.BenefitData
+	userBenefit := &entity.UserBenefit{}
 	if err := json.Unmarshal(resp.Data, &benefitData); err != nil {
 		logs.CtxErrorf(ctx, "failed to parse benefit data: %v", err)
-		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "data parse failed"))
+		return nil, nil
 	}
 
-	// Validate parsed data
-	if benefitData.BasicInfo != nil && !benefitData.BasicInfo.UserLevel.IsValid() {
-		logs.CtxWarnf(ctx, "invalid user level: %s", benefitData.BasicInfo.UserLevel)
-	}
+	for _, userBenefitInfo := range benefitData.BenefitInfo {
 
-	for _, benefitInfo := range benefitData.BenefitInfo {
-		if benefitInfo != nil && benefitInfo.Basic != nil && !benefitInfo.Basic.Status.IsValid() {
-			logs.CtxWarnf(ctx, "invalid benefit status: %s", benefitInfo.Basic.Status)
+		if userBenefitInfo != nil && userBenefitInfo.BenefitType == entity.BenefitTypeCallToolLimit && userBenefitInfo.Basic != nil && userBenefitInfo.Basic.ItemInfo != nil {
+			userBenefit.UsedCount = int32(userBenefitInfo.Basic.ItemInfo.Used)
+			userBenefit.TotalCount = int32(userBenefitInfo.Basic.ItemInfo.Total)
+			userBenefit.IsUnlimited = func() bool {
+				return userBenefitInfo.Basic.ItemInfo.Strategy == entity.ResourceUsageStrategyUnlimit
+			}()
+			userBenefit.ResetDatetime = userBenefitInfo.Basic.ItemInfo.EndAt + 1
 		}
-		if benefitInfo != nil && benefitInfo.Basic != nil && benefitInfo.Basic.ItemInfo != nil && !benefitInfo.Basic.ItemInfo.Strategy.IsValid() {
-			logs.CtxWarnf(ctx, "invalid resource usage strategy: %s", benefitInfo.Basic.ItemInfo.Strategy)
+		if userBenefitInfo != nil && userBenefitInfo.BenefitType == entity.BenefitTypeAPIRunQPS && userBenefitInfo.Effective != nil && userBenefitInfo.Effective.ItemInfo != nil {
+			userBenefit.CallQPS = int32(userBenefitInfo.Effective.ItemInfo.Total)
 		}
 	}
 
-	benefit := &entity.GetEnterpriseBenefitResponse{
-		Code:    int32(resp.Code),
-		Message: resp.Msg,
-		Data:    &benefitData,
+	if benefitData.BasicInfo != nil {
+		userBenefit.UserLevel = benefitData.BasicInfo.UserLevel
 	}
 
-	logs.CtxInfof(ctx, "successfully retrieved enterprise benefit data, user_level: %s, benefit_count: %d",
-		benefit.Data.BasicInfo.UserLevel, len(benefit.Data.BenefitInfo))
-
-	return benefit, nil
+	return userBenefit, nil
 }
 
 func (s *CozeUserService) GetUserBenefit(ctx context.Context) (*entity.UserBenefit, error) {
 
-	benefitType := entity.BenefitTypeCallToolLimit
 	req := &entity.GetEnterpriseBenefitRequest{
-		BenefitType: &benefitType,
+		BenefitType: ptr.Of(string(entity.BenefitTypeCallToolLimit) + "," + string(entity.BenefitTypeAPIRunQPS)),
+		ResourceID:  ptr.Of("plugin"),
 	}
 	benefit, err := s.GetEnterpriseBenefit(ctx, req)
 	if err != nil {
 		return nil, err
 	}
-	if benefit.Data == nil || len(benefit.Data.BenefitInfo) == 0 {
-		return nil, errorx.New(errno.ErrUserResourceNotFound, errorx.KV("reason", "benefit info not found"))
-	}
-	var resetDatetime int64
-	if benefit.Data.BenefitInfo[0].Basic != nil && benefit.Data.BenefitInfo[0].Basic.ItemInfo != nil {
-		resetDatetime = benefit.Data.BenefitInfo[0].Basic.ItemInfo.EndAt + 1
-	}
-	return &entity.UserBenefit{
-		ResetDatetime: resetDatetime,
-		UsedCount:     int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Used),
-		TotalCount:    int32(benefit.Data.BenefitInfo[0].Basic.ItemInfo.Total),
-		IsUnlimited: func() bool {
-			return benefit.Data.BenefitInfo[0].Basic.ItemInfo.Strategy == entity.ResourceUsageStrategyUnlimit
-		}(),
-	}, nil
+
+	return benefit, nil
 }
 
 var cozeUserService *CozeUserService
