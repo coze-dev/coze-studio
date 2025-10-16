@@ -25,6 +25,7 @@ import {
   type WorkflowNodeJSON,
   type WorkflowNodeRegistry,
 } from '@coze-workflow/base';
+import { PluginFrom } from '@coze-arch/bot-api/playground_api';
 
 import { type WorkflowPlaygroundContext } from '@/workflow-playground-context';
 import { type NodeTestMeta } from '@/test-run-kit';
@@ -95,6 +96,14 @@ export const PLUGIN_NODE_REGISTRY: WorkflowNodeRegistry<NodeTestMeta> = {
 
   getHeaderExtraOperation: (formValues: ApiNodeFormData) => {
     const identifier = getApiNodeIdentifier(formValues?.inputs?.apiParam ?? []);
+
+    if (
+      IS_OPEN_SOURCE &&
+      formValues?.inputs?.pluginFrom !== PluginFrom.FromSaas
+    ) {
+      return null;
+    }
+
     return createPluginLink(identifier);
   },
 
