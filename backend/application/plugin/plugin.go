@@ -69,15 +69,8 @@ func (p *PluginApplicationService) CheckAndLockPluginEdit(ctx context.Context, r
 }
 
 func (p *PluginApplicationService) GetBotDefaultParams(ctx context.Context, req *pluginAPI.GetBotDefaultParamsRequest) (resp *pluginAPI.GetBotDefaultParamsResponse, err error) {
-	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
-	if err != nil {
-		return nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
-	}
-	if !exist {
-		return nil, errorx.New(errno.ErrPluginRecordNotFound)
-	}
 
-	draftAgentTool, err := p.DomainSVC.GetDraftAgentToolByName(ctx, req.BotID, req.APIName)
+	draftAgentTool, err := p.DomainSVC.GetDraftAgentToolByName(ctx, req.BotID, req.PluginID, req.APIName)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetDraftAgentToolByName failed, agentID=%d, toolName=%s", req.BotID, req.APIName)
 	}
