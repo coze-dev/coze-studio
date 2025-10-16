@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-/* eslint-disable @coze-arch/no-deep-relative-import */
+/* eslint-disable @coze-arch/no-deep-relative-import -- Allow deep imports for workflow internal modules */
 import React, { type FC } from 'react';
 
 import { FlowNodeFormData } from '@flowgram-adapter/free-layout-editor';
@@ -105,22 +105,23 @@ export const BizIDE: FC<{
     <div className={styles.container} data-testid={setterTestId}>
       <Editor
         title={nodeMeta?.title}
-        // After the code is rendered through the panel, the readonly field is not responsive, so it is more reasonable to take it from the global
+        // After the code is rendered through the panel,
+        // the readonly field is not responsive,
+        // so it is more reasonable to take it from the global
         readonly={globalState.readonly}
         height="100%"
         width="100%"
         input={parsedInput}
         output={parsedOutput}
-        defaultLanguage={
-          LANG_CODE_NAME_MAP.get(value?.language) ?? 'typescript'
-        }
+        defaultLanguage={LANG_CODE_NAME_MAP.get(value?.language) ?? 'python'}
         defaultContent={value?.code}
         onTestRunStateChange={handleOnStatusChange}
         onTestRun={handleTestClick}
         testRunIcon={<IconCozPlayCircle />}
         onChange={handleOnChange}
         onClose={onClose}
-        // Instantiate the IDE by workflow, because in project-ide, multiple workflows are open simultaneously
+        // Instantiate the IDE by workflow,
+        // because in project-ide, multiple workflows are open simultaneously
         uuid={globalState.workflowId}
         languageTemplates={languageTemplates}
         spaceId={globalState.spaceId}

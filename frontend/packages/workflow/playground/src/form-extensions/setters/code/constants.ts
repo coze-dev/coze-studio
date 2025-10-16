@@ -83,13 +83,9 @@ export const LANG_NAME_CODE_MAP = new Map<string, number>([
   ['javascript', LanguageEnum.NODE_JS],
 ]);
 
+// Only Python is supported in open source version (backend limitation)
 export const DEFAULT_LANGUAGES: NonNullable<EditorProps['languageTemplates']> =
   [
-    {
-      language: 'typescript',
-      template: DEFAULT_TYPESCRIPT_CODE_PARAMS.code,
-      displayName: 'JavaScript',
-    },
     {
       language: 'python',
       displayName: 'Python',

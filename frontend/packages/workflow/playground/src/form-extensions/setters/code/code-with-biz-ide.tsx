@@ -95,7 +95,7 @@ export const CodeEditorWithBizIDE: FC<CodeProps> = (props: CodeProps) => {
     () => () => {
       forceCloseBizIDE();
     },
-    [],
+    [forceCloseBizIDE],
   );
 
   const languageTemplates = getLanguageTemplates({
@@ -120,15 +120,18 @@ export const CodeEditorWithBizIDE: FC<CodeProps> = (props: CodeProps) => {
               content={value?.code ?? ''}
               language={
                 LANG_CODE_NAME_MAP.get(
-                  value?.language ?? LanguageEnum.NODE_JS,
-                ) ?? 'javascript'
+                  value?.language ?? LanguageEnum.PYTHON,
+                ) ?? 'python'
               }
               height={178}
             />
           </div>
         </FormCard>
         {/* Why not use FormCard's extra instead of absolute positioning?
-            Because MonacoEditor is absolutely positioned, the hierarchy will cover the hierarchy of the previous button. If you add zIndex to the button, it will be higher than the zIndex of the canvas, so put it here for absolute positioning.
+            Because MonacoEditor is absolutely positioned, the hierarchy will
+            cover the hierarchy of the previous button. If you add zIndex to
+            the button, it will be higher than the zIndex of the canvas, so
+            put it here for absolute positioning.
           */}
         <div
           style={{
