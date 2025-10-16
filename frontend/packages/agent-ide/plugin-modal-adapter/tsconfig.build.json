@@ -13,6 +13,9 @@
   "exclude": ["node_modules", "dist"],
   "references": [
     {
+      "path": "../../arch/api-schema/tsconfig.build.json"
+    },
+    {
       "path": "../../arch/bot-api/tsconfig.build.json"
     },
     {

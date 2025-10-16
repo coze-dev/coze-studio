@@ -5332,6 +5332,12 @@ importers:
       '@coze-common/assets':
         specifier: workspace:*
         version: link:../../common/assets
+      '@coze-studio/api-schema':
+        specifier: workspace:*
+        version: link:../../arch/api-schema
+      ahooks:
+        specifier: 3.7.8
+        version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
