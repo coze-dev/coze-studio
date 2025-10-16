@@ -68,11 +68,6 @@ export const PluginLink = ({
     return null;
   }
 
-  // Open source plugins only display plugins from the SaaS platform
-  if (IS_OPEN_SOURCE && plugin_from !== PluginFrom.FromSaas) {
-    return null;
-  }
-
   if (isLoading) {
     return <IconCozLoading className="animate-spin text-xs coz-fg-dim" />;
   }
