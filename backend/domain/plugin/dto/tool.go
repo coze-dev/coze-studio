@@ -69,6 +69,7 @@ type UpdateBotDefaultParamsRequest struct {
 	Parameters  openapi3.Parameters
 	RequestBody *openapi3.RequestBodyRef
 	Responses   openapi3.Responses
+	PluginFormat *common.PluginDataFormat
 }
 type UniqueToolAPI struct {
 	SubURL string

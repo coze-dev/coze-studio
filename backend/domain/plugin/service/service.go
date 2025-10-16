@@ -65,7 +65,7 @@ type PluginService interface {
 	// Agent Tool
 	BindAgentTools(ctx context.Context, agentID int64, bindTools []*model.BindToolInfo) (err error)
 	DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error)
-	GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, err error)
+	GetDraftAgentToolByName(ctx context.Context, agentID int64, pluginID int64, toolName string) (tool *entity.ToolInfo, err error)
 	MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error)
 	UpdateBotDefaultParams(ctx context.Context, req *dto.UpdateBotDefaultParamsRequest) (err error)
 
