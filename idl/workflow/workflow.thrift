@@ -1332,6 +1332,8 @@ struct ApiDetailData {
     17: optional string       latest_version,
     18: optional string       latest_version_name,
     19: optional string       version_name,
+
+    50: optional bot_common.PluginFrom plugin_from,
 }
 
 struct GetApiDetailResponse {
