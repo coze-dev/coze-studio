@@ -26,7 +26,7 @@ require (
 	github.com/cloudwego/eino-ext/components/model/claude v0.1.1
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250715055739-0d0e28441a2f
 	github.com/cloudwego/eino-ext/components/model/gemini v0.1.2
-	github.com/cloudwego/eino-ext/components/model/ollama v0.1.0
+	github.com/cloudwego/eino-ext/components/model/ollama v0.1.3
 	github.com/cloudwego/eino-ext/components/model/openai v0.1.1
 	github.com/cloudwego/eino-ext/components/model/qwen v0.0.0-20250612061754-5a3deb091dc5
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250918130948-16e3a249e721
@@ -296,6 +296,7 @@ require (
 	github.com/danieljoos/wincred v1.1.2 // indirect
 	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
 	github.com/eino-contrib/jsonschema v1.0.0 // indirect
+	github.com/eino-contrib/ollama v0.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
