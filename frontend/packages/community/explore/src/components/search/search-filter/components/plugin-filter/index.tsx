@@ -51,10 +51,6 @@ const getFilterOption = () => {
       value: PAID_PLUGIN_VALUE,
       text: I18n.t('only_show_paid_plugins'),
     });
-    options.push({
-      value: LOCAL_PLUGIN_VALUE,
-      text: I18n.t('store_show_service_plugin'),
-    });
   }
   return options;
 };

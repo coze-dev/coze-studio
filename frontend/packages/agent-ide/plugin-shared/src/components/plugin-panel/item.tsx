@@ -60,6 +60,7 @@ export interface PluginItemProps {
   isLocalPlugin?: boolean;
   connectors?: string[];
   auth_mode?: PluginAuthMode;
+  productId?: string;
 }
 
 interface OverflowTagItem {
@@ -81,8 +82,9 @@ export const PluginItem: React.FC<PluginItemProps> = ({
   isLocalPlugin,
   connectors,
   auth_mode,
+  productId,
 }) => {
-  const { name, desc, parameters, debug_example, plugin_id } = pluginApi;
+  const { name, desc, parameters, debug_example } = pluginApi;
   const { exampleNode, doShowExample } = useViewExample();
   const [isMouseIn, { setFalse, setTrue }] = useBoolean(false);
 
@@ -225,7 +227,7 @@ export const PluginItem: React.FC<PluginItemProps> = ({
                   trigger={isDisabled ? 'hover' : 'custom'}
                 >
                   <ActivatePopover
-                    id={plugin_id}
+                    id={productId}
                     show={auth_mode === PluginAuthMode.NeedInstalled}
                   >
                     <UIButton
