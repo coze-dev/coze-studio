@@ -1779,6 +1779,8 @@ export interface FCPluginSetting {
   async_conf?: AsyncConf;
   is_draft?: boolean;
   plugin_version?: string;
+  /** 插件来源 目前只有开源版本用 */
+  plugin_from?: PluginFrom;
 }
 
 export interface FCWorkflowSetting {
