@@ -43,10 +43,11 @@ export const PluginCard: FC<PluginCardProps> = props => (
     className={cls(styles.plugin, props.className)}
     shadowMode="default"
     onClick={() => {
-      window.open(
-        `https://www.coze.cn/store/plugin/${props?.meta_info?.id}`,
-        '_blank',
-      );
+      const url = props?.plugin_extra?.jump_saas_url;
+
+      if (url) {
+        window.open(url, '_blank');
+      }
     }}
   >
     <div className={styles['plugin-wrapper']}>

@@ -117,7 +117,7 @@ export const RecommendItem = (props: RecommendItemProps) => {
       'store_search_suggestion',
     );
 
-    window.open(entityUrl);
+    window.open(entityUrl, '_blank');
   };
   useItemSelect({
     ...{ isSelected, ableKeyPressJump },
@@ -130,9 +130,11 @@ export const RecommendItem = (props: RecommendItemProps) => {
         search_word: inputValue,
         action: 'click_results',
       });
+
       window.open(
         // @ts-expect-error -- linter-disable-autofix
         getEntityUrl(entityType, item?.meta_info?.id),
+        '_blank',
       );
     },
     // @ts-expect-error -- linter-disable-autofix

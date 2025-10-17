@@ -266,7 +266,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
     }
     if (auth_mode === PluginAuthMode.NeedInstalled) {
       return (
-        <ActivatePopover id={id}>
+        <ActivatePopover id={productId}>
           <Tag color="yellow" className="font-medium !py-2px !px-4px !h-20px">
             待开通
           </Tag>
@@ -491,6 +491,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
             data-testid="plugin-panel-item-pluginapi"
             isAdded={isAdded}
             pluginApi={api}
+            productId={productInfo?.id}
             from={from}
             auth_mode={auth_mode}
             workflowNodes={
