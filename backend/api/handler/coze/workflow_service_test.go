@@ -21,7 +21,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-
 	"net/http"
 	"os"
 	"reflect"
@@ -49,10 +48,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	message0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
-	"github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
@@ -67,6 +62,8 @@ import (
 	appplugin "github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun/agentrunmock"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
@@ -76,9 +73,8 @@ import (
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	message0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/message/messagemock"
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/pluginmock"
@@ -95,8 +91,10 @@ import (
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	workflow2 "github.com/coze-dev/coze-studio/backend/domain/workflow"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/variable"
 	mockvar "github.com/coze-dev/coze-studio/backend/domain/workflow/variable/varmock"
@@ -104,7 +102,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/checkpoint"
 	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
 	"github.com/coze-dev/coze-studio/backend/infra/coderunner/impl/direct"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	mockCrossUser "github.com/coze-dev/coze-studio/backend/internal/mock/crossdomain/crossuser"
 	mockPlugin "github.com/coze-dev/coze-studio/backend/internal/mock/domain/plugin"
 	mockcode "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow/crossdomain/code"
@@ -128,14 +125,14 @@ func TestMain(m *testing.M) {
 }
 
 type wfTestRunner struct {
-	t              *testing.T
-	h              *server.Hertz
-	ctrl           *gomock.Controller
-	idGen          *mock.MockIDGenerator
-	appVarS        *mockvar.MockStore
-	userVarS       *mockvar.MockStore
-	varGetter      *mockvar.MockVariablesMetaGetter
-	modelManage    *mockmodel.MockManager
+	t         *testing.T
+	h         *server.Hertz
+	ctrl      *gomock.Controller
+	idGen     *mock.MockIDGenerator
+	appVarS   *mockvar.MockStore
+	userVarS  *mockvar.MockStore
+	varGetter *mockvar.MockVariablesMetaGetter
+
 	plugin         *mockPlugin.MockPluginService
 	tos            *storageMock.MockStorage
 	knowledge      *knowledgemock.MockKnowledge
@@ -315,9 +312,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	mockKwOperator := knowledgemock.NewMockKnowledge(ctrl)
 	crossknowledge.SetDefaultSVC(mockKwOperator)
 
-	mockModelManage := mockmodel.NewMockManager(ctrl)
-	mockModelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(nil, nil, nil).AnyTimes()
-	m3 := mockey.Mock(crossmodelmgr.DefaultSVC).Return(mockModelManage).Build()
+	mockey.Mock(modelbuilder.BuildModelByID).Return(nil, nil, nil).Build()
 
 	m := mockey.Mock(crossuser.DefaultSVC).Return(mockCU).Build()
 	m1 := mockey.Mock(ctxutil.GetApiAuthFromCtx).Return(&entity2.ApiKey{
@@ -353,7 +348,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		m.UnPatch()
 		m1.UnPatch()
 		m2.UnPatch()
-		m3.UnPatch()
+
 		m4.UnPatch()
 		m5.UnPatch()
 		vh.UnPatch()
@@ -369,7 +364,6 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		appVarS:        mockGlobalAppVarStore,
 		userVarS:       mockGlobalUserVarStore,
 		varGetter:      mockVarGetter,
-		modelManage:    mockModelManage,
 		plugin:         mPlugin,
 		tos:            mockTos,
 		knowledge:      mockKwOperator,
@@ -1601,7 +1595,8 @@ func TestResumeWithQANode(t *testing.T) {
 				return nil, errors.New("not found")
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
+
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
 
 		id := r.load("qa_with_structured_output.json")
 
@@ -1692,13 +1687,13 @@ func TestNestedSubWorkflowWithInterrupt(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return chatModel1, nil, nil
 			} else {
 				return chatModel2, nil, nil
 			}
-		}).AnyTimes()
+		}).Build()
 
 		topID := r.load("subworkflow/top_workflow.json")
 		defer func() {
@@ -2040,7 +2035,7 @@ func TestSimpleInvokableToolWithReturnVariables(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
 
 		id := r.load("function_call/llm_with_workflow_as_tool.json")
 		defer func() {
@@ -2164,7 +2159,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1706077826 {
 				innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return innerModel, nil, nil
@@ -2172,7 +2167,7 @@ func TestReturnDirectlyStreamableTool(t *testing.T) {
 				outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return outerModel, nil, nil
 			}
-		}).AnyTimes()
+		}).Build()
 
 		r.load("function_call/tool_workflow_2.json", withID(7492615435881709608), withPublish("v0.0.1"))
 		id := r.load("function_call/llm_workflow_stream_tool.json")
@@ -2236,7 +2231,7 @@ func TestSimpleInterruptibleTool(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
 
 		id := r.load("function_call/llm_with_workflow_as_tool_1.json")
 
@@ -2353,7 +2348,7 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1706077827 {
 				outerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return outerModel, nil, nil
@@ -2361,7 +2356,7 @@ func TestStreamableToolWithMultipleInterrupts(t *testing.T) {
 				innerModel.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return innerModel, nil, nil
 			}
-		}).AnyTimes()
+		}).Build()
 
 		r.load("function_call/tool_workflow_3.json", withID(7492615435881709611), withPublish("v0.0.1"))
 		id := r.load("function_call/llm_workflow_stream_tool_1.json")
@@ -2425,7 +2420,8 @@ func TestNodeWithBatchEnabled(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
+
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
 
 		id := r.load("batch/node_batches.json")
 
@@ -2645,7 +2641,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				cm1.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return cm1, nil, nil
@@ -2653,7 +2649,7 @@ func TestAggregateStreamVariables(t *testing.T) {
 				cm2.ModelType = strconv.FormatInt(params.ModelType, 10)
 				return cm2, nil, nil
 			}
-		}).AnyTimes()
+		}).Build()
 
 		id := r.load("variable_aggregate/aggregate_streams.json", withPublish("v0.0.1"))
 		exeID := r.testRun(id, map[string]string{
@@ -2791,13 +2787,13 @@ func TestParallelInterrupts(t *testing.T) {
 				}
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return chatModel1, nil, nil
 			} else {
 				return chatModel2, nil, nil
 			}
-		}).AnyTimes()
+		}).Build()
 
 		id := r.load("parallel_interrupt.json")
 
@@ -2964,7 +2960,8 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
+
+		mockey.Mock(modelbuilder.BuildModelByID).Return(utChatModel, nil, nil).Build()
 
 		r.plugin.EXPECT().ExecuteTool(gomock.Any(), gomock.Any(), gomock.Any()).Return(&pluginmodel.ExecuteToolResponse{
 			TrimmedResp: `{"data":"ok","err_msg":"error","data_structural":{"content":"ok","title":"title","weburl":"weburl"}}`,
@@ -3119,7 +3116,8 @@ func TestLLMWithSkills(t *testing.T) {
 				return nil, fmt.Errorf("unexpected index: %d", index)
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
+
+		mockey.Mock(modelbuilder.BuildModelByID).Return(utChatModel, nil, nil).Build()
 
 		// t.Run("llm with workflow tool", func(t *testing.T) {
 		// 	r.load("llm_node_with_skills/llm_workflow_as_tool.json", withID(7509120431183544356), withPublish("v0.0.1"))
@@ -3172,7 +3170,7 @@ func TestLLMWithSkills(t *testing.T) {
 			return nil, fmt.Errorf("unexpected index: %d", index)
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(utChatModel, nil, nil).AnyTimes()
+		mockey.Mock(modelbuilder.BuildModelByID).Return(utChatModel, nil, nil).Build()
 
 		r.knowledge.EXPECT().ListKnowledgeDetail(gomock.Any(), gomock.Any()).Return(&knowledge.ListKnowledgeDetailResponse{
 			KnowledgeDetails: []*knowledge.KnowledgeDetail{
@@ -3220,7 +3218,7 @@ func TestStreamRun(t *testing.T) {
 				return sr, nil
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil, nil).AnyTimes()
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel1, nil, nil).Build()
 
 		id := r.load("sse/llm_emitter.json")
 
@@ -4064,13 +4062,13 @@ func TestLLMException(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return mainChatModel, nil, nil
 			} else {
 				return fallbackChatModel, nil, nil
 			}
-		}).AnyTimes()
+		}).Build()
 
 		mockey.PatchConvey("two retries to succeed", func() {
 			exeID := r.nodeDebug(id, "103929", withNDInput(map[string]string{"input": "hello"}))
@@ -4131,13 +4129,13 @@ func TestLLMExceptionThenThrow(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
+		mockey.Mock(modelbuilder.BuildModelByID).To(func(ctx context.Context, params *model.LLMParams) (model2.BaseChatModel, *modelmgr.Model, error) {
 			if params.ModelType == 1737521813 {
 				return mainChatModel, nil, nil
 			} else {
 				return fallbackChatModel, nil, nil
 			}
-		}).AnyTimes()
+		}).Build()
 
 		exeID := r.nodeDebug(id, "103929", withNDInput(map[string]string{"input": "hello"}))
 		e := r.getProcess(id, exeID)
@@ -4745,7 +4743,7 @@ func TestMismatchedTypeConvert(t *testing.T) {
 			},
 		}
 
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
 
 		id := r.load("type_convert/mismatched_types.json")
 		exeID := r.testRun(id, map[string]string{
@@ -6100,7 +6098,7 @@ func TestChatFlowRun(t *testing.T) {
 				return sr, nil
 			},
 		}
-		r.modelManage.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel1, nil, nil).AnyTimes()
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel1, nil, nil).Build()
 
 		id := r.load("chatflow/llm_chat.json", withMode(workflow.WorkflowMode_ChatFlow))
 		r.publish(id, "v0.0.1", true)

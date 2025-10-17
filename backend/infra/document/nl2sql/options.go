@@ -16,15 +16,15 @@
 
 package nl2sql
 
-import "github.com/coze-dev/coze-studio/backend/infra/chatmodel"
+import "github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 
 type Option func(o *Options)
 
 type Options struct {
-	ChatModel chatmodel.BaseChatModel
+	ChatModel modelbuilder.BaseChatModel
 }
 
-func WithChatModel(cm chatmodel.BaseChatModel) Option {
+func WithChatModel(cm modelbuilder.BaseChatModel) Option {
 	return func(o *Options) {
 		o.ChatModel = cm
 	}

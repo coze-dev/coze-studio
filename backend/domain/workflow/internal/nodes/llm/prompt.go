@@ -23,12 +23,12 @@ import (
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
@@ -141,37 +141,22 @@ func newPromptsWithChatHistory(prompts *prompts, cfg *vo.ChatHistorySetting, mod
 	}
 }
 
-func enableLocalFileToLLMWithBase64(minfo *modelmgr.Model) bool {
-	if minfo == nil || minfo.Meta.ConnConfig == nil || minfo.Meta.ConnConfig.EnableBase64Url == nil {
-		return false
-	}
-	return *minfo.Meta.ConnConfig.EnableBase64Url
-}
-
-func getModelProcessingInfo(ctx context.Context, mwi ModelWithInfo) (map[modelmgr.Modal]bool, bool) {
+func getModelProcessingInfo(ctx context.Context, mwi ModelWithInfo) (*developer_api.ModelAbility, bool) {
 	mInfo := mwi.Info(ctx)
 
-	supportedModal := make(map[modelmgr.Modal]bool)
-	if mInfo != nil {
-		for i := range mInfo.Meta.Capability.InputModal {
-			supportedModal[mInfo.Meta.Capability.InputModal[i]] = true
-		}
-	}
-
-	enableTransferBase64 := enableLocalFileToLLMWithBase64(mInfo)
-	return supportedModal, enableTransferBase64
+	return mInfo.Capability, mInfo.EnableBase64URL
 }
 
 func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	sources map[string]*schema2.SourceInfo,
-	supportedModals map[modelmgr.Modal]bool,
+	supportedModals *developer_api.ModelAbility,
 	enableTransferBase64 bool,
 ) (*schema.Message, error) {
 	isChatFlow := execute.GetExeCtx(ctx).ExeCfg.WorkflowMode == workflow.WorkflowMode_ChatFlow
 	userMessage := execute.GetExeCtx(ctx).ExeCfg.UserMessage
 
 	if !isChatFlow {
-		if !pl.hasMultiModal || len(supportedModals) == 0 {
+		if !pl.hasMultiModal || !supportedModals.GetSupportMultiModal() {
 			var opts []nodes.RenderOption
 			if len(pl.reservedKeys) > 0 {
 				opts = append(opts, nodes.WithReservedKey(pl.reservedKeys...))
@@ -186,7 +171,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 			}, nil
 		}
 	} else {
-		if (!pl.hasMultiModal || len(supportedModals) == 0) &&
+		if (!pl.hasMultiModal || !supportedModals.GetSupportMultiModal()) &&
 			(len(pl.associateUserInputFields) == 0 ||
 				(len(pl.associateUserInputFields) > 0 && userMessage != nil && userMessage.MultiContent == nil)) {
 			var opts []nodes.RenderOption
@@ -299,10 +284,10 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	}, nil
 }
 
-func transformMessagePart(part schema.ChatMessagePart, supportedModals map[modelmgr.Modal]bool, enableTransferBase64 bool) schema.ChatMessagePart {
+func transformMessagePart(part schema.ChatMessagePart, supportedModals *developer_api.ModelAbility, enableTransferBase64 bool) schema.ChatMessagePart {
 	switch part.Type {
 	case schema.ChatMessagePartTypeImageURL:
-		if _, ok := supportedModals[modelmgr.ModalImage]; !ok {
+		if !supportedModals.GetImageUnderstanding() {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.ImageURL.URL,
@@ -318,7 +303,7 @@ func transformMessagePart(part schema.ChatMessagePart, supportedModals map[model
 			}
 		}
 	case schema.ChatMessagePartTypeAudioURL:
-		if _, ok := supportedModals[modelmgr.ModalAudio]; !ok {
+		if !supportedModals.GetAudioUnderstanding() {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.AudioURL.URL,
@@ -334,7 +319,7 @@ func transformMessagePart(part schema.ChatMessagePart, supportedModals map[model
 			}
 		}
 	case schema.ChatMessagePartTypeVideoURL:
-		if _, ok := supportedModals[modelmgr.ModalVideo]; !ok {
+		if !supportedModals.GetVideoUnderstanding() {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.VideoURL.URL,
@@ -350,21 +335,19 @@ func transformMessagePart(part schema.ChatMessagePart, supportedModals map[model
 			}
 		}
 	case schema.ChatMessagePartTypeFileURL:
-		if _, ok := supportedModals[modelmgr.ModalFile]; !ok {
-			return schema.ChatMessagePart{
-				Type: schema.ChatMessagePartTypeText,
-				Text: part.FileURL.URL,
-			}
+		return schema.ChatMessagePart{
+			Type: schema.ChatMessagePartTypeText,
+			Text: part.FileURL.URL,
 		}
-		if enableTransferBase64 {
-			if fileData, err := urltobase64url.URLToBase64(part.FileURL.URL); err == nil {
-				part.FileURL.MIMEType = fileData.MimeType
-				part.FileURL.URL = fileData.Base64Url
-			} else {
-				logs.Errorf("transformMessagePart file url to base64 failed, url: %s, err: %v", part.FileURL.URL, err)
-				return part
-			}
-		}
+		// if enableTransferBase64 {
+		// 	if fileData, err := urltobase64url.URLToBase64(part.FileURL.URL); err == nil {
+		// 		part.FileURL.MIMEType = fileData.MimeType
+		// 		part.FileURL.URL = fileData.Base64Url
+		// 	} else {
+		// 		logs.Errorf("transformMessagePart file url to base64 failed, url: %s, err: %v", part.FileURL.URL, err)
+		// 		return part
+		// 	}
+		// }
 	}
 	return part
 }

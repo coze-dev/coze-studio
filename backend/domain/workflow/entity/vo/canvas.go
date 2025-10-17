@@ -19,7 +19,6 @@ package vo
 import (
 	"fmt"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
@@ -191,14 +190,14 @@ type VariableAssigner struct {
 type LLMParam = []*Param
 type IntentDetectorLLMParam = map[string]any
 type SimpleLLMParam struct {
-	GenerationDiversity string               `json:"generationDiversity"`
-	MaxTokens           int                  `json:"maxTokens"`
-	ModelName           string               `json:"modelName"`
-	ModelType           int64                `json:"modelType"`
-	ResponseFormat      model.ResponseFormat `json:"responseFormat"`
-	SystemPrompt        string               `json:"systemPrompt"`
-	Temperature         float64              `json:"temperature"`
-	TopP                float64              `json:"topP"`
+	GenerationDiversity string         `json:"generationDiversity"`
+	MaxTokens           int            `json:"maxTokens"`
+	ModelName           string         `json:"modelName"`
+	ModelType           int64          `json:"modelType"`
+	ResponseFormat      ResponseFormat `json:"responseFormat"`
+	SystemPrompt        string         `json:"systemPrompt"`
+	Temperature         float64        `json:"temperature"`
+	TopP                float64        `json:"topP"`
 }
 
 type QA struct {

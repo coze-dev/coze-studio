@@ -27,6 +27,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
 
 	"github.com/bytedance/mockey"
@@ -41,8 +42,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	mockmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr/modelmock"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/pluginmock"
 	userentity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
@@ -87,9 +86,6 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 			},
 		}).Build()
 
-		mockModelManager := mockmodel.NewMockManager(ctrl)
-		mockey.Mock(crossmodelmgr.DefaultSVC).Return(mockModelManager).Build()
-
 		chatModel := &testutil.UTChatModel{
 			InvokeResultProvider: func(_ int, in []*schema.Message) (*schema.Message, error) {
 				return &schema.Message{
@@ -105,7 +101,8 @@ func TestIntentDetectorAndDatabase(t *testing.T) {
 				}, nil
 			},
 		}
-		mockModelManager.EXPECT().GetModel(gomock.Any(), gomock.Any()).Return(chatModel, nil, nil).AnyTimes()
+
+		mockey.Mock(modelbuilder.BuildModelByID).Return(chatModel, nil, nil).Build()
 
 		mockDatabaseOperator := databasemock.NewMockDatabase(ctrl)
 		n := int64(2)

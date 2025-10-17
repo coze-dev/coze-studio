@@ -20,12 +20,12 @@ import (
 	"context"
 	"regexp"
 
-	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/compose"
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -60,7 +60,7 @@ type state struct {
 
 var suggestRegexp = regexp.MustCompile(`\[(.*?)\]`)
 
-func NewSuggester(chatModel model.BaseChatModel) (workflow.Suggester, error) {
+func NewSuggester(chatModel modelbuilder.BaseChatModel) (workflow.Suggester, error) {
 	chain := einoCompose.NewChain[*vo.SuggestInfo, []string](einoCompose.WithGenLocalState(func(ctx context.Context) (s *state) {
 		return &state{}
 	}))
