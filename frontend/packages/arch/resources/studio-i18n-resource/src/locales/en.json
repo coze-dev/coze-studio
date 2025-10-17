@@ -14365,5 +14365,6 @@
   "workspace_share_url_page_title": "join my space\"{spaceName}\", this URL will be expired on {expireDate}.",
   "workspace_subtitle_project": "Project",
   "{placeholder0}_plugin": "{placeholder0} Plugin",
-  "{placeholder0}_success": "{placeholder0} success"
+  "{placeholder0}_success": "{placeholder0} success",
+  "workflow_node_from_cn_store": "From coze.cn store"
 }

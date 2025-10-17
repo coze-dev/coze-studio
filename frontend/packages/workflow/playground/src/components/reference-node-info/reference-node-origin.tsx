@@ -34,7 +34,17 @@ export const ReferenceNodeOrigin: React.FC<ReferenceNodeOriginProps> = ({
 }) => {
   const { isFromStore, isFromLibrary, isFromCozeCnStore } = useNodeOrigin(node);
 
-  if (isFromStore || isFromCozeCnStore) {
+  if (isFromCozeCnStore) {
+    return (
+      <Tooltip
+        content={I18n.t('workflow_node_from_cn_store') || 'From coze.cn store'}
+      >
+        <IconButton icon={<IconCozStore />} size="mini" color="secondary" />
+      </Tooltip>
+    );
+  }
+
+  if (isFromStore) {
     return (
       <Tooltip content={I18n.t('workflow_node_from_store')}>
         <IconButton icon={<IconCozStore />} size="mini" color="secondary" />
