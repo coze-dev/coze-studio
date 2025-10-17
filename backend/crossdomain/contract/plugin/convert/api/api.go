@@ -266,11 +266,14 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 	sc := &openapi3.Schema{
 		Description: apiParam.Desc,
 		Type:        paramType,
-		Default:     apiParam.GlobalDefault,
 		Extensions: map[string]interface{}{
 			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
+	if apiParam.GlobalDefault != nil && *apiParam.GlobalDefault != ""{
+		sc.Default = apiParam.GlobalDefault
+	}
+
 	if apiParam.LocalDefault != nil && *apiParam.LocalDefault != "" {
 		sc.Default = apiParam.LocalDefault
 	}

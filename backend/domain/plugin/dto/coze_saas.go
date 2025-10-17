@@ -18,16 +18,19 @@ package dto
 
 import (
 	"encoding/json"
+
+	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
 )
 
 // SearchSaasPluginRequest represents the request parameters for searching SaaS plugins
 type SearchSaasPluginRequest struct {
-	Keyword    *string `json:"keyword,omitempty"`
-	PageNum    *int    `json:"page_num,omitempty"`
-	PageSize   *int    `json:"page_size,omitempty"`
-	SortType   *string `json:"sort_type,omitempty"`
-	CategoryID *string `json:"category_id,omitempty"`
-	IsOfficial *bool   `json:"is_official,omitempty"`
+	Keyword         *string                         `json:"keyword,omitempty"`
+	PageNum         *int                            `json:"page_num,omitempty"`
+	PageSize        *int                            `json:"page_size,omitempty"`
+	SortType        *string                         `json:"sort_type,omitempty"`
+	CategoryID      []int64                         `json:"category_id,omitempty"`
+	IsOfficial      *bool                           `json:"is_official,omitempty"`
+	ProductPaidType *product_common.ProductPaidType `json:"product_paid_type,omitempty"`
 }
 
 // SearchSaasPluginResponse represents the response from coze.cn search API
@@ -166,12 +169,12 @@ type JsonSchema struct {
 	Vocabulary    map[string]bool `json:"$vocabulary,omitempty"`
 
 	// metadata
-	Title       string `json:"title,omitempty"`
-	Description string `json:"description,omitempty"`
-	Default     []byte `json:"default,omitempty"`
-	Deprecated  bool   `json:"deprecated,omitempty"`
-	ReadOnly    bool   `json:"readOnly,omitempty"`
-	WriteOnly   bool   `json:"writeOnly,omitempty"`
+	Title       string      `json:"title,omitempty"`
+	Description string      `json:"description,omitempty"`
+	Default     interface{} `json:"default,omitempty"`
+	Deprecated  bool        `json:"deprecated,omitempty"`
+	ReadOnly    bool        `json:"readOnly,omitempty"`
+	WriteOnly   bool        `json:"writeOnly,omitempty"`
 
 	// validation
 	// Use Type for a single type, or Types for multiple types; never both.
