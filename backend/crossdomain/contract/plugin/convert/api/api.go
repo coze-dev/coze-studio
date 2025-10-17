@@ -270,7 +270,7 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 			consts.APISchemaExtendGlobalDisable: apiParam.GlobalDisable,
 		},
 	}
-	if apiParam.GlobalDefault != nil && *apiParam.GlobalDefault != ""{
+	if apiParam.GlobalDefault != nil && *apiParam.GlobalDefault != "" {
 		sc.Default = apiParam.GlobalDefault
 	}
 

@@ -28,7 +28,7 @@ type SearchSaasPluginRequest struct {
 	PageNum         *int                            `json:"page_num,omitempty"`
 	PageSize        *int                            `json:"page_size,omitempty"`
 	SortType        *string                         `json:"sort_type,omitempty"`
-	CategoryID      []int64                         `json:"category_id,omitempty"`
+	CategoryIDs     []int64                         `json:"category_ids,omitempty"`
 	IsOfficial      *bool                           `json:"is_official,omitempty"`
 	ProductPaidType *product_common.ProductPaidType `json:"product_paid_type,omitempty"`
 }
