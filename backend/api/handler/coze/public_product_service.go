@@ -20,7 +20,9 @@ package coze
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"strings"
 
 	product_public_api "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -280,12 +282,26 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 func PublicSearchProduct(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req product_public_api.SearchProductRequest
+
+	var categoryIDs []int64
+	if categoryIDsStr := string(c.Query("category_ids")); categoryIDsStr != "" {
+		categoryIDs, err = handlerCategoryIDs(c, &req)
+		if err != nil {
+			invalidParamRequestResponse(c, err.Error())
+			return
+		}
+		c.Request.URI().QueryArgs().Del("category_ids")
+	}
+
 	err = c.BindAndValidate(&req)
 	if err != nil {
 		invalidParamRequestResponse(c, err.Error())
 		return
 	}
 
+	if len(categoryIDs) > 0 {
+		req.CategoryIDs = categoryIDs
+	}
 	// Call plugin application service
 	resp, err := plugin.PluginApplicationSVC.PublicSearchProduct(ctx, &req)
 	if err != nil {
@@ -295,6 +311,26 @@ func PublicSearchProduct(ctx context.Context, c *app.RequestContext) {
 	}
 
 	c.JSON(consts.StatusOK, resp)
+}
+
+func handlerCategoryIDs(c *app.RequestContext, req *product_public_api.SearchProductRequest) ([]int64, error) {
+	var categoryIDs []int64
+	if categoryIDsStr := string(c.Query("category_ids")); categoryIDsStr != "" {
+		categoryIDStrs := strings.Split(categoryIDsStr, ",")
+		categoryIDs = make([]int64, 0, len(categoryIDStrs))
+		for _, idStr := range categoryIDStrs {
+			idStr = strings.TrimSpace(idStr)
+			if idStr != "" {
+				// Validate that it's a valid integer
+				if categoryID, parseErr := strconv.ParseInt(idStr, 10, 64); parseErr == nil {
+					categoryIDs = append(categoryIDs, categoryID)
+				} else {
+					return nil, fmt.Errorf("invalid category_id: %s", idStr)
+				}
+			}
+		}
+	}
+	return categoryIDs, nil
 }
 
 // PublicSearchSuggest .

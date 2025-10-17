@@ -456,9 +456,11 @@ func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req 
 			}
 			return p.convertEntityTypesStrToSlice(*req.EntityTypes)
 		}(),
-		CategoryIDs: req.CategoryIDs,
-		IsOfficial:  req.IsOfficial,
-		PluginType:  req.PluginType,
+		CategoryIDs:     req.CategoryIDs,
+		IsOfficial:      req.IsOfficial,
+		PluginType:      req.PluginType,
+		ProductPaidType: req.ProductPaidType,
+		SortType:        req.SortType,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts failed: %v", err)

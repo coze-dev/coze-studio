@@ -99,13 +99,15 @@ type ListPluginProductsRequest struct {
 }
 
 type ListSaasPluginProductsRequest struct {
-	PageNum     *int32                             `json:"page_num,omitempty"`
-	PageSize    *int32                             `json:"page_size,omitempty"`
-	Keyword     *string                            `json:"keyword,omitempty"`
-	EntityTypes []product_common.ProductEntityType `json:"entity_types,omitempty"`
-	CategoryIDs []int64                            `json:"category_ids,omitempty"`
-	IsOfficial  *bool                              `json:"is_official,omitempty"`
-	PluginType  *product_common.PluginType         `json:"plugin_type,omitempty"`
+	PageNum         *int32                             `json:"page_num,omitempty"`
+	PageSize        *int32                             `json:"page_size,omitempty"`
+	Keyword         *string                            `json:"keyword,omitempty"`
+	EntityTypes     []product_common.ProductEntityType `json:"entity_types,omitempty"`
+	CategoryIDs     []int64                            `json:"category_ids,omitempty"`
+	IsOfficial      *bool                              `json:"is_official,omitempty"`
+	PluginType      *product_common.PluginType         `json:"plugin_type,omitempty"`
+	ProductPaidType *product_common.ProductPaidType    `json:"product_paid_type,omitempty"`
+	SortType        *product_common.SortType           `json:"sort_type,omitempty"`
 }
 
 type ListPluginProductsResponse struct {

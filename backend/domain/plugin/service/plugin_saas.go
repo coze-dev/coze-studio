@@ -31,6 +31,7 @@ import (
 	domainDto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/saasapi"
 )
@@ -49,10 +50,14 @@ type CozePlugin struct {
 
 func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *domainDto.ListSaasPluginProductsRequest) (resp *domainDto.ListPluginProductsResponse, err error) {
 	searchReq := &domainDto.SearchSaasPluginRequest{
-		PageNum:    ptr.Of(int(*req.PageNum)),
-		PageSize:   ptr.Of(int(*req.PageSize)),
-		Keyword:    req.Keyword,
-		IsOfficial: req.IsOfficial,
+		PageNum:         ptr.Of(int(*req.PageNum)),
+		PageSize:        ptr.Of(int(*req.PageSize)),
+		Keyword:         req.Keyword,
+		IsOfficial:      req.IsOfficial,
+		ProductPaidType: req.ProductPaidType,
+	}
+	if len(req.CategoryIDs) > 0 {
+		searchReq.CategoryID = req.CategoryIDs
 	}
 	plugins, hasMore, err := p.fetchSaasPluginsFromCoze(ctx, searchReq)
 	if err != nil {
@@ -241,8 +246,13 @@ func (p *pluginServiceImpl) searchSaasPlugin(ctx context.Context, req *domainDto
 	if req.SortType != nil {
 		queryParams["sort_type"] = req.SortType
 	}
-	if req.CategoryID != nil {
-		queryParams["category_id"] = req.CategoryID
+	if len(req.CategoryID) > 0 {
+		//req.CategoryID 转成逗号拼接的字符串
+		var categoryIDStrs []string
+		for _, id := range req.CategoryID {
+			categoryIDStrs = append(categoryIDStrs, strconv.FormatInt(id, 10))
+		}
+		queryParams["category_id"] = strings.Join(categoryIDStrs, ",")
 	}
 	if req.IsOfficial != nil {
 		queryParams["is_official"] = req.IsOfficial
