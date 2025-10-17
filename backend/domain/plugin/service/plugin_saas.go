@@ -57,7 +57,7 @@ func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *dom
 		ProductPaidType: req.ProductPaidType,
 	}
 	if len(req.CategoryIDs) > 0 {
-		searchReq.CategoryID = req.CategoryIDs
+		searchReq.CategoryIDs = req.CategoryIDs
 	}
 	plugins, hasMore, err := p.fetchSaasPluginsFromCoze(ctx, searchReq)
 	if err != nil {
@@ -246,13 +246,12 @@ func (p *pluginServiceImpl) searchSaasPlugin(ctx context.Context, req *domainDto
 	if req.SortType != nil {
 		queryParams["sort_type"] = req.SortType
 	}
-	if len(req.CategoryID) > 0 {
-		//req.CategoryID 转成逗号拼接的字符串
+	if len(req.CategoryIDs) > 0 {
 		var categoryIDStrs []string
-		for _, id := range req.CategoryID {
+		for _, id := range req.CategoryIDs {
 			categoryIDStrs = append(categoryIDStrs, strconv.FormatInt(id, 10))
 		}
-		queryParams["category_id"] = strings.Join(categoryIDStrs, ",")
+		queryParams["category_ids"] = strings.Join(categoryIDStrs, ",")
 	}
 	if req.IsOfficial != nil {
 		queryParams["is_official"] = req.IsOfficial
