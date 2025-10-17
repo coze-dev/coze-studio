@@ -315,6 +315,7 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                 await event_queue.put(genSSEData(
                     stream_id=ctx.conversation_id,
                     content=data,
+                    is_finish=True,
                     reply_content_type= ReplyContentType(content_type=content_type)
                 ))
                 if islogin:
