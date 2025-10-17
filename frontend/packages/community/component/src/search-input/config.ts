@@ -66,7 +66,10 @@ export const getEntityUrl = (
   const fromQuery = from ? `?from=${from}` : '';
   switch (entityType) {
     case ProductEntityType.Plugin:
-      return id ? `/explore/plugin/${id}${fromQuery}` : '/explore/plugin';
+    case ProductEntityType.SaasPlugin:
+      return id
+        ? `https://www.coze.cn/store/plugin/${id}${fromQuery}`
+        : '/explore/plugin';
     default:
       return '#';
   }
