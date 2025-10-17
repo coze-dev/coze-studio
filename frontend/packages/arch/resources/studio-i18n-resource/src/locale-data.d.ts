@@ -964,7 +964,7 @@ export type I18nKeysHasOptionsType = keyof I18nOptionsMap;
 // #endregion
 
 // #region I18nKeysNoOptionsType
-export type I18nKeysNoOptionsType = 
+export type I18nKeysNoOptionsType =
   | '2102'
   | '2103'
   | '4029'
@@ -16778,7 +16778,8 @@ export type I18nKeysNoOptionsType =
   | 'data_request_request_failed'
   | 'data_request_requesting'
   | 'other_knowledge'
-  | 'recall_knowledge_empty';
+  | 'recall_knowledge_empty'
+  | 'workflow_node_from_cn_store';
 // #endregion
 
 // #region LocaleData

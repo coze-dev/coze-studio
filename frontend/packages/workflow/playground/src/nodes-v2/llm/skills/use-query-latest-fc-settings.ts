@@ -153,12 +153,14 @@ export const useQueryLatestFCSettings = (params: { nodeId: string }) => {
       pluginFCSetting?: PluginFCSetting;
       workflowFCSetting?: WorkflowFCSetting;
       datasetFCSetting?: KnowledgeGlobalSetting;
+      // plugin_from?: PluginFrom;
     }) =>
       workflowApi.GetLLMNodeFCSettingsMerged({
         workflow_id: workflowId,
         space_id: spaceId,
         plugin_fc_setting: options.pluginFCSetting,
         workflow_fc_setting: options.workflowFCSetting,
+        // plugin_from: options.plugin_from,
       }),
     // return Promise.resolve({
     //   data: mockSettings,

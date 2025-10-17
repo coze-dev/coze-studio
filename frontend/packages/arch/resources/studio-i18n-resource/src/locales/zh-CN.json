@@ -16697,5 +16697,6 @@
   "{placeholder1}_unconfigured_imported_parameters": "{placeholder1} 未配置入参",
   "{{{switch1_value}}}__then_when_the_switch_component_switch1_is_turned_on__switch": "{{{ Switch1.value }}}，则开关组件Switch1打开时，Switch1.value 为\n    true，当前组件隐藏。",
   "•_in_the_output_method__the_size_of_the_mini_program_package_needs_to_be_less_th": "• 出码方式下，小程序包体积需要小于 2 M。请尽量控制图片大小。",
-  "•_under_the_hosting_method__the_coze_platform_will_automatically_compress_the_si": "• 托管方式下，Coze 平台会自动压缩包体大小。"
+  "•_under_the_hosting_method__the_coze_platform_will_automatically_compress_the_si": "• 托管方式下，Coze 平台会自动压缩包体大小。",
+  "workflow_node_from_cn_store": "来自 coze.cn 商店"
 }

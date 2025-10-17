@@ -16,9 +16,9 @@
 
 import { type FC, useState } from 'react';
 
+import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozSetting } from '@coze-arch/coze-design/icons';
-import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useQueryLatestFCSettings } from './use-query-latest-fc-settings';
 import { type BoundPluginItem, type PluginFCSetting } from './types';
@@ -52,6 +52,7 @@ export const PluginSetting: FC<PluginSettingProps> = props => {
               api_name: props.api_name,
               is_draft: props.is_draft,
               plugin_version: props.plugin_version,
+              plugin_from: props.plugin_from,
               ...setting,
             }
           : {
@@ -60,6 +61,7 @@ export const PluginSetting: FC<PluginSettingProps> = props => {
               api_name: props.api_name,
               request_params: [],
               response_params: [],
+              plugin_from: props.plugin_from,
               response_style: {
                 mode: defaultResponseStyleMode,
               },
