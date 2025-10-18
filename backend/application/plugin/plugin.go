@@ -661,7 +661,9 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 func (p *PluginApplicationService) GetMarketPluginConfig(ctx context.Context, req *productAPI.GetMarketPluginConfigRequest) (resp *productAPI.GetMarketPluginConfigResponse, err error) {
 
 	enableSaasPluginEnv := os.Getenv(typesConsts.CozeSaasPluginEnabled)
-	enableSaasPlugin := enableSaasPluginEnv == "true"
+	saasAPIiKey := os.Getenv(typesConsts.CozeSaasAPIKey)
+
+	enableSaasPlugin := enableSaasPluginEnv == "true" && len(saasAPIiKey) > 0
 
 	resp = &productAPI.GetMarketPluginConfigResponse{
 		Code:    0,
