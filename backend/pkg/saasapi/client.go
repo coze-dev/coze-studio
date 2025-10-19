@@ -216,8 +216,6 @@ func (c *CozeAPIClient) requestWithQuery(ctx context.Context, method, path strin
 	// Add API key if available
 	if c.APIKey != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", c.APIKey))
-		req.Header.Set("X-TT-ENV", "ppe_cozeopenmcp")
-		req.Header.Set("X-USE-PPE", "1")
 	}
 
 	// Make request with retries
