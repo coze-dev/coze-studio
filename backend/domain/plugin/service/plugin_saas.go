@@ -31,6 +31,7 @@ import (
 	domainDto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/saasapi"
@@ -61,7 +62,7 @@ func (p *pluginServiceImpl) ListSaasPluginProducts(ctx context.Context, req *dom
 	}
 	plugins, hasMore, err := p.fetchSaasPluginsFromCoze(ctx, searchReq)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "fetchSaasPluginsFromCoze failed")
+		return nil, err
 	}
 
 	return &domainDto.ListPluginProductsResponse{
@@ -78,7 +79,7 @@ func (p *pluginServiceImpl) fetchSaasPluginsFromCoze(ctx context.Context, search
 
 	searchResp, err := p.searchSaasPlugin(ctx, searchReq)
 	if err != nil {
-		return nil, false, errorx.Wrapf(err, "failed to search SaaS plugins")
+		return nil, false, err
 	}
 
 	if searchResp == nil || searchResp.Data == nil {
@@ -211,13 +212,13 @@ func (p *pluginServiceImpl) GetSaasPluginInfo(ctx context.Context, pluginIDs []i
 
 	resp, err := client.GetWithQuery(ctx, "/v1/plugins/mget", queryParams)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "failed to call coze.cn /v1/plugins/mget API")
+		return nil, errorx.WrapByCode(err, errno.ErrPluginCallCozeAPIFailed)
 	}
 
 	var apiResp dto.SaasPluginToolsListResponse
 
 	if err := json.Unmarshal(resp.Data, &apiResp); err != nil {
-		return nil, errorx.Wrapf(err, "failed to parse coze.cn API response")
+		return nil, errorx.WrapByCode(err, errno.ErrPluginParseCozeAPIResponseFailed)
 	}
 
 	plugins := make([]*entity.PluginInfo, 0, len(idStrings))
@@ -259,12 +260,12 @@ func (p *pluginServiceImpl) searchSaasPlugin(ctx context.Context, req *domainDto
 
 	apiResp, err := client.GetWithQuery(ctx, "/v1/stores/plugins", queryParams)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "failed to call coze.cn search API")
+		return nil, errorx.WrapByCode(err, errno.ErrPluginCallCozeSearchAPIFailed)
 	}
 
 	var searchResp domainDto.SearchSaasPluginResponse
 	if err := json.Unmarshal(apiResp.Data, &searchResp.Data); err != nil {
-		return nil, errorx.Wrapf(err, "failed to parse coze.cn search API response")
+		return nil, errorx.WrapByCode(err, errno.ErrPluginParseCozeSearchAPIResponseFailed)
 	}
 
 	return &searchResp, nil
@@ -286,12 +287,12 @@ func (p *pluginServiceImpl) ListSaasPluginCategories(ctx context.Context, req *d
 
 	apiResp, err := client.GetWithQuery(ctx, "/v1/stores/categories", queryParams)
 	if err != nil {
-		return nil, errorx.Wrapf(err, "failed to call coze.cn categories API")
+		return nil, errorx.WrapByCode(err, errno.ErrPluginCallCozeCategoriesAPIFailed)
 	}
 
 	var categoriesResp domainDto.ListPluginCategoriesResponse
 	if err := json.Unmarshal(apiResp.Data, &categoriesResp.Data); err != nil {
-		return nil, errorx.Wrapf(err, "failed to parse coze.cn categories API response")
+		return nil, errorx.WrapByCode(err, errno.ErrPluginParseCozeCategoriesAPIResponseFailed)
 	}
 
 	categoriesResp.Code = apiResp.Code

@@ -411,10 +411,7 @@ func (p *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, re
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts failed: %v", err)
-		return &productAPI.GetProductListResponse{
-			Code:    -1,
-			Message: "Failed to get SaaS plugin list",
-		}, nil
+		return nil, err
 	}
 
 	// tools
@@ -426,10 +423,7 @@ func (p *PluginApplicationService) GetCozeSaasPluginList(ctx context.Context, re
 	tools, err := p.getSaasPluginToolsList(ctx, pluginIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "BatchGetSaasPluginToolsInfo failed: %v", err)
-		return &productAPI.GetProductListResponse{
-			Code:    -1,
-			Message: "Failed to get SaaS plugin tools list",
-		}, nil
+		return nil, err
 	}
 
 	products := p.convertPluginsToProductInfos(ctx, domainResp.Plugins, tools)
@@ -464,10 +458,7 @@ func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req 
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts failed: %v", err)
-		return &productAPI.SearchProductResponse{
-			Code:    -1,
-			Message: "Failed to search SaaS plugins",
-		}, nil
+		return nil, err
 	}
 	// tools
 	pluginIDs := make([]int64, 0, len(domainResp.Plugins))
@@ -478,10 +469,7 @@ func (p *PluginApplicationService) PublicSearchProduct(ctx context.Context, req 
 	tools, err := p.getSaasPluginToolsList(ctx, pluginIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "BatchGetSaasPluginToolsInfo failed: %v", err)
-		return &productAPI.SearchProductResponse{
-			Code:    -1,
-			Message: "Failed to get SaaS plugin tools list",
-		}, nil
+		return nil, err
 	}
 
 	products := p.convertPluginsToProductInfos(ctx, domainResp.Plugins, tools)
@@ -527,10 +515,7 @@ func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req 
 
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginProducts for suggestions failed: %v", err)
-		return &productAPI.SearchSuggestResponse{
-			Code:    -1,
-			Message: "Failed to get search suggestions",
-		}, nil
+		return nil, err
 	}
 
 	// tools
@@ -542,10 +527,7 @@ func (p *PluginApplicationService) PublicSearchSuggest(ctx context.Context, req 
 	tools, err := p.getSaasPluginToolsList(ctx, pluginIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "BatchGetSaasPluginToolsInfo failed: %v", err)
-		return &productAPI.SearchSuggestResponse{
-			Code:    -1,
-			Message: "Failed to get SaaS plugin tools list",
-		}, nil
+		return nil, err
 	}
 
 	suggestionProducts := p.convertPluginsToProductInfos(ctx, domainResp.Plugins, tools)
@@ -572,10 +554,7 @@ func (p *PluginApplicationService) GetSaasProductCategoryList(ctx context.Contex
 	domainResp, err := p.DomainSVC.ListSaasPluginCategories(ctx, domainReq)
 	if err != nil {
 		logs.CtxErrorf(ctx, "ListSaasPluginCategories failed: %v", err)
-		return &productAPI.GetProductCategoryListResponse{
-			Code:    -1,
-			Message: "Failed to get SaaS plugin categories",
-		}, nil
+		return nil, err
 	}
 
 	// 转换响应数据
@@ -605,19 +584,13 @@ func (p *PluginApplicationService) GetProductCallInfo(ctx context.Context, req *
 	userInfo, err := p.userSVC.GetSaasUserInfo(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "GetSaasUserInfo failed: %v", err)
-		return &productAPI.GetProductCallInfoResponse{
-			Code:    -1,
-			Message: "Failed to get user info",
-		}, nil
+		return nil, err
 	}
 
 	benefit, err := p.userSVC.GetUserBenefit(ctx)
 	if err != nil {
 		logs.CtxErrorf(ctx, "GetUserBenefit failed: %v", err)
-		return &productAPI.GetProductCallInfoResponse{
-			Code:    -1,
-			Message: "Failed to get user benefit",
-		}, nil
+		return nil, err
 	}
 
 	// Build response data
