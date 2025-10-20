@@ -50,7 +50,7 @@ require (
 	github.com/mohae/deepcopy v0.0.0-20170929034955-c48cc78d4826
 	github.com/nikolalohinski/gonja v1.5.3 // indirect
 	github.com/nsqio/go-nsq v1.1.0
-	github.com/ollama/ollama v0.9.6
+	github.com/ollama/ollama v0.9.6 // indirect
 	github.com/onsi/gomega v1.35.1
 	github.com/pingcap/tidb/pkg/parser v0.0.0-20250417044355-c5882b1f6c58
 	github.com/pkg/errors v0.9.1
@@ -282,7 +282,10 @@ require (
 	stathat.com/c/consistent v1.0.0 // indirect
 )
 
-require github.com/apache/pulsar-client-go v0.16.0
+require (
+	github.com/apache/pulsar-client-go v0.16.0
+	github.com/eino-contrib/ollama v0.1.0
+)
 
 require (
 	github.com/99designs/go-keychain v0.0.0-20191008050251-8e49817e8af4 // indirect
@@ -296,7 +299,6 @@ require (
 	github.com/danieljoos/wincred v1.1.2 // indirect
 	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
 	github.com/eino-contrib/jsonschema v1.0.0 // indirect
-	github.com/eino-contrib/ollama v0.1.0 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-jose/go-jose/v4 v4.0.5 // indirect
