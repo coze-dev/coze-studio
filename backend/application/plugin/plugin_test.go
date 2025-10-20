@@ -65,6 +65,15 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 			Return(domainResp, nil).
 			Times(1)
 
+		// Mock BatchGetSaasPluginToolsInfo
+		mockDomainSVC.EXPECT().
+			BatchGetSaasPluginToolsInfo(ctx, []int64{1, 2}).
+			Return(map[int64][]*entity.ToolInfo{
+				1: {},
+				2: {},
+			}, map[int64]*entity.PluginInfo{}, nil).
+			Times(1)
+
 		// Execute the method
 		resp, err := service.GetCozeSaasPluginList(ctx, req)
 
@@ -87,7 +96,7 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 		assert.Equal(t, "https://example.com/icon.png", product1.MetaInfo.IconURL)
 		assert.Equal(t, int64(1640995200), product1.MetaInfo.ListedAt)
 		assert.NotNil(t, product1.PluginExtra)
-		assert.False(t, product1.PluginExtra.IsOfficial) // IsOfficial() returns RefProductID != nil, which is nil in our test data
+		assert.True(t, product1.PluginExtra.IsOfficial) // buildPluginProductExtraInfo always sets IsOfficial to true
 	})
 
 	t.Run("Error - ListSaasPluginProducts returns error", func(t *testing.T) {
@@ -102,11 +111,9 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 		resp, err := service.GetCozeSaasPluginList(ctx, req)
 
 		// Assertions
-		assert.NoError(t, err) // The method doesn't return error, it handles it internally
-		assert.NotNil(t, resp)
-		assert.Equal(t, int32(-1), resp.Code)
-		assert.Equal(t, "Failed to get SaaS plugin list", resp.Message)
-		assert.Nil(t, resp.Data)
+		assert.Error(t, err) // The method returns error when domain service fails
+		assert.Nil(t, resp)
+		assert.Contains(t, err.Error(), "failed to fetch SaaS plugins")
 	})
 
 	t.Run("Success - Empty plugin list", func(t *testing.T) {
@@ -120,6 +127,12 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 		mockDomainSVC.EXPECT().
 			ListSaasPluginProducts(ctx, gomock.Any()).
 			Return(domainResp, nil).
+			Times(1)
+
+		// Mock BatchGetSaasPluginToolsInfo for empty list
+		mockDomainSVC.EXPECT().
+			BatchGetSaasPluginToolsInfo(ctx, []int64{}).
+			Return(map[int64][]*entity.ToolInfo{}, map[int64]*entity.PluginInfo{}, nil).
 			Times(1)
 
 		// Execute the method
@@ -158,6 +171,18 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 			Return(domainResp, nil).
 			Times(1)
 
+		// Mock BatchGetSaasPluginToolsInfo for multiple plugins
+		mockDomainSVC.EXPECT().
+			BatchGetSaasPluginToolsInfo(ctx, []int64{100, 200, 300, 400, 500}).
+			Return(map[int64][]*entity.ToolInfo{
+				100: {},
+				200: {},
+				300: {},
+				400: {},
+				500: {},
+			}, map[int64]*entity.PluginInfo{}, nil).
+			Times(1)
+
 		// Execute the method
 		resp, err := service.GetCozeSaasPluginList(ctx, req)
 
@@ -182,7 +207,7 @@ func TestPluginApplicationService_GetCozeSaasPluginList(t *testing.T) {
 			assert.Equal(t, "https://example.com/icon.png", product.MetaInfo.IconURL)
 			assert.Equal(t, int64(1640995200), product.MetaInfo.ListedAt)
 			assert.NotNil(t, product.PluginExtra)
-			assert.False(t, product.PluginExtra.IsOfficial) // IsOfficial() returns RefProductID != nil, which is nil in our test data
+			assert.True(t, product.PluginExtra.IsOfficial) // buildPluginProductExtraInfo always sets IsOfficial to true
 		}
 	})
 }
@@ -205,16 +230,20 @@ func createTestPluginInfo(id int64, name, desc string) *entity.PluginInfo {
 	}
 
 	pluginInfo := &model.PluginInfo{
-		ID:          id,
-		PluginType:  pluginCommon.PluginType_PLUGIN,
-		SpaceID:     0,
-		DeveloperID: 0,
-		APPID:       nil,
-		IconURI:     ptr.Of("https://example.com/icon.png"),
-		ServerURL:   ptr.Of(""),
-		CreatedAt:   1640995200, // 2022-01-01 00:00:00
-		UpdatedAt:   1640995200,
-		Manifest:    manifest,
+		ID:           id,
+		PluginType:   pluginCommon.PluginType_PLUGIN,
+		SpaceID:      0,
+		DeveloperID:  0,
+		APPID:        nil,
+		RefProductID: ptr.Of(id), // Set RefProductID to the same as ID
+		IconURI:      ptr.Of("https://example.com/icon.png"),
+		ServerURL:    ptr.Of(""),
+		CreatedAt:    1640995200, // 2022-01-01 00:00:00
+		UpdatedAt:    1640995200,
+		SaasPluginExtra: &model.SaasPluginExtraInfo{
+			IsOfficial: false,
+		},
+		Manifest:     manifest,
 	}
 
 	return entity.NewPluginInfo(pluginInfo)
