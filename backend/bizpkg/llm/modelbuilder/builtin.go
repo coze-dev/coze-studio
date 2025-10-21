@@ -42,14 +42,14 @@ func GetBuiltinChatModel(ctx context.Context, envPrefix string) (bcm BaseChatMod
 	}
 
 	model, err := config.ModelConf().GetBuiltinChatModelConfig(ctx, knowledgeConf.BuiltinModelID)
-	if err != nil {
-		return nil, false, fmt.Errorf("get builtin chat model config failed: %w", err)
-	}
-
-	bcm, err = BuildModelWithConf(ctx, model)
 	if err == nil {
-		ctxcache.Store(ctx, ctxCacheKey, bcm)
-		return bcm, true, nil
+		bcm, err = BuildModelWithConf(ctx, model)
+		if err == nil {
+			ctxcache.Store(ctx, ctxCacheKey, bcm)
+			return bcm, true, nil
+		}
+	} else {
+		logs.CtxWarnf(ctx, "GetBuiltinChatModelConfig failed : %v", err)
 	}
 
 	modelList, err := config.ModelConf().GetOnlineModelList(ctx)

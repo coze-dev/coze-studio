@@ -16,7 +16,7 @@ RUN npm config set registry https://registry.npmmirror.com
 COPY rush.json ./
 
 # Install rush with retry logic
-RUN npm install -g @microsoft/rush
+RUN npm install -g @microsoft/rush --registry=https://registry.npmjs.org
 
 # Copy the frontend source code (excluding node_modules and build artifacts)
 COPY frontend/ ./frontend/

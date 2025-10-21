@@ -76,26 +76,26 @@ func initOldModelConf(ctx context.Context, oss storage.Storage, c *ModelConfig) 
 		}
 	}
 
-	for _, m := range oldModels {
-		if m.ID <= 0 {
-			logs.CtxWarnf(ctx, "model id is invalid, model: %v", m.ID)
+	for _, old := range oldModels {
+		if old.ID <= 0 {
+			logs.CtxWarnf(ctx, "model id is invalid, model: %v", old.ID)
 			continue
 		}
 
-		_, err := c.getModelByID(ctx, m.ID)
+		_, err := c.getModelByID(ctx, old.ID)
 		if err == nil {
-			logs.CtxInfof(ctx, "model id %d - %s already exists", m.ID, m.DisplayInfo.Name)
+			logs.CtxInfof(ctx, "model id %d - %s already exists", old.ID, old.DisplayInfo.Name)
 			continue
 		}
 
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			id, err1 := c.createModel(ctx, &m.ID,
-				m.Provider.ModelClass, m.DisplayInfo.Name, m.Connection, &ModelExtra{EnableBase64URL: false})
+			id, err1 := c.createModel(ctx, &old.ID,
+				old.Provider.ModelClass, old.DisplayInfo.Name, old.Connection, &ModelExtra{EnableBase64URL: false})
 			if err1 != nil {
 				return fmt.Errorf("sync old model to db failed, err: %w", err1)
 			}
 
-			logs.CtxInfof(ctx, "sync old model id %d - %s to db success, new id: %d", m.ID, m.DisplayInfo.Name, id)
+			logs.CtxInfof(ctx, "sync old model id %d - %s to db success, new id: %d ", old.ID, old.DisplayInfo.Name, id)
 			continue
 		}
 
@@ -242,7 +242,6 @@ func (c *ModelConfig) SetDoNotUseOldModelConf(ctx context.Context) error {
 
 func toNewModel(old *OldModel) (*Model, error) {
 	// to new model, old: {"ID":68010,"Name":"Test_Ollama_Qwen2.5vl-7b","Description":{"zh":"ollama 模型简介","en":"ollama model description"},"Meta":{"Protocol":"ollama","ConnConfig":null}}
-	logs.Debugf("to new model, old: %v", conv.DebugJsonToStr(old))
 	modelClass := strProtocolToModelClass(old.Meta.Protocol)
 	provider, _ := GetModelProvider(modelClass)
 
@@ -271,9 +270,7 @@ func toNewModel(old *OldModel) (*Model, error) {
 		},
 	}
 
-	if old.Name != "" {
-		m.DisplayInfo.Name = old.Name
-	}
+	m.DisplayInfo.Name = old.Name
 
 	if modelMeta.Connection != nil {
 		m.Connection.Ark = modelMeta.Connection.Ark
@@ -284,6 +281,9 @@ func toNewModel(old *OldModel) (*Model, error) {
 		m.Connection.Ollama = modelMeta.Connection.Ollama
 		m.Connection.Claude = modelMeta.Connection.Claude
 	}
+
+	logs.Debugf("to new model, old: %v \n new %v",
+		conv.DebugJsonToStr(old), conv.DebugJsonToStr(m))
 
 	return m, nil
 }

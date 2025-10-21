@@ -22,6 +22,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/jinzhu/copier"
+
 	config "github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -71,15 +73,28 @@ func (c *ModelMetaConf) GetModelMeta(modelClass developer_api.ModelClass, modelN
 	modelMeta, ok := modelName2Meta[modelName]
 	if ok {
 		logs.Infof("get model meta for model class %v and model name %v", modelClass, modelName)
-		return &modelMeta, nil
+		return deepCopyModelMeta(&modelMeta)
 	}
 
 	const defaultKey = "default"
 	modelMeta, ok = modelName2Meta[defaultKey]
 	if ok {
 		logs.Infof("use default model meta for model class %v and model name %v", modelClass, modelName)
-		return &modelMeta, nil
+		return deepCopyModelMeta(&modelMeta)
 	}
 
 	return nil, fmt.Errorf("model meta not found for model class %v and model name %v", modelClass, modelName)
+}
+
+func deepCopyModelMeta(meta *ModelMeta) (*ModelMeta, error) {
+	if meta == nil {
+		return nil, nil
+	}
+	newObj := &ModelMeta{}
+	err := copier.CopyWithOption(newObj, meta, copier.Option{DeepCopy: true, IgnoreEmpty: true})
+	if err != nil {
+		return nil, fmt.Errorf("error copy model meta: %w", err)
+	}
+
+	return newObj, nil
 }
