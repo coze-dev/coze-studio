@@ -109,6 +109,9 @@ func (p *PluginApplicationService) GetPluginAPIs(ctx context.Context, req *plugi
 		if !ok {
 			return nil, fmt.Errorf("invalid method '%s'", tool.GetMethod())
 		}
+		if pl.APPID != nil {
+			tool.APPID = pl.APPID
+		}
 		reqParams, err := tool.ToReqAPIParameter()
 		if err != nil {
 			return nil, err
