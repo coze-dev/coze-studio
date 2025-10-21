@@ -51,7 +51,7 @@ type ToolInfo struct {
 	SubURL    *string
 	Operation *Openapi3Operation
 
-	APPID *int64
+	AgentID *int64
 }
 
 func (t ToolInfo) GetName() string {
@@ -283,7 +283,7 @@ func (t ToolInfo) toAPIParameter(paramMeta paramMetaInfo, sc *openapi3.Schema) (
 
 	if sc.Default != nil {
 		apiParam.GlobalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
-		if t.APPID == nil {
+		if t.AgentID != nil {
 			apiParam.LocalDefault = ptr.Of(fmt.Sprintf("%v", sc.Default))
 		}
 	}
