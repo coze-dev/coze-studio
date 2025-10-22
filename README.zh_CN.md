@@ -46,37 +46,29 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 部署步骤：
 
 1. 获取源码。
+
    ```Bash
    # 克隆代码
    git clone https://github.com/coze-dev/coze-studio.git
    ```
 
-2. 配置模型。
-   1. 从模板目录复制 doubao-seed-1.6 模型的模版文件，并粘贴到配置文件目录。
-      ```Bash
-      cd coze-studio
-      # 复制模型配置模版
-      cp backend/conf/model/template/model_template_ark_doubao-seed-1.6.yaml backend/conf/model/ark_doubao-seed-1.6.yaml
-      ```
-
-   2. 在配置文件目录下，修改模版文件。
-      1. 进入目录 `backend/conf/model`。打开复制后的文件`ark_doubao-seed-1.6.yaml`。
-      2. 设置 `id`、`meta.conn_config.api_key`、`meta.conn_config.model` 字段，并保存文件。
-         * **id**：Coze Studio 中的模型 ID，由开发者自行定义，必须是非 0 的整数，且全局唯一。智能体或工作流根据模型 ID 来调用模型。对于已上线的模型，请勿修改模型 ID，否则可能导致模型调用失败。
-         * **meta.conn_config.api_key**：模型服务的 API Key，在本示例中为火山方舟的 API Key，获取方式可参考[获取火山方舟 API Key](https://www.volcengine.com/docs/82379/1541594) 或[获取 Byteplus ModelArk API Key](https://docs.byteplus.com/en/docs/ModelArk/1361424?utm_source=github&utm_medium=readme&utm_campaign=coze_open_source)。
-         * **meta.conn_config.model**：模型服务的 Model name，在本示例中为火山方舟的 Model ID 或 Endpoint ID，获取方式可参考 [获取火山方舟 Model ID](https://www.volcengine.com/docs/82379/1513689) / [获取火山方舟 Endpoint ID](https://www.volcengine.com/docs/82379/1099522)，或者参考[获取 BytePlus ModelArk Model ID](https://docs.byteplus.com/en/docs/ModelArk/model_id?utm_source=github&utm_medium=readme&utm_campaign=coze_open_source) / [获取 BytePlus ModelArk Endpoint ID](https://docs.byteplus.com/en/docs/ModelArk/1099522?utm_source=github&utm_medium=readme&utm_campaign=coze_open_source)。
-         > 中国境内用户可选用火山方舟（Volcengine Ark），非中国境内的用户则可用 BytePlus ModelArk。
-3. 部署并启动服务。
+2. 部署并启动服务。
    首次部署并启动 Coze Studio 需要拉取镜像、构建本地镜像，可能耗时较久，请耐心等待。部署过程中，你会看到以下日志信息。如果看到提示 "Container coze-server Started"，表示 Coze Studio 服务已成功启动。 
+   
    ```Bash
-   # 启动服务
-   cd docker
+   cd coze-studio
+   # start service
+   # for macOS or Linux
+   make web  
+   # for windows
    cp .env.example .env
-   docker compose up -d
+   docker compose -f ./docker/docker-compose.yml up
    ```
+   
    **启动失败常见问题可参考[常见问题](https://github.com/coze-dev/coze-studio/wiki/9.-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)**。
-
-4. 启动服务后，通过浏览器访问 `http://localhost:8888/` 即可打开 Coze Studio。
+3. 注册账号，访问 `http://localhost:8888/sign` 输入用户名、密码点击注册按钮。
+4. 配置模型，`http://localhost:8888/admin/#model-management` 新增模型。
+5. 访问 Coze Studio `http://localhost:8888/`。
 
 > [!WARNING]
 > 如果要将 Coze Studio 部署到公网环境，建议在部署前评估整体评估安全风险，例如账号注册功能、工作流代码节点 Python执行环境、Coze Server 监听地址配置、SSRF 和部分 API 水平越权的风险，并采取相应防护措施。详细信息可参考[快速开始](https://github.com/coze-dev/coze-studio/wiki/2.-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B#%E5%85%AC%E7%BD%91%E5%AE%89%E5%85%A8%E9%A3%8E%E9%99%A9)。

@@ -14,6 +14,7 @@ OCEANBASE_DEBUG_COMPOSE_FILE := docker/docker-compose-oceanbase_debug.yml
 MYSQL_SCHEMA := ./docker/volumes/mysql/schema.sql
 MYSQL_INIT_SQL := ./docker/volumes/mysql/sql_init.sql
 ENV_FILE := ./docker/.env.debug
+WEB_ENV_FILE := ./docker/.env
 OCEANBASE_ENV_FILE := ./docker/.env.debug
 STATIC_DIR := ./bin/resources/static
 ES_INDEX_SCHEMA := ./docker/volumes/elasticsearch/es_index_schema
@@ -65,13 +66,19 @@ build_docker:
 	@echo "Build docker image"
 	@docker compose -f $(COMPOSE_FILE) --profile build-server build
 
-web:
+web_env:
+	@if [ ! -f "$(WEB_ENV_FILE)" ]; then \
+		echo "Env file '$(WEB_ENV_FILE)' not found, using example env..."; \
+		cp ./docker/.env.example $(WEB_ENV_FILE); \
+	fi
+
+web: web_env
 	@echo "Start web server in docker"
-	@docker compose -f docker/docker-compose.yml  up -d
+	@docker compose -f docker/docker-compose.yml --env-file $(WEB_ENV_FILE) up -d
 
 down_web:
 	@echo "Stop web server in docker"
-	@docker compose -f docker/docker-compose.yml  down
+	@docker compose -f docker/docker-compose.yml --env-file $(WEB_ENV_FILE) down
 
 down: env
 	@echo "Stop all docker containers"
