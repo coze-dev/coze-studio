@@ -266,7 +266,7 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 
 		conData, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID:     ar.BotID,
-			UserID:      userID,
+			CreatorID:   userID,
 			Scene:       ptr.From(ar.Scene),
 			ConnectorID: consts.CozeConnectorID,
 		})

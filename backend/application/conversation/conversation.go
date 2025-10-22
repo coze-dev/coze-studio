@@ -83,7 +83,7 @@ func (c *ConversationApplicationService) ClearHistory(ctx context.Context, req *
 	// create new conversation
 	convRes, err := c.ConversationDomainSVC.Create(ctx, &entity.CreateMeta{
 		AgentID:     currentRes.AgentID,
-		UserID:      currentRes.CreatorID,
+		CreatorID:   currentRes.CreatorID,
 		Scene:       currentRes.Scene,
 		ConnectorID: consts.CozeConnectorID,
 	})
@@ -126,7 +126,7 @@ func (c *ConversationApplicationService) CreateSection(ctx context.Context, conv
 func (c *ConversationApplicationService) CreateConversation(ctx context.Context, req *conversation.CreateConversationRequest) (*conversation.CreateConversationResponse, error) {
 	resp := new(conversation.CreateConversationResponse)
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
-	userID := apiKeyInfo.UserID
+	creatorID := apiKeyInfo.UserID
 	connectorID := req.GetConnectorId()
 	agentID := req.GetBotId()
 	if connectorID != consts.WebSDKConnectorID {
@@ -135,7 +135,8 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 
 	conversationData, err := c.ConversationDomainSVC.Create(ctx, &entity.CreateMeta{
 		AgentID:     agentID,
-		UserID:      userID,
+		UserID:      req.UserID,
+		CreatorID:   creatorID,
 		ConnectorID: connectorID,
 		Scene:       common.Scene_SceneOpenApi,
 		Ext:         parseMetaData(req.MetaData),
@@ -149,6 +150,7 @@ func (c *ConversationApplicationService) CreateConversation(ctx context.Context,
 		ConnectorID:   &conversationData.ConnectorID,
 		CreatedAt:     conversationData.CreatedAt / 1000,
 		MetaData:      parseExt(conversationData.Ext),
+		UserID:        conversationData.UserID,
 	}
 	return resp, nil
 }
@@ -191,7 +193,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 	}
 
 	conversationDOList, hasMore, err := c.ConversationDomainSVC.List(ctx, &entity.ListMeta{
-		UserID:      userID,
+		CreatorID:   userID,
 		AgentID:     req.GetBotID(),
 		ConnectorID: connectorID,
 		Scene:       common.Scene_SceneOpenApi,
@@ -203,6 +205,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 			}
 			return nil
 		}(),
+		UserID: req.UserID,
 	})
 	if err != nil {
 		return resp, err
@@ -215,6 +218,7 @@ func (c *ConversationApplicationService) ListConversation(ctx context.Context, r
 			CreatedAt:     conv.CreatedAt / 1000,
 			Name:          ptr.Of(conv.Name),
 			MetaData:      parseExt(conv.Ext),
+			UserID:        conv.UserID,
 		}
 	})
 

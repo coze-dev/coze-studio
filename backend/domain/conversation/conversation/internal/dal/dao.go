@@ -145,11 +145,15 @@ func (dao *ConversationDAO) List(ctx context.Context, listMeta *entity.ListMeta)
 	var hasMore bool
 
 	do := dao.query.Conversation.WithContext(ctx).Debug()
-	do = do.Where(dao.query.Conversation.CreatorID.Eq(listMeta.UserID)).
+	do = do.Where(dao.query.Conversation.CreatorID.Eq(listMeta.CreatorID)).
 		Where(dao.query.Conversation.AgentID.Eq(listMeta.AgentID)).
 		Where(dao.query.Conversation.Scene.Eq(int32(listMeta.Scene))).
 		Where(dao.query.Conversation.ConnectorID.Eq(listMeta.ConnectorID)).
 		Where(dao.query.Conversation.Status.Eq(int32(conversation.ConversationStatusNormal)))
+
+	if listMeta.UserID != nil {
+		do = do.Where(dao.query.Conversation.UserID.Eq(ptr.From(listMeta.UserID)))
+	}
 
 	do = do.Offset((listMeta.Page - 1) * listMeta.Limit)
 
@@ -188,6 +192,7 @@ func (dao *ConversationDAO) conversationDO2PO(ctx context.Context, conversation 
 		SectionID:   conversation.SectionID,
 		ConnectorID: conversation.ConnectorID,
 		AgentID:     conversation.AgentID,
+		UserID:      ptr.From(conversation.UserID),
 		CreatorID:   conversation.CreatorID,
 		Scene:       int32(conversation.Scene),
 		Status:      int32(conversation.Status),
@@ -211,6 +216,7 @@ func (dao *ConversationDAO) conversationPO2DO(ctx context.Context, c *model.Conv
 		CreatedAt:   c.CreatedAt,
 		UpdatedAt:   c.UpdatedAt,
 		Name:        c.Name,
+		UserID:      ptr.Of(c.UserID),
 	}
 }
 
@@ -228,6 +234,7 @@ func (dao *ConversationDAO) conversationBatchPO2DO(ctx context.Context, conversa
 			CreatedAt:   c.CreatedAt,
 			UpdatedAt:   c.UpdatedAt,
 			Name:        c.Name,
+			UserID:      ptr.Of(c.UserID),
 		}
 	})
 }
