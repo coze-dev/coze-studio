@@ -38,6 +38,7 @@ func newOllamaModelBuilder(cfg *config.Model) *ollamaModelBuilder {
 
 func (o *ollamaModelBuilder) getDefaultOllamaConfig() *ollama.ChatModelConfig {
 	return &ollama.ChatModelConfig{
+		Options: &api.Options{},
 		BaseURL: "http://127.0.0.1:11434",
 	}
 }
