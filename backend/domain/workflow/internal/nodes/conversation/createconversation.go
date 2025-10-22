@@ -79,7 +79,7 @@ func (c *CreateConversation) Invoke(ctx context.Context, input map[string]any) (
 		conversationIDGenerator = workflow.ConversationIDGenerator(func(ctx context.Context, appID int64, userID, connectorID int64) (*conventity.Conversation, error) {
 			return crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
 				AgentID:     appID,
-				UserID:      userID,
+				CreatorID:   userID,
 				ConnectorID: connectorID,
 				Scene:       common.Scene_SceneWorkflow,
 			})

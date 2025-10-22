@@ -47,6 +47,7 @@ type Conversation struct {
 	AgentID     int64              `json:"agent_id"`
 	ConnectorID int64              `json:"connector_id"`
 	CreatorID   int64              `json:"creator_id"`
+	UserID      *string            `json:"user_id"`
 	Scene       common.Scene       `json:"scene"`
 	Status      ConversationStatus `json:"status"`
 	Ext         string             `json:"ext"`

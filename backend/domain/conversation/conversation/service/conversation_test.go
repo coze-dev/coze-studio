@@ -57,7 +57,7 @@ func TestCreateConversation(t *testing.T) {
 
 	createData, err := NewService(components).Create(ctx, &entity.CreateMeta{
 		AgentID:     100000,
-		UserID:      222222,
+		CreatorID:   222222,
 		ConnectorID: 100001,
 		Scene:       common.Scene_Playground,
 		Ext:         "debug ext9999",

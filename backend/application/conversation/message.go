@@ -141,7 +141,7 @@ func (c *ConversationApplicationService) getCurrentConversation(ctx context.Cont
 		// create conversation
 		ccNew, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID:     agentID,
-			UserID:      userID,
+			CreatorID:   userID,
 			Scene:       scene,
 			ConnectorID: ptr.From(connectorID),
 		})
