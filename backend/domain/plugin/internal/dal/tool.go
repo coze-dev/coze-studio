@@ -24,7 +24,6 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
@@ -59,9 +58,6 @@ func (t toolPO) ToDO() *entity.ToolInfo {
 		Method:          ptr.Of(t.Method),
 		Operation:       t.Operation,
 		ActivatedStatus: ptr.Of(consts.ActivatedStatus(t.ActivatedStatus)),
-
-		Source: bot_common.PluginFromPtr(bot_common.PluginFrom(t.Source)),
-		Extra:  t.Ext,
 	}
 }
 

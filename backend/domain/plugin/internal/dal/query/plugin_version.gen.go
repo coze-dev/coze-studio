@@ -55,8 +55,6 @@ func newPluginVersion(db *gorm.DB, opts ...gen.DOOption) pluginVersion {
 	_pluginVersion.VersionDesc = field.NewString(tableName, "version_desc")
 	_pluginVersion.Manifest = field.NewField(tableName, "manifest")
 	_pluginVersion.OpenapiDoc = field.NewField(tableName, "openapi_doc")
-	_pluginVersion.Source = field.NewInt32(tableName, "source")
-	_pluginVersion.Ext = field.NewField(tableName, "ext")
 	_pluginVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_pluginVersion.DeletedAt = field.NewField(tableName, "deleted_at")
 
@@ -82,8 +80,6 @@ type pluginVersion struct {
 	VersionDesc field.String // Plugin Version Description
 	Manifest    field.Field  // Plugin Manifest
 	OpenapiDoc  field.Field  // OpenAPI Document, only stores the root
-	Source      field.Int32  // plugin source 1 from saas 0 default
-	Ext         field.Field  // extra
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	DeletedAt   field.Field  // Delete Time
 
@@ -114,8 +110,6 @@ func (p *pluginVersion) updateTableName(table string) *pluginVersion {
 	p.VersionDesc = field.NewString(table, "version_desc")
 	p.Manifest = field.NewField(table, "manifest")
 	p.OpenapiDoc = field.NewField(table, "openapi_doc")
-	p.Source = field.NewInt32(table, "source")
-	p.Ext = field.NewField(table, "ext")
 	p.CreatedAt = field.NewInt64(table, "created_at")
 	p.DeletedAt = field.NewField(table, "deleted_at")
 
@@ -134,7 +128,7 @@ func (p *pluginVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool)
 }
 
 func (p *pluginVersion) fillFieldMap() {
-	p.fieldMap = make(map[string]field.Expr, 16)
+	p.fieldMap = make(map[string]field.Expr, 14)
 	p.fieldMap["id"] = p.ID
 	p.fieldMap["space_id"] = p.SpaceID
 	p.fieldMap["developer_id"] = p.DeveloperID
@@ -147,8 +141,6 @@ func (p *pluginVersion) fillFieldMap() {
 	p.fieldMap["version_desc"] = p.VersionDesc
 	p.fieldMap["manifest"] = p.Manifest
 	p.fieldMap["openapi_doc"] = p.OpenapiDoc
-	p.fieldMap["source"] = p.Source
-	p.fieldMap["ext"] = p.Ext
 	p.fieldMap["created_at"] = p.CreatedAt
 	p.fieldMap["deleted_at"] = p.DeletedAt
 }

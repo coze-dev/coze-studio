@@ -38,8 +38,6 @@ type ToolVersion struct {
 	Operation *model.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 	CreatedAt int64                    `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	DeletedAt gorm.DeletedAt           `gorm:"column:deleted_at;comment:Delete Time" json:"deleted_at"`                                               // Delete Time
-	Source    int32                    `gorm:"column:source;not null;comment:tool source 1 coze saas 0 default" json:"source"`                        // tool source 1 coze saas 0 default
-	Ext       map[string]interface{}   `gorm:"column:ext;comment:extra;serializer:json" json:"ext"`                                                   // extra
 }
 
 // TableName ToolVersion's table name

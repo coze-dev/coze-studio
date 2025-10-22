@@ -52,8 +52,6 @@ func newToolVersion(db *gorm.DB, opts ...gen.DOOption) toolVersion {
 	_toolVersion.Operation = field.NewField(tableName, "operation")
 	_toolVersion.CreatedAt = field.NewInt64(tableName, "created_at")
 	_toolVersion.DeletedAt = field.NewField(tableName, "deleted_at")
-	_toolVersion.Source = field.NewInt32(tableName, "source")
-	_toolVersion.Ext = field.NewField(tableName, "ext")
 
 	_toolVersion.fillFieldMap()
 
@@ -74,8 +72,6 @@ type toolVersion struct {
 	Operation field.Field  // Tool Openapi Operation Schema
 	CreatedAt field.Int64  // Create Time in Milliseconds
 	DeletedAt field.Field  // Delete Time
-	Source    field.Int32  // tool source 1 coze saas 0 default
-	Ext       field.Field  // extra
 
 	fieldMap map[string]field.Expr
 }
@@ -101,8 +97,6 @@ func (t *toolVersion) updateTableName(table string) *toolVersion {
 	t.Operation = field.NewField(table, "operation")
 	t.CreatedAt = field.NewInt64(table, "created_at")
 	t.DeletedAt = field.NewField(table, "deleted_at")
-	t.Source = field.NewInt32(table, "source")
-	t.Ext = field.NewField(table, "ext")
 
 	t.fillFieldMap()
 
@@ -119,7 +113,7 @@ func (t *toolVersion) GetFieldByName(fieldName string) (field.OrderExpr, bool) {
 }
 
 func (t *toolVersion) fillFieldMap() {
-	t.fieldMap = make(map[string]field.Expr, 11)
+	t.fieldMap = make(map[string]field.Expr, 9)
 	t.fieldMap["id"] = t.ID
 	t.fieldMap["tool_id"] = t.ToolID
 	t.fieldMap["plugin_id"] = t.PluginID
@@ -129,8 +123,6 @@ func (t *toolVersion) fillFieldMap() {
 	t.fieldMap["operation"] = t.Operation
 	t.fieldMap["created_at"] = t.CreatedAt
 	t.fieldMap["deleted_at"] = t.DeletedAt
-	t.fieldMap["source"] = t.Source
-	t.fieldMap["ext"] = t.Ext
 }
 
 func (t toolVersion) clone(db *gorm.DB) toolVersion {

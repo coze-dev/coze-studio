@@ -35,8 +35,6 @@ type Tool struct {
 	Method          string                   `gorm:"column:method;not null;comment:HTTP Request Method" json:"method"`                                      // HTTP Request Method
 	Operation       *model.Openapi3Operation `gorm:"column:operation;comment:Tool Openapi Operation Schema;serializer:json" json:"operation"`               // Tool Openapi Operation Schema
 	ActivatedStatus int32                    `gorm:"column:activated_status;not null;comment:0:activated; 1:deactivated" json:"activated_status"`           // 0:activated; 1:deactivated
-	Source          int32                    `gorm:"column:source;not null;comment:tool source 1 coze saas 0 default" json:"source"`                        // tool source 1 coze saas 0 default
-	Ext             map[string]interface{}   `gorm:"column:ext;comment:extra;serializer:json" json:"ext"`                                                   // extra
 }
 
 // TableName Tool's table name
