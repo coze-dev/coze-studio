@@ -257,6 +257,8 @@ func MustString(value any) string {
 	switch val := value.(type) {
 	case string:
 		return val
+	case *string:
+		return *val
 	default:
 		b, _ := json.Marshal(val)
 		return string(b)
@@ -323,6 +325,11 @@ func tryCorrectString(value any) (string, error) {
 	switch val := value.(type) {
 	case string:
 		return val, nil
+	case *string:
+		if val == nil {
+			return "", nil
+		}
+		return *val, nil
 	case int64:
 		return strconv.FormatInt(val, 10), nil
 	case float64:

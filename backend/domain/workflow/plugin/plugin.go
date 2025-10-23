@@ -39,7 +39,6 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -337,7 +336,7 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (_ *schema.ToolInfo, err er
 
 func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg workflowModel.ExecuteConfig) (string, error) {
 	req := &model.ExecuteToolRequest{
-		UserID:          conv.Int64ToStr(cfg.Operator),
+		UserID:          cfg.ConnectorUID,
 		PluginID:        p.pluginEntity.PluginID,
 		ToolID:          p.toolInfo.ID,
 		ExecScene:       consts.ExecSceneOfWorkflow,
@@ -347,6 +346,14 @@ func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON str
 	}
 	execOpts := []model.ExecuteToolOpt{
 		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
+	}
+	if cfg.ConversationID != nil {
+		execOpts = append(execOpts, model.WithPluginHTTPHeader(*cfg.ConversationID))
+	}
+	if cfg.AgentID != nil {
+		execOpts = append(execOpts, model.WithProjectInfo(&model.ProjectInfo{
+			ProjectID: *cfg.AgentID,
+		}))
 	}
 
 	if p.pluginEntity.PluginVersion != nil {
