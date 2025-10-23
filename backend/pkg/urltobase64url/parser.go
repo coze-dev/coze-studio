@@ -23,6 +23,7 @@ import (
 	"mime"
 	"net/http"
 	"path/filepath"
+	"strings"
 )
 
 type FileData struct {
@@ -49,12 +50,36 @@ func URLToBase64(url string) (*FileData, error) {
 
 	var mimeType string
 
-	mimeType = resp.Header.Get("Content-Type")
+	contentType := resp.Header.Get("Content-Type")
+	if contentType != "" {
+		mediaType, _, err := mime.ParseMediaType(contentType)
+		if err == nil && mediaType != "" {
+			mimeType = mediaType
+		}
+	}
 
 	if mimeType == "" {
-		ext := filepath.Ext(url)
+		detectedType := http.DetectContentType(fileContent)
+		if detectedType != "application/octet-stream" {
+			mimeType = detectedType
+		}
+	}
+
+	if mimeType == "" || mimeType == "application/octet-stream" {
+		urlPath := url
+		if idx := strings.Index(urlPath, "?"); idx != -1 {
+			urlPath = urlPath[:idx]
+		}
+		if idx := strings.Index(urlPath, "#"); idx != -1 {
+			urlPath = urlPath[:idx]
+		}
+
+		ext := filepath.Ext(urlPath)
 		if ext != "" {
-			mimeType = mime.TypeByExtension(ext)
+			extMimeType := mime.TypeByExtension(ext)
+			if extMimeType != "" {
+				mimeType = extMimeType
+			}
 		}
 	}
 
