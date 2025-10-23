@@ -29,11 +29,11 @@ import (
 
 	einoSchema "github.com/cloudwego/eino/schema"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"

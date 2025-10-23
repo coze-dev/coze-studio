@@ -31,8 +31,8 @@ import (
 	"github.com/go-resty/resty/v2"
 	"github.com/tidwall/sjson"
 
-	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/encoder"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"

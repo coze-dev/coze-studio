@@ -19,7 +19,8 @@ package impl
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
@@ -68,7 +69,7 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p process
 		p = &customDocProcessor{
 			baseDocProcessor: *base,
 		}
-		if config.Documents[0].Type == knowledge.DocumentTypeTable {
+		if config.Documents[0].Type == model.DocumentTypeTable {
 			p = &customTableProcessor{
 				baseDocProcessor: *base,
 			}

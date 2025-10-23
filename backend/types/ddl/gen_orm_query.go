@@ -33,10 +33,10 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	appEntity "github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 )

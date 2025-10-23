@@ -30,8 +30,8 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/repository"

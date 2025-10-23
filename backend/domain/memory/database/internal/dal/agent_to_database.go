@@ -23,8 +23,8 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"

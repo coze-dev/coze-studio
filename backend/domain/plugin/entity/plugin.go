@@ -17,7 +17,7 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 

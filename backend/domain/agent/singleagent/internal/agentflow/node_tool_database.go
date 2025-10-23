@@ -31,9 +31,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/database"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"

@@ -31,7 +31,7 @@ import (
 
 	compose "github.com/cloudwego/eino/compose"
 	schema "github.com/cloudwego/eino/schema"
-	workflow "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	workflow0 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	workflow1 "github.com/coze-dev/coze-studio/backend/domain/workflow"

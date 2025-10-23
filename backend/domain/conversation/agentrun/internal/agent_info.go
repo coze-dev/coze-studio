@@ -18,8 +18,8 @@ package internal
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
+	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"

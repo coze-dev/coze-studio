@@ -21,9 +21,9 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	message2 "github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
 )
 

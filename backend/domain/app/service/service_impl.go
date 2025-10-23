@@ -22,15 +22,15 @@ import (
 
 	"gorm.io/gorm"
 
-	connectorModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
-	databaseModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	connectorModel "github.com/coze-dev/coze-studio/backend/crossdomain/connector/model"
+	databaseModel "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
+	knowledgeModel "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 
-	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/contract/connector"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
-	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
+	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/connector"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/database"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
 
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"

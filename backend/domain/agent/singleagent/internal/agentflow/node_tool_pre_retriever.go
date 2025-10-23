@@ -23,12 +23,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/google/uuid"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/consts"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
-	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )

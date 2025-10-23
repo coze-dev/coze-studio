@@ -25,9 +25,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	messagemock "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message/messagemock"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	messagemock "github.com/coze-dev/coze-studio/backend/crossdomain/message/messagemock"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	mock_workflow "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"

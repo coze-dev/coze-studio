@@ -4,7 +4,7 @@
 
 package model
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
+import agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
 
 const TableNameRunRecord = "run_record"
 

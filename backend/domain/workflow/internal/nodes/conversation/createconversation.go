@@ -23,8 +23,8 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"

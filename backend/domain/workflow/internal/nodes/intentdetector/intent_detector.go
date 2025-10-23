@@ -30,7 +30,7 @@ import (
 	"github.com/spf13/cast"
 
 	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"

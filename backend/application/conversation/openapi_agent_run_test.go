@@ -26,7 +26,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
 	saEntity "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	openapiEntity "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"

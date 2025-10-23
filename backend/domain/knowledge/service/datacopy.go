@@ -27,8 +27,8 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/sync/errgroup"
 
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	crossdatacopy "github.com/coze-dev/coze-studio/backend/crossdomain/contract/datacopy"
+	crossdatacopy "github.com/coze-dev/coze-studio/backend/crossdomain/datacopy"
+	knowledgeModel "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/datacopy"
 	copyEntity "github.com/coze-dev/coze-studio/backend/domain/datacopy/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"

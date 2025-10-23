@@ -24,9 +24,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
+	variables "github.com/coze-dev/coze-studio/backend/crossdomain/variables/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )

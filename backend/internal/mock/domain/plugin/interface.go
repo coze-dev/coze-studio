@@ -29,7 +29,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	model "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	dto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	entity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	gomock "go.uber.org/mock/gomock"

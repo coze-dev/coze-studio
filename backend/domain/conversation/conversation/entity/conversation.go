@@ -18,10 +18,10 @@ package entity
 
 import (
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/conversation/model"
 )
 
-type Conversation = conversation.Conversation
+type Conversation = model.Conversation
 
 type CreateMeta struct {
 	Name        string       `json:"name"`
@@ -41,7 +41,7 @@ type NewConversationCtxResponse struct {
 	SectionID int64 `json:"section_id"`
 }
 
-type GetCurrent = conversation.GetCurrent
+type GetCurrent = model.GetCurrent
 
 type ListMeta struct {
 	UserID      int64        `json:"user_id"`

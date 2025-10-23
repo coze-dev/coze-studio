@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"strconv"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 

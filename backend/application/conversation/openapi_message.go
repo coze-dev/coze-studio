@@ -23,8 +23,8 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
-	apiMessage "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	message3 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
@@ -67,9 +67,9 @@ func (m *OpenapiMessageApplication) GetApiMessageList(ctx context.Context, mr *m
 		AgentID:        currentConversation.AgentID,
 		Limit:          int(ptr.From(mr.Limit)),
 
-		MessageType: []*message3.MessageType{
-			ptr.Of(message3.MessageTypeQuestion),
-			ptr.Of(message3.MessageTypeAnswer),
+		MessageType: []*model.MessageType{
+			ptr.Of(model.MessageTypeQuestion),
+			ptr.Of(model.MessageTypeAnswer),
 		},
 	}
 	if mr.ChatID != nil {
@@ -127,7 +127,7 @@ func (m *OpenapiMessageApplication) buildMessageListResponse(ctx context.Context
 			MetaData:         dm.Ext,
 			ReasoningContent: ptr.Of(dm.ReasoningContent),
 		}
-		if dm.ContentType == message3.ContentTypeMix {
+		if dm.ContentType == model.ContentTypeMix {
 			msg.ContentType = run.ContentTypeMixApi
 			if dm.DisplayContent != "" {
 				msg.Content = m.parseDisplayContent(ctx, dm)
@@ -158,10 +158,10 @@ func (m *OpenapiMessageApplication) parseDisplayContent(ctx context.Context, dm 
 		if one == nil {
 			continue
 		}
-		switch apiMessage.InputType(one.Type) {
-		case apiMessage.InputTypeText:
+		switch model.InputType(one.Type) {
+		case model.InputTypeText:
 			continue
-		case apiMessage.InputTypeImage, apiMessage.InputTypeFile:
+		case model.InputTypeImage, model.InputTypeFile:
 			if one.GetFileID() != 0 {
 				fileInfo, err := m.UploaodDomainSVC.GetFile(ctx, &uploadService.GetFileRequest{
 					ID: one.GetFileID(),

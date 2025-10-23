@@ -17,10 +17,10 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 )
 
-type Slice = knowledge.Slice
+type Slice = model.Slice
 
 type WhereSliceOpt struct {
 	KnowledgeID int64

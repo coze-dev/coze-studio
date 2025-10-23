@@ -15,7 +15,7 @@ import (
 
 	gomock "go.uber.org/mock/gomock"
 
-	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
 )
 
 // MockUser is a mock of User interface.

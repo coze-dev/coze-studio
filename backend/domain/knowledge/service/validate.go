@@ -20,7 +20,7 @@ import (
 	"context"
 	"fmt"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"

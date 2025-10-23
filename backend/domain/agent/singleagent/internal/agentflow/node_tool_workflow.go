@@ -20,8 +20,8 @@ import (
 	"context"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 )

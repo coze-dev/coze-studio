@@ -26,10 +26,10 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/database/databasemock"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"

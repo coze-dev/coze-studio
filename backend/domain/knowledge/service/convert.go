@@ -24,8 +24,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/infra/document"
@@ -156,7 +155,7 @@ var s2dMapping = map[knowledge.DocumentType]slice2DocumentFn{
 			},
 		}
 
-		if len(slice.RawContent) == 0 || slice.RawContent[0].Type != knowledgeModel.SliceContentTypeTable || slice.RawContent[0].Table == nil {
+		if len(slice.RawContent) == 0 || slice.RawContent[0].Type != knowledge.SliceContentTypeTable || slice.RawContent[0].Table == nil {
 			return nil, fmt.Errorf("[s2dMapping] columns data not provided")
 		}
 
@@ -223,8 +222,8 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 			slice.ID = id
 		}
 
-		slice.RawContent = append(slice.RawContent, &knowledgeModel.SliceContent{
-			Type: knowledgeModel.SliceContentTypeText,
+		slice.RawContent = append(slice.RawContent, &knowledge.SliceContent{
+			Type: knowledge.SliceContentTypeText,
 			Text: ptr.Of(doc.Content),
 		})
 
@@ -280,9 +279,9 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 		}
 
 		if vals, err := document.GetDocumentColumnData(doc); err == nil {
-			slice.RawContent = append(slice.RawContent, &knowledgeModel.SliceContent{
-				Type:  knowledgeModel.SliceContentTypeTable,
-				Table: &knowledgeModel.SliceTable{Columns: vals},
+			slice.RawContent = append(slice.RawContent, &knowledge.SliceContent{
+				Type:  knowledge.SliceContentTypeTable,
+				Table: &knowledge.SliceTable{Columns: vals},
 			})
 		}
 
@@ -305,8 +304,8 @@ var d2sMapping = map[knowledge.DocumentType]document2SliceFn{
 			slice.ID = id
 		}
 
-		slice.RawContent = append(slice.RawContent, &knowledgeModel.SliceContent{
-			Type: knowledgeModel.SliceContentTypeText,
+		slice.RawContent = append(slice.RawContent, &knowledge.SliceContent{
+			Type: knowledge.SliceContentTypeText,
 			Text: ptr.Of(doc.Content),
 		})
 

@@ -20,7 +20,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"

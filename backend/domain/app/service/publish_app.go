@@ -21,9 +21,9 @@ import (
 	"time"
 
 	resourceCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
-	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
+	plugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"

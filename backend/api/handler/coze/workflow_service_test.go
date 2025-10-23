@@ -47,10 +47,6 @@ import (
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	modelknowledge "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -61,22 +57,26 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	appworkflow "github.com/coze-dev/coze-studio/backend/application/workflow"
 	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
-	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun/agentrunmock"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation/conversationmock"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/database/databasemock"
-	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge/knowledgemock"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	message0 "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/message/messagemock"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	pluginmodel "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/pluginmock"
-	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
-	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/impl/plugin"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/agentrunmock"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	message0 "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
+
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/conversation/conversationmock"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/database"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/database/databasemock"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/knowledgemock"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/message/messagemock"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
+	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/impl"
+	pluginmodel "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/pluginmock"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
@@ -2771,7 +2771,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 		r.load("copy_to_app/child_1.json", withID(7515027150387281920), withProjectID(appIDInt64))
 		r.load("copy_to_app/main.json", withID(7515027091302121472), withProjectID(appIDInt64))
 
-		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
+		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&knowledge.CopyKnowledgeResponse{
 			TargetKnowledgeID: 100100,
 		}, nil).Build().UnPatch()
 
@@ -2874,7 +2874,7 @@ func TestCopyWorkflowAppToLibrary(t *testing.T) {
 
 		defer mockey.Mock(appworkflow.PublishWorkflowResource).To(mockPublishWorkflowResource).Build().UnPatch()
 
-		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&modelknowledge.CopyKnowledgeResponse{
+		defer mockey.Mock((*appknowledge.KnowledgeApplicationService).CopyKnowledge).Return(&knowledge.CopyKnowledgeResponse{
 			TargetKnowledgeID: 100100,
 		}, nil).Build().UnPatch()
 

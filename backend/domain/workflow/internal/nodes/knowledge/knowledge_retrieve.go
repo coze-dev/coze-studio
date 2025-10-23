@@ -25,10 +25,10 @@ import (
 
 	einoSchema "github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"

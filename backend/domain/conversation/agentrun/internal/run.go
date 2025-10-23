@@ -23,9 +23,9 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/repository"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"

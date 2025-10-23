@@ -24,11 +24,11 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
-	search2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/marketplace_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	search2 "github.com/coze-dev/coze-studio/backend/crossdomain/search/model"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"

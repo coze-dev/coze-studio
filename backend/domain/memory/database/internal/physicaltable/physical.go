@@ -20,8 +20,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
+
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/convertor"
 	"github.com/coze-dev/coze-studio/backend/infra/rdb"
@@ -55,7 +55,7 @@ func CreatePhysicalTable(ctx context.Context, db rdb.RDB, columns []*entity3.Col
 	return physicalTableRes, nil
 }
 
-func CreateFieldInfo(fieldItems []*model.FieldItem) ([]*model.FieldItem, []*entity3.Column) {
+func CreateFieldInfo(fieldItems []*database.FieldItem) ([]*database.FieldItem, []*entity3.Column) {
 	columns := make([]*entity3.Column, len(fieldItems))
 
 	fieldID := int64(1)

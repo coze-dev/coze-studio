@@ -16,10 +16,10 @@
 
 package entity
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+import model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 
 type Knowledge struct {
-	*knowledge.Knowledge
+	*model.Knowledge
 }
 
 type WhereKnowledgeOption struct {

@@ -21,9 +21,9 @@ import (
 	"errors"
 	"fmt"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"

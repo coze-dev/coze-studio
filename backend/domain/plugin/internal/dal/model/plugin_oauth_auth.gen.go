@@ -4,7 +4,7 @@
 
 package model
 
-import "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/model"
+import "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 
 const TableNamePluginOauthAuth = "plugin_oauth_auth"
 

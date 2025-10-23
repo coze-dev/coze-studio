@@ -24,7 +24,7 @@ import (
 	"gorm.io/gorm"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/conversation"
+	conversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/internal/dal/query"

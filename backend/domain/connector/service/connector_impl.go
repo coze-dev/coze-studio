@@ -19,7 +19,7 @@ package connector
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
+	connector "github.com/coze-dev/coze-studio/backend/crossdomain/connector/model"
 	"github.com/coze-dev/coze-studio/backend/domain/connector/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"

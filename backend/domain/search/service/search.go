@@ -22,7 +22,7 @@ import (
 
 	"github.com/bytedance/sonic"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/search/model"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	"github.com/coze-dev/coze-studio/backend/infra/es"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"

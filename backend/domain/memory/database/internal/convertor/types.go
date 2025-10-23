@@ -21,8 +21,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	"github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
 )
 

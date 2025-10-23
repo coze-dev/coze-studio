@@ -26,7 +26,7 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"

@@ -23,10 +23,10 @@ import (
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/base"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/variables/model"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"

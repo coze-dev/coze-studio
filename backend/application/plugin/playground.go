@@ -26,7 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin/convert"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"

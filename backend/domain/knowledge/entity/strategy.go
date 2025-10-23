@@ -17,11 +17,11 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 )
 
-type RetrievalStrategy = knowledge.RetrievalStrategy
+type RetrievalStrategy = model.RetrievalStrategy
 
 // ParsingStrategy for document parse before indexing
 type ParsingStrategy struct {

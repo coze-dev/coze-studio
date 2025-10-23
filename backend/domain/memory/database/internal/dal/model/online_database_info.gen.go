@@ -5,7 +5,7 @@
 package model
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	"gorm.io/gorm"
 )
 

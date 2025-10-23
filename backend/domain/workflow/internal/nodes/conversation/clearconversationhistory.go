@@ -22,8 +22,8 @@ import (
 	"fmt"
 	"sync/atomic"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
