@@ -34,7 +34,7 @@
     "@coze-arch/stylelint-config": "workspace:*",
     "@coze-arch/ts-config": "workspace:*",
     "@coze-arch/vitest-config": "workspace:*",
-    "@swc/core": "^1.3.35",
+    "@swc/core": "~1.3.35",
     "@swc/helpers": "^0.4.12",
     "@testing-library/jest-dom": "^6.1.5",
     "@testing-library/react": "^14.1.2",
@@ -58,4 +58,3 @@
     "react-dom": ">=18.2.0"
   }
 }
-
