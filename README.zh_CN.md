@@ -53,7 +53,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    ```
 
 2. 部署并启动服务。
-   首次部署并启动 Coze Studio 需要拉取镜像、构建本地镜像，可能耗时较久，请耐心等待。部署过程中，你会看到以下日志信息。如果看到提示 "Container coze-server Started"，表示 Coze Studio 服务已成功启动。 
+   首次部署并启动 Coze Studio 需要拉取镜像、构建本地镜像，可能耗时较久，请耐心等待。如果看到提示 "Container coze-server Started"，表示 Coze Studio 服务已成功启动。 
    
    ```Bash
    cd coze-studio
@@ -67,7 +67,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    
    **启动失败常见问题可参考[常见问题](https://github.com/coze-dev/coze-studio/wiki/9.-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)**。
 3. 注册账号，访问 `http://localhost:8888/sign` 输入用户名、密码点击注册按钮。
-4. 配置模型，`http://localhost:8888/admin/#model-management` 新增模型。
+4. 配置模型：访问 `http://localhost:8888/admin/#model-management` 新增模型。（模型管理功能还在 beta 测试中，请将 `docker-compose.yml` 文件中的 `coze-server` 和 `coze-web` 服务镜像分别修改为 `cozedev/coze-studio-server:0.5.0.beta.3` 和 `cozedev/coze-studio-web:0.5.0.beta`进行体验）。
 5. 访问 Coze Studio `http://localhost:8888/`。
 
 > [!WARNING]

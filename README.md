@@ -50,7 +50,7 @@ Deployment steps:
    # Clone code
    git clone https://github.com/coze-dev/coze-studio.git
    ```
-2. Deploy and start the service. When deploying and starting Coze Studio for the first time, it may take a while to retrieve images and build local images. Please be patient. During deployment, you will see the following log information. If you see the message "Container coze-server Started," it means the Coze Studio service has started successfully.
+2. Deploy and start the service. When deploying and starting Coze Studio for the first time, it may take a while to retrieve images and build local images. Please be patient. If you see the message "Container coze-server Started," it means the Coze Studio service has started successfully.
 
    ```Bash
    cd coze-studio
@@ -64,7 +64,7 @@ Deployment steps:
 
    For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
 3.	Register an account by visiting `http://localhost:8888/sign`, entering your username and password, and clicking the Register button.
-4.	Configure the model at `http://localhost:8888/admin/#model-management` by adding a new model.
+4.	Configure the model at `http://localhost:8888/admin/#model-management` by adding a new model. (The model management feature is currently in beta testing. To try it out, please change the images in `docker-compose.yml` to `cozedev/coze-studio-server:0.5.0.beta.3` and `cozedev/coze-studio-web:0.5.0.beta`.)
 5.	Visit Coze Studio at `http://localhost:8888/`.
 
 > [!WARNING]
