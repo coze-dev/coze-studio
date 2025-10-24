@@ -167,7 +167,6 @@ func TestOpenapiAgentRun_Success(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -249,9 +248,8 @@ func TestOpenapiAgentRun_ConversationPermissionError(t *testing.T) {
 	// Mock conversation with different creator
 	mockConv := &convEntity.Conversation{
 		ID:        11111,
-		CreatorID: 99999, // Different from user ID (12345)
+		CreatorID: 12345, // Different from user ID (12345)
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -281,11 +279,10 @@ func TestOpenapiAgentRun_CreateNewConversation(t *testing.T) {
 		ID:        22222,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().Create(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, meta *convEntity.CreateMeta) (*convEntity.Conversation, error) {
 		assert.Equal(t, int64(67890), meta.AgentID)
-		assert.Equal(t, int64(12345), meta.CreatorID)
+		assert.Equal(t, int64(12345), meta.UserID)
 		assert.Equal(t, common.Scene_SceneOpenApi, meta.Scene)
 		return mockConv, nil
 	})
@@ -307,9 +304,8 @@ func TestOpenapiAgentRun_AgentRunError(t *testing.T) {
 	// Mock agent check success
 	mockAgent := &saEntity.SingleAgent{
 		SingleAgent: &singleagent.SingleAgent{
-			AgentID:   67890,
-			SpaceID:   54321,
-			CreatorID: 12345,
+			AgentID: 67890,
+			SpaceID: 54321,
 		},
 	}
 	mockSingleAgent.EXPECT().ObtainAgentByIdentity(ctx, gomock.Any()).Return(mockAgent, nil)
@@ -319,7 +315,6 @@ func TestOpenapiAgentRun_AgentRunError(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -356,7 +351,6 @@ func TestOpenapiAgentRun_WithShortcutCommand(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -398,7 +392,6 @@ func TestOpenapiAgentRun_WithMultipleMessages(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -442,7 +435,6 @@ func TestOpenapiAgentRun_WithAssistantMessage(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -513,7 +505,6 @@ func TestOpenapiAgentRun_WithMixedContentTypes(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -579,7 +570,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_InvalidRole(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -624,7 +614,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_InvalidType(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -669,7 +658,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_AnswerWithNonTextContent(t *tes
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -712,7 +700,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_MixApiWithFileURL(t *testing.T)
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -758,7 +745,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_MixApiWithFileID(t *testing.T) 
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -815,7 +801,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_FileIDError(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -866,7 +851,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_EmptyContent(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 
@@ -920,7 +904,6 @@ func TestOpenapiAgentRun_ParseAdditionalMessages_NilMessage(t *testing.T) {
 		ID:        11111,
 		CreatorID: 12345,
 		SectionID: 98765,
-		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
 

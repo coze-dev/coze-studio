@@ -77,6 +77,9 @@ import (
 	pluginmodel "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/pluginmock"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
+	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/permission/permissionmock"
+	permission "github.com/coze-dev/coze-studio/backend/domain/permission"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
@@ -183,6 +186,11 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		c = ctxcache.Init(c)
 		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
 			UserID: 123,
+		})
+		// Add API auth info for OpenAPI endpoints
+		ctxcache.Store(c, consts.OpenapiAuthKeyInCtx, &entity2.ApiKey{
+			UserID: 123,
+			ConnectorID: consts.APIConnectorID,
 		})
 		ctx.Next(c)
 	})
@@ -332,6 +340,11 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	crossmessage.SetDefaultSVC(mockMessage)
 	mockAgentRun := agentrunmock.NewMockAgentRun(ctrl)
 	crossagentrun.SetDefaultSVC(mockAgentRun)
+
+	// Initialize permission service for tests
+	mockPermission := permissionmock.NewMockPermission(ctrl)
+	mockPermission.EXPECT().CheckAuthz(gomock.Any(), gomock.Any()).Return(&permission.CheckAuthzResult{Decision: permission.Allow}, nil).AnyTimes()
+	crosspermission.SetDefaultSVC(mockPermission)
 
 	mockey.Mock((*user.UserApplicationService).MGetUserBasicInfo).Return(&playground.MGetUserBasicInfoResponse{
 		UserBasicInfoMap: make(map[string]*playground.UserBasicInfo),
@@ -1032,6 +1045,8 @@ func (r *wfTestRunner) openapiStream(id string, input any) *sse.Reader {
 	hReq.SetMethod("POST")
 	hReq.SetBody(m)
 	hReq.SetHeader("Content-Type", "application/json")
+	// Add Authorization header for API authentication
+	hReq.SetHeader("Authorization", "Bearer test-api-key-123")
 	err = c.Do(context.Background(), hReq, hResp)
 	assert.NoError(r.t, err)
 
@@ -1062,15 +1077,21 @@ func (r *wfTestRunner) openapiResume(id string, eventID string, resumeData strin
 	hReq.SetMethod("POST")
 	hReq.SetBody(m)
 	hReq.SetHeader("Content-Type", "application/json")
+	// Add Authorization header for API authentication
+	hReq.SetHeader("Authorization", "Bearer test-api-key-123")
 	err = c.Do(context.Background(), hReq, hResp)
 	assert.NoError(r.t, err)
 
 	if hResp.StatusCode() != http.StatusOK {
-		r.t.Errorf("unexpected status code: %d, body: %s", hResp.StatusCode(), string(hResp.Body()))
+		r.t.Fatalf("unexpected status code: %d, body: %s", hResp.StatusCode(), string(hResp.Body()))
+		return nil
 	}
 
 	re, err := sse.NewReader(hResp)
-	assert.NoError(r.t, err)
+	if err != nil {
+		r.t.Fatalf("failed to create SSE reader: %v, response body: %s", err, string(hResp.Body()))
+		return nil
+	}
 
 	return re
 }
