@@ -103,6 +103,11 @@ func (d *DatabaseApplicationService) ListDatabase(ctx context.Context, req *tabl
 }
 
 func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *table.SingleDatabaseRequest) (*table.SingleDatabaseResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
+	}
+
 	basics := make([]*model.DatabaseBasic, 1)
 	b := &model.DatabaseBasic{
 		ID: req.ID,
@@ -125,6 +130,10 @@ func (d *DatabaseApplicationService) GetDatabaseByID(ctx context.Context, req *t
 
 	if len(res.Databases) == 0 {
 		return nil, fmt.Errorf("database %d not found", req.GetID())
+	}
+
+	if res.Databases[0].CreatorID != *uid {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "creator id is invalid"))
 	}
 
 	return ConvertDatabaseRes(res.Databases[0]), nil
@@ -353,6 +362,11 @@ func (d *DatabaseApplicationService) UpdateDatabaseRecords(ctx context.Context, 
 }
 
 func (d *DatabaseApplicationService) GetOnlineDatabaseId(ctx context.Context, req *table.GetOnlineDatabaseIdRequest) (*table.GetOnlineDatabaseIdResponse, error) {
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
+	}
+
 	basics := make([]*model.DatabaseBasic, 1)
 	basics[0] = &model.DatabaseBasic{
 		ID:        req.ID,
@@ -368,6 +382,10 @@ func (d *DatabaseApplicationService) GetOnlineDatabaseId(ctx context.Context, re
 
 	if len(res.Databases) == 0 {
 		return nil, fmt.Errorf("database %d not found", req.ID)
+	}
+
+	if res.Databases[0].CreatorID != *uid {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "creator id is invalid"))
 	}
 
 	return &table.GetOnlineDatabaseIdResponse{
@@ -544,6 +562,12 @@ func (d *DatabaseApplicationService) GetConnectorName(ctx context.Context, req *
 }
 
 func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *table.GetBotTableRequest) (*table.GetBotTableResponse, error) {
+
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "session required"))
+	}
+
 	relationResp, err := d.DomainSVC.MGetRelationsByAgentID(ctx, &database.MGetRelationsByAgentIDRequest{
 		AgentID:   req.GetBotID(),
 		TableType: req.GetTableType(),
@@ -563,6 +587,11 @@ func (d *DatabaseApplicationService) GetBotDatabase(ctx context.Context, req *ta
 	})
 	if err != nil {
 		return nil, err
+	}
+	for _, db := range resp.Databases {
+		if db.CreatorID != *uid {
+			return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "creator id is invalid"))
+		}
 	}
 
 	return &table.GetBotTableResponse{
@@ -648,6 +677,11 @@ func (d *DatabaseApplicationService) GetDatabaseTableSchema(ctx context.Context,
 	tableType := table.TableDataType_AllData
 	if req.TableDataType != nil {
 		tableType = req.GetTableDataType()
+	}
+
+	err := d.ValidateAccess(ctx, req.GetDatabaseID(), table.TableType_OnlineTable)
+	if err != nil {
+		return nil, err
 	}
 
 	schema, err := d.DomainSVC.GetDatabaseTableSchema(ctx, &database.GetDatabaseTableSchemaRequest{

@@ -44,9 +44,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
 	model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
 	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
 	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
+	"github.com/coze-dev/coze-studio/backend/domain/permission"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	domainWorkflow "github.com/coze-dev/coze-studio/backend/domain/workflow"
@@ -1620,6 +1622,25 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
+
+	checkResult, err := crosspermission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		OperatorID: userID,
+		ResourceIdentifier: []*permission.ResourceIdentifier{
+			{
+				Type:   permission.ResourceTypeWorkflow,
+				ID:     []int64{workflowID},
+				Action: permission.ActionRead,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if checkResult.Decision != permission.Allow {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "no permission"))
+	}
 
 	var connectorID int64
 	if req.IsSetConnectorID() {

@@ -347,3 +347,26 @@ type ListKnowledgeDetailRequest struct {
 type ListKnowledgeDetailResponse struct {
 	KnowledgeDetails []*KnowledgeDetail
 }
+
+type MGetSliceRequest struct {
+	SliceIDs []int64
+}
+
+type MGetSliceResponse struct {
+	Slices []*Slice
+}
+
+type MGetDocumentRequest struct {
+	DocumentIDs []int64
+}
+
+type Document struct {
+	ID        int64
+	Name      string
+	CreatorID int64
+	SpaceID   int64
+}
+
+type MGetDocumentResponse struct {
+	Documents []*Document
+}

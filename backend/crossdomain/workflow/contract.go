@@ -45,6 +45,7 @@ type Workflow interface {
 	WithMessagePipe() (compose.Option, *schema.StreamReader[*entity.Message], func())
 	StreamResume(ctx context.Context, req *entity.ResumeRequest, config workflowModel.ExecuteConfig) (*schema.StreamReader[*entity.Message], error)
 	InitApplicationDefaultConversationTemplate(ctx context.Context, spaceID int64, appID int64, userID int64) error
+	MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error)
 }
 
 type ExecuteConfig = workflowModel.ExecuteConfig

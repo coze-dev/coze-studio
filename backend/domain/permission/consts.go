@@ -16,11 +16,17 @@
 
 package permission
 
+type (
+	ResourceType int
+	Decision     int
+	Action       string
+)
+
 const (
 	ResourceTypeAccount             ResourceType = 1
 	ResourceTypeWorkspace                        = 2
 	ResourceTypeApp                              = 3
-	ResourceTypeBot                              = 4
+	ResourceTypeAgent                            = 4
 	ResourceTypePlugin                           = 5
 	ResourceTypeWorkflow                         = 6
 	ResourceTypeKnowledge                        = 7
@@ -42,6 +48,8 @@ const (
 	ResourceTypeDatabase                         = 23
 	ResourceTypeOceanProject                     = 24
 	ResourceTypeFinetuneTask                     = 25
+	ResourceTypeKnowledgeDocument                = 26
+	ResourceTypeKnowledgeSlice                   = 27
 )
 
 const (
@@ -49,4 +57,9 @@ const (
 	Allow Decision = 1
 	// Deny represents permission denied
 	Deny Decision = 2
+)
+
+const (
+	ActionRead  Action = "read"
+	ActionWrite Action = "write"
 )

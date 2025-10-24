@@ -91,6 +91,9 @@ func (c *ConversationApplicationService) Run(ctx context.Context, sseSender *sse
 		if err != nil {
 			return err
 		}
+		if cmdMeta.ObjectID > 0 && cmdMeta.ObjectID != agentInfo.AgentID {
+			return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "agent not match"))
+		}
 		shortcutCmd = cmdMeta
 	}
 

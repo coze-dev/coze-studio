@@ -95,3 +95,7 @@ func (i *impl) GetWorkflowIDsByAppID(ctx context.Context, appID int64) ([]int64,
 		return a.ID
 	}), err
 }
+
+func (i *impl) MGet(ctx context.Context, policy *vo.MGetPolicy) ([]*entity.Workflow, int64, error) {
+	return i.DomainSVC.MGet(ctx, policy)
+}

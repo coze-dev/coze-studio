@@ -23,6 +23,7 @@ import (
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
+	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -30,6 +31,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
 func (p *PluginApplicationService) PublishPlugin(ctx context.Context, req *pluginAPI.PublishPluginRequest) (resp *pluginAPI.PublishPluginResponse, err error) {
@@ -110,6 +112,12 @@ func (p *PluginApplicationService) GetPluginNextVersion(ctx context.Context, req
 }
 
 func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pluginAPI.GetDevPluginListRequest) (resp *pluginAPI.GetDevPluginListResponse, err error) {
+
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
 	pageInfo := dto.PageInfo{
 		Name:       req.Name,
 		Page:       int(req.GetPage()),
@@ -133,6 +141,10 @@ func (p *PluginApplicationService) GetDevPluginList(ctx context.Context, req *pl
 
 	pluginList := make([]*common.PluginInfoForPlayground, 0, len(res.Plugins))
 	for _, pl := range res.Plugins {
+
+		if pl.DeveloperID > 0 && pl.DeveloperID != *uid {
+			return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "plugin developer is not current user"))
+		}
 		tools, err := p.toolRepo.GetPluginAllDraftTools(ctx, pl.ID)
 		if err != nil {
 			return nil, errorx.Wrapf(err, "GetPluginAllDraftTools failed, pluginID=%d", pl.ID)

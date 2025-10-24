@@ -57,6 +57,8 @@ type Knowledge interface {
 	ListSlice(ctx context.Context, request *ListSliceRequest) (response *ListSliceResponse, err error)
 	ListPhotoSlice(ctx context.Context, request *ListPhotoSliceRequest) (response *ListPhotoSliceResponse, err error)
 	GetSlice(ctx context.Context, request *GetSliceRequest) (response *GetSliceResponse, err error)
+	MGetSlice(ctx context.Context, request *MGetSliceRequest) (response *MGetSliceResponse, err error)
+	MGetDocument(ctx context.Context, request *MGetDocumentRequest) (response *MGetDocumentResponse, err error)
 	Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error)
 	CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error)
 	MGetDocumentReview(ctx context.Context, request *MGetDocumentReviewRequest) (response *MGetDocumentReviewResponse, err error)
@@ -353,6 +355,22 @@ type ExtractPhotoCaptionRequest struct {
 
 type ExtractPhotoCaptionResponse struct {
 	Caption string
+}
+
+type MGetSliceRequest struct {
+	SliceIDs []int64
+}
+
+type MGetSliceResponse struct {
+	Slices []*entity.Slice
+}
+
+type MGetDocumentRequest struct {
+	DocumentIDs []int64
+}
+
+type MGetDocumentResponse struct {
+	Documents []*entity.Document
 }
 type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
 type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse

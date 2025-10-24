@@ -181,6 +181,49 @@ func (i *impl) ListKnowledgeDetail(ctx context.Context, req *model.ListKnowledge
 	return resp, nil
 }
 
+func (i *impl) MGetSlice(ctx context.Context, request *model.MGetSliceRequest) (response *model.MGetSliceResponse, err error) {
+	resp, err := i.DomainSVC.MGetSlice(ctx, &service.MGetSliceRequest{
+		SliceIDs: request.SliceIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.MGetSliceResponse{
+		Slices: slices.Transform(resp.Slices, func(a *entity.Slice) *model.Slice {
+			return &model.Slice{
+				Info: model.Info{
+					ID:        a.ID,
+					CreatorID: a.CreatorID,
+					SpaceID:   a.SpaceID,
+				},
+				KnowledgeID: a.KnowledgeID,
+				DocumentID:  a.DocumentID,
+			}
+		}),
+	}, nil
+}
+
+func (i *impl) MGetDocument(ctx context.Context, request *model.MGetDocumentRequest) (response *model.MGetDocumentResponse, err error) {
+	resp, err := i.DomainSVC.MGetDocument(ctx, &service.MGetDocumentRequest{
+		DocumentIDs: request.DocumentIDs,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.MGetDocumentResponse{
+		Documents: slices.Transform(resp.Documents, func(a *entity.Document) *model.Document {
+			return &model.Document{
+				ID:        a.ID,
+				Name:      a.Name,
+				CreatorID: a.CreatorID,
+				SpaceID:   a.SpaceID,
+			}
+		}),
+	}, nil
+}
+
 func toChunkType(typ model.ChunkType) (parser.ChunkType, error) {
 	switch typ {
 	case model.ChunkTypeDefault:

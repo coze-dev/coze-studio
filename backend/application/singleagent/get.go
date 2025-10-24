@@ -26,6 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
@@ -47,12 +48,19 @@ import (
 )
 
 func (s *SingleAgentApplicationService) GetAgentBotInfo(ctx context.Context, req *playground.GetDraftBotInfoAgwRequest) (*playground.GetDraftBotInfoAgwResponse, error) {
+
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
 	agentInfo, err := s.DomainSVC.GetSingleAgent(ctx, req.GetBotID(), req.GetVersion())
 	if err != nil {
 		return nil, err
 	}
 
 	if agentInfo == nil {
+		return nil, errorx.New(errno.ErrAgentInvalidParamCode, errorx.KVf("msg", "agent %d not found", req.GetBotID()))
+	}
+
+	if agentInfo.CreatorID != uid {
 		return nil, errorx.New(errno.ErrAgentInvalidParamCode, errorx.KVf("msg", "agent %d not found", req.GetBotID()))
 	}
 

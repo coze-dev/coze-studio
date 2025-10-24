@@ -33,6 +33,7 @@ type SingleAgent interface {
 	StreamExecute(ctx context.Context,
 		agentRuntime *AgentRuntime) (*schema.StreamReader[*model.AgentEvent], error)
 	ObtainAgentByIdentity(ctx context.Context, identity *model.AgentIdentity) (*model.SingleAgent, error)
+	GetSingleAgentDraft(ctx context.Context, agentID int64) (agentInfo *model.SingleAgent, err error)
 }
 
 type AgentRuntime struct {

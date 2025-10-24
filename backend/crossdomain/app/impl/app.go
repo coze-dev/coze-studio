@@ -14,32 +14,26 @@
  * limitations under the License.
  */
 
-package permission
+package crossapp
 
 import (
 	"context"
+
+	crossapp "github.com/coze-dev/coze-studio/backend/crossdomain/app"
+	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/app/service"
 )
 
-type ResourceIdentifier struct {
-	Type   ResourceType
-	ID     []int64
-	Action Action
+type appServiceImpl struct {
+	DomainSVC service.AppService
 }
 
-type ActionAndResource struct {
-	Action             Action
-	ResourceIdentifier ResourceIdentifier
+func InitDomainService(domainSVC service.AppService) crossapp.AppService {
+	return &appServiceImpl{
+		DomainSVC: domainSVC,
+	}
 }
 
-type CheckAuthzData struct {
-	ResourceIdentifier []*ResourceIdentifier
-	OperatorID         int64
-	IsDraft            *bool
-}
-type CheckAuthzResult struct {
-	Decision Decision
-}
-
-type Permission interface {
-	CheckAuthz(ctx context.Context, req *CheckAuthzData) (*CheckAuthzResult, error)
+func (a *appServiceImpl) GetDraftAPP(ctx context.Context, appID int64) (app *entity.APP, err error) {
+	return a.DomainSVC.GetDraftAPP(ctx, appID)
 }

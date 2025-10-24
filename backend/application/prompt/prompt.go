@@ -97,9 +97,18 @@ func (p *PromptApplicationService) UpsertPromptResource(ctx context.Context, req
 func (p *PromptApplicationService) GetPromptResourceInfo(ctx context.Context, req *playground.GetPromptResourceInfoRequest) (
 	resp *playground.GetPromptResourceInfoResponse, err error,
 ) {
+
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "no session data provided"))
+	}
+
 	promptInfo, err := p.DomainSVC.GetPromptResource(ctx, req.GetPromptResourceID())
 	if err != nil {
 		return nil, err
+	}
+	if promptInfo.CreatorID != *uid {
+		return nil, errorx.New(errno.ErrPromptPermissionCode, errorx.KV("msg", "no permission"))
 	}
 
 	return &playground.GetPromptResourceInfoResponse{

@@ -18,10 +18,13 @@ package shortcutcmd
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+
+	"github.com/coze-dev/coze-studio/backend/domain/permission"
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -31,13 +34,54 @@ type ShortcutCmdApplicationService struct {
 	ShortCutDomainSVC service.ShortcutCmd
 }
 
+func checkPermission(ctx context.Context, uid int64, spaceID int64, workflowID int64) error {
+	// Use permission service to check workspace access
+
+	rd := []*permission.ResourceIdentifier{
+		{
+			Type:   permission.ResourceTypeWorkspace,
+			ID:     []int64{spaceID},
+			Action: permission.ActionRead,
+		},
+	}
+	if workflowID > 0 {
+		rd = append(rd, &permission.ResourceIdentifier{
+			Type:   permission.ResourceTypeWorkflow,
+			ID:     []int64{workflowID},
+			Action: permission.ActionRead,
+		})
+	}
+
+	result, err := permission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		ResourceIdentifier: rd,
+		OperatorID:         uid,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check workspace permission: %w", err)
+	}
+
+	if result.Decision != permission.Allow {
+		return fmt.Errorf("user %d does not have access to space %d", uid, spaceID)
+	}
+
+	return nil
+}
+
 func (s *ShortcutCmdApplicationService) Handler(ctx context.Context, req *playground.CreateUpdateShortcutCommandRequest) (*playground.ShortcutCommand, error) {
+
+	var err error
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
 
 	cr, buildErr := s.buildReq(ctx, req)
 	if buildErr != nil {
 		return nil, buildErr
 	}
-	var err error
+
+	err = checkPermission(ctx, uid, req.GetSpaceID(), cr.WorkFlowID)
+	if err != nil {
+		return nil, err
+	}
+
 	var cmdDO *entity.ShortcutCmd
 	if cr.CommandID > 0 {
 		cmdDO, err = s.ShortCutDomainSVC.UpdateCMD(ctx, cr)

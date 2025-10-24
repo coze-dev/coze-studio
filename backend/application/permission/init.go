@@ -17,29 +17,20 @@
 package permission
 
 import (
-	"context"
+	"github.com/coze-dev/coze-studio/backend/domain/permission"
 )
 
-type ResourceIdentifier struct {
-	Type   ResourceType
-	ID     []int64
-	Action Action
+type ServiceComponents struct {
 }
 
-type ActionAndResource struct {
-	Action             Action
-	ResourceIdentifier ResourceIdentifier
+type PermissionApplicationService struct {
+	DomainSVC permission.Permission
 }
 
-type CheckAuthzData struct {
-	ResourceIdentifier []*ResourceIdentifier
-	OperatorID         int64
-	IsDraft            *bool
-}
-type CheckAuthzResult struct {
-	Decision Decision
-}
+func InitService(components *ServiceComponents) *PermissionApplicationService {
+	domainSVC := permission.NewService()
 
-type Permission interface {
-	CheckAuthz(ctx context.Context, req *CheckAuthzData) (*CheckAuthzResult, error)
+	return &PermissionApplicationService{
+		DomainSVC: domainSVC,
+	}
 }

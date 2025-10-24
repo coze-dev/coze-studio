@@ -62,10 +62,18 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, sseSen
 		return caErr
 	}
 
+	if creatorID != agentInfo.CreatorID {
+		return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "agent not match"))
+	}
+
 	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
 	if ccErr != nil {
 		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
 		return ccErr
+	}
+
+	if conversationData.CreatorID != creatorID {
+		return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
 	}
 
 	spaceID := agentInfo.SpaceID
@@ -433,6 +441,10 @@ func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.Can
 	conversationData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, req.ConversationID)
 	if err != nil {
 		return nil, err
+	}
+
+	if req.ConversationID != runRecord.ConversationID {
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "conversation not match"))
 	}
 
 	if userID != conversationData.CreatorID {
