@@ -30,6 +30,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
 )
 
@@ -38,6 +39,7 @@ type ServiceComponents struct {
 	DB        *gorm.DB
 	TosClient storage.Storage
 	ImageX    imagex.ImageX
+	ModelMgr  modelmgr.Manager
 
 	SingleAgentDomainSVC singleagent.SingleAgent
 }

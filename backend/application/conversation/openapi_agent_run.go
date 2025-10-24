@@ -40,6 +40,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -70,7 +71,7 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, sseSen
 	}
 
 	spaceID := agentInfo.SpaceID
-	arr, err := a.buildAgentRunRequest(ctx, ar, connectorID, spaceID, conversationData)
+	arr, err := a.buildAgentRunRequest(ctx, ar, connectorID, spaceID, conversationData, agentInfo)
 	if err != nil {
 		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
 		return err
@@ -135,13 +136,13 @@ func (a *OpenapiAgentRunApplication) checkAgent(ctx context.Context, ar *run.Cha
 	return agentInfo, nil
 }
 
-func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, connectorID int64, spaceID int64, conversationData *convEntity.Conversation) (*entity.AgentRunMeta, error) {
+func (a *OpenapiAgentRunApplication) buildAgentRunRequest(ctx context.Context, ar *run.ChatV3Request, connectorID int64, spaceID int64, conversationData *convEntity.Conversation, agentInfo *saEntity.SingleAgent) (*entity.AgentRunMeta, error) {
 
 	shortcutCMDData, err := a.buildTools(ctx, ar.ShortcutCommand)
 	if err != nil {
 		return nil, err
 	}
-	multiContent, contentType, err := a.buildMultiContent(ctx, ar)
+	multiContent, contentType, err := a.buildMultiContent(ctx, ar, agentInfo, spaceID)
 	if err != nil {
 		return nil, err
 	}
@@ -240,9 +241,13 @@ func (a *OpenapiAgentRunApplication) uploadBase64ToStorage(ctx context.Context, 
 	return uploadURL, nil
 }
 
-func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request) ([]*message.InputMetaData, message.ContentType, error) {
+func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *run.ChatV3Request, agentInfo *saEntity.SingleAgent, spaceID int64) ([]*message.InputMetaData, message.ContentType, error) {
 	var multiContents []*message.InputMetaData
 	contentType := message.ContentTypeText
+
+	// 🔥 新增：检查模型是否支持多模态
+	isSupportMultimodal := a.checkModelMultimodalSupport(ctx, agentInfo, spaceID)
+	logs.CtxInfof(ctx, "Model multimodal support: %v", isSupportMultimodal)
 
 	for _, item := range ar.AdditionalMessages {
 		if item == nil {
@@ -268,6 +273,19 @@ func (a *OpenapiAgentRunApplication) buildMultiContent(ctx context.Context, ar *
 
 			// logs.CtxInfof(ctx, "inputs:%v, err:%v", conv.DebugJsonToStr(inputs), err)
 			if err != nil {
+				continue
+			}
+
+			// 🔥 新增：如果模型不支持多模态，提取文本内容并跳过图片
+			if !isSupportMultimodal {
+				textContent := a.extractTextFromObjectString(ctx, inputs)
+				if textContent != "" {
+					multiContents = append(multiContents, &message.InputMetaData{
+						Type: message.InputTypeText,
+						Text: textContent,
+					})
+					logs.CtxInfof(ctx, "Model does not support multimodal, extracted text: %s", textContent)
+				}
 				continue
 			}
 
@@ -521,4 +539,90 @@ func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
 	}
 	mCM, _ := json.Marshal(chunkMessage)
 	return mCM
+}
+
+// checkModelMultimodalSupport 检查模型是否支持多模态（图片、视频等）
+func (a *OpenapiAgentRunApplication) checkModelMultimodalSupport(ctx context.Context, agentInfo *saEntity.SingleAgent, spaceID int64) bool {
+	// 如果没有ModelMgr，假设支持多模态（保持向后兼容）
+	if a.appContext == nil || a.appContext.ModelMgr == nil {
+		logs.CtxWarnf(ctx, "ModelMgr not available, assuming multimodal support")
+		return true
+	}
+
+	// 获取模型ID
+	if agentInfo.ModelInfo == nil || agentInfo.ModelInfo.ModelId == nil || ptr.From(agentInfo.ModelInfo.ModelId) == 0 {
+		logs.CtxWarnf(ctx, "Model ID not found in agent info, assuming multimodal support")
+		return true
+	}
+
+	modelID := ptr.From(agentInfo.ModelInfo.ModelId)
+
+	// 获取模型详细信息
+	var spaceIDPtr *uint64
+	if spaceID > 0 {
+		sid := uint64(spaceID)
+		spaceIDPtr = &sid
+	}
+
+	models, err := a.appContext.ModelMgr.MGetModelByID(ctx, &modelmgr.MGetModelRequest{
+		IDs:     []int64{modelID},
+		SpaceID: spaceIDPtr,
+	})
+
+	if err != nil {
+		logs.CtxErrorf(ctx, "Failed to get model info: %v, assuming multimodal support", err)
+		return true
+	}
+
+	if len(models) == 0 {
+		logs.CtxWarnf(ctx, "Model not found (ID: %d), assuming multimodal support", modelID)
+		return true
+	}
+
+	modelInfo := models[0]
+
+	// 检查 input_modal 字段
+	// 如果 input_modal 包含 "image" 或其他非文本类型，则支持多模态
+	if len(modelInfo.Meta.Capability.InputModal) > 1 {
+		logs.CtxInfof(ctx, "Model %d supports multimodal (input_modal: %v)", modelID, modelInfo.Meta.Capability.InputModal)
+		return true
+	}
+
+	// 只支持 text 单一模态
+	logs.CtxInfof(ctx, "Model %d only supports text (input_modal: %v)", modelID, modelInfo.Meta.Capability.InputModal)
+	return false
+}
+
+// extractTextFromObjectString 从 object_string 格式的内容中提取文本
+// 如果包含图片，会添加 "this is a image: [url]" 的说明
+func (a *OpenapiAgentRunApplication) extractTextFromObjectString(ctx context.Context, inputs []*run.AdditionalContent) string {
+	var textParts []string
+
+	for _, one := range inputs {
+		if one == nil {
+			continue
+		}
+
+		switch message.InputType(one.Type) {
+		case message.InputTypeText:
+			// 提取文本内容
+			if one.Text != nil && ptr.From(one.Text) != "" {
+				textParts = append(textParts, ptr.From(one.Text))
+			}
+		case message.InputTypeImage:
+			// 添加图片URL说明
+			fileURL := one.GetFileURL()
+			if fileURL != "" {
+				textParts = append(textParts, fmt.Sprintf("this is a image: %s", fileURL))
+			}
+		case message.InputTypeFile:
+			// 添加文件URL说明
+			fileURL := one.GetFileURL()
+			if fileURL != "" {
+				textParts = append(textParts, fmt.Sprintf("this is a file: %s", fileURL))
+			}
+		}
+	}
+
+	return strings.Join(textParts, " ")
 }

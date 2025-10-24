@@ -392,6 +392,7 @@ func (p *primaryServices) toConversationComponents(singleAgentSVC *singleagent.S
 		IDGen:                infra.IDGenSVC,
 		TosClient:            infra.TOSClient,
 		ImageX:               infra.ImageXClient,
+		ModelMgr:             p.basicServices.modelMgrSVC.Mgr,
 		SingleAgentDomainSVC: singleAgentSVC.DomainSVC,
 	}
 }
