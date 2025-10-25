@@ -248,7 +248,7 @@ func TestOpenapiAgentRun_ConversationPermissionError(t *testing.T) {
 	// Mock conversation with different creator
 	mockConv := &convEntity.Conversation{
 		ID:        11111,
-		CreatorID: 12345, // Different from user ID (12345)
+		CreatorID: 99999, // Different from user ID (12345)
 		SectionID: 98765,
 	}
 	mockConversation.EXPECT().GetByID(ctx, int64(11111)).Return(mockConv, nil)
