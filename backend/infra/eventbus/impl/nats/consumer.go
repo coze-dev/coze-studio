@@ -225,10 +225,7 @@ func addAuthentication(options *[]nats.Option) error {
 		if nkeySeed == "" {
 			return fmt.Errorf("NATS_NKEY_SEED is required when using JWT authentication")
 		}
-		*options = append(*options, nats.UserJWT(
-			func() (string, error) { return jwtToken, nil },
-			func(nonce []byte) ([]byte, error) { return []byte(nkeySeed), nil },
-		))
+		*options = append(*options, nats.UserJWTAndSeed(jwtToken, nkeySeed))
 		return nil
 	}
 

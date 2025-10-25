@@ -57,11 +57,7 @@ func NewProducer(serverURL, topic, group string) (eventbus.Producer, error) {
 	// Add authentication if provided
 	if jwtToken := os.Getenv(consts.NATSJWTToken); jwtToken != "" {
 		nkeySeed := os.Getenv(consts.NATSNKeySeed)
-		opts = append(opts, nats.UserJWT(func() (string, error) {
-			return jwtToken, nil
-		}, func(nonce []byte) ([]byte, error) {
-			return []byte(nkeySeed), nil
-		}))
+		opts = append(opts, nats.UserJWTAndSeed(jwtToken, nkeySeed))
 	} else if username := os.Getenv(consts.NATSUsername); username != "" {
 		password := os.Getenv(consts.NATSPassword)
 		opts = append(opts, nats.UserInfo(username, password))
