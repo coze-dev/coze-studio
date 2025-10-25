@@ -152,8 +152,17 @@ export NATS_SERVER_URL="nats://nats:4222"
 # NATS_JWT_TOKEN: NATS JWT 认证令牌（留空表示无认证）
 export NATS_JWT_TOKEN=""
 
-# NATS_SEED_FILE: NATS NKey 认证种子文件路径（可选）
-export NATS_SEED_FILE=""
+# NATS_NKEY_SEED: NATS NKey 认证种子文件路径（可选）
+export NATS_NKEY_SEED=""
+
+# NATS_USERNAME: NATS 用户名认证（可选）
+export NATS_USERNAME=""
+
+# NATS_PASSWORD: NATS 密码认证（可选）
+export NATS_PASSWORD=""
+
+# NATS_TOKEN: NATS 令牌认证（可选）
+export NATS_TOKEN=""
 
 # NATS_STREAM_REPLICAS: JetStream 流的副本数量（默认: 1）
 export NATS_STREAM_REPLICAS="1"
@@ -198,7 +207,7 @@ nats:
 mqType := os.Getenv("COZE_MQ_TYPE")
 natsURL := os.Getenv("NATS_SERVER_URL")
 jwtToken := os.Getenv("NATS_JWT_TOKEN")
-seedFile := os.Getenv("NATS_SEED_FILE")
+seedFile := os.Getenv("NATS_NKEY_SEED")
 streamReplicas := os.Getenv("NATS_STREAM_REPLICAS")
 
 // 创建 NATS EventBus

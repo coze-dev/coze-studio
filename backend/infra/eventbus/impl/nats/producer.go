@@ -26,6 +26,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
@@ -196,71 +197,47 @@ func (p *producerImpl) batchSendJetStream(ctx context.Context, topic string, mes
 
 // batchSendCore sends messages using core NATS for simple pub/sub
 func (p *producerImpl) batchSendCore(ctx context.Context, topic string, messages [][]byte, option *eventbus.SendOption) error {
-	// Use WaitGroup to wait for all async publishes
-	var wg sync.WaitGroup
-	errChan := make(chan error, len(messages))
+	// Use TaskGroup to wait for all async publishes
+	tg := taskgroup.NewTaskGroup(ctx, len(messages))
 
 	for i, message := range messages {
-		wg.Add(1)
-		go func(idx int, msg []byte) {
-			defer wg.Done()
-
+		tg.Go(func() error {
 			// For core NATS, we can add headers if sharding key is provided
 			if option.ShardingKey != nil && *option.ShardingKey != "" {
 				// Create message with headers
 				natsMsg := &nats.Msg{
 					Subject: topic,
-					Data:    msg,
+					Data:    message,
 					Header:  nats.Header{},
 				}
 				natsMsg.Header.Set("Sharding-Key", *option.ShardingKey)
 
 				err := p.nc.PublishMsg(natsMsg)
 				if err != nil {
-					select {
-					case errChan <- fmt.Errorf("publish message %d with header failed: %w", idx, err):
-					default:
-					}
+					return fmt.Errorf("publish message %d with header failed: %w", i, err)
 				}
 			} else {
 				// Simple publish without headers
-				err := p.nc.Publish(topic, msg)
+				err := p.nc.Publish(topic, message)
 				if err != nil {
-					select {
-					case errChan <- fmt.Errorf("publish message %d failed: %w", idx, err):
-					default:
-					}
+					return fmt.Errorf("publish message %d failed: %w", i, err)
 				}
 			}
-		}(i, message)
+			return nil
+		})
 	}
 
 	// Wait for all messages to be sent
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	// Use a for loop with prioritized select to avoid race conditions
-	// This ensures error handling takes priority over context cancellation
-	for {
-		select {
-		case err := <-errChan:
-			return err
-		case <-done:
-			// All messages sent successfully, flush and return nil regardless of context state
-			// Flush to ensure all messages are sent
-			if err := p.nc.Flush(); err != nil {
-				return fmt.Errorf("flush NATS connection failed: %w", err)
-			}
-			logs.Debugf("successfully sent %d messages to NATS core topic: %s", len(messages), topic)
-			return nil
-		case <-ctx.Done():
-			// If context is cancelled before all messages are sent, return the context error
-			return ctx.Err()
-		}
+	if err := tg.Wait(); err != nil {
+		return err
 	}
+
+	// Flush to ensure all messages are sent
+	if err := p.nc.Flush(); err != nil {
+		return fmt.Errorf("flush NATS connection failed: %w", err)
+	}
+	logs.Debugf("successfully sent %d messages to NATS core topic: %s", len(messages), topic)
+	return nil
 }
 
 // Close closes the producer and releases resources

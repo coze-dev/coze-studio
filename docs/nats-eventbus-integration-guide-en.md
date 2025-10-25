@@ -152,8 +152,17 @@ export NATS_SERVER_URL="nats://nats:4222"
 # NATS_JWT_TOKEN: JWT token for NATS authentication (leave empty for no auth)
 export NATS_JWT_TOKEN=""
 
-# NATS_SEED_FILE: Path to NATS seed file for NKey authentication (optional)
-export NATS_SEED_FILE=""
+# NATS_NKEY_SEED: Path to NATS seed file for NKey authentication (optional)
+export NATS_NKEY_SEED=""
+
+# NATS_USERNAME: Username for NATS authentication (optional)
+export NATS_USERNAME=""
+
+# NATS_PASSWORD: Password for NATS authentication (optional)
+export NATS_PASSWORD=""
+
+# NATS_TOKEN: Token for NATS authentication (optional)
+export NATS_TOKEN=""
 
 # NATS_STREAM_REPLICAS: Number of replicas for JetStream streams (default: 1)
 export NATS_STREAM_REPLICAS="1"
@@ -198,7 +207,7 @@ Configure NATS in Coze Studio application through environment variables:
 mqType := os.Getenv("COZE_MQ_TYPE")
 natsURL := os.Getenv("NATS_SERVER_URL")
 jwtToken := os.Getenv("NATS_JWT_TOKEN")
-seedFile := os.Getenv("NATS_SEED_FILE")
+seedFile := os.Getenv("NATS_NKEY_SEED")
 streamReplicas := os.Getenv("NATS_STREAM_REPLICAS")
 
 // Create NATS EventBus

@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/nats-io/nats.go"
@@ -125,7 +126,7 @@ func startJetStreamConsumer(ctx context.Context, nc *nats.Conn, topic, group str
 		defer nc.Close()
 
 		// Create durable pull subscription
-		sub, err := js.PullSubscribe(topic, group, nats.Durable(group))
+		sub, err := js.PullSubscribe(topic, group)
 		if err != nil {
 			logs.Errorf("create NATS JetStream subscription failed: %v", err)
 			return
@@ -248,12 +249,19 @@ func addAuthentication(options *[]nats.Option) error {
 
 // ensureStream ensures that a JetStream stream exists for the given subject
 func ensureStream(js nats.JetStreamContext, subject string) error {
-	streamName := fmt.Sprintf("%s_STREAM", subject)
+	// Replace dots and other invalid characters with underscores for stream name
+	// NATS stream names cannot contain dots, spaces, or other special characters
+	streamName := strings.ReplaceAll(subject, ".", "_") + "_STREAM"
 
 	// Check if Stream already exists
 	_, err := js.StreamInfo(streamName)
 	if err == nil {
 		return nil // Stream already exists
+	}
+
+	// Only create stream if it's specifically a "stream not found" error
+	if err != nats.ErrStreamNotFound {
+		return fmt.Errorf("failed to check stream %s: %w", streamName, err)
 	}
 
 	// Create Stream if it doesn't exist
