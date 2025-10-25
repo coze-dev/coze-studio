@@ -139,21 +139,17 @@ func (p *producerImpl) batchSendJetStream(ctx context.Context, topic string, mes
 		return fmt.Errorf("ensure stream failed: %w", err)
 	}
 
-	// Use WaitGroup to wait for all async publishes
-	var wg sync.WaitGroup
-	errChan := make(chan error, len(messages))
+	// Use TaskGroup to wait for all async publishes
+	tg := taskgroup.NewTaskGroup(ctx, min(len(messages), 5))
 
 	for i, message := range messages {
-		wg.Add(1)
-		go func(idx int, msg []byte) {
-			defer wg.Done()
-
+		tg.Go(func() error {
 			// Prepare publish options
 			pubOpts := []nats.PubOpt{}
 
 			// Add message ID for deduplication if sharding key is provided
 			if option.ShardingKey != nil && *option.ShardingKey != "" {
-				msgID := fmt.Sprintf("%s-%d", *option.ShardingKey, idx)
+				msgID := fmt.Sprintf("%s-%d", *option.ShardingKey, i)
 				pubOpts = append(pubOpts, nats.MsgId(msgID))
 			}
 
@@ -161,44 +157,27 @@ func (p *producerImpl) batchSendJetStream(ctx context.Context, topic string, mes
 			pubOpts = append(pubOpts, nats.Context(ctx))
 
 			// Publish message asynchronously
-			_, err := p.js.Publish(topic, msg, pubOpts...)
+			_, err := p.js.Publish(topic, message, pubOpts...)
 			if err != nil {
-				select {
-				case errChan <- fmt.Errorf("publish message %d failed: %w", idx, err):
-				default:
-				}
+				return fmt.Errorf("publish message %d failed: %w", i, err)
 			}
-		}(i, message)
+			return nil
+		})
 	}
 
 	// Wait for all messages to be sent
-	done := make(chan struct{})
-	go func() {
-		wg.Wait()
-		close(done)
-	}()
-
-	// Use a for loop with prioritized select to avoid race conditions
-	// This ensures error handling takes priority over context cancellation
-	for {
-		select {
-		case err := <-errChan:
-			return err
-		case <-done:
-			// All messages sent successfully, return nil regardless of context state
-			logs.Debugf("successfully sent %d messages to NATS JetStream topic: %s", len(messages), topic)
-			return nil
-		case <-ctx.Done():
-			// If context is cancelled before all messages are sent, return the context error
-			return ctx.Err()
-		}
+	if err := tg.Wait(); err != nil {
+		return err
 	}
+
+	logs.Debugf("successfully sent %d messages to NATS JetStream topic: %s", len(messages), topic)
+	return nil
 }
 
 // batchSendCore sends messages using core NATS for simple pub/sub
 func (p *producerImpl) batchSendCore(ctx context.Context, topic string, messages [][]byte, option *eventbus.SendOption) error {
 	// Use TaskGroup to wait for all async publishes
-	tg := taskgroup.NewTaskGroup(ctx, len(messages))
+	tg := taskgroup.NewTaskGroup(ctx, min(len(messages), 5))
 
 	for i, message := range messages {
 		tg.Go(func() error {
