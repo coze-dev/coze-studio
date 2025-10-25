@@ -106,7 +106,7 @@ func (c *BaseConfig) GetServerHost(ctx context.Context) (string, error) {
 
 	host := cfg.ServerHost
 	if host == "" {
-		return "", errors.New("server host is empty")
+		return "http://127.0.0.1:8888", nil
 	}
 
 	if strings.HasPrefix(host, "http://") || strings.HasPrefix(host, "https://") {

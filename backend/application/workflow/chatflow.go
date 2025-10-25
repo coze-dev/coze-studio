@@ -31,6 +31,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/debugutil"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
@@ -831,7 +832,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				}
 
 				doneData, err := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
+					"debug_url": debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID),
 				})
 				if err != nil {
 					return nil, err
@@ -976,7 +977,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				})
 
 				doneData, _ := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
+					"debug_url": debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID),
 				})
 
 				responses = append(responses, &workflow.ChatFlowRunResponse{
