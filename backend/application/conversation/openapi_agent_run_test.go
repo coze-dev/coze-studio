@@ -305,7 +305,8 @@ func TestOpenapiAgentRun_AgentRunError(t *testing.T) {
 	mockAgent := &saEntity.SingleAgent{
 		SingleAgent: &singleagent.SingleAgent{
 			AgentID: 67890,
-			SpaceID: 54321,
+			SpaceID:   54321,
+			CreatorID: 12345,
 		},
 	}
 	mockSingleAgent.EXPECT().ObtainAgentByIdentity(ctx, gomock.Any()).Return(mockAgent, nil)
