@@ -36,13 +36,14 @@ type resourceHandlerImpl struct {
 	esClient es.Client
 }
 
-var defaultResourceHandler *resourceHandlerImpl // deprecate
+var defaultResourceHandler *resourceHandlerImpl
 
 func NewResourceHandler(ctx context.Context, e es.Client) ConsumerHandler {
 	handler := &resourceHandlerImpl{
 		esClient: e,
 	}
 
+	defaultResourceHandler = handler
 	return handler
 }
 
