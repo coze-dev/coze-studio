@@ -181,14 +181,20 @@ func (p *producerImpl) batchSendJetStream(ctx context.Context, topic string, mes
 		close(done)
 	}()
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-errChan:
-		return err
-	case <-done:
-		logs.Debugf("successfully sent %d messages to NATS JetStream topic: %s", len(messages), topic)
-		return nil
+	// Use a for loop with prioritized select to avoid race conditions
+	// This ensures error handling takes priority over context cancellation
+	for {
+		select {
+		case err := <-errChan:
+			return err
+		case <-done:
+			// All messages sent successfully, return nil regardless of context state
+			logs.Debugf("successfully sent %d messages to NATS JetStream topic: %s", len(messages), topic)
+			return nil
+		case <-ctx.Done():
+			// If context is cancelled before all messages are sent, return the context error
+			return ctx.Err()
+		}
 	}
 }
 
@@ -240,18 +246,24 @@ func (p *producerImpl) batchSendCore(ctx context.Context, topic string, messages
 		close(done)
 	}()
 
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case err := <-errChan:
-		return err
-	case <-done:
-		// Flush to ensure all messages are sent
-		if err := p.nc.Flush(); err != nil {
-			return fmt.Errorf("flush NATS connection failed: %w", err)
+	// Use a for loop with prioritized select to avoid race conditions
+	// This ensures error handling takes priority over context cancellation
+	for {
+		select {
+		case err := <-errChan:
+			return err
+		case <-done:
+			// All messages sent successfully, flush and return nil regardless of context state
+			// Flush to ensure all messages are sent
+			if err := p.nc.Flush(); err != nil {
+				return fmt.Errorf("flush NATS connection failed: %w", err)
+			}
+			logs.Debugf("successfully sent %d messages to NATS core topic: %s", len(messages), topic)
+			return nil
+		case <-ctx.Done():
+			// If context is cancelled before all messages are sent, return the context error
+			return ctx.Err()
 		}
-		logs.Debugf("successfully sent %d messages to NATS core topic: %s", len(messages), topic)
-		return nil
 	}
 }
 

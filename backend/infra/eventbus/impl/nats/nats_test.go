@@ -206,7 +206,7 @@ func TestNATSProducerImpl(t *testing.T) {
 		return
 	}
 
-	producer, err := NewProducer("", "test.topic", "test-group")
+	producer, err := NewProducer(serviceURL, "test.topic", "test-group")
 	assert.NoError(t, err)
 	// Note: eventbus.Producer interface doesn't have Close method
 	// The underlying connection will be closed when the producer is garbage collected
@@ -240,11 +240,11 @@ func TestNATSConsumerImpl(t *testing.T) {
 	}
 
 	// Register consumer
-	err := RegisterConsumer("", "test.consumer.impl", "test-group", handler)
+	err := RegisterConsumer(serviceURL, "test.consumer.impl", "test-group", handler)
 	assert.NoError(t, err)
 
 	// Send a test message using producer
-	producer, err := NewProducer("", "test.consumer.impl", "test-group")
+	producer, err := NewProducer(serviceURL, "test.consumer.impl", "test-group")
 	assert.NoError(t, err)
 	// Note: eventbus.Producer interface doesn't have Close method
 	// The underlying connection will be closed when the producer is garbage collected
