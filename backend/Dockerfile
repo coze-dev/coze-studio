@@ -71,4 +71,6 @@ RUN chmod +x /app/parse_pdf.py /app/parse_docx.py  && \
 
 EXPOSE 8888
 
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+
 CMD ["/app/opencoze"]
