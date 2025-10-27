@@ -51,6 +51,8 @@ func (s *saasCallImpl) Do(ctx context.Context, args *InvocationArgs) (request st
 		return "", "", err
 	}
 
+	s.injectUserAgentHeader(ctx, httpReq)
+
 	var reqBodyBytes []byte
 	if httpReq.GetBody != nil {
 		reqBody, err := httpReq.GetBody()
@@ -117,6 +119,9 @@ func (s *saasCallImpl) injectAuthInfo(ctx context.Context, httpReq *http.Request
 	}
 	httpReq.Header.Set("Authorization", "Bearer "+saasapiClient.APIKey)
 	return nil
+}
+func (s *saasCallImpl) injectUserAgentHeader(ctx context.Context, httpReq *http.Request) {
+	httpReq.Header.Set("User-Agent", "open_coze/1.0.0")
 }
 
 func (s *saasCallImpl) buildHTTPRequest(ctx context.Context, args *InvocationArgs) (httpReq *http.Request, err error) {
