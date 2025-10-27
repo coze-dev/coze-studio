@@ -26,6 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
 	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 
@@ -329,4 +330,40 @@ func (q *KnowledgeDocumentResourceQueryer) QueryResourceInfo(ctx context.Context
 
 func (q *KnowledgeDocumentResourceQueryer) GetResourceType() ResourceType {
 	return ResourceTypeKnowledgeDocument
+}
+
+type WorkspaceResourceQueryer struct {
+	userService crossuser.User
+}
+
+func NewWorkspaceResourceQueryer() *WorkspaceResourceQueryer {
+	return &WorkspaceResourceQueryer{
+		userService: crossuser.DefaultSVC(),
+	}
+}
+
+func (q *WorkspaceResourceQueryer) QueryResourceInfo(ctx context.Context, resourceIDs []int64, isDraft *bool) ([]*ResourceInfo, error) {
+	// For workspace resources, we need to get space information for each user
+	var result []*ResourceInfo
+
+	spaces, err := q.userService.GetUserSpaceBySpaceID(ctx, resourceIDs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get user space list for space %v: %w", resourceIDs, err)
+	}
+
+	for _, space := range spaces {
+		if space != nil {
+			result = append(result, &ResourceInfo{
+				ID:        space.ID,
+				CreatorID: space.CreatorID,
+				SpaceID:   &space.ID,
+			})
+		}
+	}
+
+	return result, nil
+}
+
+func (q *WorkspaceResourceQueryer) GetResourceType() ResourceType {
+	return ResourceTypeWorkspace
 }

@@ -552,6 +552,7 @@ func (k *KnowledgeApplicationService) checkPermission(ctx context.Context, uid *
 
 	checkResult, err := permission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
 		ResourceIdentifier: rd,
+		OperatorID:         *uid,
 	})
 	if err != nil {
 		logs.CtxErrorf(ctx, "check authz failed, err: %v", err)
