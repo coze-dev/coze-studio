@@ -166,6 +166,9 @@ export NATS_TOKEN=""
 
 # NATS_STREAM_REPLICAS: Number of replicas for JetStream streams (default: 1)
 export NATS_STREAM_REPLICAS="1"
+
+# NATS_USE_JETSTREAM: Enable JetStream mode for message persistence and reliability (default: false)
+export NATS_USE_JETSTREAM="true"
 ```
 
 ### Docker Compose Configuration

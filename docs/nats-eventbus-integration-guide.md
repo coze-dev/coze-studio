@@ -166,6 +166,9 @@ export NATS_TOKEN=""
 
 # NATS_STREAM_REPLICAS: JetStream 流的副本数量（默认: 1）
 export NATS_STREAM_REPLICAS="1"
+
+# NATS_USE_JETSTREAM: 启用 JetStream 模式以获得消息持久化和可靠性（默认: false）
+export NATS_USE_JETSTREAM="true"
 ```
 
 ### Docker Compose 配置
