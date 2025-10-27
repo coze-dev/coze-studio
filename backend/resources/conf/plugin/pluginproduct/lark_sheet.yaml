@@ -1,0 +1,795 @@
+info:
+  description: |-
+    对飞书电子表格做操作，包含以下操作：
+    1.创建电子表格；
+    2.新增多行至工作表；
+    3.新增多列至工作表；
+    4.搜索电子表格类型文档；
+    5.获取电子表格信息；
+    6.获取所有工作表；
+    7.读取工作表行列内容；
+  title: 飞书电子表格
+  version: v1
+openapi: 3.0.1
+paths:
+  /spreadsheet/add_cols:
+    post:
+      operationId: add_cols
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                length:
+                  description: 要增加的列数
+                  type: number
+                sheet_id:
+                  description: 工作表 ID，与sheet_name二者其一必填
+                  type: string
+                sheet_name:
+                  description: 工作表名称，与sheet_id二者其一必填
+                  type: string
+                spreadsheet_token:
+                  description: 电子表格 token，支持输入电子表格 url
+                  type: string
+                values:
+                  description: 新增列的单元格内容，数组对象字符串，每个数组一行表格数据，格式：[["编号","姓名","年龄"],[1,"张三",10],[2,"李四",11]]
+                  type: string
+              required:
+                - spreadsheet_token
+                - length
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      addCount:
+                        description: 增加的列数
+                        type: number
+                      majorDimension:
+                        description: 增加的表维度，COLUMNS：列
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 新增多列至工作表最后
+  /spreadsheet/add_rows:
+    post:
+      operationId: add_rows
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                length:
+                  description: 要增加行数，范围(0-5000]
+                  type: number
+                sheet_id:
+                  description: 工作表 ID，与sheet_name二者其一必填
+                  type: string
+                sheet_name:
+                  description: 工作表名称，与sheet_id二者其一必填
+                  type: string
+                spreadsheet_token:
+                  description: 电子表格 token，支持输入电子表格 url
+                  type: string
+                values:
+                  description: 新增行的表格内容，数组对象字符串，每个数组一行表格数据，格式,如：[["编号","姓名","年龄"],[1,"张三",10],[2,"李四",11]]
+                  type: string
+              required:
+                - spreadsheet_token
+                - length
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      addCount:
+                        description: 增加的行数
+                        type: number
+                      majorDimension:
+                        description: 增加的表格维度,ROWS：行
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 新增多行至工作表最后
+  /spreadsheet/create_spreadsheet:
+    post:
+      operationId: create_spreadsheet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                folder_token:
+                  description: 文件夹 token，支持文件夹url输入，如：https://bytedance.larkoffice.com/drive/folder/CxHEf4DCSlNkL2dUTCJcPRgentg
+                  type: string
+                title:
+                  description: 电子表格标题
+                  type: string
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      spreadsheet:
+                        description: 电子表格的基础信息
+                        properties:
+                          folder_token:
+                            description: 文件夹 token
+                            type: string
+                          spreadsheet_token:
+                            description: 电子表格 token
+                            type: string
+                          title:
+                            description: 电子表格标题
+                            type: string
+                          url:
+                            description: 电子表格的 URL 链接
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 创建电子表格
+  /spreadsheet/delete_cols:
+    delete:
+      operationId: delete_cols
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                end_index:
+                  description: 要删除的列结束的位置。从 1 开始计数
+                  type: number
+                sheet_id:
+                  description: 工作表的 ID
+                  type: string
+                sheet_name:
+                  description: 工作表的名称
+                  type: string
+                spreadsheet_token:
+                  description: 电子表格的 token，支持填写电子表格的 URL或Token
+                  type: string
+                start_index:
+                  description: 要删除的列结束的位置。从 1 开始计数
+                  type: number
+              required:
+                - spreadsheet_token
+                - start_index
+                - end_index
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码
+                    type: integer
+                  data:
+                    properties:
+                      delCount:
+                        description: 一共删除的列数
+                        type: number
+                      majorDimension:
+                        description: 删除的维度，COLUMNS：代表列
+                        type: string
+                    type: object
+                  log_id:
+                    description: 日志ID
+                    type: string
+                  msg:
+                    description: 错误信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 删除电子表格工作表列
+  /spreadsheet/delete_rows:
+    delete:
+      operationId: delete_rows
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                end_index:
+                  description: 要删除的行结束的位置。从 1 开始计数
+                  type: number
+                sheet_id:
+                  description: 工作表的 ID
+                  type: string
+                sheet_name:
+                  description: 工作表名称
+                  type: string
+                spreadsheet_token:
+                  description: 电子表格的 token，支持填写电子表格的 URL或Token
+                  type: string
+                start_index:
+                  description: 要删除的行起始位置，从 1 开始计数
+                  type: number
+              required:
+                - spreadsheet_token
+                - start_index
+                - end_index
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码
+                    type: integer
+                  data:
+                    properties:
+                      delCount:
+                        description: 一共删除的行数
+                        type: number
+                      majorDimension:
+                        description: 删除的维度。ROWS：代表行
+                        type: string
+                    type: object
+                  log_id:
+                    description: 日志ID
+                    type: string
+                  msg:
+                    description: 错误信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 删除电子表格工作表行
+  /spreadsheet/get_spreadsheet:
+    get:
+      operationId: get_spreadsheet
+      parameters:
+        - description: 电子表格 token，支持输入电子表格 url
+          in: query
+          name: spreadsheet_token
+          required: true
+          schema:
+            type: string
+        - description: 用户 ID 类型
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      spreadsheet:
+                        description: 电子表格的基础信息
+                        properties:
+                          owner_id:
+                            description: 电子表格的所有者 ID，ID 类型由查询参数 user_id_type 决定
+                            type: string
+                          title:
+                            description: 电子表格标题
+                            type: string
+                          token:
+                            description: 电子表格 token
+                            type: string
+                          url:
+                            description: 电子表格的 URL 链接
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取电子表格信息
+  /spreadsheet/list_spreadsheet_sheets:
+    get:
+      operationId: list_spreadsheet_sheets
+      parameters:
+        - description: 电子表格 token，支持输入电子表格 url
+          in: query
+          name: spreadsheet_token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      sheets:
+                        description: 工作表列表
+                        items:
+                          description: 工作表信息
+                          properties:
+                            grid_properties:
+                              description: 单元格属性，仅当 resource_type 为 sheet 即工作表类型为电子表格时返回
+                              properties:
+                                column_count:
+                                  description: 工作表的列数量
+                                  type: number
+                                frozen_column_count:
+                                  description: 冻结的列数量
+                                  type: number
+                                frozen_row_count:
+                                  description: 冻结的行数量
+                                  type: number
+                                row_count:
+                                  description: 工作表的行数
+                                  type: number
+                              type: object
+                            hidden:
+                              description: 工作表是否被隐藏，true：被隐藏，false：未被隐藏
+                              type: boolean
+                            index:
+                              description: 工作表索引位置，索引从 0 开始计数
+                              type: integer
+                            merges:
+                              description: 合并单元格的相关信息，没有合并单元格则不返回
+                              items:
+                                description: 单元格信息
+                                properties:
+                                  end_column_index:
+                                    description: 结束列，从 0 开始计数
+                                    type: number
+                                  end_row_index:
+                                    description: 结束行，从 0 开始计数
+                                    type: number
+                                  start_column_index:
+                                    description: 起始列，从 0 开始计数
+                                    type: number
+                                  start_row_index:
+                                    description: 起始行，从 0 开始计数
+                                    type: number
+                                type: object
+                              type: array
+                            resource_type:
+                              description: 工作表类型，sheet：工作表，bitable：多维表格，#UNSUPPORTED_TYPE：不支持的类型
+                              type: string
+                            sheet_id:
+                              description: 工作表 ID
+                              type: string
+                            title:
+                              description: 工作表标题
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取电子表格所有工作表
+  /spreadsheet/read_cols:
+    get:
+      operationId: read_cols
+      parameters:
+        - description: 电子表格 token，支持输入电子表格 url
+          in: query
+          name: spreadsheet_token
+          required: true
+          schema:
+            type: string
+        - description: 工作表 ID，与sheet_name二者其一必填
+          in: query
+          name: sheet_id
+          schema:
+            type: string
+        - description: 用户 ID 类型，默认 open_id
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+        - description: 起始列号，从1开始
+          in: query
+          name: start_col
+          schema:
+            default: 1
+            type: integer
+        - description: 读取列数
+          in: query
+          name: num_cols
+          required: true
+          schema:
+            type: integer
+        - description: 工作表名称，与sheet_id二者其一必填
+          in: query
+          name: sheet_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      revision:
+                        description: 工作表的版本号。从 0 开始计数，更新一次版本号加一。
+                        type: number
+                      spreadsheetToken:
+                        description: 表格 token
+                        type: string
+                      valueRange:
+                        description: 读取的值与范围
+                        properties:
+                          majorDimension:
+                            description: 返回的 values 数组中数据的呈现维度。固定取值 ROWS，即数据为从左到右、从上到下的读取顺序
+                            type: string
+                          range:
+                            description: 读取的范围。为空时表示查询范围没有数据。
+                            type: string
+                          revision:
+                            description: 工作表的版本号。从 0 开始计数，更新一次版本号加一
+                            type: number
+                          valuesJsonString:
+                            description: 返回的数据内容
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 返回信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 读取工作表列数据
+  /spreadsheet/read_rows:
+    get:
+      operationId: read_rows
+      parameters:
+        - description: 电子表格 token，支持输入电子表格 url
+          in: query
+          name: spreadsheet_token
+          required: true
+          schema:
+            type: string
+        - description: 工作表 ID，与sheet_name二者其一必填
+          in: query
+          name: sheet_id
+          schema:
+            type: string
+        - description: 用户 ID 类型
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+        - description: 起始行号，从1开始
+          in: query
+          name: start_row
+          schema:
+            default: 1
+            type: integer
+        - description: 读取行数
+          in: query
+          name: num_rows
+          required: true
+          schema:
+            type: integer
+        - description: 工作表名称，与sheet_id二者其一必填
+          in: query
+          name: sheet_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: number
+                  data:
+                    description: 返回数据
+                    properties:
+                      revision:
+                        description: 工作表的版本号。从 0 开始计数，更新一次版本号加一
+                        type: number
+                      spreadsheetToken:
+                        description: 表格的 token
+                        type: string
+                      valueRange:
+                        description: 读取的值与范围
+                        properties:
+                          majorDimension:
+                            description: 返回的 values 数组中数据的呈现维度。固定取值 ROWS，即数据为从左到右、从上到下的读取顺序。
+                            type: string
+                          range:
+                            description: 读取的范围
+                            type: string
+                          revision:
+                            description: 工作表的版本号。从 0 开始计数，更新一次版本号加一
+                            type: number
+                          valuesJsonString:
+                            description: 读取的表格内容
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 读取工作表行数据
+  /spreadsheet/read_table:
+    get:
+      operationId: read_table
+      parameters:
+        - description: 电子表格 token，支持输入电子表格 url
+          in: query
+          name: spreadsheet_token
+          required: true
+          schema:
+            type: string
+        - description: 工作表 ID，与sheet_name二者其一必填
+          in: query
+          name: sheet_id
+          schema:
+            type: string
+        - description: '用户 ID 类型 '
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+        - description: 取数范围,格式如:A1:B2，query=all时可为空
+          in: query
+          name: range
+          schema:
+            type: string
+        - description: 传 all,表示查询表格所有数据,但最多查询100列数据
+          in: query
+          name: query
+          schema:
+            type: string
+        - description: 工作表名称，与sheet_id二者其一必填
+          in: query
+          name: sheet_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      revision:
+                        description: 工作表的版本号。从 0 开始计数，更新一次版本号加一。
+                        type: number
+                      spreadsheetToken:
+                        description: 电子表格 token
+                        type: string
+                      valueRange:
+                        description: 读取的值与范围
+                        properties:
+                          majorDimension:
+                            description: 返回的 values 数组中数据的呈现维度。固定取值 ROWS，即数据为从左到右、从上到下的读取顺序。
+                            type: string
+                          range:
+                            description: 读取的范围。为空时表示查询范围没有数据。
+                            type: string
+                          revision:
+                            description: 工作表的版本号。从 0 开始计数，更新一次版本号加一。
+                            type: number
+                          valuesJsonString:
+                            description: 读取的表格数据内容
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误信息
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 自定义读取电子表格行列数据
+  /spreadsheet/search_spreadsheet:
+    post:
+      operationId: search_spreadsheet
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                count:
+                  description: 指定搜索返回的文件数量，取值范围为 [0,50]
+                  type: integer
+                offset:
+                  description: 指定搜索的偏移量，该参数最小为 0，即不偏移。该参数的值与返回的文件数量之和不得小于或等于 200（即 offset + count < 200）
+                  type: integer
+                search_key:
+                  description: 指定搜索的关键字
+                  type: string
+              required:
+                - search_key
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败
+                    type: integer
+                  data:
+                    description: 返回数据
+                    properties:
+                      docs_entities:
+                        description: 包含搜索关键词的文件列表
+                        items:
+                          description: 文件列表
+                          properties:
+                            docs_token:
+                              description: 文件 token
+                              type: string
+                            docs_type:
+                              description: 文件类型
+                              type: string
+                            owner_id:
+                              description: 文件所有者
+                              type: string
+                            title:
+                              description: 文件标题
+                              type: string
+                            url:
+                              description: 文档链接
+                              type: string
+                          type: object
+                        type: array
+                      has_more:
+                        description: 结果列表后是否还有数据
+                        type: boolean
+                      total:
+                        description: 包含搜索关键词的文件总数量
+                        type: number
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 搜索电子表格
+servers:
+  - url: https://lark-plugin-api.solutionsuite.cn/lark-plugin

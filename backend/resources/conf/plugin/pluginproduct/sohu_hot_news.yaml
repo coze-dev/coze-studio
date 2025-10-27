@@ -1,0 +1,69 @@
+info:
+  description: 帮助用户获取搜狐网上的每日热闻
+  title: 搜狐热闻
+  version: v1
+openapi: 3.0.1
+paths:
+  /blog/outer/temp/feeds/ark:
+    get:
+      operationId: top_news
+      parameters:
+        - description: 获取新闻条数
+          in: query
+          name: count
+          required: true
+          schema:
+            description: 获取新闻条数
+            type: integer
+        - description: 搜索关键词
+          in: query
+          name: q
+          schema:
+            description: 搜索关键词
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                  data:
+                    properties:
+                      coze_ark_001:
+                        properties:
+                          list:
+                            items:
+                              properties:
+                                brief:
+                                  type: string
+                                title:
+                                  type: string
+                                url:
+                                  type: string
+                              type: object
+                            type: array
+                        type: object
+                    type: object
+                  message:
+                    type: string
+                  success:
+                    type: boolean
+                  total:
+                    type: number
+                  traceId:
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 帮助用户获取搜狐网上的每日热闻
+servers:
+  - url: https://uis.mp.sohu.com

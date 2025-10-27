@@ -1,0 +1,431 @@
+info:
+  description: 利用天眼查官方API接口,以关键词检索企业列表实现企业搜索功能，并支持查询企业基本信息、新闻舆情、经营异常及变更记录等信息。
+  title: 天眼查
+  version: v1
+openapi: 3.0.1
+paths:
+  /ic/baseinfoV2/2.0:
+    get:
+      operationId: company_detail
+      parameters:
+        - description: 搜索关键字（公司名称、公司id、注册号或社会统一信用代码）
+          in: query
+          name: keyword
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error_code:
+                    type: number
+                  reason:
+                    type: string
+                  result:
+                    properties:
+                      actualCapital:
+                        type: string
+                      actualCapitalCurrency:
+                        type: string
+                      alias:
+                        type: string
+                      approvedTime:
+                        type: number
+                      base:
+                        type: string
+                      bondName:
+                        type: string
+                      bondNum:
+                        type: string
+                      bondType:
+                        type: string
+                      businessScope:
+                        type: string
+                      cancelDate:
+                        type: integer
+                      cancelReason:
+                        type: string
+                      city:
+                        type: string
+                      companyOrgType:
+                        type: string
+                      creditCode:
+                        type: string
+                      district:
+                        type: string
+                      email:
+                        type: string
+                      estiblishTime:
+                        type: number
+                      fromTime:
+                        type: number
+                      historyNameList:
+                        items:
+                          type: string
+                        type: array
+                      historyNames:
+                        type: string
+                      id:
+                        type: number
+                      industry:
+                        type: string
+                      industryAll:
+                        properties:
+                          category:
+                            type: string
+                          categoryBig:
+                            type: string
+                          categoryMiddle:
+                            type: string
+                          categorySmall:
+                            type: string
+                        type: object
+                      isMicroEnt:
+                        type: number
+                      legalPersonName:
+                        type: string
+                      name:
+                        type: string
+                      orgNumber:
+                        type: string
+                      percentileScore:
+                        type: number
+                      phoneNumber:
+                        type: string
+                      property3:
+                        type: string
+                      regCapital:
+                        type: string
+                      regCapitalCurrency:
+                        type: string
+                      regInstitute:
+                        type: string
+                      regLocation:
+                        type: string
+                      regNumber:
+                        type: string
+                      regStatus:
+                        type: string
+                      revokeDate:
+                        type: integer
+                      revokeReason:
+                        type: string
+                      socialStaffNum:
+                        type: number
+                      staffNumRange:
+                        type: string
+                      tags:
+                        type: string
+                      taxNumber:
+                        type: string
+                      toTime:
+                        type: integer
+                      type:
+                        type: number
+                      updateTimes:
+                        type: number
+                      usedBondName:
+                        type: string
+                      websiteList:
+                        type: string
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 可以通过公司名称（需公司全称）或ID获取企业基本信息和企业联系方式，包括公司名称或ID、类型、成立日期、电话、邮箱、网址等字段的详细信息。
+  /ic/changeinfo/2.0:
+    get:
+      operationId: change_log
+      parameters:
+        - description: 搜索关键字（公司名称、公司id、注册号或社会统一信用代码）
+          in: query
+          name: keyword
+          required: true
+          schema:
+            type: string
+        - description: 当前页数（默认第1页）
+          in: query
+          name: pageNum
+          schema:
+            type: integer
+        - description: 每页条数（默认20条，最大20条）
+          in: query
+          name: pageSize
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error_code:
+                    type: number
+                  reason:
+                    type: string
+                  result:
+                    properties:
+                      items:
+                        items:
+                          properties:
+                            changeItem:
+                              type: string
+                            changeTime:
+                              type: string
+                            contentAfter:
+                              type: string
+                            contentBefore:
+                              type: string
+                            createTime:
+                              type: string
+                          type: object
+                        type: array
+                      total:
+                        type: number
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 可以通过公司名称（需公司全称）或ID获取企业变更记录，变更记录包括工商变更事项、变更前后信息等字段的详细信息。
+  /mr/abnormal/2.0:
+    get:
+      operationId: abnormal_operation
+      parameters:
+        - description: "String\t搜索关键字（公司名称、公司id、注册号或社会统一信用代码）"
+          in: query
+          name: keyword
+          required: true
+          schema:
+            type: string
+        - description: 每页条数（默认20条，最大20条）
+          in: query
+          name: pageSize
+          schema:
+            type: integer
+        - description: 当前页数（默认第1页）
+          in: query
+          name: pageNum
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error_code:
+                    type: number
+                  reason:
+                    type: string
+                  result:
+                    properties:
+                      items:
+                        items:
+                          properties:
+                            putDate:
+                              type: string
+                            putDepartment:
+                              type: string
+                            putReason:
+                              type: string
+                            removeDate:
+                              type: string
+                            removeDepartment:
+                              type: string
+                            removeReason:
+                              type: string
+                          type: object
+                        type: array
+                      total:
+                        type: number
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 可以通过公司名称（需公司全称）或ID获取企业经营异常信息，经营异常信息包括列入/移除原因、时间、做出决定机关等字段的详细信息。
+  /ps/news/2.0:
+    get:
+      operationId: news
+      parameters:
+        - description: 公司名称（精确匹配、name和id其一为必填即可）
+          in: query
+          name: name
+          schema:
+            type: string
+        - description: 每页条数（默认20条，最大20条）
+          in: query
+          name: pageSize
+          schema:
+            type: integer
+        - description: 开始时间
+          in: query
+          name: startTime
+          schema:
+            type: string
+        - description: 公司id（name和id其一为必填即可）
+          in: query
+          name: id
+          schema:
+            type: integer
+        - description: 结束时间
+          in: query
+          name: endTime
+          schema:
+            type: string
+        - description: 当前页数（默认第1页）
+          in: query
+          name: pageNum
+          schema:
+            type: integer
+        - description: 标签（多个逗号分隔，默认返回全部）
+          in: query
+          name: tags
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error_code:
+                    type: number
+                  reason:
+                    type: string
+                  result:
+                    properties:
+                      items:
+                        items:
+                          properties:
+                            abstracts:
+                              type: string
+                            docid:
+                              type: string
+                            emotion:
+                              type: number
+                            rtm:
+                              type: number
+                            tags:
+                              items:
+                                type: string
+                              type: array
+                            title:
+                              type: string
+                            uri:
+                              type: string
+                            website:
+                              type: string
+                          type: object
+                        type: array
+                      total:
+                        type: number
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 可以通过公司名称（需公司全称）或ID精确匹配获取新闻列表。
+  /search/2.0:
+    get:
+      operationId: search
+      parameters:
+        - description: 关键词
+          in: query
+          name: word
+          required: true
+          schema:
+            type: string
+        - description: 每页条数（默认20条，最大20条）
+          in: query
+          name: pageSize
+          schema:
+            type: integer
+        - description: 当前页数（默认第1页）
+          in: query
+          name: pageNum
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  error_code:
+                    type: number
+                  reason:
+                    type: string
+                  result:
+                    properties:
+                      items:
+                        items:
+                          properties:
+                            base:
+                              type: string
+                            companyType:
+                              type: number
+                            creditCode:
+                              type: string
+                            estiblishTime:
+                              type: string
+                            id:
+                              type: number
+                            legalPersonName:
+                              type: string
+                            matchType:
+                              type: string
+                            name:
+                              type: string
+                            orgNumber:
+                              type: string
+                            regCapital:
+                              type: string
+                            regNumber:
+                              type: string
+                            regStatus:
+                              type: string
+                            type:
+                              type: number
+                          type: object
+                        type: array
+                      total:
+                        type: number
+                    type: object
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 可以通过关键词获取企业列表，企业列表包括公司名称或ID、类型、成立日期、经营状态、统一社会信用代码等字段的详细信息。
+servers:
+  - url: https://open.api.tianyancha.com/services/open

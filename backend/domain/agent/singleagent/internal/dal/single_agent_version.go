@@ -106,6 +106,7 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionPo2Do(po *model.SingleAgentVe
 			ShortcutCommand:   po.ShortcutCommand,
 			ExternalKnowledge: po.ExternalKnowledge,
 			Version:           po.Version,
+			MemoryToolConfig:  po.MemoryToolConfig,
 		},
 	}
 }
@@ -133,5 +134,6 @@ func (sa *SingleAgentVersionDAO) singleAgentVersionDo2Po(do *entity.SingleAgent)
 		DatabaseConfig:    do.Database,
 		ShortcutCommand:   do.ShortcutCommand,
 		ExternalKnowledge: do.ExternalKnowledge,
+		MemoryToolConfig:  do.MemoryToolConfig,
 	}
 }

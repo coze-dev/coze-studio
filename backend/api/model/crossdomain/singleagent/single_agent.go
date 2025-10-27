@@ -80,6 +80,7 @@ type SingleAgent struct {
 	BotMode                 bot_common.BotMode
 	LayoutInfo              *bot_common.LayoutInfo
 	ShortcutCommand         []string
+	MemoryToolConfig        *bot_common.MemoryToolConfig
 }
 
 type InterruptEventType int64

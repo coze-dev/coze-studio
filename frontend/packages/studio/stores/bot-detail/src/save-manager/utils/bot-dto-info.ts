@@ -97,6 +97,9 @@ export const getBotDetailDtoInfo = () => {
       filebox_info: botSkill.transformVo2Dto.filebox(filebox),
       hook_info: isMulti ? undefined : devHooks,
       user_query_collect_conf: queryCollect.transformVo2Dto(queryCollect),
+      memory_tool_config: botSkill.transformVo2Dto.memoryToolConfig(
+        botSkill.memoryToolConfig,
+      ),
       agents: isMulti
         ? agents.map(item => multiAgent.transformVo2Dto.agent(item))
         : undefined,

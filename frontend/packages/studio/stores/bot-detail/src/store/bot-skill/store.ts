@@ -18,7 +18,6 @@ import { devtools, subscribeWithSelector } from 'zustand/middleware';
 import { create } from 'zustand';
 import { isFunction } from 'lodash-es';
 import { produce } from 'immer';
-import { type ShortCutStruct } from '@coze-agent-ide/tool-config';
 import {
   type HookInfo,
   type LayoutInfo,
@@ -30,6 +29,7 @@ import {
   FileboxInfoMode,
   type PluginApi,
 } from '@coze-arch/bot-api/developer_api';
+import { type ShortCutStruct } from '@coze-agent-ide/tool-config';
 import { botInputLengthService } from '@coze-agent-ide/bot-input-length-limit';
 
 import {
@@ -94,6 +94,9 @@ export const getDefaultBotSkillStore = (): BotSkillStore => ({
   shortcut: DEFAULT_SHORTCUT_CONFIG(),
   layoutInfo: {},
   devHooks: {},
+  memoryToolConfig: {
+    mode: 1, // 默认启用，保持向后兼容
+  },
 });
 
 /** Persona & Prompted Areas */
@@ -151,6 +154,10 @@ export interface BotSkillStore {
   // hooks
   devHooks?: HookInfo;
   layoutInfo: LayoutInfo;
+  // Memory tool configuration
+  memoryToolConfig?: {
+    mode?: number; // 0: disabled, 1: enabled
+  };
 }
 
 export interface BotSkillAction {
@@ -176,6 +183,7 @@ export interface BotSkillAction {
   setBackgroundImageInfoList: (params: BackgroundImageInfo[]) => void;
   setSuggestionConfig: (config: Partial<BotSuggestionConfig>) => void;
   setDefaultUserInputType: (type: DefaultUserInputType) => void;
+  updateMemoryToolConfig: (config: { mode?: number }) => void;
   transformDto2Vo: typeof transformDto2Vo;
   transformVo2Dto: typeof transformVo2Dto;
   initStore: (botData: GetDraftBotInfoAgwData) => void;
@@ -258,6 +266,11 @@ export const useBotSkillStore = create<BotSkillStore & BotSkillAction>()(
           false,
           'setDefaultUserInputType',
         ),
+      updateMemoryToolConfig: config =>
+        set(s => ({
+          ...s,
+          memoryToolConfig: { ...s.memoryToolConfig, ...config },
+        })),
       transformDto2Vo,
       transformVo2Dto,
       initStore: botData => {
@@ -300,6 +313,7 @@ export const useBotSkillStore = create<BotSkillStore & BotSkillAction>()(
           ),
           devHooks: transformDto2Vo.hookInfo(botInfo?.hook_info),
           layoutInfo: transformDto2Vo.layoutInfo(botInfo?.layout_info),
+          memoryToolConfig: botInfo?.memory_tool_config ?? { mode: 1 },
         });
       },
       clear: () => {

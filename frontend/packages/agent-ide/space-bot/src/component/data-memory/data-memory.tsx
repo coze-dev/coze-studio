@@ -17,6 +17,15 @@
 import { useParams } from 'react-router-dom';
 import React, { type FC, useState, useEffect } from 'react';
 
+import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
+import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
+import { DataErrorBoundary, DataNamespace } from '@coze-data/reporter';
+import { I18n } from '@coze-arch/i18n';
+import { Switch, Typography } from '@coze-arch/coze-design';
+import { OpenBlockEvent, emitEvent } from '@coze-arch/bot-utils';
+import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
+import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
+import { useDefaultExPandCheck } from '@coze-arch/bot-hooks';
 import { SkillKeyEnum } from '@coze-agent-ide/tool-config';
 import {
   AddButton,
@@ -24,14 +33,6 @@ import {
   useToolValidData,
   type ToolEntryCommonProps,
 } from '@coze-agent-ide/tool';
-import { useBotSkillStore } from '@coze-studio/bot-detail-store/bot-skill';
-import { useBotDetailIsReadonly } from '@coze-studio/bot-detail-store';
-import { I18n } from '@coze-arch/i18n';
-import { OpenBlockEvent, emitEvent } from '@coze-arch/bot-utils';
-import { type DynamicParams } from '@coze-arch/bot-typings/teamspace';
-import { EVENT_NAMES, sendTeaEvent } from '@coze-arch/bot-tea';
-import { useDefaultExPandCheck } from '@coze-arch/bot-hooks';
-import { DataErrorBoundary, DataNamespace } from '@coze-data/reporter';
 
 import { MemoryList } from './memory-list';
 import { MemoryAddModal } from './memory-add-modal';
@@ -45,11 +46,18 @@ type IDataMemoryProps = ToolEntryCommonProps;
 const BaseDataMemory: FC<IDataMemoryProps> = ({ title }) => {
   const setToolValidData = useToolValidData();
   const variables = useBotSkillStore($store => $store.variables);
+  const memoryToolConfig = useBotSkillStore($store => $store.memoryToolConfig);
+  const updateMemoryToolConfig = useBotSkillStore(
+    $store => $store.updateMemoryToolConfig,
+  );
   const [visible, setVisible] = useState(false);
   const isReadonly = useBotDetailIsReadonly();
   const [activeId, setActiveId] = useState<undefined | string>();
 
   const params = useParams<DynamicParams>();
+
+  // 长期记忆功能开关状态 (默认开启以保持向后兼容)
+  const isMemoryToolEnabled = memoryToolConfig?.mode !== 0;
 
   const onOpenMemoryAdd = ($activeId?: string) => {
     if (isReadonly) {
@@ -98,6 +106,52 @@ const BaseDataMemory: FC<IDataMemoryProps> = ({ title }) => {
           </>
         }
       >
+        {/* 长期记忆功能开关 */}
+        <div
+          className={s['memory-tool-switch']}
+          style={{
+            padding: '12px 16px',
+            borderBottom: '1px solid var(--semi-color-border)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <Typography.Text strong>{I18n.t('长期记忆功能')}</Typography.Text>
+              <Typography.Paragraph
+                type="tertiary"
+                style={{ margin: '4px 0 0 0', fontSize: '12px' }}
+              >
+                {I18n.t(
+                  '启用后，智能体将自动获得记忆存储和检索能力（setKeywordMemory, getKeywordMemory等工具）',
+                )}
+              </Typography.Paragraph>
+            </div>
+            <Switch
+              checked={isMemoryToolEnabled}
+              disabled={isReadonly}
+              onChange={checked => {
+                updateMemoryToolConfig?.({
+                  mode: checked ? 1 : 0,
+                });
+                sendTeaEvent(EVENT_NAMES.memory_click_front, {
+                  bot_id: params?.bot_id || '',
+                  resource_type: 'memory_tool',
+                  action: checked ? 'enable' : 'disable',
+                  source: 'bot_detail_page',
+                  source_detail: 'memory_tool_switch',
+                });
+              }}
+              data-testid="bot.editor.tool.memory-tool.switch"
+            />
+          </div>
+        </div>
+
         <div className={s['memory-content']}>
           <MemoryList onOpenMemoryAdd={onOpenMemoryAdd} />
         </div>

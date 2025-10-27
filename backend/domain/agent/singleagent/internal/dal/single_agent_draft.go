@@ -157,6 +157,7 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftPo2Do(po *model.SingleAgentDraft)
 			ShortcutCommand:         po.ShortcutCommand,
 			BotMode:                 bot_common.BotMode(po.BotMode),
 			LayoutInfo:              po.LayoutInfo,
+			MemoryToolConfig:        po.MemoryToolConfig,
 		},
 	}
 }
@@ -187,5 +188,6 @@ func (sa *SingleAgentDraftDAO) singleAgentDraftDo2Po(do *entity.SingleAgent) *mo
 		ShortcutCommand:         do.ShortcutCommand,
 		BotMode:                 int32(do.BotMode),
 		LayoutInfo:              do.LayoutInfo,
+		MemoryToolConfig:        do.MemoryToolConfig,
 	}
 }

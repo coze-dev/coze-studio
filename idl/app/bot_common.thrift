@@ -281,6 +281,16 @@ struct Variable {
     7: optional bool   IsDisabled (api.body="is_disabled"),  // Whether to disable, the default is false to enable
 }
 
+// Memory tool configuration
+enum MemoryToolMode {
+    Disabled = 0, // Disabled - no memory tools
+    Enabled  = 1, // Enabled - add memory tools automatically
+}
+
+struct MemoryToolConfig {
+    1: optional MemoryToolMode Mode (api.body="mode"), // Memory tool mode, default is Enabled for backward compatibility
+}
+
 struct TaskInfo {                                // Scheduled Tasks on Coze
     1: optional bool UserTaskAllowed  (api.body="user_task_allowed") , // User starts task
     2: optional i64  EnablePresetTask (api.body="enable_preset_task"), // Allow preset tasks
@@ -470,7 +480,8 @@ struct BotInfo {
     33: UserQueryCollectConf UserQueryCollectConf (api.body="user_query_collect_conf") , // User query collection configuration
     34: LayoutInfo         LayoutInfo       (api.body="layout_info")                                        , // Orchestration information for workflow patterns
     35: BusinessType       BusinessType     (api.body="business_type"),
-    36: optional ExternalKnowledge ExternalKnowledge (api.body="external_knowledge")                           // External Knowledge configuration for RAGFlow integration
+    36: optional ExternalKnowledge ExternalKnowledge (api.body="external_knowledge"),                          // External Knowledge configuration for RAGFlow integration
+    37: optional MemoryToolConfig  MemoryToolConfig  (api.body="memory_tool_config")                          // Memory tool configuration (setKeywordMemory, getKeywordMemory, etc.)
 }
 
 // External Knowledge structures for RAGFlow integration
@@ -633,6 +644,7 @@ struct BotInfoForUpdate {
     32: optional UserQueryCollectConf     UserQueryCollectConf (api.body="user_query_collect_conf")// User query collection configuration
     33: optional LayoutInfo               LayoutInfo(api.body="layout_info")                           // Orchestration information for workflow patterns
     34: optional ExternalKnowledge        ExternalKnowledge (api.body="external_knowledge")           // External Knowledge configuration for RAGFlow integration
+    35: optional MemoryToolConfig         MemoryToolConfig  (api.body="memory_tool_config")           // Memory tool configuration
 }
 
 struct AgentForUpdate {

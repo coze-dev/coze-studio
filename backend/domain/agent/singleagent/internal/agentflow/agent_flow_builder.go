@@ -147,11 +147,25 @@ func BuildAgent(ctx context.Context, conf *Config) (r *AgentRunner, err error) {
 	}
 
 	var avTools []tool.InvokableTool
-	// 🔥 修复：始终启用记忆工具，不依赖预定义变量
-	// 现在支持动态创建变量，即使没有预定义变量也应该提供记忆功能
-	avTools, err = newAgentVariableTools(ctx, avConf)
-	if err != nil {
-		return nil, err
+	// 检查记忆工具配置开关
+	// 如果配置为启用(默认)或未配置，则添加记忆工具
+	// 如果配置为禁用，则不添加记忆工具
+	memoryToolEnabled := true // 默认启用，保持向后兼容
+	if conf.Agent.MemoryToolConfig != nil {
+		memoryToolEnabled = conf.Agent.MemoryToolConfig.Mode == nil || *conf.Agent.MemoryToolConfig.Mode == 1
+		logs.Infof("🔥 MemoryToolConfig found: Mode=%v, Enabled=%v", conf.Agent.MemoryToolConfig.Mode, memoryToolEnabled)
+	} else {
+		logs.Infof("🔥 MemoryToolConfig is nil, using default (enabled)")
+	}
+
+	if memoryToolEnabled {
+		logs.Infof("🔥 Adding memory tools (setKeywordMemory, getKeywordMemory, searchMemory, deleteKeywordMemory)")
+		avTools, err = newAgentVariableTools(ctx, avConf)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		logs.Infof("🔥 Memory tools DISABLED by config")
 	}
 	
 	// 添加外部知识库工具（如果配置了dataset_ids）

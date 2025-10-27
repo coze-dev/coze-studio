@@ -387,6 +387,11 @@ func (s *SingleAgentApplicationService) applyAgentUpdates(target *entity.SingleA
 		target.ExternalKnowledge = patch.ExternalKnowledge
 	}
 
+	// Add MemoryToolConfig handling
+	if patch.MemoryToolConfig != nil {
+		target.MemoryToolConfig = patch.MemoryToolConfig
+	}
+
 	return target, nil
 }
 
@@ -443,6 +448,7 @@ func (s *SingleAgentApplicationService) singleAgentDraftDo2Vo(ctx context.Contex
 		LayoutInfo:              do.LayoutInfo,
 		ExternalKnowledge:       do.ExternalKnowledge,
 		Version:                 do.Version,
+		MemoryToolConfig:        do.MemoryToolConfig,
 	}
 
 	if do.VariablesMetaID != nil {

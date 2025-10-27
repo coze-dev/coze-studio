@@ -331,7 +331,7 @@ export const transformVo2Dto = {
           flow_mode: w.flow_mode,
           workflow_name: w.name,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any),
+        }) as any,
     ),
 
   knowledge: (knowledge: KnowledgeConfig): BotInfoForUpdate['knowledge'] => ({
@@ -429,4 +429,9 @@ export const transformVo2Dto = {
   layoutInfo: (info: LayoutInfo): BotInfoForUpdate['layout_info'] =>
     // Undefined will be filtered by axios, where the backend needs to have a key.
     mapValues(info, (val?: string) => val ?? ''),
+
+  memoryToolConfig: (config?: {
+    mode?: number;
+  }): BotInfoForUpdate['memory_tool_config'] =>
+    config ? { mode: config.mode } : undefined,
 };

@@ -1,0 +1,1172 @@
+info:
+  description: |-
+    飞书多维表格，支持以下功能：
+    
+    1. 创建多维表格；
+    2. 创建多维表格数据表；
+    3. 列出多维表格下的全部数据表；
+    4. 获取多维表格的元数据；
+    5. 在多维表格数据表中新增多条记录；
+    6. 根据 record_id 检索多维表格数据表中的记录；
+    7. 批量更新多维表格数据表中的现有记录；
+    8. 查询多维表格数据表中的记录；
+    9. 搜索多维表格类型的文档；
+  title: 飞书多维表格
+  version: v1
+openapi: 3.0.1
+paths:
+  /base/add_field:
+    post:
+      operationId: add_field
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表的名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                description:
+                  description: 字段的描述
+                  properties:
+                    disable_sync:
+                      description: 是否禁止同步该描述，只在新增、修改字段时生效
+                      type: boolean
+                    text:
+                      description: 描述内容
+                      type: string
+                  type: object
+                field_name:
+                  description: 多维表格字段名称。名称中的首尾空格将会被去除。
+                  type: string
+                type:
+                  description: 字段类型，字段编辑指南文档https://open.larkoffice.com/document/server-docs/docs/bitable-v1/app-table-field/guide
+                  type: integer
+                ui_type:
+                  description: 字段在界面上的展示类型
+                  type: string
+              required:
+                - type
+                - field_name
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 响应结果
+                    properties:
+                      field:
+                        description: 字段信息
+                        properties:
+                          description:
+                            description: 新增字段的描述信息
+                            properties:
+                              text:
+                                description: 新增字段的文本内容
+                                type: string
+                            type: object
+                          field_id:
+                            description: 新增字段的ID
+                            type: string
+                          field_name:
+                            description: 新增字段的名称
+                            type: string
+                          is_primary:
+                            description: 是否是索引列
+                            type: boolean
+                          type:
+                            description: 新增字段的类型
+                            type: number
+                          ui_type:
+                            description: 新增字段的UI类型
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 新增字段
+  /base/add_records:
+    post:
+      operationId: add_records
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表的名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+        - description: 用户 ID 类型，可选值有 open_id、union_id、user_id，默认值为 open_id。
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                records:
+                  description: 本次请求将要新增的记录列表，格式为：[{"fields":{"文本":"文本内容","单选":"选项 1","日期":1674206443000}}]
+                  items:
+                    description: 数据表的字段，例如：[{"fields":{"文本":"文本内容","单选":"选项 1","日期":1674206443000}}]
+                    properties:
+                      fields:
+                        description: 数据表的字段，即数据表的列，格式为 json 字符串。例如：{"文本":"文本内容","单选":"选项 1","日期":1674206443000}
+                        type: string
+                    required:
+                      - fields
+                    type: object
+                  type: array
+              required:
+                - records
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      records:
+                        description: 本次请求新增的记录列表
+                        items:
+                          description: 记录的详细信息
+                          properties:
+                            fields:
+                              description: 数据表的字段，即数据表的列，格式为 json 字符串。
+                              type: string
+                            record_id:
+                              description: 一条记录的唯一标识 id
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 在多维表格数据表中新增多条记录，单次调用最多新增 500 条记录。
+  /base/create_base:
+    post:
+      operationId: create_base
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                folder_token:
+                  description: 多维表格 App 归属文件夹。默认为空，表示多维表格将被创建在云空间根目录。支持输入文件夹 token 或者 文件夹 URL。
+                  type: string
+                name:
+                  description: 多维表格 App 名字，示例值："一篇新的多维表格"
+                  type: string
+              required:
+                - name
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      app:
+                        description: 多维表格详细信息
+                        properties:
+                          app_token:
+                            description: 多维表格的 app_token
+                            type: string
+                          default_table_id:
+                            description: 默认的表格 id
+                            type: string
+                          folder_token:
+                            description: 多维表格 App 归属文件夹
+                            type: string
+                          name:
+                            description: 多维表格的名字
+                            type: string
+                          time_zone:
+                            description: 文档时区
+                            type: string
+                          url:
+                            description: 多维表格 App URL
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 创建多维表格
+  /base/create_table:
+    post:
+      operationId: create_table
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                default_view_name:
+                  description: 默认表格视图的名称，不填则默认为表格。
+                  type: string
+                fields:
+                  description: 数据表的初始字段列表，1. 如果 default_view_name 字段和 fields 字段都不填写，将会创建一个仅包含索引列的空数据表。2. 如果指定了 fields 字段，将会创建一个包含初始字段的数据表且默认第一个字段为索引列。
+                  items:
+                    description: 数据表的初始字段，例如：{"field_name":"多行文本","type":1}
+                    properties:
+                      field_name:
+                        description: 字段名
+                        type: string
+                      type:
+                        description: 字段类型，可选值包括1：多行文本、2：数字、3：单选、4：多选、5：日期、7：复选框、11：人员、13：tel号码、15：超链接、17：附件、18：单向关联、20：公式、21：双向关联、22：地理位置、23：群组、1001：创建时间、1002：最后更新时间、1003：创建人、1004：修改人、1005：自动编号
+                        type: integer
+                    type: object
+                  type: array
+                name:
+                  description: 数据表名称
+                  type: string
+              required:
+                - name
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      default_view_id:
+                        description: 默认表格视图的 id，该字段仅在请求参数中填写了default_view_name 或 fields 才会返回。
+                        type: string
+                      field_id_list:
+                        description: 数据表初始字段的 id 列表，该字段仅在请求参数中填写了 fields 才会返回。例如： ["fldUsUrIbN"]
+                        items:
+                          description: 数据表初始字段的 id
+                          type: string
+                        type: array
+                      table_id:
+                        description: 多维表格数据表的唯一标识符
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 创建多维表格数据表
+  /base/delete_field:
+    delete:
+      operationId: delete_field
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                field_id:
+                  description: 待删除的字段ID，field_id和field_name必填一个
+                  type: string
+                field_name:
+                  description: 待删除的字段名称，field_id和field_name必填一个
+                  type: string
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 响应结果
+                    properties:
+                      deleted:
+                        description: 是否删除
+                        type: boolean
+                      field_id:
+                        description: 删除的字段ID
+                        type: string
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 删除字段
+  /base/delete_records:
+    post:
+      operationId: delete_records
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表的名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                records:
+                  description: 待删除的记录ID列表。示例值：["recwNXzPQv"]
+                  items:
+                    description: 记录ID
+                    type: string
+                  type: array
+              required:
+                - records
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 响应结果
+                    properties:
+                      records:
+                        description: 删除的记录列表
+                        items:
+                          description: 记录信息
+                          properties:
+                            deleted:
+                              description: 是否成功删除：  true：成功删除 false：未删除
+                              type: boolean
+                            record_id:
+                              description: 记录的 ID
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 批量删除多维表格数据表中的记录
+  /base/delete_tables:
+    post:
+      operationId: delete_tables
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                table_ids:
+                  description: 待删除的数据表ID列表。当前一次操作最多支持 50 个数据表
+                  items:
+                    description: 数据表ID
+                    type: string
+                  type: array
+                table_names:
+                  description: 待删除的数据表名称列表。当前一次操作最多支持 50 个数据表
+                  items:
+                    description: 数据表名称
+                    type: string
+                  type: array
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 删除多维表格数据表
+  /base/get_base_info:
+    get:
+      operationId: get_base_info
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      app:
+                        description: 多维表格元数据
+                        properties:
+                          app_token:
+                            description: 多维表格的 app_token
+                            type: string
+                          is_advanced:
+                            description: 多维表格是否开启了高级权限。（true：表示开启了高级权限，false：表示关闭了高级权限）
+                            type: boolean
+                          name:
+                            description: 多维表格的名字
+                            type: string
+                          revision:
+                            description: 多维表格的版本号（对多维表格进行修改时更新，如新增、删除数据表，修改数据表名等，初始为 1，每次更新 +1）
+                            type: number
+                          time_zone:
+                            description: 文档时区
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 获取多维表格元数据
+  /base/list_fields:
+    get:
+      operationId: list_fields
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表的名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 响应结果
+                    properties:
+                      items:
+                        description: 字段列表
+                        items:
+                          description: 字段信息
+                          properties:
+                            description:
+                              description: 字段的描述
+                              type: string
+                            field_id:
+                              description: 多维表格字段ID
+                              type: string
+                            field_name:
+                              description: 多维表格字段名称
+                              type: string
+                            is_primary:
+                              description: 是否是索引列
+                              type: boolean
+                            property:
+                              description: 字段属性
+                              properties:
+                                auto_fill:
+                                  description: 日期字段中新纪录自动填写创建时间
+                                  type: boolean
+                                back_field_name:
+                                  description: 双向关联字段中关联的数据表中对应的双向关联字段的名字
+                                  type: string
+                                date_formatter:
+                                  description: 日期、创建时间、最后更新时间字段的显示格式
+                                  type: string
+                                formatter:
+                                  description: 数字、公式字段的显示格式
+                                  type: string
+                                multiple:
+                                  description: 人员字段中允许添加多个成员，单向关联、双向关联中允许添加多个记录
+                                  type: boolean
+                                options:
+                                  description: 单选、多选字段的选项信息
+                                  items:
+                                    properties:
+                                      color:
+                                        description: 选项颜色
+                                        type: string
+                                      id:
+                                        description: 选项 ID
+                                        type: string
+                                      name:
+                                        description: 选项名
+                                        type: string
+                                    type: object
+                                  type: array
+                                table_id:
+                                  description: 单向关联、双向关联字段中关联的数据表的 ID
+                                  type: string
+                                table_name:
+                                  description: 单向关联、双向关联字段中关联的数据表的名字
+                                  type: string
+                              type: object
+                            type:
+                              description: 多维表格字段类型
+                              type: number
+                            ui_type:
+                              description: 字段在界面上的展示类型
+                              type: string
+                          type: object
+                        type: array
+                      total:
+                        description: 总数
+                        type: number
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 列出单个数据表的全部字段
+  /base/list_tables:
+    get:
+      operationId: list_tables
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 分页标记，第一次请求不填，表示从头开始遍历；分页查询结果还有更多项时会同时返回新的 page_token，下次遍历可采用该 page_token 获取查询结果。
+          in: query
+          name: page_token
+          schema:
+            type: string
+        - description: 分页大小，默认值为 20，最大值为 100。
+          in: query
+          name: page_size
+          schema:
+            default: 20
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      has_more:
+                        description: 是否还有更多项
+                        type: boolean
+                      items:
+                        description: 数据表列表
+                        items:
+                          description: 数据表详细信息
+                          properties:
+                            name:
+                              description: 数据表名字
+                              type: string
+                            revision:
+                              description: 数据表的版本号
+                              type: number
+                            table_id:
+                              description: 数据表 id
+                              type: string
+                          type: object
+                        type: array
+                      page_token:
+                        description: 分页标记，当 has_more 为 true 时，会同时返回新的 page_token，否则不返回 page_token。
+                        type: string
+                      total:
+                        description: 总数
+                        type: number
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 列出多维表格下的全部数据表
+  /base/search_base:
+    post:
+      operationId: search_base
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                count:
+                  description: 指定搜索返回的文件数量，取值范围为 [0,50]。
+                  type: integer
+                offset:
+                  description: 指定搜索的偏移量，该参数最小为 0，即不偏移。该参数的值与返回的文件数量之和不得小于或等于 200（即 offset + count < 200）。
+                  type: integer
+                search_key:
+                  description: 指定搜索的关键字
+                  type: string
+              required:
+                - search_key
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      docs_entities:
+                        description: 包含搜索关键词的文件列表
+                        items:
+                          properties:
+                            docs_token:
+                              description: 文件的 token
+                              type: string
+                            docs_type:
+                              description: 文件的类型
+                              type: string
+                            owner_id:
+                              description: 文件的所有者
+                              type: string
+                            title:
+                              description: 文件的标题
+                              type: string
+                            url:
+                              description: 文档的链接
+                              type: string
+                          type: object
+                        type: array
+                      has_more:
+                        description: 结果列表后是否还有数据
+                        type: boolean
+                      total:
+                        description: 包含搜索关键词的文件总数量
+                        type: number
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 搜索多维表格类型的文档
+  /base/search_record:
+    post:
+      operationId: search_record
+      parameters:
+        - description: 用户 ID 类型，可选值有 open_id、union_id、user_id，默认值为 open_id
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+        - description: 分页标记，第一次请求不填，表示从头开始遍历；分页查询结果还有更多项时会同时返回新的 page_token，下次遍历可采用该 page_token 获取查询结果。
+          in: query
+          name: page_token
+          schema:
+            type: string
+        - description: 分页大小，默认值为 20，最大值为 500
+          in: query
+          name: page_size
+          schema:
+            default: 20
+            type: integer
+        - description: 多维表格的唯一标识符，支持输入文档 url
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表的名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                automatic_fields:
+                  description: 控制是否返回自动计算的字段, true 表示返回
+                  type: boolean
+                field_names:
+                  description: 字段名称，用于指定本次查询返回记录中包含的字段。示例值：["字段1","字段2"]
+                  items:
+                    description: 字段名称，例如：字段1
+                    type: string
+                  type: array
+                filter:
+                  description: 筛选条件
+                  properties:
+                    conditions:
+                      description: 筛选条件集合
+                      items:
+                        description: 筛选条件集合
+                        properties:
+                          field_name:
+                            description: 筛选条件的左值，值为字段的名称。示例值："字段1
+                            type: string
+                          operator:
+                            description: 条件运算符，可选值有 is：等于； isNot：不等于； contains：包含； doesNotContain：不包含； isEmpty：为空； isNotEmpty：不为空； isGreater：大于； isGreaterEqual：大于等于； isLess：小于； isLessEqual：小于等于
+                            type: string
+                          value:
+                            description: 条件的值，可以是单个值或多个值的数组。不同字段类型和不同的 operator 可填的值不同。详情参考下文字段目标值（value）填写说明。目标值填写指南：https://open.larkoffice.com/document/uAjLw4CM/ukTMukTMukTM/reference/bitable-v1/app-table-record/record-filter-guide
+                            items:
+                              description: 条件的值
+                              type: string
+                            type: array
+                        type: object
+                      type: array
+                    conjunction:
+                      description: 筛选条件逻辑连接词，可选值有 [and, or]，and：满足全部条件，or：满足任一条件
+                      type: string
+                  type: object
+                sort:
+                  description: 排序条件列表，例如：[{"field_name":"多行文本","desc":true}]
+                  items:
+                    description: 排序条件列表，例如：[{"field_name":"多行文本","desc":true}]
+                    properties:
+                      desc:
+                        description: 是否倒序排序，true or false
+                        type: boolean
+                      field_name:
+                        description: 字段名称，例如："多行文本"
+                        type: string
+                    type: object
+                  type: array
+                view_id:
+                  description: 视图的唯一标识符，获取指定视图下的记录
+                  type: string
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    type: number
+                  data:
+                    properties:
+                      has_more:
+                        type: boolean
+                      items:
+                        items:
+                          properties:
+                            fields:
+                              type: string
+                            record_id:
+                              type: string
+                          type: object
+                        type: array
+                      page_token:
+                        type: string
+                      total:
+                        type: number
+                    type: object
+                  error:
+                    type: string
+                  log_id:
+                    type: string
+                  msg:
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 该接口用于查询多维表格数据表中的现有记录，单次最多查询 500 行记录，支持分页获取。
+  /base/update_field:
+    post:
+      operationId: update_field
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表的名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                field_id:
+                  description: 待更新的字段ID，field_id和field_name必填一个
+                  type: string
+                field_name:
+                  description: 待更新的字段名称，field_id和field_name必填一个
+                  type: string
+                update_field:
+                  description: 需修改后的字段信息
+                  properties:
+                    description:
+                      description: 字段描述
+                      properties:
+                        text:
+                          description: 字段描述内容
+                          type: string
+                      type: object
+                    field_name:
+                      description: 多维表格字段名称
+                      type: string
+                    type:
+                      description: 字段的类型
+                      type: integer
+                    ui_type:
+                      description: 字段在界面上的展示类型
+                      type: string
+                  required:
+                    - type
+                    - field_name
+                  type: object
+              required:
+                - update_field
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码
+                    type: number
+                  data:
+                    description: 响应结果
+                    properties:
+                      field:
+                        description: 字段详情
+                        properties:
+                          description:
+                            description: 字段描述
+                            properties:
+                              text:
+                                description: 描述内容
+                                type: string
+                            type: object
+                          field_id:
+                            description: 字段ID
+                            type: string
+                          field_name:
+                            description: 字段名称
+                            type: string
+                          is_primary:
+                            description: 是否索引列
+                            type: boolean
+                          type:
+                            description: 字段类型
+                            type: number
+                          ui_type:
+                            description: 字段在界面上的展示类型
+                            type: string
+                        type: object
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: 更新字段
+  /base/update_records:
+    post:
+      operationId: update_records
+      parameters:
+        - description: 多维表格的唯一标识符，支持输入文档 url。
+          in: query
+          name: app_token
+          required: true
+          schema:
+            type: string
+        - description: 多维表格数据表的唯一标识符
+          in: query
+          name: table_id
+          schema:
+            type: string
+        - description: 多维表格数据表的名称
+          in: query
+          name: table_name
+          schema:
+            type: string
+        - description: 用户 ID 类型，可选值有 open_id、union_id、user_id，默认值：open_id。
+          in: query
+          name: user_id_type
+          schema:
+            default: open_id
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                records:
+                  description: 待更新的记录列表，格式为：[{"fields":{"文本":"文本内容","单选":"选项 1","日期":1674206443000},"record_id":"recuiZkZ0mS8aq"}]
+                  items:
+                    description: \'待更新的记录信息\'
+                    properties:
+                      fields:
+                        description: 数据表的字段，即数据表的列，格式为 json 字符串。例如：{"文本":"文本内容","单选":"选项 1","日期":1674206443000}
+                        type: string
+                      record_id:
+                        description: 一条记录的唯一标识 id
+                        type: string
+                    required:
+                      - fields
+                      - record_id
+                    type: object
+                  type: array
+              required:
+                - records
+              type: object
+        description: new desc
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                properties:
+                  code:
+                    description: 错误码，非 0 表示失败。
+                    type: number
+                  data:
+                    description: 返回结果
+                    properties:
+                      records:
+                        description: 记录列表
+                        items:
+                          description: 记录详细信息
+                          properties:
+                            fields:
+                              description: 数据表的字段，即数据表的列，格式为 json 字符串。
+                              type: string
+                            record_id:
+                              description: 一条记录的唯一标识 id
+                              type: string
+                          type: object
+                        type: array
+                    type: object
+                  log_id:
+                    description: 链路追踪 id
+                    type: string
+                  msg:
+                    description: 错误描述
+                    type: string
+                type: object
+          description: new desc
+        default:
+          description: ""
+      summary: |
+        批量更新多维表格数据表中的记录，单次调用最多更新 500 条记录。
+servers:
+  - url: https://lark-plugin-api.solutionsuite.cn/lark-plugin

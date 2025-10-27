@@ -28,6 +28,7 @@ export enum ItemTypeExtra {
   LayoutInfo = 1030,
   TaskInfo = 1031,
   TimeCapsule = 1032,
+  MEMORY_TOOL_CONFIG = 1033,
 }
 
 export type BizKey = ItemType | ItemTypeExtra | undefined;

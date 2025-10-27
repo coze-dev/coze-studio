@@ -1,43 +1,69 @@
+/*
+ * Copyright 2025 coze-dev Authors
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { createAPI } from './../../api/config';
-/** HiAgent 智能体信息 */
+/** HiAgent 智能体信息 - 对应 external_agent_config 表 */
 export interface HiAgentInfo {
-  /** 智能体ID */
-  agent_id: string,
+  /** 主键ID */
+  id: string,
+  /** 空间ID */
+  space_id: string,
   /** 智能体名称 */
   name: string,
   /** 描述 */
   description?: string,
-  /** 图标URL */
-  icon_url?: string,
-  /** API端点 */
-  endpoint: string,
-  /** 认证类型：bearer, api_key */
-  auth_type: string,
-  /** API密钥（创建时使用，查询时不返回） */
-  api_key?: string,
+  /** 平台类型 (hiagent等) */
+  platform: string,
+  /** API端点URL */
+  agent_url: string,
+  /** API密钥（查询时不返回明文） */
+  agent_key?: string,
+  /** 外部智能体ID */
+  agent_id?: string,
+  /** 应用ID */
+  app_id?: string,
+  /** 图标 */
+  icon?: string,
+  /** 分类 */
+  category?: string,
   /** 状态：0-禁用，1-启用 */
   status: number,
+  /** JSON元数据 */
+  metadata?: string,
+  /** 创建者ID */
+  created_by: string,
+  /** 更新者ID */
+  updated_by?: string,
   /** 创建时间 */
-  created_at: number,
+  created_at: string,
   /** 更新时间 */
-  updated_at: number,
-  /** 额外元数据 */
-  meta?: {
-    [key: string | number]: string
-  },
+  updated_at: string,
 }
 /** 创建 HiAgent 请求 */
 export interface CreateHiAgentRequest {
   space_id: string,
   name: string,
   description?: string,
-  icon_url?: string,
-  endpoint: string,
-  auth_type: string,
-  api_key?: string,
-  meta?: {
-    [key: string | number]: string
-  },
+  platform?: string,
+  agent_url: string,
+  agent_key?: string,
+  agent_id?: string,
+  app_id?: string,
+  icon?: string,
+  category?: string,
 }
 export interface CreateHiAgentResponse {
   code: number,
@@ -50,14 +76,14 @@ export interface UpdateHiAgentRequest {
   agent_id: string,
   name?: string,
   description?: string,
-  icon_url?: string,
-  endpoint?: string,
-  auth_type?: string,
-  api_key?: string,
+  platform?: string,
+  agent_url?: string,
+  agent_key?: string,
+  external_agent_id?: string,
+  app_id?: string,
+  icon?: string,
+  category?: string,
   status?: number,
-  meta?: {
-    [key: string | number]: string
-  },
 }
 export interface UpdateHiAgentResponse {
   code: number,
@@ -150,7 +176,8 @@ export const CreateHiAgent = /*#__PURE__*/createAPI<CreateHiAgentRequest, Create
   "name": "CreateHiAgent",
   "reqType": "CreateHiAgentRequest",
   "reqMapping": {
-    "body": ["space_id", "name", "description", "icon_url", "endpoint", "auth_type", "api_key", "meta"]
+    "path": ["space_id"],
+    "body": ["name", "description", "platform", "agent_url", "agent_key", "agent_id", "app_id", "icon", "category"]
   },
   "resType": "CreateHiAgentResponse",
   "schemaRoot": "api://schemas/idl_ynet-agent_ynet_agent",
@@ -162,7 +189,8 @@ export const UpdateHiAgent = /*#__PURE__*/createAPI<UpdateHiAgentRequest, Update
   "name": "UpdateHiAgent",
   "reqType": "UpdateHiAgentRequest",
   "reqMapping": {
-    "body": ["space_id", "agent_id", "name", "description", "icon_url", "endpoint", "auth_type", "api_key", "status", "meta"]
+    "path": ["space_id", "agent_id"],
+    "body": ["name", "description", "platform", "agent_url", "agent_key", "external_agent_id", "app_id", "icon", "category", "status"]
   },
   "resType": "UpdateHiAgentResponse",
   "schemaRoot": "api://schemas/idl_ynet-agent_ynet_agent",
@@ -198,7 +226,8 @@ export const GetHiAgentList = /*#__PURE__*/createAPI<GetHiAgentListRequest, GetH
   "name": "GetHiAgentList",
   "reqType": "GetHiAgentListRequest",
   "reqMapping": {
-    "query": ["space_id", "page_size", "page_token", "filter", "sort_by"]
+    "path": ["space_id"],
+    "query": ["page_size", "page_token", "filter", "sort_by"]
   },
   "resType": "GetHiAgentListResponse",
   "schemaRoot": "api://schemas/idl_ynet-agent_ynet_agent",

@@ -56,6 +56,7 @@ type SingleAgentVersion struct {
 	BotMode                 int32                             `gorm:"column:bot_mode;not null;comment:bot mode,0:single mode 2:chatflow mode" json:"bot_mode"`                      // bot mode,0:single mode 2:chatflow mode
 	ShortcutCommand         []string                          `gorm:"column:shortcut_command;comment:shortcut command;serializer:json" json:"shortcut_command"`                     // shortcut command
 	LayoutInfo              *bot_common.LayoutInfo            `gorm:"column:layout_info;comment:chatflow layout info;serializer:json" json:"layout_info"`                           // chatflow layout info
+	MemoryToolConfig        *bot_common.MemoryToolConfig      `gorm:"column:memory_tool_config;comment:Memory Tool Configuration;serializer:json" json:"memory_tool_config"`         // Memory Tool Configuration
 }
 
 // TableName SingleAgentVersion's table name
