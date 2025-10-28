@@ -27,6 +27,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/convert"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -271,11 +272,11 @@ func toOpenapi3Schema(apiParam *common.APIParameter) (*openapi3.Schema, error) {
 		},
 	}
 	if apiParam.GlobalDefault != nil && *apiParam.GlobalDefault != "" {
-		sc.Default = apiParam.GlobalDefault
+		sc.Default = ptr.From(apiParam.GlobalDefault)
 	}
 
 	if apiParam.LocalDefault != nil && *apiParam.LocalDefault != "" {
-		sc.Default = apiParam.LocalDefault
+		sc.Default = ptr.From(apiParam.LocalDefault)
 	}
 	if apiParam.LocalDisable {
 		sc.Extensions[consts.APISchemaExtendLocalDisable] = true
