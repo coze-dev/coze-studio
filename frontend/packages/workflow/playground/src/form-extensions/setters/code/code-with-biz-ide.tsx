@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type FC, useEffect } from 'react';
+import { type FC } from 'react';
 
 import { type FeedbackStatus } from '@flowgram-adapter/free-layout-editor';
 import { useCurrentEntity } from '@flowgram-adapter/free-layout-editor';
@@ -78,11 +78,7 @@ export const CodeEditorWithBizIDE: FC<CodeProps> = (props: CodeProps) => {
 
   const { isBindDouyin } = useGlobalState(false);
 
-  const {
-    forceCloseBizIDE,
-    isBizIDEOpen,
-    uniqueId: bizIDEUniqueId,
-  } = useBizIDEState();
+  const { isBizIDEOpen, uniqueId: bizIDEUniqueId } = useBizIDEState();
 
   const { setFullscreenPanel } = useNodeFormPanelState();
 
@@ -90,13 +86,6 @@ export const CodeEditorWithBizIDE: FC<CodeProps> = (props: CodeProps) => {
     enable: isBizIDEOpen && uniqueId === bizIDEUniqueId,
     nodeId: node.id,
   });
-
-  useEffect(
-    () => () => {
-      forceCloseBizIDE();
-    },
-    [forceCloseBizIDE],
-  );
 
   const languageTemplates = getLanguageTemplates({
     isBindDouyin,
