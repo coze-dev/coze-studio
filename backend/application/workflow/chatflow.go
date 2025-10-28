@@ -513,6 +513,12 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		apiKeyInfo     = ctxutil.GetApiAuthFromCtx(ctx)
 		userID         = apiKeyInfo.UserID
 		connectorID    int64
+		runtimeUserID  = func() *string {
+			if uID, ok := req.Ext["user_id"]; ok {
+				return ptr.Of(uID)
+			}
+			return nil
+		}()
 	)
 	if len(req.GetConnectorID()) == 0 {
 		connectorID = ternary.IFElse(isDebug, consts.CozeConnectorID, apiKeyInfo.ConnectorID)
@@ -634,11 +640,16 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			ExecuteID:  info.ExecID,
 			ResumeData: lastUserMessage.Content,
 		}, workflowModel.ExecuteConfig{
-			Operator:     userID,
-			Mode:         ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
-			ConnectorID:  connectorID,
-			ConnectorUID: strconv.FormatInt(userID, 10),
-			BizType:      workflowModel.BizTypeWorkflow,
+			Operator:    userID,
+			Mode:        ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
+			ConnectorID: connectorID,
+			ConnectorUID: func() string {
+				if runtimeUserID != nil {
+					return *runtimeUserID
+				}
+				return strconv.FormatInt(userID, 10)
+			}(),
+			BizType: workflowModel.BizTypeWorkflow,
 		})
 
 		if err != nil {
@@ -662,15 +673,20 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	exeCfg := workflowModel.ExecuteConfig{
-		ID:            mustParseInt64(req.GetWorkflowID()),
-		From:          locator,
-		Version:       version,
-		Operator:      userID,
-		Mode:          ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
-		AppID:         appID,
-		AgentID:       agentID,
-		ConnectorID:   connectorID,
-		ConnectorUID:  strconv.FormatInt(userID, 10),
+		ID:          mustParseInt64(req.GetWorkflowID()),
+		From:        locator,
+		Version:     version,
+		Operator:    userID,
+		Mode:        ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: connectorID,
+		ConnectorUID: func() string {
+			if runtimeUserID != nil {
+				return *runtimeUserID
+			}
+			return strconv.FormatInt(userID, 10)
+		}(),
 		TaskType:      workflowModel.TaskTypeForeground,
 		SyncPattern:   workflowModel.SyncPatternStream,
 		InputFailFast: true,
