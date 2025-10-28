@@ -214,7 +214,7 @@ func toOpenapiParameter(apiParam *common.APIParameter) (*openapi3.Parameter, err
 	}
 
 	if apiParam.LocalDefault != nil && *apiParam.LocalDefault != "" {
-		paramSchema.Default = apiParam.LocalDefault
+		paramSchema.Default = ptr.From(apiParam.LocalDefault)
 	}
 	if apiParam.LocalDisable {
 		paramSchema.Extensions[consts.APISchemaExtendLocalDisable] = true
