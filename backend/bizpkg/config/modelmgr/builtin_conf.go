@@ -47,6 +47,11 @@ func getOldKnowledgeBuiltinChatModelConfig() *Model {
 	}
 
 	typeStr := strings.ToUpper(os.Getenv("BUILTIN_CM_TYPE"))
+
+	if typeStr == "" {
+		return nil
+	}
+
 	baseURLKey := fmt.Sprintf("BUILTIN_CM_%s_BASE_URL", typeStr)
 	apiKeyKey := fmt.Sprintf("BUILTIN_CM_%s_API_KEY", typeStr)
 	modelKey := fmt.Sprintf("BUILTIN_CM_%s_MODEL", typeStr)

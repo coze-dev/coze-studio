@@ -73,7 +73,7 @@ func GetBuiltinChatModel(ctx context.Context, envPrefix string) (bcm BaseChatMod
 
 	}
 
-	return nil, true, nil
+	return nil, false, nil
 }
 
 func checkModelConfig(ctx context.Context, bcm BaseChatModel) (err error) {

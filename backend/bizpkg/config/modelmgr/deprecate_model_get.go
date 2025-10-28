@@ -63,7 +63,9 @@ func initOldModelConf(ctx context.Context, oss storage.Storage, c *ModelConfig) 
 		return err
 	}
 
-	oldModels = append(oldModels, envModel)
+	if envModel != nil {
+		oldModels = append(oldModels, envModel)
+	}
 
 	for _, q := range oldModels {
 		if q.Provider.IconURI != "" {
@@ -106,6 +108,9 @@ func initOldModelConf(ctx context.Context, oss storage.Storage, c *ModelConfig) 
 }
 
 func initModelByEnv() (*Model, error) {
+	if os.Getenv("MODEL_PROTOCOL_0") == "" || os.Getenv("MODEL_OPENCOZE_ID_0") == "" {
+		return nil, nil
+	}
 	protocol := os.Getenv("MODEL_PROTOCOL_0")
 	openCozeID, err := envkey.GetI64("MODEL_OPENCOZE_ID_0")
 	if err != nil {
