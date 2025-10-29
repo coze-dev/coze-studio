@@ -37,4 +37,6 @@ type ConversationRepo interface {
 	Get(ctx context.Context, userID int64, agentID int64, scene int32, connectorID int64) (*entity.Conversation, error)
 	Delete(ctx context.Context, id int64) (int64, error)
 	List(ctx context.Context, userID int64, agentID int64, connectorID int64, scene int32, limit int, page int) ([]*entity.Conversation, bool, error)
+	// UpdateExt 更新conversation的Ext字段
+	UpdateExt(ctx context.Context, id int64, ext string) error
 }

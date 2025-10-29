@@ -44,6 +44,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 	"github.com/coze-dev/coze-studio/backend/application/user"
 	"github.com/coze-dev/coze-studio/backend/application/workflow"
+	ynet_agent_app "github.com/coze-dev/coze-studio/backend/application/ynet_agent"
 	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
 	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/contract/connector"
@@ -52,6 +53,8 @@ import (
 	crossdatacopy "github.com/coze-dev/coze-studio/backend/crossdomain/contract/datacopy"
 	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	"github.com/coze-dev/coze-studio/backend/domain/ynet_agent"
+	ynet_agent_repo "github.com/coze-dev/coze-studio/backend/infra/repository/ynet_agent"
 	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
@@ -198,6 +201,11 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 
 	// Initialize external knowledge service
 	external_knowledge.InitExternalKnowledgeService(infra.DB)
+
+	// Initialize HiAgent repository
+	hiAgentRepo := ynet_agent_repo.NewHiAgentRepository(infra.DB)
+	ynet_agent.SetHiAgentRepository(hiAgentRepo)
+	ynet_agent_app.InitService(infra.DB, infra.IDGenSVC, hiAgentRepo)
 
 	return &basicServices{
 		infra:         infra,

@@ -28,6 +28,8 @@ type Conversation interface {
 	Create(ctx context.Context, req *entity.CreateMeta) (*entity.Conversation, error)
 	NewConversationCtx(ctx context.Context, req *entity.NewConversationCtxRequest) (*entity.NewConversationCtxResponse, error)
 	GetByID(ctx context.Context, id int64) (*entity.Conversation, error)
+	// UpdateExt 更新conversation的Ext字段
+	UpdateExt(ctx context.Context, id int64, ext string) error
 }
 
 var defaultSVC Conversation

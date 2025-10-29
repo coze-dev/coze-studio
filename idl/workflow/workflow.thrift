@@ -258,6 +258,12 @@ struct LLMParam{
     2: double temperature,
     3: string prompt     ,
     4: string model_name ,
+
+    // HiAgent specific fields
+    5: optional bool   is_hiagent              (api.body="is_hiagent"),              // Whether using HiAgent
+    6: optional string hiagent_id              (api.body="hiagent_id"),              // HiAgent ID
+    7: optional i64    hiagent_space_id        (api.body="hiagent_space_id", agw.js_conv="str", api.js_conv="true"), // HiAgent space ID
+    8: optional bool   hiagent_conversation_mapping (api.body="hiagent_conversation_mapping"), // Enable conversation mapping
 }
 
 struct DatasetParam{

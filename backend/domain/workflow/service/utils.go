@@ -26,6 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/adaptor"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/validate"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/variable"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -415,4 +416,10 @@ func getHistoryRoundsFromNode(ctx context.Context, wfEntity *entity.Workflow, no
 		}
 	}
 	return maxRounds, nil
+}
+
+// ExtractExecuteConfig 从context中提取workflow执行配置
+// 这是一个公共辅助函数,供外部包(如modelmgr)获取当前workflow的ExecuteConfig
+func ExtractExecuteConfig(ctx context.Context) *workflowModel.ExecuteConfig {
+	return execute.ExtractExecuteConfig(ctx)
 }

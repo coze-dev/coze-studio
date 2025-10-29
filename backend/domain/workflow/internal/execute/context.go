@@ -61,6 +61,24 @@ type Context struct {
 	llmMeta      *LLMCallMetadata
 }
 
+// GetExeCfg 返回ExecuteConfig的指针（公共方法，供外部包使用）
+func (c *Context) GetExeCfg() *workflowModel.ExecuteConfig {
+	if c == nil {
+		return nil
+	}
+	return &c.ExeCfg
+}
+
+// ExtractExecuteConfig 从context中提取ExecuteConfig
+// 这是一个公共辅助函数，方便外部包（如modelmgr）直接获取ExecuteConfig
+func ExtractExecuteConfig(ctx context.Context) *workflowModel.ExecuteConfig {
+	execCtx := GetExeCtx(ctx)
+	if execCtx == nil {
+		return nil
+	}
+	return execCtx.GetExeCfg()
+}
+
 type RootCtx struct {
 	RootWorkflowBasic *entity.WorkflowBasic
 	RootExecuteID     int64

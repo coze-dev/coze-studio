@@ -6102,10 +6102,14 @@ func (p *CodeParam) String() string {
 }
 
 type LLMParam struct {
-	ModelType   int32   `thrift:"model_type,1" form:"model_type" json:"model_type" query:"model_type"`
-	Temperature float64 `thrift:"temperature,2" form:"temperature" json:"temperature" query:"temperature"`
-	Prompt      string  `thrift:"prompt,3" form:"prompt" json:"prompt" query:"prompt"`
-	ModelName   string  `thrift:"model_name,4" form:"model_name" json:"model_name" query:"model_name"`
+	ModelType                  int32   `thrift:"model_type,1" form:"model_type" json:"model_type" query:"model_type"`
+	Temperature                float64 `thrift:"temperature,2" form:"temperature" json:"temperature" query:"temperature"`
+	Prompt                     string  `thrift:"prompt,3" form:"prompt" json:"prompt" query:"prompt"`
+	ModelName                  string  `thrift:"model_name,4" form:"model_name" json:"model_name" query:"model_name"`
+	IsHiagent                  *bool   `thrift:"is_hiagent,5,optional" form:"is_hiagent" json:"is_hiagent,omitempty" query:"is_hiagent"`
+	HiagentID                  *string `thrift:"hiagent_id,6,optional" form:"hiagent_id" json:"hiagent_id,omitempty" query:"hiagent_id"`
+	HiagentSpaceID             *int64  `thrift:"hiagent_space_id,7,optional" form:"hiagent_space_id" json:"hiagent_space_id,omitempty" query:"hiagent_space_id"`
+	HiagentConversationMapping *bool   `thrift:"hiagent_conversation_mapping,8,optional" form:"hiagent_conversation_mapping" json:"hiagent_conversation_mapping,omitempty" query:"hiagent_conversation_mapping"`
 }
 
 func NewLLMParam() *LLMParam {
@@ -6131,11 +6135,59 @@ func (p *LLMParam) GetModelName() (v string) {
 	return p.ModelName
 }
 
+func (p *LLMParam) GetIsHiagent() (v bool) {
+	if !p.IsSetIsHiagent() {
+		return
+	}
+	return *p.IsHiagent
+}
+
+func (p *LLMParam) GetHiagentID() (v string) {
+	if !p.IsSetHiagentID() {
+		return
+	}
+	return *p.HiagentID
+}
+
+func (p *LLMParam) GetHiagentSpaceID() (v int64) {
+	if !p.IsSetHiagentSpaceID() {
+		return
+	}
+	return *p.HiagentSpaceID
+}
+
+func (p *LLMParam) GetHiagentConversationMapping() (v bool) {
+	if !p.IsSetHiagentConversationMapping() {
+		return
+	}
+	return *p.HiagentConversationMapping
+}
+
+func (p *LLMParam) IsSetIsHiagent() bool {
+	return p.IsHiagent != nil
+}
+
+func (p *LLMParam) IsSetHiagentID() bool {
+	return p.HiagentID != nil
+}
+
+func (p *LLMParam) IsSetHiagentSpaceID() bool {
+	return p.HiagentSpaceID != nil
+}
+
+func (p *LLMParam) IsSetHiagentConversationMapping() bool {
+	return p.HiagentConversationMapping != nil
+}
+
 var fieldIDToName_LLMParam = map[int16]string{
 	1: "model_type",
 	2: "temperature",
 	3: "prompt",
 	4: "model_name",
+	5: "is_hiagent",
+	6: "hiagent_id",
+	7: "hiagent_space_id",
+	8: "hiagent_conversation_mapping",
 }
 
 func (p *LLMParam) Read(iprot thrift.TProtocol) (err error) {

@@ -93,6 +93,17 @@ func (dao *ConversationDAO) UpdateSection(ctx context.Context, id int64) (int64,
 	return newSectionID, nil
 }
 
+// UpdateExt 更新conversation的Ext字段
+func (dao *ConversationDAO) UpdateExt(ctx context.Context, id int64, ext string) error {
+	updateColumn := make(map[string]interface{})
+	table := dao.query.Conversation
+	updateColumn[table.Ext.ColumnName().String()] = ext
+	updateColumn[table.UpdatedAt.ColumnName().String()] = time.Now().UnixMilli()
+
+	_, err := dao.query.Conversation.WithContext(ctx).Where(dao.query.Conversation.ID.Eq(id)).UpdateColumns(updateColumn)
+	return err
+}
+
 func (dao *ConversationDAO) Delete(ctx context.Context, id int64) (int64, error) {
 	table := dao.query.Conversation
 

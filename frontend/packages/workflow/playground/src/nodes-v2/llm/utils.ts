@@ -93,6 +93,11 @@ export const reviseLLMParamPair = (d: InputValueDTO): [string, unknown] => {
     v = Number(d.input.value.content);
   }
 
+  // HiAgent specific boolean fields
+  if (d.input.type === VariableTypeDTO.bool) {
+    v = d.input.value.content === 'true' || d.input.value.content === true;
+  }
+
   return [k, v];
 };
 
@@ -108,6 +113,26 @@ export const modelItemToBlockInput = (
       return BlockInput.createFloat(k, model[k]);
     } else if (ModelParamType.Int === type || ['modelType'].includes(k)) {
       return BlockInput.createInteger(k, model[k]);
+    }
+
+    // External agent (HiAgent/Dify) specific boolean fields
+    if (['isHiagent', 'hiagentConversationMapping'].includes(k)) {
+      return BlockInput.createBoolean(k, model[k]);
+    }
+
+    // External agent specific integer field (hiagentSpaceId)
+    if (k === 'hiagentSpaceId') {
+      return BlockInput.createInteger(k, model[k]);
+    }
+
+    // External agent platform type (string field)
+    if (k === 'externalAgentPlatform') {
+      return BlockInput.createString(k, model[k]);
+    }
+
+    // SingleAgent specific field (big integer string ID)
+    if (k === 'singleagentId') {
+      return BlockInput.createString(k, model[k]);
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention

@@ -407,6 +407,17 @@ export interface IModelValue {
   modelType?: number;
   generationDiversity?: GenerationDiversity;
   responseFormat?: ResponseFormat;
+
+  // External agent fields (HiAgent, Dify, etc.)
+  isHiagent?: boolean; // 兼容旧字段，表示使用外部智能体
+  externalAgentPlatform?: 'hiagent' | 'dify' | 'singleagent'; // 外部智能体平台类型
+  hiagentId?: string; // 外部智能体ID（通用，用于 hiagent/dify）
+  hiagentSpaceId?: string; // 空间ID（通用）
+  hiagentConversationMapping?: boolean; // 会话管理开关（通用）
+
+  // SingleAgent specific field
+  singleagentId?: string; // 内部智能体ID（大整数字符串）
+
   [k: string]: unknown;
 }
 

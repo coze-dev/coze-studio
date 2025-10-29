@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { type FC, useCallback, useMemo } from 'react';
+import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
 
 import classNames from 'classnames';
 import {
@@ -25,9 +25,10 @@ import { type WorkflowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { GenerationDiversity, useNodeTestId } from '@coze-workflow/base';
 import { JsonViewer } from '@coze-common/json-viewer';
 import { IconCozSetting } from '@coze-arch/coze-design/icons';
-import { IconButton, type PopoverProps } from '@coze-arch/coze-design';
+import { IconButton, type PopoverProps, Tabs } from '@coze-arch/coze-design';
 import { type OptionItem } from '@coze-arch/bot-semi/Radio';
 import { Popover } from '@coze-arch/bot-semi';
+import { I18n } from '@coze-arch/i18n';
 
 import type { IModelValue, ComponentProps } from '@/typing';
 import { WorkflowModelsService } from '@/services';
@@ -37,6 +38,9 @@ import PopupContainer from '../popup-container';
 import { cacheData, generateDefaultValueByMeta } from './utils';
 import { ModelSelector } from './components/selector';
 import { ModelSetting } from './components/model-setting';
+import { HiAgentSelector } from '../../nodes-v2/llm/hiagent-selector';
+import { DifySelector } from '../../nodes-v2/llm/dify-selector';
+import { SingleAgentSelector } from '../../nodes-v2/llm/singleagent-selector';
 
 const defaultGenerationDiversity = GenerationDiversity.Balance;
 
@@ -111,6 +115,32 @@ export const ModelSelect: FC<ModelSelectProps> = ({
   const { getNodeSetterId, concatTestId } = useNodeTestId();
   const setterTestId = getNodeSetterId(testName || 'llm-select');
 
+  const [activeTab, setActiveTab] = useState<'standard' | 'hiagent' | 'dify' | 'singleagent'>(() => {
+    if (!_value?.isHiagent) {
+      return 'standard';
+    }
+    const platform = _value?.externalAgentPlatform;
+    if (platform === 'dify') return 'dify';
+    if (platform === 'singleagent') return 'singleagent';
+    return 'hiagent';
+  });
+
+  // Sync activeTab with _value (use original value, not computed value)
+  useEffect(() => {
+    if (!_value?.isHiagent) {
+      setActiveTab('standard');
+    } else {
+      const platform = _value?.externalAgentPlatform;
+      if (platform === 'dify') {
+        setActiveTab('dify');
+      } else if (platform === 'singleagent') {
+        setActiveTab('singleagent');
+      } else {
+        setActiveTab('hiagent');
+      }
+    }
+  }, [_value?.isHiagent, _value?.externalAgentPlatform]);
+
   // [Operation and maintenance platform] Since the model list cannot be pulled, the drop-down box will not be rendered, so the existing model values will be directly displayed here.
   if (IS_BOT_OP && value) {
     return <JsonViewer data={value} />;
@@ -118,86 +148,168 @@ export const ModelSelect: FC<ModelSelectProps> = ({
 
   return (
     <PopupContainer>
-      <div
-        className={classNames(
-          'flex gap-[4px] items-center relative',
-          className,
-        )}
-        data-testid={setterTestId}
-      >
-        <ModelSelector
-          readonly={readonly}
-          value={value?.modelType}
-          onChange={_v => {
-            const record = modelOptions.find(j => j.value === _v);
-            if (record) {
-              const generationDiversity =
-                value.generationDiversity ?? defaultGenerationDiversity;
-              let _defaultValue;
+      <div className={classNames('space-y-2', className)} data-testid={setterTestId}>
+        <Tabs
+          activeKey={activeTab}
+          onChange={key => {
+            // Guard against undefined key
+            if (!key) {
+              return;
+            }
 
-              // If custom, priority: cached user value > default
-              if (generationDiversity === GenerationDiversity.Customize) {
-                _defaultValue =
-                  getDefaultValue({
-                    modelType: record.value as number,
-                    value: cacheData[node.id] as object,
-                  })?.[generationDiversity] ?? {};
-              } else {
-                _defaultValue =
-                  getDefaultValue({
-                    modelType: record.value as number,
-                  })?.[generationDiversity] ?? {};
-              }
+            // Immediately update local state first
+            setActiveTab(key as 'standard' | 'hiagent' | 'dify' | 'singleagent');
 
+            if (key === 'hiagent') {
               onChange?.({
-                ..._defaultValue,
-                modelName: record.label as string,
-                modelType: record.value as number,
-                generationDiversity,
-                // Do not reset the output format when switching models
-                responseFormat:
-                  value?.responseFormat ?? _defaultValue?.responseFormat,
+                isHiagent: true,
+                externalAgentPlatform: 'hiagent' as const,
+                hiagentConversationMapping: true,
+                modelName: undefined,
+                modelType: undefined,
+                hiagentId: undefined,  // Clear agent selection
+                hiagentSpaceId: undefined,
               });
+            } else if (key === 'dify') {
+              onChange?.({
+                isHiagent: true,
+                externalAgentPlatform: 'dify' as const,
+                hiagentConversationMapping: true,
+                modelName: undefined,
+                modelType: undefined,
+                hiagentId: undefined,  // Clear agent selection
+                hiagentSpaceId: undefined,
+              });
+            } else if (key === 'singleagent') {
+              onChange?.({
+                isHiagent: true,
+                externalAgentPlatform: 'singleagent' as const,
+                hiagentConversationMapping: true,
+                modelName: undefined,
+                modelType: undefined,
+                hiagentId: undefined,
+                hiagentSpaceId: undefined,
+                singleagentId: undefined,  // Clear agent selection
+              });
+            } else if (key === 'standard') {
+              // Switch back to standard model
+              const firstModel = models[0];
+              if (firstModel) {
+                const generationDiversity = defaultGenerationDiversity;
+                const _defaultValue =
+                  getDefaultValue({
+                    modelType: firstModel.model_type as number,
+                  })?.[generationDiversity] ?? {};
+
+                onChange?.({
+                  ..._defaultValue,
+                  modelName: firstModel.name,
+                  modelType: firstModel.model_type as number,
+                  generationDiversity,
+                  isHiagent: false,
+                  externalAgentPlatform: undefined,
+                  hiagentId: undefined,
+                  hiagentSpaceId: undefined,
+                  hiagentConversationMapping: undefined,
+                  singleagentId: undefined,
+                });
+              }
             }
           }}
-          models={models}
-          popoverPosition={popoverPosition}
-          triggerRender={triggerRender}
-        />
-        <Popover
-          autoAdjustOverflow={popoverAutoAdjustOverflow || false}
-          className="rounded-md w-[660px]"
-          trigger="click"
-          position={popoverPosition || 'bottomRight'}
-          content={
-            <ModelSetting
-              id={node.id}
-              defaultValue={defaultValue}
-              value={value}
-              onChange={_v => {
-                onChange?.({
-                  ..._v,
-                  modelName: value.modelName,
-                  modelType: value.modelType,
-                });
-              }}
-              model={model}
-              readonly={!!readonly}
-            />
-          }
-          spacing={30}
+          type="line"
         >
-          <IconButton
-            data-testid={`e2e-ui-button-action-${concatTestId(
-              setterTestId,
-              'model-setting-btn',
-            )}`}
-            wrapperClass="leading-none"
-            color="secondary"
-            size="small"
-            icon={<IconCozSetting />}
-          />
-        </Popover>
+          <Tabs.TabPane tab={I18n.t('标准模型')} itemKey="standard" />
+          <Tabs.TabPane tab="HiAgent" itemKey="hiagent" />
+          <Tabs.TabPane tab="Dify" itemKey="dify" />
+          <Tabs.TabPane tab={I18n.t('内部智能体')} itemKey="singleagent" />
+        </Tabs>
+
+        {activeTab === 'standard' ? (
+          <>
+            <div className="flex gap-[4px] items-center">
+              <ModelSelector
+              readonly={readonly}
+              value={value?.modelType}
+              onChange={_v => {
+                const record = modelOptions.find(j => j.value === _v);
+                if (record) {
+                  const generationDiversity =
+                    value.generationDiversity ?? defaultGenerationDiversity;
+                  let _defaultValue;
+
+                  // If custom, priority: cached user value > default
+                  if (generationDiversity === GenerationDiversity.Customize) {
+                    _defaultValue =
+                      getDefaultValue({
+                        modelType: record.value as number,
+                        value: cacheData[node.id] as object,
+                      })?.[generationDiversity] ?? {};
+                  } else {
+                    _defaultValue =
+                      getDefaultValue({
+                        modelType: record.value as number,
+                      })?.[generationDiversity] ?? {};
+                  }
+
+                  onChange?.({
+                    ..._defaultValue,
+                    modelName: record.label as string,
+                    modelType: record.value as number,
+                    generationDiversity,
+                    // Do not reset the output format when switching models
+                    responseFormat:
+                      value?.responseFormat ?? _defaultValue?.responseFormat,
+                    isHiagent: false,
+                  });
+                }
+              }}
+              models={models}
+              popoverPosition={popoverPosition}
+              triggerRender={triggerRender}
+            />
+            <Popover
+              autoAdjustOverflow={popoverAutoAdjustOverflow || false}
+              className="rounded-md w-[660px]"
+              trigger="click"
+              position={popoverPosition || 'bottomRight'}
+              content={
+                <ModelSetting
+                  id={node.id}
+                  defaultValue={defaultValue}
+                  value={value}
+                  onChange={_v => {
+                    onChange?.({
+                      ..._v,
+                      modelName: value.modelName,
+                      modelType: value.modelType,
+                    });
+                  }}
+                  model={model}
+                  readonly={!!readonly}
+                />
+              }
+              spacing={30}
+            >
+              <IconButton
+                data-testid={`e2e-ui-button-action-${concatTestId(
+                  setterTestId,
+                  'model-setting-btn',
+                )}`}
+                wrapperClass="leading-none"
+                color="secondary"
+                size="small"
+                icon={<IconCozSetting />}
+              />
+            </Popover>
+          </div>
+          </>
+        ) : activeTab === 'hiagent' ? (
+          <HiAgentSelector value={value} onChange={onChange} readonly={readonly} />
+        ) : activeTab === 'dify' ? (
+          <DifySelector value={value} onChange={onChange} readonly={readonly} />
+        ) : (
+          <SingleAgentSelector value={value} onChange={onChange} readonly={readonly} />
+        )}
       </div>
     </PopupContainer>
   );

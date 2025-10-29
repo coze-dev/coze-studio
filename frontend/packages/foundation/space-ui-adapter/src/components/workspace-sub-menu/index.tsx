@@ -15,6 +15,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
+import { useShallow } from 'zustand/shallow';
 
 import {
   WorkspaceSubMenu as BaseWorkspaceSubMenu,
@@ -22,16 +23,6 @@ import {
 } from '@coze-foundation/space-ui-base';
 import { useSpaceStore } from '@coze-foundation/space-store';
 import { I18n } from '@coze-arch/i18n';
-// import {
-//   IconCozBot,
-//   IconCozBotFill,
-//   IconCozKnowledge,
-//   IconCozKnowledgeFill,
-//   IconCozPeople,
-//   IconCozPeopleFill,
-//   IconCozSetting,
-//   IconCozSettingFill,
-// } from '@coze-arch/coze-design/icons';
 import {
   IconBotDevelop,
   IconBotDevelopActive,
@@ -59,27 +50,7 @@ import { ResType } from '@coze-arch/idl/plugin_develop';
 
 import { SpaceSubModuleEnum } from '@/const';
 
-export const WorkspaceSubMenu = () => {
-  const { subMenuKey } = useRouteConfig();
-  const navigate = useNavigate();
-
-  const {
-    space: currentSpace,
-    spaceList,
-    recentlyUsedSpaceList,
-    loading,
-    createSpace,
-    fetchSpaces,
-  } = useSpaceStore(state => ({
-    space: state.space,
-    spaceList: state.spaceList,
-    recentlyUsedSpaceList: state.recentlyUsedSpaceList,
-    loading: !!state.loading || !state.inited,
-    createSpace: state.createSpace,
-    fetchSpaces: state.fetchSpaces,
-  }));
-
-  const subMenu = [
+const createSubMenuConfig = () => [
     {
       icon: <IconBotDevelop />,
       activeIcon: <IconBotDevelopActive />,
@@ -175,9 +146,9 @@ export const WorkspaceSubMenu = () => {
     {
       icon: <IconBotPlugin />,
       activeIcon: <IconBotPluginActive />,
-      title: () => I18n.t('navigation_workspace_manage_hiagents', {}, 'HiAgents'),
+      title: () => I18n.t('navigation_workspace_manage_external_agents', {}, '外部智能体'),
       path: SpaceSubModuleEnum.HIAGENTS,
-      dataTestId: 'navigation_workspace_hiagents',
+      dataTestId: 'navigation_workspace_external_agents',
     },
     {
       icon: <IconBotMember />,
@@ -186,7 +157,31 @@ export const WorkspaceSubMenu = () => {
       path: SpaceSubModuleEnum.MEMBERS,
       dataTestId: 'navigation_workspace_members',
     },
-  ];
+];
+
+export const WorkspaceSubMenu = () => {
+  const { subMenuKey } = useRouteConfig();
+  const navigate = useNavigate();
+
+  const {
+    space: currentSpace,
+    spaceList,
+    recentlyUsedSpaceList,
+    loading,
+    createSpace,
+    fetchSpaces,
+  } = useSpaceStore(
+    useShallow(state => ({
+      space: state.space,
+      spaceList: state.spaceList,
+      recentlyUsedSpaceList: state.recentlyUsedSpaceList,
+      loading: !!state.loading || !state.inited,
+      createSpace: state.createSpace,
+      fetchSpaces: state.fetchSpaces,
+    })),
+  );
+
+  const subMenu = createSubMenuConfig();
 
   const handleSpaceChange = (spaceId: string) => {
     // 更新空间store中的当前空间

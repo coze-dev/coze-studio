@@ -304,47 +304,101 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 	for _, param := range params {
 		switch param.Name {
 		case "temperature":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok || strVal == "" {
+				continue
+			}
 			floatVal, err := strconv.ParseFloat(strVal, 64)
 			if err != nil {
 				return nil, err
 			}
 			p.Temperature = &floatVal
 		case "maxTokens":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok || strVal == "" {
+				continue
+			}
 			intVal, err := strconv.Atoi(strVal)
 			if err != nil {
 				return nil, err
 			}
 			p.MaxTokens = intVal
 		case "responseFormat":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok || strVal == "" {
+				continue
+			}
 			int64Val, err := strconv.ParseInt(strVal, 10, 64)
 			if err != nil {
 				return nil, err
 			}
 			p.ResponseFormat = crossmodel.ResponseFormat(int64Val)
 		case "modleName":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok {
+				continue
+			}
 			p.ModelName = strVal
 		case "modelType":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok || strVal == "" {
+				continue
+			}
 			int64Val, err := strconv.ParseInt(strVal, 10, 64)
 			if err != nil {
 				return nil, err
 			}
 			p.ModelType = int64Val
 		case "prompt":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok {
+				continue
+			}
 			p.Prompt = strVal
 		case "enableChatHistory":
-			boolVar := param.Input.Value.Content.(bool)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			boolVar, ok := param.Input.Value.Content.(bool)
+			if !ok {
+				continue
+			}
 			p.EnableChatHistory = boolVar
 		case "systemPrompt":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok {
+				continue
+			}
 			p.SystemPrompt = strVal
 		case "chatHistoryRound":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok || strVal == "" {
+				continue
+			}
 			int64Val, err := strconv.ParseInt(strVal, 10, 64)
 			if err != nil {
 				return nil, err
@@ -353,12 +407,80 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 		case "generationDiversity", "frequencyPenalty", "presencePenalty":
 		// do nothing
 		case "topP":
-			strVal := param.Input.Value.Content.(string)
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok || strVal == "" {
+				continue
+			}
 			floatVar, err := strconv.ParseFloat(strVal, 64)
 			if err != nil {
 				return nil, err
 			}
 			p.TopP = &floatVar
+		// HiAgent specific fields
+		case "isHiagent":
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			boolVar, ok := param.Input.Value.Content.(bool)
+			if !ok {
+				continue
+			}
+			p.IsHiAgent = boolVar
+		case "hiagentId":
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok {
+				continue
+			}
+			p.HiAgentID = strVal
+		case "hiagentSpaceId":
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok {
+				continue
+			}
+			if strVal == "" {
+				continue
+			}
+			int64Val, err := strconv.ParseInt(strVal, 10, 64)
+			if err != nil {
+				return nil, err
+			}
+			p.HiAgentSpaceID = int64Val
+		case "hiagentConversationMapping":
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			boolVar, ok := param.Input.Value.Content.(bool)
+			if !ok {
+				continue
+			}
+			p.HiAgentConversationMapping = boolVar
+		case "externalAgentPlatform":
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok {
+				continue
+			}
+			p.ExternalAgentPlatform = strVal
+		case "singleagentId":
+			if param.Input.Value.Content == nil {
+				continue
+			}
+			strVal, ok := param.Input.Value.Content.(string)
+			if !ok {
+				continue
+			}
+			p.SingleagentID = strVal
 		default:
 			logs.Warnf("encountered unknown param when converting LLM Params, name= %s, "+
 				"value= %v", param.Name, param.Input.Value.Content)
@@ -712,7 +834,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		}
 
 		tConvert := func(_ context.Context, s *schema.StreamReader[*schema.Message], _ ...struct{}) (*schema.StreamReader[map[string]any], error) {
-			sr, sw := schema.Pipe[map[string]any](0)
+			sr, sw := schema.Pipe[map[string]any](100) // 增加buffer避免发送方被阻塞
 
 			safego.Go(ctx, func() {
 				reasoningDone := false

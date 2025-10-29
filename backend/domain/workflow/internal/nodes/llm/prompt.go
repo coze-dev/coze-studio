@@ -335,7 +335,7 @@ func (p *prompts) Format(ctx context.Context, vs map[string]any, _ ...prompt.Opt
 
 	supportedModal := map[modelmgr.Modal]bool{}
 	mInfo := p.mwi.Info(ctx)
-	if mInfo != nil {
+	if mInfo != nil && mInfo.Meta.Capability != nil {
 		for i := range mInfo.Meta.Capability.InputModal {
 			supportedModal[mInfo.Meta.Capability.InputModal[i]] = true
 		}

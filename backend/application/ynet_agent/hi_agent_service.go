@@ -21,18 +21,34 @@ import (
 	"net/http"
 	"time"
 
+	"gorm.io/gorm"
+
 	"github.com/coze-dev/coze-studio/backend/domain/ynet_agent"
+	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
 )
 
 type hiAgentServiceImpl struct {
 	repo ynet_agent.HiAgentRepository
 }
 
+var globalService ynet_agent.HiAgentService
+
+// InitService 初始化 HiAgent 服务
+func InitService(db *gorm.DB, idgenSvc idgen.IDGenerator, repo ynet_agent.HiAgentRepository) ynet_agent.HiAgentService {
+	globalService = NewHiAgentService(repo)
+	return globalService
+}
+
+// GetService 获取全局服务实例
+func GetService() ynet_agent.HiAgentService {
+	return globalService
+}
+
 func NewHiAgentService(repo ynet_agent.HiAgentRepository) ynet_agent.HiAgentService {
 	return &hiAgentServiceImpl{repo: repo}
 }
 
-func (s *hiAgentServiceImpl) CreateHiAgent(spaceID int64, name, description, iconURL, endpoint, authType, apiKey string, meta map[string]string) (*ynet_agent.HiAgent, error) {
+func (s *hiAgentServiceImpl) CreateHiAgent(spaceID int64, name, description, iconURL, endpoint, authType, apiKey string, meta ynet_agent.MetaData) (*ynet_agent.HiAgent, error) {
 	// 验证必填字段
 	if name == "" {
 		return nil, fmt.Errorf("name is required")
@@ -77,7 +93,7 @@ func (s *hiAgentServiceImpl) CreateHiAgent(spaceID int64, name, description, ico
 	return s.repo.GetByID(agent.AgentID, spaceID)
 }
 
-func (s *hiAgentServiceImpl) UpdateHiAgent(agentID string, spaceID int64, name, description, iconURL, endpoint, authType, apiKey *string, status *int32, meta map[string]string) (*ynet_agent.HiAgent, error) {
+func (s *hiAgentServiceImpl) UpdateHiAgent(agentID string, spaceID int64, name, description, iconURL, endpoint, authType, apiKey *string, status *int32, meta ynet_agent.MetaData) (*ynet_agent.HiAgent, error) {
 	// 先获取现有记录
 	existing, err := s.repo.GetByID(agentID, spaceID)
 	if err != nil {

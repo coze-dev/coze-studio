@@ -258,7 +258,30 @@ const Page: React.FC = () => {
           setEditingAgent(null);
         }}
         footer={null}
+        style={{ width: 600 }}
       >
+        <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded">
+          <div className="text-sm font-medium text-blue-900 mb-2">📖 配置说明</div>
+          <div className="text-xs text-blue-800 space-y-2">
+            <div className="font-medium">⚠️ 重要：不同平台的 API 端点格式不同</div>
+
+            <div className="bg-white p-2 rounded border border-blue-300">
+              <div className="font-medium text-green-700 mb-1">✅ Dify 智能体</div>
+              <div className="font-mono text-xs">
+                API端点: https://ai.finmall.com/v1/chat-messages<br/>
+                <span className="text-red-600">（必须包含完整路径 /v1/chat-messages）</span>
+              </div>
+            </div>
+
+            <div className="bg-white p-2 rounded border border-blue-300">
+              <div className="font-medium text-purple-700 mb-1">✅ HiAgent（火山引擎）</div>
+              <div className="font-mono text-xs">
+                API端点: https://api.volcengine.com/v1<br/>
+                <span className="text-gray-600">（仅填写到 /v1，系统会自动拼接路径）</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <Form
           onSubmit={async (values) => {
             const url = editingAgent
@@ -272,6 +295,10 @@ const Page: React.FC = () => {
               ...values,
               platform: values.platform || 'hiagent',
               category: values.category || 'external',
+              // 将platform信息也保存到metadata中，方便后端使用
+              metadata: JSON.stringify({
+                platform: values.platform || 'hiagent',
+              }),
             };
 
             try {
@@ -312,19 +339,31 @@ const Page: React.FC = () => {
             label="平台类型"
             rules={[{ required: true, message: '请选择平台类型' }]}
             initValue={editingAgent?.platform || 'hiagent'}
+            onChange={(value) => {
+              // 根据平台类型更新 API 端点的提示信息
+              const form = document.querySelector('form');
+              if (form) {
+                const apiEndpointInput = form.querySelector('input[name="agent_url"]') as HTMLInputElement;
+                if (apiEndpointInput) {
+                  if (value === 'dify') {
+                    apiEndpointInput.placeholder = '如: https://api.dify.ai/v1/chat-messages';
+                  } else if (value === 'hiagent') {
+                    apiEndpointInput.placeholder = '如: https://api.volcengine.com/v1/hiagent/chat';
+                  }
+                }
+              }
+            }}
           >
-            <Select.Option value="hiagent">HiAgent</Select.Option>
-            <Select.Option value="dify" disabled>
-              <span className="text-gray-400">Dify</span>
-            </Select.Option>
+            <Select.Option value="hiagent">火山引擎 HiAgent</Select.Option>
+            <Select.Option value="dify">Dify 智能体</Select.Option>
             <Select.Option value="coze" disabled>
-              <span className="text-gray-400">Coze</span>
+              <span className="text-gray-400">Coze（敬请期待）</span>
             </Select.Option>
             <Select.Option value="bailing" disabled>
-              <span className="text-gray-400">百灵</span>
+              <span className="text-gray-400">百灵（敬请期待）</span>
             </Select.Option>
             <Select.Option value="other" disabled>
-              <span className="text-gray-400">其它</span>
+              <span className="text-gray-400">其它（敬请期待）</span>
             </Select.Option>
           </Form.Select>
           <Form.Input
@@ -332,22 +371,52 @@ const Page: React.FC = () => {
             label="API端点"
             rules={[{ required: true, message: '请输入API端点' }]}
             initValue={editingAgent?.agent_url}
+            placeholder="根据平台类型填写正确格式的 URL"
+            extra={
+              <div className="text-xs text-gray-500 mt-1">
+                <div className="font-medium text-red-600 mb-1">⚠️ 注意：不同平台填写格式不同</div>
+                <div>• <strong>Dify</strong>: 必须包含完整路径 <code className="bg-gray-100 px-1 rounded">/v1/chat-messages</code></div>
+                <div className="mt-0.5 ml-4">✅ <code className="bg-green-50 px-1 rounded">https://ai.finmall.com/v1/chat-messages</code></div>
+                <div className="mt-1">• <strong>HiAgent</strong>: 仅填写到 <code className="bg-gray-100 px-1 rounded">/v1</code>（系统会自动拼接）</div>
+                <div className="mt-0.5 ml-4">✅ <code className="bg-green-50 px-1 rounded">https://api.volcengine.com/v1</code></div>
+              </div>
+            }
           />
           <Form.Input
             field="agent_key"
             label="API密钥"
             type="password"
             rules={[{ required: !editingAgent, message: '请输入API密钥' }]}
+            placeholder="输入 API 密钥或 Bearer Token"
+            extra={
+              <div className="text-xs text-gray-500 mt-1">
+                <div>• <strong>Dify</strong>: 以 <code className="bg-gray-100 px-1 rounded">app-</code> 开头的密钥</div>
+                <div className="mt-0.5">  例如: <code className="bg-gray-100 px-1 rounded">app-UZHHu47HfF1VL0HgdoJ0bjUT</code></div>
+                <div className="mt-1">• <strong>HiAgent</strong>: 火山引擎的 API Key</div>
+              </div>
+            }
           />
           <Form.Input
             field="external_agent_id"
-            label="外部智能体ID"
+            label="外部智能体ID（可选）"
             initValue={editingAgent?.agent_id}
+            placeholder="外部平台的智能体标识"
+            extra={
+              <div className="text-xs text-gray-500 mt-1">
+                用于标识外部平台的特定智能体，通常在多智能体场景下使用
+              </div>
+            }
           />
           <Form.Input
             field="app_id"
-            label="应用ID"
+            label="应用ID（可选）"
             initValue={editingAgent?.app_id}
+            placeholder="外部平台的应用标识"
+            extra={
+              <div className="text-xs text-gray-500 mt-1">
+                某些平台需要提供应用 ID 来标识调用方
+              </div>
+            }
           />
           <Button htmlType="submit" type="primary">
             {editingAgent ? '保存' : '添加'}

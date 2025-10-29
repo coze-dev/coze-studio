@@ -30,6 +30,16 @@ type LLMParams struct {
 	SystemPrompt      string         `json:"systemPrompt"`
 	ResponseFormat    ResponseFormat `json:"responseFormat"`
 	ChatHistoryRound  int64          `json:"chatHistoryRound"`
+
+	// External agent specific fields (HiAgent, Dify, SingleAgent)
+	IsHiAgent                  bool   `json:"isHiAgent"`                            // 是否使用外部智能体（架构复用）
+	ExternalAgentPlatform      string `json:"externalAgentPlatform,omitempty"`      // 外部智能体平台类型（hiagent/dify/singleagent）
+	HiAgentID                  string `json:"hiAgentID,omitempty"`                  // HiAgent/Dify ID
+	HiAgentSpaceID             int64  `json:"hiAgentSpaceID,omitempty"`             // HiAgent/Dify所属空间ID
+	HiAgentConversationMapping bool   `json:"hiAgentConversationMapping,omitempty"` // 会话管理开关
+
+	// SingleAgent specific field
+	SingleagentID string `json:"singleagentId,omitempty"` // 内部智能体ID（大整数字符串）
 }
 
 type ResponseFormat int64

@@ -53,3 +53,8 @@ func (s *impl) NewConversationCtx(ctx context.Context, req *entity.NewConversati
 func (s *impl) GetByID(ctx context.Context, id int64) (*entity.Conversation, error) {
 	return s.DomainSVC.GetByID(ctx, id)
 }
+
+// UpdateExt 更新conversation的Ext字段
+func (s *impl) UpdateExt(ctx context.Context, id int64, ext string) error {
+	return s.DomainSVC.UpdateExt(ctx, id, ext)
+}

@@ -440,6 +440,14 @@ func (i *impl) StreamExecute(ctx context.Context, config workflowModel.ExecuteCo
 		}
 
 	}
+
+	// 🆕 加载HiAgent会话映射（从数据库conversation表的Ext字段）
+	if config.ConversationID != nil && *config.ConversationID != 0 {
+		if err := i.loadHiAgentConversations(ctx, &config); err != nil {
+			logs.CtxErrorf(ctx, "failed to load hiagent conversations: %v", err)
+		}
+	}
+
 	c := &vo.Canvas{}
 	if err = sonic.UnmarshalString(wfEntity.Canvas, c); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal canvas: %w", err)
@@ -1082,4 +1090,129 @@ func (i *impl) prefetchChatHistory(ctx context.Context, config workflowModel.Exe
 	}
 
 	return response.Messages, response.SchemaMessages, nil
+}
+
+// loadHiAgentConversations 从数据库conversation表的Ext字段加载HiAgent会话映射
+func (i *impl) loadHiAgentConversations(ctx context.Context, config *workflowModel.ExecuteConfig) error {
+	if config.ConversationID == nil || *config.ConversationID == 0 {
+		return nil
+	}
+
+	// 获取conversation记录
+	manager := conversation.GetConversationManager()
+	if manager == nil {
+		logs.CtxWarnf(ctx, "ConversationManager is nil, cannot load hiagent conversations")
+		return nil
+	}
+
+	conv, err := manager.GetByID(ctx, *config.ConversationID)
+	if err != nil {
+		return fmt.Errorf("failed to get conversation: %w", err)
+	}
+
+	// 解析Ext字段
+	if conv.Ext == "" {
+		return nil
+	}
+
+	var ext map[string]interface{}
+	if err := sonic.UnmarshalString(conv.Ext, &ext); err != nil {
+		logs.CtxWarnf(ctx, "failed to unmarshal conversation ext: %v", err)
+		return nil
+	}
+
+	// 提取hiagent_conversations映射
+	if hiagentConvs, ok := ext["hiagent_conversations"].(map[string]interface{}); ok {
+		config.HiAgentConversations = make(map[string]*workflowModel.HiAgentConversationInfo)
+		for agentID, convData := range hiagentConvs {
+			// 支持两种格式:
+			// 1. 新格式: {"app_conversation_id": "xxx", "last_section_id": 123}
+			// 2. 旧格式: "xxx" (字符串)
+			if convMap, ok := convData.(map[string]interface{}); ok {
+				// 新格式
+				info := &workflowModel.HiAgentConversationInfo{}
+				if appConvID, ok := convMap["app_conversation_id"].(string); ok {
+					info.AppConversationID = appConvID
+				}
+				// 处理 last_section_id: 可能是 float64(标准JSON) 或 int64(sonic等库)
+				if lastSectionID, ok := convMap["last_section_id"].(float64); ok {
+					info.LastSectionID = int64(lastSectionID)
+					logs.CtxInfof(ctx, "DEBUG: loaded last_section_id=%d (from float64) for agent=%s", info.LastSectionID, agentID)
+				} else if lastSectionID, ok := convMap["last_section_id"].(int64); ok {
+					info.LastSectionID = lastSectionID
+					logs.CtxInfof(ctx, "DEBUG: loaded last_section_id=%d (from int64) for agent=%s", info.LastSectionID, agentID)
+				} else if lastSectionIDVal := convMap["last_section_id"]; lastSectionIDVal != nil {
+					// 尝试使用类型转换处理其他数字类型
+					logs.CtxWarnf(ctx, "DEBUG: unexpected last_section_id type %T, value=%v for agent=%s", lastSectionIDVal, lastSectionIDVal, agentID)
+				}
+				config.HiAgentConversations[agentID] = info
+				logs.CtxInfof(ctx, "DEBUG: loaded HiAgentConversationInfo for agent=%s: app_conv_id=%s, last_section_id=%d",
+					agentID, info.AppConversationID, info.LastSectionID)
+			} else if strID, ok := convData.(string); ok {
+				// 旧格式 - 向后兼容
+				config.HiAgentConversations[agentID] = &workflowModel.HiAgentConversationInfo{
+					AppConversationID: strID,
+					LastSectionID:     0,
+				}
+			}
+		}
+		logs.CtxInfof(ctx, "loaded %d hiagent conversations from database: %v",
+			len(config.HiAgentConversations), config.HiAgentConversations)
+	}
+
+	return nil
+}
+
+// SaveHiAgentConversation 保存HiAgent会话映射到数据库conversation表的Ext字段
+// 这个函数由ynet_agent包调用，当创建新的HiAgent会话时
+func SaveHiAgentConversation(ctx context.Context, conversationID int64, agentID, appConversationID string) error {
+	if conversationID == 0 {
+		return fmt.Errorf("conversation_id is required")
+	}
+
+	// 获取conversation记录
+	manager := conversation.GetConversationManager()
+	if manager == nil {
+		return fmt.Errorf("ConversationManager is nil")
+	}
+
+	conv, err := manager.GetByID(ctx, conversationID)
+	if err != nil {
+		return fmt.Errorf("failed to get conversation: %w", err)
+	}
+
+	// 解析现有Ext字段
+	var ext map[string]interface{}
+	if conv.Ext != "" {
+		if err := sonic.UnmarshalString(conv.Ext, &ext); err != nil {
+			logs.CtxWarnf(ctx, "failed to unmarshal existing ext, creating new: %v", err)
+			ext = make(map[string]interface{})
+		}
+	} else {
+		ext = make(map[string]interface{})
+	}
+
+	// 更新或创建hiagent_conversations映射
+	var hiagentConvs map[string]interface{}
+	if existing, ok := ext["hiagent_conversations"].(map[string]interface{}); ok {
+		hiagentConvs = existing
+	} else {
+		hiagentConvs = make(map[string]interface{})
+	}
+
+	hiagentConvs[agentID] = appConversationID
+	ext["hiagent_conversations"] = hiagentConvs
+
+	// 序列化回JSON
+	extStr, err := sonic.MarshalString(ext)
+	if err != nil {
+		return fmt.Errorf("failed to marshal ext: %w", err)
+	}
+
+	// 🚨 TODO: 需要添加UpdateExt方法到ConversationManager接口
+	// 暂时先打印日志，等待实现更新逻辑
+	logs.CtxInfof(ctx, "TODO: save hiagent conversation to DB: conversation_id=%d, agent_id=%s, app_conv_id=%s, ext=%s",
+		conversationID, agentID, appConversationID, extStr)
+
+	return nil
 }

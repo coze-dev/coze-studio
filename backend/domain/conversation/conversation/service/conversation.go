@@ -29,4 +29,6 @@ type Conversation interface {
 	GetCurrentConversation(ctx context.Context, req *entity.GetCurrent) (*entity.Conversation, error)
 	Delete(ctx context.Context, id int64) error
 	List(ctx context.Context, req *entity.ListMeta) ([]*entity.Conversation, bool, error)
+	// UpdateExt 更新conversation的Ext字段
+	UpdateExt(ctx context.Context, id int64, ext string) error
 }

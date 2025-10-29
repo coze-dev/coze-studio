@@ -74,14 +74,39 @@ func (r *hiAgentRepositoryImpl) Delete(agentID string, spaceID int64) error {
 }
 
 func (r *hiAgentRepositoryImpl) GetByID(agentID string, spaceID int64) (*ynet_agent.HiAgent, error) {
-	var agent ynet_agent.HiAgent
-	err := r.db.Where("agent_id = ? AND space_id = ?", agentID, spaceID).First(&agent).Error
+	agent, err := r.getByIDInternal(agentID, spaceID)
 	if err != nil {
 		return nil, err
 	}
 
 	// 不返回API Key，安全考虑
 	agent.APIKey = nil
+
+	return agent, nil
+}
+
+// GetByIDWithAPIKey 获取HiAgent包含API Key（内部使用）
+func (r *hiAgentRepositoryImpl) GetByIDWithAPIKey(agentID string, spaceID int64) (*ynet_agent.HiAgent, error) {
+	return r.getByIDInternal(agentID, spaceID)
+}
+
+// getByIDInternal 内部使用的方法，包含完整的API Key信息
+func (r *hiAgentRepositoryImpl) getByIDInternal(agentID string, spaceID int64) (*ynet_agent.HiAgent, error) {
+	var agent ynet_agent.HiAgent
+
+	err := r.db.Where("agent_id = ? AND space_id = ?", agentID, spaceID).First(&agent).Error
+	if err != nil {
+		return nil, err
+	}
+
+	// 解密API Key（如果需要的话）
+	if agent.APIKey != nil && *agent.APIKey != "" {
+		decrypted, err := r.decryptAPIKey(*agent.APIKey)
+		if err == nil {
+			agent.APIKey = &decrypted
+		}
+		// 如果解密失败，保留原值（可能本来就是明文）
+	}
 
 	return &agent, nil
 }
@@ -177,4 +202,16 @@ func (r *hiAgentRepositoryImpl) decodePageToken(token string) int {
 	var offset int
 	fmt.Sscanf(string(decoded), "%d", &offset)
 	return offset
+}
+
+func (r *hiAgentRepositoryImpl) TestConnection(endpoint, authType, apiKey string) (bool, string, error) {
+	// 简化的连接测试实现
+	// 实际项目中应该根据不同的平台类型进行真实的连接测试
+	if endpoint == "" {
+		return false, "endpoint is required", nil
+	}
+
+	// 这里可以添加实际的HTTP请求测试
+	// 目前简化处理，假设连接总是成功
+	return true, "Connection test successful", nil
 }

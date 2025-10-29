@@ -110,3 +110,8 @@ func (c *conversationImpl) List(ctx context.Context, req *entity.ListMeta) ([]*e
 
 	return conversationList, hasMore, nil
 }
+
+// UpdateExt 更新conversation的Ext字段
+func (c *conversationImpl) UpdateExt(ctx context.Context, id int64, ext string) error {
+	return c.ConversationRepo.UpdateExt(ctx, id, ext)
+}

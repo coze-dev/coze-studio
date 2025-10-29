@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import React, { useEffect } from 'react';
 import { get, set, omit, isEmpty } from 'lodash-es';
 import {
   Field,
@@ -25,6 +26,7 @@ import {
   type FormRenderProps,
   nanoid,
   type Validate,
+  DataEvent,
 } from '@flowgram-adapter/free-layout-editor';
 import { PublicScopeProvider } from '@coze-workflow/variable';
 import { nodeUtils, ViewVariableType } from '@coze-workflow/nodes';
@@ -99,11 +101,38 @@ const Render = ({ form }: FormRenderProps<FormData>) => {
   const { isChatflow } = useGetWorkflowMode();
   const { isBindDouyin } = useGlobalState();
 
+  // 动态计算 subtitle 根据当前选择的模型
+  const model = form.getValueIn('model') as IModelValue | undefined;
+  useEffect(() => {
+    if (!model) return;
+
+    let subtitle = model?.modelName || '';
+    if (model?.isHiagent) {
+      if (model?.externalAgentPlatform === 'dify') {
+        subtitle = `Dify: ${model.modelName || ''}`;
+      } else if (model?.externalAgentPlatform === 'singleagent') {
+        subtitle = `内部智能体: ${model.modelName || ''}`;
+      } else {
+        subtitle = `HiAgent: ${model.modelName || ''}`;
+      }
+    }
+
+    // 更新 nodeMeta 的 subtitle 和 subTitle（兼容两种命名）
+    const currentNodeMeta = form.getValueIn('nodeMeta');
+    if (currentNodeMeta?.subTitle !== subtitle) {
+      form.setValueIn('nodeMeta', {
+        ...currentNodeMeta,
+        subtitle: subtitle,    // 小写（用于验证器）
+        subTitle: subtitle,    // 驼峰（用于渲染组件）
+      });
+    }
+  }, [model?.modelName, model?.isHiagent, model?.externalAgentPlatform]);
+
   return (
     <PublicScopeProvider>
       <>
         <NodeMeta
-          deps={['outputs', 'batchMode']}
+          deps={['outputs', 'batchMode', 'model']}
           outputsPath={'outputs'}
           batchModePath={'batchMode'}
         />
@@ -373,7 +402,48 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
       'batch.inputLists',
     ),
     outputs: provideNodeOutputVariablesEffect,
-    model: provideReasoningContentEffect,
+    model: [
+      ...provideReasoningContentEffect,
+      ...fireNodeTitleChange,
+      // Update subtitle when model changes
+      {
+        event: DataEvent.onValueChange,
+        effect: ({ formValues, form, context }) => {
+          const model = get(formValues, 'model') as IModelValue | undefined;
+          console.log('[LLM Effect] Model changed:', model);
+          if (!model) return;
+
+          // Generate subtitle based on model type
+          let subtitle = model?.modelName || '';
+          if (model?.isHiagent) {
+            if (model?.externalAgentPlatform === 'dify') {
+              subtitle = `Dify: ${model.modelName || ''}`;
+            } else {
+              subtitle = `HiAgent: ${model.modelName || ''}`;
+            }
+          }
+
+          console.log('[LLM Effect] Setting subtitle to:', subtitle);
+
+          // Update entire nodeMeta object to trigger proper change detection
+          // 同时更新 subtitle（小写）和 subTitle（驼峰）以确保兼容性
+          const currentNodeMeta = form.getValueIn('nodeMeta');
+          form.setValueIn('nodeMeta', {
+            ...currentNodeMeta,
+            subtitle: subtitle,    // 小写（用于验证器）
+            subTitle: subtitle,    // 驼峰（用于NodeHeader组件渲染）
+          });
+
+          console.log('[LLM Effect] Updated nodeMeta:', form.getValueIn('nodeMeta'));
+
+          // Manually trigger node title change to force re-render
+          if (context) {
+            console.log('[LLM Effect] Triggering fireNodesTitleChange');
+            context.playgroundContext.nodesService.fireNodesTitleChange();
+          }
+        },
+      },
+    ],
   },
   // eslint-disable-next-line complexity
   formatOnInit(value, context) {
@@ -508,8 +578,25 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
     );
     llmParam.push(prompt, enableChatHistory, chatHistoryRound, systemPrompt);
     const isBatch = batchMode === 'batch';
+
+    // Update subtitle to show current model name
+    let subtitle = model?.modelName || '';
+    if (model?.isHiagent) {
+      if (model?.externalAgentPlatform === 'dify') {
+        subtitle = `Dify: ${model.modelName || ''}`;
+      } else if (model?.externalAgentPlatform === 'singleagent') {
+        subtitle = `内部智能体: ${model.modelName || ''}`;
+      } else {
+        subtitle = `HiAgent: ${model.modelName || ''}`;
+      }
+    }
+
     const formattedValue: Record<string, unknown> = {
-      nodeMeta: value.nodeMeta,
+      nodeMeta: {
+        ...value.nodeMeta,
+        subtitle: subtitle,    // 小写（用于验证器）
+        subTitle: subtitle,    // 驼峰（用于NodeHeader组件渲染）
+      },
       inputs: {
         inputParameters: get(value, '$$input_decorator$$.inputParameters'),
         llmParam,

@@ -17,6 +17,8 @@
 package workflow
 
 import (
+	"sync"
+
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -56,6 +58,11 @@ type ExecuteConfig struct {
 	ConversationHistorySchemaMessages []*schema.Message
 	SectionID                         *int64
 	MaxHistoryRounds                  *int32
+
+	// HiAgent conversation mapping: map[agentID]HiAgentConversationInfo
+	// Used to maintain HiAgent conversation state across multiple calls in the same ChatFlow session
+	HiAgentConversations              map[string]*HiAgentConversationInfo
+	hiAgentConversationsMu            sync.RWMutex
 }
 
 type ExecuteMode string
@@ -91,3 +98,66 @@ const (
 	BizTypeAgent    BizType = "agent"
 	BizTypeWorkflow BizType = "workflow"
 )
+
+// HiAgentConversationInfo stores HiAgent conversation state
+type HiAgentConversationInfo struct {
+	AppConversationID string `json:"app_conversation_id"`
+	LastSectionID     int64  `json:"last_section_id"`
+}
+
+// GetHiAgentConversationID retrieves the HiAgent conversation ID for a specific agent (backward compatible)
+func (c *ExecuteConfig) GetHiAgentConversationID(agentID string) string {
+	info := c.GetHiAgentConversationInfo(agentID)
+	if info == nil {
+		return ""
+	}
+	return info.AppConversationID
+}
+
+// GetHiAgentConversationInfo retrieves the full HiAgent conversation info for a specific agent
+func (c *ExecuteConfig) GetHiAgentConversationInfo(agentID string) *HiAgentConversationInfo {
+	c.hiAgentConversationsMu.RLock()
+	defer c.hiAgentConversationsMu.RUnlock()
+
+	if c.HiAgentConversations == nil {
+		return nil
+	}
+	return c.HiAgentConversations[agentID]
+}
+
+// SetHiAgentConversationID sets the HiAgent conversation ID for a specific agent (backward compatible)
+func (c *ExecuteConfig) SetHiAgentConversationID(agentID, appConvID string) {
+	c.SetHiAgentConversationInfo(agentID, &HiAgentConversationInfo{
+		AppConversationID: appConvID,
+		LastSectionID:     0, // Will be updated when section info is available
+	})
+}
+
+// SetHiAgentConversationInfo sets the full HiAgent conversation info for a specific agent
+func (c *ExecuteConfig) SetHiAgentConversationInfo(agentID string, info *HiAgentConversationInfo) {
+	c.hiAgentConversationsMu.Lock()
+	defer c.hiAgentConversationsMu.Unlock()
+
+	if c.HiAgentConversations == nil {
+		c.HiAgentConversations = make(map[string]*HiAgentConversationInfo)
+	}
+	c.HiAgentConversations[agentID] = info
+}
+
+// ClearHiAgentConversationID clears the HiAgent conversation ID for a specific agent
+func (c *ExecuteConfig) ClearHiAgentConversationID(agentID string) {
+	c.hiAgentConversationsMu.Lock()
+	defer c.hiAgentConversationsMu.Unlock()
+
+	if c.HiAgentConversations != nil {
+		delete(c.HiAgentConversations, agentID)
+	}
+}
+
+// ClearAllHiAgentConversations clears all HiAgent conversation mappings
+func (c *ExecuteConfig) ClearAllHiAgentConversations() {
+	c.hiAgentConversationsMu.Lock()
+	defer c.hiAgentConversationsMu.Unlock()
+
+	c.HiAgentConversations = make(map[string]*HiAgentConversationInfo)
+}
