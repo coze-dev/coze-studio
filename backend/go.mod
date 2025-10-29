@@ -33,7 +33,7 @@ require (
 	github.com/cloudwego/hertz v0.10.2
 	github.com/dimchansky/utfbom v1.1.1
 	github.com/elastic/go-elasticsearch/v7 v7.17.10
-	github.com/elastic/go-elasticsearch/v8 v8.18.0
+	github.com/elastic/go-elasticsearch/v8 v8.19.0
 	github.com/extrame/xls v0.0.1
 	github.com/getkin/kin-openapi v0.118.0
 	github.com/go-resty/resty/v2 v2.16.5
