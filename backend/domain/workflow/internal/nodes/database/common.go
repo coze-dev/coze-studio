@@ -421,9 +421,10 @@ func getExecUserID(ctx context.Context) string {
 	if execCtx == nil {
 		panic(fmt.Errorf("unable to get exe context"))
 	}
-	if execCtx.RootCtx.ExeCfg.AgentID != nil {
+	if execCtx.RootCtx.ExeCfg.ConnectorUID != "" {
 		return execCtx.RootCtx.ExeCfg.ConnectorUID
 	}
+	
 	uIDStr := strconv.FormatInt(execCtx.RootCtx.ExeCfg.Operator, 10)
 	return uIDStr
 }
