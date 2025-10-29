@@ -15,7 +15,6 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { useShallow } from 'zustand/react/shallow';
 
 import {
   WorkspaceSubMenu as BaseWorkspaceSubMenu,
@@ -170,16 +169,14 @@ export const WorkspaceSubMenu = () => {
     loading,
     createSpace,
     fetchSpaces,
-  } = useSpaceStore(
-    useShallow(state => ({
-      space: state.space,
-      spaceList: state.spaceList,
-      recentlyUsedSpaceList: state.recentlyUsedSpaceList,
-      loading: !!state.loading || !state.inited,
-      createSpace: state.createSpace,
-      fetchSpaces: state.fetchSpaces,
-    })),
-  );
+  } = useSpaceStore(state => ({
+    space: state.space,
+    spaceList: state.spaceList,
+    recentlyUsedSpaceList: state.recentlyUsedSpaceList,
+    loading: !!state.loading || !state.inited,
+    createSpace: state.createSpace,
+    fetchSpaces: state.fetchSpaces,
+  }));
 
   const subMenu = createSubMenuConfig();
 
