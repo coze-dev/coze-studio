@@ -243,8 +243,8 @@ func (c *es8Client) CreateIndex(ctx context.Context, index string, properties ma
 			Properties: propertiesMap,
 		},
 		Settings: &types.IndexSettings{
-			NumberOfShards:   getEnvDefaultIntSetting("ES_NUMBER_OF_SHARDS", "1"),
-			NumberOfReplicas: getEnvDefaultIntSetting("ES_NUMBER_OF_REPLICAS", "1"),
+			NumberOfShards:   ptr.Of(getEnvDefaultIntSetting("ES_NUMBER_OF_SHARDS", "1")),
+			NumberOfReplicas: ptr.Of(getEnvDefaultIntSetting("ES_NUMBER_OF_REPLICAS", "1")),
 		},
 	}).Do(ctx); err != nil {
 		return err

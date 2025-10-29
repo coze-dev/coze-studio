@@ -40,5 +40,10 @@ func GetPython3Path() string {
 		return ".venv/bin/python3"
 	}
 
-	return filepath.Join(cwd, ".venv/bin/python3")
+	filePath := filepath.Join(cwd, ".venv/bin/python3")
+	if _, err := os.Stat(filePath); err == nil {
+		return filePath
+	}
+
+	return "python3" // use system python3
 }
