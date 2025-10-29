@@ -63,7 +63,7 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, sseSen
 		return caErr
 	}
 
-	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, ar.User, connectorID)
+	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
 	if ccErr != nil {
 		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
 		return ccErr
@@ -83,7 +83,7 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, sseSen
 	return nil
 }
 
-func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *run.ChatV3Request, creatorID int64, userID string, connectorID int64) (*convEntity.Conversation, error) {
+func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *run.ChatV3Request, creatorID int64, connectorID int64) (*convEntity.Conversation, error) {
 	var conversationData *convEntity.Conversation
 	if ptr.From(ar.ConversationID) > 0 {
 		conData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, ptr.From(ar.ConversationID))
@@ -100,7 +100,7 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 			CreatorID:   creatorID,
 			ConnectorID: connectorID,
 			Scene:       common.Scene_SceneOpenApi,
-			UserID:      ptr.Of(userID),
+			UserID:      ptr.Of(ar.User),
 		})
 		if err != nil {
 			return nil, err
