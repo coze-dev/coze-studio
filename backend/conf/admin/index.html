@@ -1876,7 +1876,7 @@
                     return;
                 }
                 if (data && Number(data.code) === 0) {
-                    showSuccess(t('success.saved_restart_required'));
+                    showSuccess(t('success.saved'));
                 } else {
                     const msg = (data && (data.msg || data.message)) ? (data.msg || data.message) : t('error.save_failed');
                     showError(msg);
@@ -2453,31 +2453,31 @@
                   const initial = {
                       embedding_type: embedding?.type ?? '',
                       embedding_max_batch_size: Number(embedding?.max_batch_size ?? 100),
-                      ark_base_url: conn?.ark?.base_url || baseConn?.base_url || '',
-                      ark_api_key: conn?.ark?.api_key || baseConn?.api_key || '',
+                      ark_base_url:  baseConn?.base_url || '',
+                      ark_api_key:  baseConn?.api_key || '',
                       ark_region: conn?.ark?.region || '',
-                      ark_model: conn?.ark?.model || baseConn?.model || '',
-                      ark_embedding_dims: conn?.ark?.embedding_dims ?? embeddingInfo?.dims ?? '',
+                      ark_model: baseConn?.model || '',
+                      ark_embedding_dims: embeddingInfo?.dims ?? '0',
                       ark_embedding_api_type: conn?.ark?.embedding_api_type || conn?.ark?.api_type || '',
-                      openai_base_url: conn?.openai?.base_url || '',
-                      openai_api_key: conn?.openai?.api_key || '',
-                      openai_model: conn?.openai?.model || '',
-                      openai_embedding_dims: conn?.openai?.embedding_dims ?? '',
+                      openai_base_url: baseConn?.base_url || '',
+                      openai_api_key:  baseConn?.api_key || '',
+                      openai_model:  baseConn?.model || '',
+                      openai_embedding_dims: embeddingInfo?.dims ?? '0',
                       openai_embedding_request_dims: conn?.openai?.embedding_request_dims ?? conn?.openai?.request_dims ?? '',
                       openai_embedding_by_azure: Boolean(conn?.openai?.embedding_by_azure ?? conn?.openai?.by_azure),
                       openai_embedding_api_version: conn?.openai?.embedding_api_version ?? conn?.openai?.api_version ?? '',
-                      ollama_base_url: conn?.ollama?.base_url || '',
-                      ollama_model: conn?.ollama?.model || '',
-                      ollama_embedding_dims: conn?.ollama?.embedding_dims ?? '',
-                      gemini_base_url: conn?.gemini?.base_url || '',
-                      gemini_api_key: conn?.gemini?.api_key || '',
-                      gemini_model: conn?.gemini?.model || '',
-                      gemini_embedding_dims: conn?.gemini?.embedding_dims ?? '',
+                      ollama_base_url: baseConn?.base_url || '',
+                      ollama_model: baseConn?.model || '',
+                      ollama_embedding_dims: embeddingInfo?.dims ?? '0',
+                      gemini_base_url:  baseConn?.base_url || '',
+                      gemini_api_key:  baseConn?.api_key || '',
+                      gemini_model:  baseConn?.model || '',
+                      gemini_embedding_dims: embeddingInfo?.dims ?? '0',
                       gemini_embedding_backend: conn?.gemini?.embedding_backend ?? conn?.gemini?.backend ?? '',
                       gemini_embedding_project: conn?.gemini?.embedding_project ?? conn?.gemini?.project ?? '',
                       gemini_embedding_location: conn?.gemini?.embedding_location ?? conn?.gemini?.location ?? '',
                       http_address: conn?.http?.address || '',
-                      http_dims: conn?.http?.dims ?? embeddingInfo?.dims ?? '',
+                      http_dims: embeddingInfo?.dims ?? '0',
                       rerank_type: rerank?.type ?? '',
                       vik_ak: rerank?.vikingdb_config?.ak || '',
                       vik_sk: rerank?.vikingdb_config?.sk || '',
@@ -2492,6 +2492,84 @@
                       parser_paddleocr_structure_api_url: parser?.paddleocr_structure_api_url || '',
                       builtin_model_id: builtinModelId ?? ''
                   };
+
+                  if (initial.embedding_type==0) {
+                    initial.openai_api_key ='';
+                    initial.openai_base_url ='';
+                    initial.openai_model ='';
+                    initial.openai_embedding_dims ='';
+                    initial.ollama_base_url ='';
+                    initial.ollama_model ='';
+                    initial.ollama_embedding_dims ='';
+                    initial.gemini_base_url ='';
+                    initial.gemini_api_key ='';
+                    initial.gemini_model ='';
+                    initial.gemini_embedding_dims ='';
+                    initial.http_address ='';
+                    initial.http_dims ='';
+                  }else if (initial.embedding_type==1) {
+                    initial.ark_base_url ='';
+                    initial.ark_api_key ='';
+                    initial.ark_region ='';
+                    initial.ark_model ='';
+                    initial.ark_embedding_dims ='';
+                    initial.ollama_base_url ='';
+                    initial.ollama_model ='';
+                    initial.ollama_embedding_dims ='';
+                    initial.gemini_base_url ='';
+                    initial.gemini_api_key ='';
+                    initial.gemini_model ='';
+                    initial.gemini_embedding_dims ='';
+                    initial.http_address ='';
+                    initial.http_dims ='';
+                  } else if (initial.embedding_type==2) {
+                    initial.openai_api_key ='';
+                    initial.openai_base_url ='';
+                    initial.openai_model ='';
+                    initial.openai_embedding_dims ='';
+                    initial.ark_base_url ='';
+                    initial.ark_api_key ='';
+                    initial.ark_region ='';
+                    initial.ark_model ='';
+                    initial.ark_embedding_dims ='';
+                    initial.gemini_base_url ='';
+                    initial.gemini_api_key ='';
+                    initial.gemini_model ='';
+                    initial.http_address ='';
+                    initial.http_dims ='';
+                  } else if (initial.embedding_type==3) {
+                    initial.openai_api_key ='';
+                    initial.openai_base_url ='';
+                    initial.openai_model ='';
+                    initial.openai_embedding_dims ='';
+                    initial.ark_base_url ='';
+                    initial.ark_api_key ='';
+                    initial.ark_region ='';
+                    initial.ark_model ='';
+                    initial.ark_embedding_dims ='';
+                    initial.ollama_base_url ='';
+                    initial.ollama_model ='';
+                    initial.ollama_embedding_dims ='';
+                    initial.http_address ='';
+                    initial.http_dims ='';
+                  } else if (initial.embedding_type==4) {
+                    initial.openai_api_key ='';
+                    initial.openai_base_url ='';
+                    initial.openai_model ='';
+                    initial.openai_embedding_dims ='';
+                    initial.ark_base_url ='';
+                    initial.ark_api_key ='';
+                    initial.ark_region ='';
+                    initial.ark_model ='';
+                    initial.ark_embedding_dims ='';
+                    initial.ollama_base_url ='';
+                    initial.ollama_model ='';
+                    initial.ollama_embedding_dims ='';
+                    initial.gemini_base_url ='';
+                    initial.gemini_api_key ='';
+                    initial.gemini_model ='';
+                    initial.gemini_embedding_dims ='';
+                  }
 
                   const inputStyle = "width:100%;padding:8px;border:1px solid #e1e8ed;border-radius:6px;font-size:12px;";
                   const labelStyle = "font-size:12px;color:#374151;margin-bottom:6px;";
@@ -2544,9 +2622,9 @@
                                     <input id="kb_ark_model" type="text" style="${inputStyle}" value="${initial.ark_model}" />
                                   </div>
                                   <div>
-                                    <div style="${labelStyle}">Dims<span style="display:inline-block;width:6px;height:6px;background:#e74c3c;border-radius:50%;margin-left:6px;"></span></div>
+                                    <div style="${labelStyle}">Dims</div>
                                     <input id="kb_ark_embedding_dims" type="number" style="${inputStyle}" value="${initial.ark_embedding_dims}" />
-                                  </div>
+                                </div>
                                   <div>
                                     <div style="${labelStyle}">API Type</div>
                                     <select id="kb_ark_embedding_api_type" style="${inputStyle}">
@@ -2574,9 +2652,9 @@
                                     <input id="kb_openai_api_key" type="text" style="${inputStyle}" value="${initial.openai_api_key}" />
                                   </div>
                                   <div>
-                                    <div style="${labelStyle}">Dims<span style="display:inline-block;width:6px;height:6px;background:#e74c3c;border-radius:50%;margin-left:6px;"></span></div>
+                                    <div style="${labelStyle}">Dims</div>
                                     <input id="kb_openai_embedding_dims" type="number" style="${inputStyle}" value="${initial.openai_embedding_dims}" />
-                                  </div>
+                                </div>
                                   <!-- 选填字段靠后显示：By Azure、API Version、Request Dims -->
                                   <div>
                                     <div style="${labelStyle}">By Azure</div>
@@ -2605,9 +2683,9 @@
                                     <input id="kb_ollama_model" type="text" style="${inputStyle}" value="${initial.ollama_model}" />
                                   </div>
                                   <div>
-                                    <div style="${labelStyle}">Dims<span style="display:inline-block;width:6px;height:6px;background:#e74c3c;border-radius:50%;margin-left:6px;"></span></div>
+                                    <div style="${labelStyle}">Dims</div>
                                     <input id="kb_ollama_embedding_dims" type="number" style="${inputStyle}" value="${initial.ollama_embedding_dims}" />
-                                  </div>
+                                </div>
                                 </div>
                               </div>
 
@@ -2626,14 +2704,15 @@
                                     <div style="${labelStyle}">Model<span style="display:inline-block;width:6px;height:6px;background:#e74c3c;border-radius:50%;margin-left:6px;"></span></div>
                                     <input id="kb_gemini_model" type="text" style="${inputStyle}" value="${initial.gemini_model}" />
                                   </div>
-                                  <div>
-                                    <div style="${labelStyle}">Dims<span style="display:inline-block;width:6px;height:6px;background:#e74c3c;border-radius:50%;margin-left:6px;"></span></div>
-                                    <input id="kb_gemini_embedding_dims" type="number" style="${inputStyle}" value="${initial.gemini_embedding_dims}" />
-                                  </div>
+                           
                                   <div>
                                     <div style="${labelStyle}">Backend<span style="display:inline-block;width:6px;height:6px;background:#e74c3c;border-radius:50%;margin-left:6px;"></span></div>
                                     <input id="kb_gemini_embedding_backend" type="number" style="${inputStyle}" value="${initial.gemini_embedding_backend}" />
                                   </div>
+                                <div>
+                                    <div style="${labelStyle}">Dims</div>
+                                    <input id="kb_gemini_embedding_dims" type="number" style="${inputStyle}" value="${initial.gemini_embedding_dims}" />
+                                </div>
                                   <div>
                                     <div style="${labelStyle}">Project</div>
                                     <input id="kb_gemini_embedding_project" type="text" style="${inputStyle}" value="${initial.gemini_embedding_project}" />
@@ -2653,7 +2732,7 @@
                                     <input id="kb_http_address" type="text" style="${inputStyle}" value="${initial.http_address}" />
                                   </div>
                                   <div>
-                                    <div style="${labelStyle}">Dims<span style="display:inline-block;width:6px;height:6px;background:#e74c3c;border-radius:50%;margin-left:6px;"></span></div>
+                                    <div style="${labelStyle}">Dims</div>
                                     <input id="kb_http_dims" type="number" style="${inputStyle}" value="${initial.http_dims}" />
                                   </div>
                                 </div>
@@ -3041,7 +3120,7 @@
                       if (!get('kb_ark_base_url')) missing.push('Base URL');
                       if (!get('kb_ark_api_key')) missing.push('API Key');
                       if (!get('kb_ark_model')) missing.push('Model');
-                      if (!dimsVal || isNaN(dimsVal) || dimsVal <= 0) missing.push('Dims');
+                      
                       if (missing.length > 0) {
                           showError(t('error.missing_required', { list: missing.join(', ') }));
                           return;
@@ -3053,7 +3132,6 @@
                       if (!get('kb_openai_base_url')) missing.push('Base URL');
                       if (!get('kb_openai_model')) missing.push('Model');
                       if (!get('kb_openai_api_key')) missing.push('API Key');
-                      if (!dimsVal || isNaN(dimsVal) || dimsVal <= 0) missing.push('Dims');
                       if (missing.length > 0) {
                           showError(t('error.missing_required', { list: missing.join(', ') }));
                           return;
@@ -3064,7 +3142,6 @@
                       const missing = [];
                       if (!get('kb_ollama_base_url')) missing.push('Base URL');
                       if (!get('kb_ollama_model')) missing.push('Model');
-                      if (!dimsVal || isNaN(dimsVal) || dimsVal <= 0) missing.push('Dims');
                       if (missing.length > 0) {
                           showError(t('error.missing_required', { list: missing.join(', ') }));
                           return;
@@ -3077,7 +3154,6 @@
                       if (!get('kb_gemini_base_url')) missing.push('Base URL');
                       if (!get('kb_gemini_api_key')) missing.push('API Key');
                       if (!get('kb_gemini_model')) missing.push('Model');
-                      if (!dimsVal || isNaN(dimsVal) || dimsVal <= 0) missing.push('Dims');
                       if (!backendStr) missing.push('Backend');
                       if (missing.length > 0) {
                           showError(t('error.missing_required', { list: missing.join(', ') }));
@@ -3088,7 +3164,6 @@
                       const dimsVal = Number(document.getElementById('kb_http_dims')?.value);
                       const missing = [];
                       if (!get('kb_http_address')) missing.push('Address');
-                      if (!dimsVal || isNaN(dimsVal) || dimsVal <= 0) missing.push('Dims');
                       if (missing.length > 0) {
                           showError(t('error.missing_required', { list: missing.join(', ') }));
                           return;
@@ -3109,7 +3184,7 @@
                       }
                   } catch (_) {}
 
-                  showOverlay(t('overlay.saving'));
+                //   showOverlay(t('overlay.saving'));
                   fetch('/api/admin/config/knowledge/save', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },

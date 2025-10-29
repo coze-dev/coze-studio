@@ -21,11 +21,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/cloudwego/eino-ext/components/embedding/gemini"
-	"github.com/cloudwego/eino-ext/components/embedding/ollama"
-	"github.com/cloudwego/eino-ext/components/embedding/openai"
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
-	"google.golang.org/genai"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
@@ -34,9 +30,7 @@ import (
 	searchstoreOceanbase "github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/oceanbase"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/vikingdb"
 	"github.com/coze-dev/coze-studio/backend/infra/embedding"
-	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl/ark"
-	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl/http"
-	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl/wrap"
+	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl"
 	"github.com/coze-dev/coze-studio/backend/infra/es/impl/es"
 	"github.com/coze-dev/coze-studio/backend/infra/oceanbase"
 	"github.com/coze-dev/coze-studio/backend/pkg/envkey"
@@ -82,7 +76,7 @@ func getVectorStore(ctx context.Context, conf *config.KnowledgeConfig) (searchst
 			return nil, fmt.Errorf("init milvus client failed, err=%w", err)
 		}
 
-		emb, err := getEmbedding(ctx, conf.EmbeddingConfig)
+		emb, err := impl.GetEmbedding(ctx, conf.EmbeddingConfig)
 		if err != nil {
 			return nil, fmt.Errorf("init milvus embedding failed, err=%w", err)
 		}
@@ -134,7 +128,7 @@ func getVectorStore(ctx context.Context, conf *config.KnowledgeConfig) (searchst
 				BuiltinEmbedding:   nil,
 			}
 		} else {
-			builtinEmbedding, err := getEmbedding(ctx, conf.EmbeddingConfig)
+			builtinEmbedding, err := impl.GetEmbedding(ctx, conf.EmbeddingConfig)
 			if err != nil {
 				return nil, fmt.Errorf("builtint embedding init failed, err=%w", err)
 			}
@@ -159,7 +153,7 @@ func getVectorStore(ctx context.Context, conf *config.KnowledgeConfig) (searchst
 		return mgr, nil
 
 	case "oceanbase":
-		emb, err := getEmbedding(ctx, conf.EmbeddingConfig)
+		emb, err := impl.GetEmbedding(ctx, conf.EmbeddingConfig)
 		if err != nil {
 			return nil, fmt.Errorf("init oceanbase embedding failed, err=%w", err)
 		}
@@ -212,104 +206,4 @@ func getVectorStore(ctx context.Context, conf *config.KnowledgeConfig) (searchst
 	default:
 		return nil, fmt.Errorf("unexpected vector store type, type=%s", vsType)
 	}
-}
-
-func getEmbedding(ctx context.Context, cfg *config.EmbeddingConfig) (embedding.Embedder, error) {
-	var (
-		emb           embedding.Embedder
-		err           error
-		connInfo      = cfg.Connection.BaseConnInfo
-		embeddingInfo = cfg.Connection.EmbeddingInfo
-	)
-
-	switch cfg.Type {
-	case config.EmbeddingType_OpenAI:
-		openaiConnCfg := cfg.Connection.Openai
-		openAICfg := &openai.EmbeddingConfig{
-			APIKey:     connInfo.APIKey,
-			BaseURL:    connInfo.BaseURL,
-			Model:      connInfo.Model,
-			ByAzure:    openaiConnCfg.ByAzure,
-			APIVersion: openaiConnCfg.APIVersion,
-		}
-
-		if openaiConnCfg.RequestDims > 0 {
-			// some openai model not support request dims
-			openAICfg.Dimensions = ptr.Of(int(openaiConnCfg.RequestDims))
-		}
-
-		emb, err = wrap.NewOpenAIEmbedder(ctx, openAICfg, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
-		if err != nil {
-			return nil, fmt.Errorf("init openai embedding failed, err=%w", err)
-		}
-	case config.EmbeddingType_Ark:
-		arkCfg := cfg.Connection.Ark
-
-		apiType := ark.APITypeText
-		if ark.APIType(arkCfg.APIType) == ark.APITypeMultiModal {
-			apiType = ark.APITypeMultiModal
-		}
-
-		emb, err = ark.NewArkEmbedder(ctx, &ark.EmbeddingConfig{
-			APIKey:  connInfo.APIKey,
-			Model:   connInfo.Model,
-			BaseURL: connInfo.BaseURL,
-			APIType: &apiType,
-		}, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
-		if err != nil {
-			return nil, fmt.Errorf("init ark embedding client failed, err=%w", err)
-		}
-
-	case config.EmbeddingType_Ollama:
-		emb, err = wrap.NewOllamaEmbedder(ctx, &ollama.EmbeddingConfig{
-			BaseURL: connInfo.BaseURL,
-			Model:   connInfo.Model,
-		}, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
-		if err != nil {
-			return nil, fmt.Errorf("init ollama embedding failed, err=%w", err)
-		}
-	case config.EmbeddingType_Gemini:
-		geminiCfg := cfg.Connection.Gemini
-
-		if len(connInfo.Model) == 0 {
-			return nil, fmt.Errorf("GEMINI_EMBEDDING_MODEL environment variable is required")
-		}
-		if len(connInfo.APIKey) == 0 {
-			return nil, fmt.Errorf("GEMINI_EMBEDDING_API_KEY environment variable is required")
-		}
-
-		geminiCli, err1 := genai.NewClient(ctx, &genai.ClientConfig{
-			APIKey:   connInfo.APIKey,
-			Backend:  genai.Backend(geminiCfg.Backend),
-			Project:  geminiCfg.Project,
-			Location: geminiCfg.Location,
-			HTTPOptions: genai.HTTPOptions{
-				BaseURL: connInfo.BaseURL,
-			},
-		})
-		if err1 != nil {
-			return nil, fmt.Errorf("init gemini client failed, err=%w", err)
-		}
-
-		emb, err = wrap.NewGeminiEmbedder(ctx, &gemini.EmbeddingConfig{
-			Client:               geminiCli,
-			Model:                connInfo.Model,
-			OutputDimensionality: ptr.Of(int32(embeddingInfo.Dims)),
-		}, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
-		if err != nil {
-			return nil, fmt.Errorf("init gemini embedding failed, err=%w", err)
-		}
-	case config.EmbeddingType_HTTP:
-		httpCfg := cfg.Connection.HTTP
-
-		emb, err = http.NewEmbedding(httpCfg.Address, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))
-		if err != nil {
-			return nil, fmt.Errorf("init http embedding failed, err=%w", err)
-		}
-
-	default:
-		return nil, fmt.Errorf("init knowledge embedding failed, type not configured")
-	}
-
-	return emb, nil
 }

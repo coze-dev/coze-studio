@@ -32,7 +32,7 @@ type denseOnlyWrap struct {
 	embedding.Embedder
 }
 
-func (d denseOnlyWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
+func (d *denseOnlyWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
 	resp := make([][]float64, 0, len(texts))
 	for _, part := range slices.Chunks(texts, d.batchSize) {
 		partResult, err := d.Embedder.EmbedStrings(ctx, part, opts...)
@@ -44,14 +44,24 @@ func (d denseOnlyWrap) EmbedStrings(ctx context.Context, texts []string, opts ..
 	return resp, nil
 }
 
-func (d denseOnlyWrap) EmbedStringsHybrid(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, []map[int]float64, error) {
+func (d *denseOnlyWrap) EmbedStringsHybrid(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, []map[int]float64, error) {
 	return nil, nil, fmt.Errorf("[denseOnlyWrap] EmbedStringsHybrid not support")
 }
 
-func (d denseOnlyWrap) Dimensions() int64 {
+func (d *denseOnlyWrap) Dimensions() int64 {
+	if d.dims == 0 {
+		embeddings, err := d.Embedder.EmbedStrings(context.Background(), []string{"test"})
+		if err != nil {
+			return 0
+		}
+		if len(embeddings) == 0 {
+			return 0
+		}
+		d.dims = int64(len(embeddings[0]))
+	}
 	return d.dims
 }
 
-func (d denseOnlyWrap) SupportStatus() contract.SupportStatus {
+func (d *denseOnlyWrap) SupportStatus() contract.SupportStatus {
 	return contract.SupportDense
 }
