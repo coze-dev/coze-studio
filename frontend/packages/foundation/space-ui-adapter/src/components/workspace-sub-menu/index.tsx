@@ -15,7 +15,7 @@
  */
 
 import { useNavigate } from 'react-router-dom';
-import { useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 
 import {
   WorkspaceSubMenu as BaseWorkspaceSubMenu,
