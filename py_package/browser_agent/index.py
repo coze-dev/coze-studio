@@ -220,8 +220,6 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                                        timeout=aiohttp.ClientTimeout(total=30),
                                        headers={
                                             'x-sandbox-taskid':ctx.conversation_id,
-                                            'x-tt-env':'ppe_coze_sandbox',
-                                            'x-use-ppe':'1',
                                         }) as response:
                     if response.status == 200:
                         reader = response.content
@@ -269,8 +267,6 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
             keep_alive=False,
             headers={
                 'x-sandbox-taskid':ctx.conversation_id,
-                'x-tt-env':'ppe_coze_sandbox',
-                'x-use-ppe':'1',
             },
         )
         browser_session = BrowserSession(

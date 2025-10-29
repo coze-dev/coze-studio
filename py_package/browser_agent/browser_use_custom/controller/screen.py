@@ -37,26 +37,26 @@ class VisualChangeDetector:
             w, h = img.size
             new_h = int(h * (self.resize_width / w))
             img = img.resize((self.resize_width, new_h))
-        if upload_service:
-            img_byte_arr = io.BytesIO()
-            img.save(img_byte_arr, format='JPEG')
-            binary_data = img_byte_arr.getvalue()
-            if not binary_data:
-                return
-            file_name = f"screenshot_{int(time.time())}.jpg"
-            base64_str = base64.b64encode(binary_data).decode('ascii')
-            if logger:
-                logger.info(f'upload screenshot to {file_name}')
-            else:
-                logging.info(f'upload screenshot to {file_name}')
-            try:
-                await upload_service.upload_file('',file_name,base64_content=base64_str)
-            except Exception as e:
-                if logger:
-                    logger.error(f"Failed to upload screenshot to {file_name}: {e}")
-                else:
-                    logging.error(f"Failed to upload screenshot to {file_name}: {e}")
-                return img.convert('RGB')
+        # if upload_service:
+        #     img_byte_arr = io.BytesIO()
+        #     img.save(img_byte_arr, format='JPEG')
+        #     binary_data = img_byte_arr.getvalue()
+        #     if not binary_data:
+        #         return
+        #     file_name = f"screenshot_{int(time.time())}.jpg"
+        #     base64_str = base64.b64encode(binary_data).decode('ascii')
+        #     if logger:
+        #         logger.info(f'upload screenshot to {file_name}')
+        #     else:
+        #         logging.info(f'upload screenshot to {file_name}')
+        #     try:
+        #         await upload_service.upload_file('',file_name,base64_content=base64_str)
+        #     except Exception as e:
+        #         if logger:
+        #             logger.error(f"Failed to upload screenshot to {file_name}: {e}")
+        #         else:
+        #             logging.error(f"Failed to upload screenshot to {file_name}: {e}")
+        #         return img.convert('RGB')
         return img.convert('RGB')  # 确保RGB模式
 
     def calculate_change(
