@@ -291,3 +291,37 @@ func (c *ConversationApplicationService) UpdateConversation(ctx context.Context,
 	}
 	return resp, nil
 }
+
+func (c *ConversationApplicationService) RetrieveConversation(ctx context.Context, req *conversation.RetrieveConversationApiRequest) (*conversation.RetrieveConversationApiResponse, error) {
+	resp := new(conversation.RetrieveConversationApiResponse)
+	convID := req.GetConversationID()
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	if userID == 0 {
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission check failed"))
+	}
+
+	conversationDO, err := c.ConversationDomainSVC.GetByID(ctx, convID)
+	if err != nil {
+		return resp, err
+	}
+	if conversationDO == nil {
+		return resp, errorx.New(errno.ErrConversationNotFound)
+	}
+	if conversationDO.CreatorID != userID {
+		return resp, errorx.New(errno.ErrConversationNotFound, errorx.KV("msg", "user not match"))
+	}
+
+	resp.ConversationData = &conversation.ConversationData{
+		Id:            conversationDO.ID,
+		LastSectionID: &conversationDO.SectionID,
+		ConnectorID:   &conversationDO.ConnectorID,
+		CreatedAt:     conversationDO.CreatedAt / 1000,
+		Name:          ptr.Of(conversationDO.Name),
+		CreatorID:     &conversationDO.CreatorID,
+		MetaData:      parseExt(conversationDO.Ext),
+	}
+	return resp, nil
+}

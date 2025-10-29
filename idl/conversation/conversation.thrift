@@ -118,3 +118,16 @@ struct DeleteConversationApiResponse {
     255: base.BaseResp BaseResp
 }
 
+struct RetrieveConversationApiRequest {
+    1:   required  i64 ConversationID (api.query = "conversation_id", agw.source = "query", api.js_conv="true")
+    255: base.Base Base
+}
+
+struct RetrieveConversationApiResponse {
+    1:   optional ConversationData ConversationData (agw.key = "data")
+
+    253: i32 Code (api.body = "code")
+    254: string Msg (api.body = "msg")
+    255: required base.BaseResp    BaseResp
+}
+

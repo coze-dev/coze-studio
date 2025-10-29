@@ -387,6 +387,7 @@ func buildARSM2ApiMessage(chunk *entity.AgentRunResponse) []byte {
 		ChatID:           strconv.FormatInt(chunkMessageItem.RunID, 10),
 		ReasoningContent: chunkMessageItem.ReasoningContent,
 		CreatedAt:        ptr.Of(chunkMessageItem.CreatedAt / 1000),
+		SectionID:        ptr.Of(strconv.FormatInt(chunkMessageItem.SectionID, 10)),
 	}
 
 	mCM, _ := json.Marshal(chunkMessage)
