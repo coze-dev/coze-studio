@@ -57,7 +57,7 @@ type embWrap struct {
 	embedding.Embedder
 }
 
-func (d embWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
+func (d *embWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
 	resp := make([][]float64, 0, len(texts))
 	for _, part := range slices.Chunks(texts, d.batchSize) {
 		partResult, err := d.Embedder.EmbedStrings(ctx, part, opts...)
@@ -87,19 +87,29 @@ func (d embWrap) EmbedStrings(ctx context.Context, texts []string, opts ...embed
 	return resp, nil
 }
 
-func (d embWrap) EmbedStringsHybrid(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, []map[int]float64, error) {
+func (d *embWrap) EmbedStringsHybrid(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, []map[int]float64, error) {
 	return nil, nil, fmt.Errorf("[arkEmbedder] EmbedStringsHybrid not support")
 }
 
-func (d embWrap) Dimensions() int64 {
+func (d *embWrap) Dimensions() int64 {
+	if d.dims == 0 {
+		embeddings, err := d.Embedder.EmbedStrings(context.Background(), []string{"test"})
+		if err != nil {
+			return 0
+		}
+		if len(embeddings) == 0 {
+			return 0
+		}
+		d.dims = int64(len(embeddings[0]))
+	}
 	return d.dims
 }
 
-func (d embWrap) SupportStatus() contract.SupportStatus {
+func (d *embWrap) SupportStatus() contract.SupportStatus {
 	return contract.SupportDense
 }
 
-func (d embWrap) slicedNormL2(vectors [][]float64) ([][]float64, error) {
+func (d *embWrap) slicedNormL2(vectors [][]float64) ([][]float64, error) {
 	if len(vectors) == 0 {
 		return vectors, nil
 	}
