@@ -694,6 +694,10 @@
                 'model.modal.gemini_project.placeholder': '选填，例如：my-project',
                 'model.modal.gemini_location.label': 'Location',
                 'model.modal.gemini_location.placeholder': '选填，例如：us-central1',
+                'model.modal.thinking_type.label': 'Thinking Type',
+                'model.modal.thinking_type.enable': 'Enable',
+                'model.modal.thinking_type.disable': 'Disable',
+                'model.modal.thinking_type.auto': 'Auto',
                 
                 // 知识库配置
                 'knowledge.error.load_failed_json': '加载知识库配置失败: 返回结果不是有效 JSON',
@@ -909,6 +913,10 @@
                 'model.modal.gemini_project.placeholder': 'Optional, e.g., my-project',
                 'model.modal.gemini_location.label': 'Location',
                 'model.modal.gemini_location.placeholder': 'Optional, e.g., us-central1',
+                'model.modal.thinking_type.label': 'Thinking Type',
+                'model.modal.thinking_type.enable': 'Enable',
+                'model.modal.thinking_type.disable': 'Disable',
+                'model.modal.thinking_type.auto': 'Auto',
                 
                 // Knowledge Config
                 'knowledge.error.load_failed_json': 'Load knowledge config failed: invalid JSON response',
@@ -2070,6 +2078,12 @@
                                      <input id="newModelGeminiProject" type="text" style="padding:8px;border:1px solid #e1e8ed;border-radius:8px;width:100%;display:none;" placeholder="${t('model.modal.gemini_project.placeholder')}">
                                      <label id="newModelGeminiLocationLabel" style="font-size:12px;color:#374151;display:none;">${t('model.modal.gemini_location.label')}</label>
                                      <input id="newModelGeminiLocation" type="text" style="padding:8px;border:1px solid #e1e8ed;border-radius:8px;width:100%;display:none;" placeholder="${t('model.modal.gemini_location.placeholder')}">
+                                     <label id="newModelThinkingTypeLabel" style="font-size:12px;color:#374151;display:none;">${t('model.modal.thinking_type.label')}</label>
+                                     <select id="newModelThinkingType" style="padding:8px;border:1px solid #e1e8ed;border-radius:8px;width:100%;display:none;">
+                                       <option value="2" selected>${t('model.modal.thinking_type.disable')}</option>
+                                       <option value="1">${t('model.modal.thinking_type.enable')}</option>
+                                       <option id="thinkingTypeAutoOption" value="3" style="display:none;">${t('model.modal.thinking_type.auto')}</option>
+                                     </select>
                                 </div>
                                 <div style="padding:12px 20px;display:flex;justify-content:flex-end;gap:8px;border-top:1px solid #f1f3f4;">
                                     <button onclick="closeAddModelModal()" style="background:#ecf0f1;color:#2c3e50;border:none;padding:8px 12px;border-radius:6px;cursor:pointer;">${t('common.cancel')}</button>
@@ -2241,6 +2255,20 @@
               if (geminiProjectInput) geminiProjectInput.style.display = isGemini ? '' : 'none';
               if (geminiLocationLabel) geminiLocationLabel.style.display = isGemini ? '' : 'none';
               if (geminiLocationInput) geminiLocationInput.style.display = isGemini ? '' : 'none';
+              
+              // Show/hide ThinkingType dropdown
+              const thinkingTypeLabel = document.getElementById('newModelThinkingTypeLabel');
+              const thinkingTypeSelect = document.getElementById('newModelThinkingType');
+              const thinkingTypeAutoOption = document.getElementById('thinkingTypeAutoOption');
+              const hasThinkingType = [2, 3, 11, 15, 20].includes(providerClass); // Ark, Claude, Gemini, Qwen, Ollama
+              const isArkProvider = providerClass === 2;
+              if (thinkingTypeLabel) thinkingTypeLabel.style.display = hasThinkingType ? '' : 'none';
+              if (thinkingTypeSelect) {
+                  thinkingTypeSelect.style.display = hasThinkingType ? '' : 'none';
+                  thinkingTypeSelect.value = '2'; // Reset to Disable
+              }
+              if (thinkingTypeAutoOption) thinkingTypeAutoOption.style.display = isArkProvider ? '' : 'none';
+              
               modal.style.display = 'flex';
           }
           function closeAddModelModal() {
@@ -2286,6 +2314,16 @@
               const baseConn = { model: model };
               if (baseUrl) baseConn.base_url = baseUrl;
               if (requireApiKey && apiKey) baseConn.api_key = apiKey;
+              
+              // 读取 ThinkingType（仅 Ark, Claude, Gemini, Qwen, Ollama）
+              const thinkingTypeSelect = document.getElementById('newModelThinkingType');
+              const hasThinkingType = [2, 3, 11, 15, 20].includes(providerClass);
+              if (hasThinkingType && thinkingTypeSelect) {
+                  const thinkingTypeValue = parseInt(thinkingTypeSelect.value, 10);
+                  if (!Number.isNaN(thinkingTypeValue)) {
+                      baseConn.thinking_type = thinkingTypeValue;
+                  }
+              }
               // 读取“启用 Base64 URL”复选框，默认 false
               const enableBase64UrlEl = document.getElementById('newModelEnableBase64Url');
               const enableBase64Url = !!(enableBase64UrlEl && enableBase64UrlEl.checked);
