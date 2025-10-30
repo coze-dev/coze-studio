@@ -216,6 +216,9 @@ func (kr *Retrieve) Invoke(ctx context.Context, input map[string]any) (map[strin
 		return map[string]any{
 			"documentId": m.Slice.DocumentID,
 			"output":     m.Slice.GetSliceContent(),
+			"score":        m.Score,
+			"documentName": m.Slice.DocumentName,
+			"documentUrl":  m.Slice.Extra["document_url"],
 		}
 	})
 
