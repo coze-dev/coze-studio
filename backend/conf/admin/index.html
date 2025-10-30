@@ -653,6 +653,11 @@
                 'model.field.azure': 'By Azure',
                 'model.field.api_version': 'API Version',
                 'model.field.endpoint': '接口地址',
+                'model.field.thinking_type': 'Thinking Type',
+                'model.thinking_type.default': 'Default',
+                'model.thinking_type.enable': 'Enable',
+                'model.thinking_type.disable': 'Disable',
+                'model.thinking_type.auto': 'Auto',
 
                 'model.error.load_list_failed': '加载模型列表失败',
                 'model.error.render_page_failed': '渲染模型页面失败',
@@ -872,6 +877,11 @@
                 'model.field.azure': 'By Azure',
                 'model.field.api_version': 'API Version',
                 'model.field.endpoint': 'Endpoint',
+                'model.field.thinking_type': 'Thinking Type',
+                'model.thinking_type.default': 'Default',
+                'model.thinking_type.enable': 'Enable',
+                'model.thinking_type.disable': 'Disable',
+                'model.thinking_type.auto': 'Auto',
 
                 'model.error.load_list_failed': 'Failed to load model list',
                 'model.error.render_page_failed': 'Failed to render model page',
@@ -2022,6 +2032,17 @@
             return s.slice(0, 6) + '***' + s.slice(-4);
         }
 
+        function getThinkingTypeText(thinkingTypeValue) {
+            const thinkingType = Number(thinkingTypeValue);
+            switch (thinkingType) {
+                case 0: return t('model.thinking_type.default');
+                case 1: return t('model.thinking_type.enable');
+                case 2: return t('model.thinking_type.disable');
+                case 3: return t('model.thinking_type.auto');
+                default: return '-';
+            }
+        }
+
         function renderModelManagement(payload) {
             try {
                 const providers = Array.isArray(payload?.provider_model_list) ? payload.provider_model_list : [];
@@ -2138,6 +2159,7 @@
                                                             <div>${t('model.field.model')}：${conn.model || '-'}</div>
                                                             ${p?.model_class === 20 ? '' : `<div>${t('model.field.api_key')}：${apiKeyMasked}</div>`}
                                                             <div>${t('model.field.base64_url')}：${m.enable_base64_url ? t('common.on') : t('common.off')}</div>
+                                                            <div>${t('model.field.thinking_type')}：${getThinkingTypeText(conn.thinking_type ?? 0)}</div>
                                                             ${p?.model_class === 2 ? `<div>${t('model.field.region')}：${m?.connection?.ark?.region || ''}</div>` : ''}
                                                             ${p?.model_class === 11 ? `<div>${t('model.field.backend')}：${m?.connection?.gemini?.backend ?? ''}</div><div>${t('model.field.project')}：${m?.connection?.gemini?.project || ''}</div><div>${t('model.field.location')}：${m?.connection?.gemini?.location || ''}</div>` : ''}
                                                             ${p?.model_class === 1 ? `<div>${t('model.field.azure')}：${(m?.connection?.openai?.by_azure === undefined) ? '' : (m?.connection?.openai?.by_azure ? 'true' : 'false')}</div><div>${t('model.field.api_version')}：${m?.connection?.openai?.api_version || ''}</div>` : ''}
