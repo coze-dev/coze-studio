@@ -105,7 +105,6 @@ struct ArkConnInfo {
 }
 
 struct OpenAIConnInfo {
-    5: i32 request_dims
     6: bool by_azure
     7: string api_version
 }

@@ -3562,9 +3562,8 @@ func (p *ArkConnInfo) String() string {
 }
 
 type OpenAIConnInfo struct {
-	RequestDims int32  `thrift:"request_dims,5" form:"request_dims" json:"request_dims" query:"request_dims"`
-	ByAzure     bool   `thrift:"by_azure,6" form:"by_azure" json:"by_azure" query:"by_azure"`
-	APIVersion  string `thrift:"api_version,7" form:"api_version" json:"api_version" query:"api_version"`
+	ByAzure    bool   `thrift:"by_azure,6" form:"by_azure" json:"by_azure" query:"by_azure"`
+	APIVersion string `thrift:"api_version,7" form:"api_version" json:"api_version" query:"api_version"`
 }
 
 func NewOpenAIConnInfo() *OpenAIConnInfo {
@@ -3572,10 +3571,6 @@ func NewOpenAIConnInfo() *OpenAIConnInfo {
 }
 
 func (p *OpenAIConnInfo) InitDefault() {
-}
-
-func (p *OpenAIConnInfo) GetRequestDims() (v int32) {
-	return p.RequestDims
 }
 
 func (p *OpenAIConnInfo) GetByAzure() (v bool) {
@@ -3587,7 +3582,6 @@ func (p *OpenAIConnInfo) GetAPIVersion() (v string) {
 }
 
 var fieldIDToName_OpenAIConnInfo = map[int16]string{
-	5: "request_dims",
 	6: "by_azure",
 	7: "api_version",
 }
@@ -3610,14 +3604,6 @@ func (p *OpenAIConnInfo) Read(iprot thrift.TProtocol) (err error) {
 		}
 
 		switch fieldId {
-		case 5:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 6:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField6(iprot); err != nil {
@@ -3663,17 +3649,6 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *OpenAIConnInfo) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.RequestDims = _field
-	return nil
-}
 func (p *OpenAIConnInfo) ReadField6(iprot thrift.TProtocol) error {
 
 	var _field bool
@@ -3703,10 +3678,6 @@ func (p *OpenAIConnInfo) Write(oprot thrift.TProtocol) (err error) {
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
 			goto WriteFieldError
@@ -3733,22 +3704,6 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *OpenAIConnInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("request_dims", thrift.I32, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.RequestDims); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
 func (p *OpenAIConnInfo) writeField6(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("by_azure", thrift.BOOL, 6); err != nil {
 		goto WriteFieldBeginError
