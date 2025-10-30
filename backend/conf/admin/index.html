@@ -425,12 +425,6 @@
             </div>
             
             <ul class="nav-menu">
-                <li class="nav-item">
-                    <a href="#" class="nav-link" data-page="workspace">
-                        <span class="nav-icon">🏠</span>
-                        工作台
-                    </a>
-                </li>
                 <li class="nav-item has-submenu">
                     <a href="#" class="nav-link" data-page="config">
                         <span class="nav-icon">⚙️</span>
@@ -504,14 +498,11 @@
         // i18n（简易字典 + 应用函数）
         const I18N = {
             'zh-CN': {
-                'nav.workspace': '工作台',
                 'nav.config': '配置管理',
                 'nav.basic': '基础配置',
                 'nav.model': '模型管理',
                 'nav.knowledge': '知识库配置',
 
-                'page.workspace.title': '工作台',
-                'page.workspace.desc': '工作台概览和快速操作',
                 'page.basic.title': '基础配置',
                 'page.basic.desc': '系统基础配置管理',
                 'page.model.title': '模型管理',
@@ -524,7 +515,6 @@
 
                 'loading': '加载中...',
                 'status.online': '在线',
-                'error.workspace_forbidden': '无法访问工作台：',
                 'error.generic': '发生错误',
                 'success.generic': '操作成功',
 
@@ -540,22 +530,6 @@
                 'feature.desc': '相关功能描述和操作入口',
 
                 'user.admin': '管理员',
-                'workspace.hero.title': '欢迎使用 Coze Studio',
-                'workspace.greeting.late': '夜深了，注意休息 🌙',
-                'workspace.greeting.morning': '早上好 🌅',
-                'workspace.greeting.noon': '中午好 ☀️',
-                'workspace.greeting.afternoon': '下午好 🌤️',
-                'workspace.greeting.evening': '晚上好 🌆',
-                'workspace.card.basic.title': '基础配置',
-                'workspace.card.basic.desc': '配置系统基础参数和核心设置，确保系统正常运行。',
-                'workspace.card.basic.cta': '开始配置',
-                'workspace.card.model.title': '模型管理',
-                'workspace.card.model.desc': '管理AI模型配置、参数调优和模型版本控制。',
-                'workspace.card.model.cta': '管理模型',
-                'workspace.card.knowledge.title': '知识库配置',
-                'workspace.card.knowledge.desc': '配置知识库索引、向量存储和检索策略设置。',
-                'workspace.card.knowledge.cta': '配置知识库',
-                'workspace.footer.cta': '让我们开始构建您的智能助手吧！',
 
                 'basic.loading': '正在加载配置...',
                 'basic.label.admin_emails': '管理员邮箱',
@@ -728,14 +702,11 @@
                 'knowledge.error.save_failed': '保存配置失败'
             },
             'en-US': {
-                'nav.workspace': 'Workspace',
                 'nav.config': 'Configuration',
                 'nav.basic': 'Basic Config',
                 'nav.model': 'Model Management',
                 'nav.knowledge': 'Knowledge Config',
 
-                'page.workspace.title': 'Workspace',
-                'page.workspace.desc': 'Workspace overview and quick actions',
                 'page.basic.title': 'Basic Config',
                 'page.basic.desc': 'System basic configuration',
                 'page.model.title': 'Model Management',
@@ -748,7 +719,6 @@
 
                 'loading': 'Loading...',
                 'status.online': 'Online',
-                'error.workspace_forbidden': 'Cannot access workspace: ',
                 'error.generic': 'Error occurred',
                 'success.generic': 'Success',
 
@@ -764,22 +734,6 @@
                 'feature.desc': 'Feature description and actions',
 
                 'user.admin': 'Admin',
-                'workspace.hero.title': 'Welcome to Coze Studio',
-                'workspace.greeting.late': 'It’s late, rest well 🌙',
-                'workspace.greeting.morning': 'Good morning 🌅',
-                'workspace.greeting.noon': 'Good noon ☀️',
-                'workspace.greeting.afternoon': 'Good afternoon 🌤️',
-                'workspace.greeting.evening': 'Good evening 🌆',
-                'workspace.card.basic.title': 'Basic Config',
-                'workspace.card.basic.desc': 'Configure system parameters and core settings to ensure proper operation.',
-                'workspace.card.basic.cta': 'Start Configuring',
-                'workspace.card.model.title': 'Model Management',
-                'workspace.card.model.desc': 'Manage AI model configs, tuning, and versioning.',
-                'workspace.card.model.cta': 'Manage Models',
-                'workspace.card.knowledge.title': 'Knowledge Config',
-                'workspace.card.knowledge.desc': 'Configure indexing, vector storage, and retrieval strategies.',
-                'workspace.card.knowledge.cta': 'Configure Knowledge',
-                'workspace.footer.cta': 'Let’s start building your AI assistant!',
 
                 'basic.loading': 'Loading configuration...',
                 'basic.label.admin_emails': 'Admin Emails',
@@ -983,7 +937,6 @@
         }
         function applyTranslations() {
             // 左侧导航
-            setNavLinkText(document.querySelector('[data-page="workspace"]'), t('nav.workspace'));
             setNavLinkText(document.querySelector('[data-page="config"]'), t('nav.config'));
             const basicLink = document.querySelector('[data-page="basic-config"]');
             if (basicLink) basicLink.innerHTML = '<span class="submenu-icon">🔧</span>' + t('nav.basic');
@@ -993,9 +946,8 @@
             if (knowledgeLink) knowledgeLink.innerHTML = '<span class="submenu-icon">📚</span>' + t('nav.knowledge');
 
             // 顶部标题（根据当前 hash）
-            const hash = window.location.hash.substring(1) || 'workspace';
+            const hash = window.location.hash.substring(1) || 'basic-config';
             const map = {
-                'workspace': { title: t('page.workspace.title'), desc: t('page.workspace.desc') },
                 'basic-config': { title: t('page.basic.title'), desc: t('page.basic.desc') },
                 'model-management': { title: t('page.model.title'), desc: t('page.model.desc') },
                 'knowledge-config': { title: t('page.knowledge.title'), desc: t('page.knowledge.desc') },
@@ -1076,7 +1028,6 @@
         // 从hash加载页面
         function loadPageFromHash(hash) {
             const pageConfig = {
-                'workspace': { title: t('page.workspace.title'), description: t('page.workspace.desc') },
                 'basic-config': { title: t('page.basic.title'), description: t('page.basic.desc') },
                 'model-management': { title: t('page.model.title'), description: t('page.model.desc') },
                 'knowledge-config': { title: t('page.knowledge.title'), description: t('page.knowledge.desc') }
@@ -1235,7 +1186,6 @@
         // 加载页面内容
         function loadPageContent(pageName) {
             const pageConfig = {
-                'workspace': { title: t('page.workspace.title'), description: t('page.workspace.desc') },
                 'basic-config': { title: t('page.basic.title'), description: t('page.basic.desc') },
                 'model-management': { title: t('page.model.title'), description: t('page.model.desc') },
                 'knowledge-config': { title: t('page.knowledge.title'), description: t('page.knowledge.desc') }
@@ -1252,45 +1202,24 @@
 
         // 显示默认页面
         function showDefaultPage() {
-            // 设置工作台为选中状态
-            const workspaceLink = document.querySelector('[data-page="workspace"]');
-            if (workspaceLink) {
+            // 设置基础配置为选中状态
+            const basicConfigLink = document.querySelector('[data-page="basic-config"]');
+            if (basicConfigLink) {
                 // 移除所有活动状态
                 navLinks.forEach(l => l.classList.remove('active'));
                 submenuLinks.forEach(l => l.classList.remove('active'));
                 
-                // 添加工作台的活动状态
-                workspaceLink.classList.add('active');
+                // 添加基础配置的活动状态
+                basicConfigLink.classList.add('active');
             }
             
             // 设置默认页面的URL hash
-            window.location.hash = 'workspace';
-            loadPageContent('workspace');
+            window.location.hash = 'basic-config';
+            loadPageContent('basic-config');
         }
 
         // 显示页面内容
         function showPageContent(pageName, title) {
-            // 如果是工作台页面，先调用权限检查接口
-            if (pageName === 'workspace') {
-                fetch('/api/admin/config/basic/get')
-                    .then(resp => resp.json())
-                    .then(data => {
-                        if (handleApiCode(data)) {
-                            return;
-                        }
-                        if (Number(data?.code) === 0) {
-                            showWorkspaceContent();
-                            return;
-                        }
-                        showError(t('error.workspace_forbidden') + (data?.msg ? String(data.msg) : ''));
-                    })
-                    .catch(err => {
-                        console.error('Workspace permission check failed:', err);
-                        showError(t('error.workspace_forbidden') + (err?.message ? String(err.message) : ''));
-                    });
-                return;
-            }
-            
             // 如果是基础配置页面，加载config.html的内容
             if (pageName === 'basic-config') {
                 loadBasicConfigPage();
