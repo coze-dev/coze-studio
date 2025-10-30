@@ -2159,7 +2159,7 @@
                                                             <div>${t('model.field.model')}：${conn.model || '-'}</div>
                                                             ${p?.model_class === 20 ? '' : `<div>${t('model.field.api_key')}：${apiKeyMasked}</div>`}
                                                             <div>${t('model.field.base64_url')}：${m.enable_base64_url ? t('common.on') : t('common.off')}</div>
-                                                            ${[1, 2, 3, 11, 15, 19, 20].includes(p?.model_class) ? `<div>${t('model.field.thinking_type')}：${getThinkingTypeText(conn.thinking_type ?? 0)}</div>` : ''}
+                                                            ${[2, 3, 11, 15, 20].includes(p?.model_class) ? `<div>${t('model.field.thinking_type')}：${getThinkingTypeText(conn.thinking_type ?? 0)}</div>` : ''}
                                                             ${p?.model_class === 2 ? `<div>${t('model.field.region')}：${m?.connection?.ark?.region || ''}</div>` : ''}
                                                             ${p?.model_class === 11 ? `<div>${t('model.field.backend')}：${m?.connection?.gemini?.backend ?? ''}</div><div>${t('model.field.project')}：${m?.connection?.gemini?.project || ''}</div><div>${t('model.field.location')}：${m?.connection?.gemini?.location || ''}</div>` : ''}
                                                             ${p?.model_class === 1 ? `<div>${t('model.field.azure')}：${(m?.connection?.openai?.by_azure === undefined) ? '' : (m?.connection?.openai?.by_azure ? 'true' : 'false')}</div><div>${t('model.field.api_version')}：${m?.connection?.openai?.api_version || ''}</div>` : ''}
