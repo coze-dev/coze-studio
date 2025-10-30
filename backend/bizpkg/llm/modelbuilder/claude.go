@@ -28,7 +28,7 @@ type claudeModelBuilder struct {
 	cfg *config.Model
 }
 
-func newClaudeModelBuilder(cfg *config.Model) *claudeModelBuilder {
+func newClaudeModelBuilder(cfg *config.Model) Service {
 	return &claudeModelBuilder{
 		cfg: cfg,
 	}

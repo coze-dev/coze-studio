@@ -30,7 +30,7 @@ type ollamaModelBuilder struct {
 	cfg *config.Model
 }
 
-func newOllamaModelBuilder(cfg *config.Model) *ollamaModelBuilder {
+func newOllamaModelBuilder(cfg *config.Model) Service {
 	return &ollamaModelBuilder{
 		cfg: cfg,
 	}

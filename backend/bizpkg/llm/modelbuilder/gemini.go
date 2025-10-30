@@ -30,7 +30,7 @@ type geminiModelBuilder struct {
 	cfg *config.Model
 }
 
-func newGeminiModelBuilder(cfg *config.Model) *geminiModelBuilder {
+func newGeminiModelBuilder(cfg *config.Model) Service {
 	return &geminiModelBuilder{
 		cfg: cfg,
 	}

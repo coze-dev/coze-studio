@@ -33,7 +33,7 @@ type arkModelBuilder struct {
 	cfg *config.Model
 }
 
-func newArkModelBuilder(cfg *config.Model) *arkModelBuilder {
+func newArkModelBuilder(cfg *config.Model) Service {
 	return &arkModelBuilder{
 		cfg: cfg,
 	}

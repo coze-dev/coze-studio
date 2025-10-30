@@ -30,7 +30,7 @@ type qwenModelBuilder struct {
 	cfg *config.Model
 }
 
-func newQwenModelBuilder(cfg *config.Model) *qwenModelBuilder {
+func newQwenModelBuilder(cfg *config.Model) Service {
 	return &qwenModelBuilder{
 		cfg: cfg,
 	}

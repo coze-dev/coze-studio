@@ -39,6 +39,16 @@ type Service interface {
 	Build(ctx context.Context, params *LLMParams) (ToolCallingChatModel, error)
 }
 
+var modelClass2NewModelBuilder = map[developer_api.ModelClass]func(*config.Model) Service{
+	developer_api.ModelClass_SEED:     newArkModelBuilder,
+	developer_api.ModelClass_GPT:      newOpenaiModelBuilder,
+	developer_api.ModelClass_Claude:   newClaudeModelBuilder,
+	developer_api.ModelClass_DeekSeek: newDeepseekModelBuilder,
+	developer_api.ModelClass_Gemini:   newGeminiModelBuilder,
+	developer_api.ModelClass_Llama:    newOllamaModelBuilder,
+	developer_api.ModelClass_QWen:     newQwenModelBuilder,
+}
+
 func NewModelBuilder(modelClass developer_api.ModelClass, cfg *config.Model) (Service, error) {
 	if cfg == nil {
 		return nil, fmt.Errorf("model config is nil")
@@ -52,37 +62,18 @@ func NewModelBuilder(modelClass developer_api.ModelClass, cfg *config.Model) (Se
 		return nil, fmt.Errorf("model base connection is nil")
 	}
 
-	switch modelClass {
-	case developer_api.ModelClass_SEED:
-		return newArkModelBuilder(cfg), nil
-	case developer_api.ModelClass_GPT:
-		return newOpenaiModelBuilder(cfg), nil
-	case developer_api.ModelClass_Claude:
-		return newClaudeModelBuilder(cfg), nil
-	case developer_api.ModelClass_DeekSeek:
-		return newDeepseekModelBuilder(cfg), nil
-	case developer_api.ModelClass_Gemini:
-		return newGeminiModelBuilder(cfg), nil
-	case developer_api.ModelClass_Llama:
-		return newOllamaModelBuilder(cfg), nil
-	case developer_api.ModelClass_QWen:
-		return newQwenModelBuilder(cfg), nil
-	default:
+	buildFn, ok := modelClass2NewModelBuilder[modelClass]
+	if !ok {
 		return nil, fmt.Errorf("model class %v not supported", modelClass)
 	}
+
+	return buildFn(cfg), nil
 }
 
 func SupportProtocol(modelClass developer_api.ModelClass) bool {
-	if modelClass == developer_api.ModelClass_GPT ||
-		modelClass == developer_api.ModelClass_Claude ||
-		modelClass == developer_api.ModelClass_DeekSeek ||
-		modelClass == developer_api.ModelClass_SEED ||
-		modelClass == developer_api.ModelClass_Gemini ||
-		modelClass == developer_api.ModelClass_Llama ||
-		modelClass == developer_api.ModelClass_QWen {
-		return true
-	}
-	return false
+	_, ok := modelClass2NewModelBuilder[modelClass]
+
+	return ok
 }
 
 // BuildModelWithConf for create model scene, params is nil

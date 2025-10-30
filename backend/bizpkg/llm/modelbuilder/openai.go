@@ -30,7 +30,7 @@ type openaiModelBuilder struct {
 	cfg *config.Model
 }
 
-func newOpenaiModelBuilder(cfg *config.Model) *openaiModelBuilder {
+func newOpenaiModelBuilder(cfg *config.Model) Service {
 	return &openaiModelBuilder{
 		cfg: cfg,
 	}

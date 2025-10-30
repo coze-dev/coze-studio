@@ -195,7 +195,7 @@ func (e *embedder) do(req *http.Request) (*embedResp, error) {
 }
 
 func (e *embedder) Dimensions() int64 {
-	if e.dim == 0 {
+	if e.dim <= 0 {
 		embeddings, err := e.EmbedStrings(context.Background(), []string{"test"})
 		if err != nil {
 			return 0

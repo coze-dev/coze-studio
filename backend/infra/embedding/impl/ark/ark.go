@@ -92,7 +92,7 @@ func (d *embWrap) EmbedStringsHybrid(ctx context.Context, texts []string, opts .
 }
 
 func (d *embWrap) Dimensions() int64 {
-	if d.dims == 0 {
+	if d.dims <= 0 {
 		embeddings, err := d.Embedder.EmbedStrings(context.Background(), []string{"test"})
 		if err != nil {
 			return 0

@@ -29,7 +29,7 @@ type deepseekModelBuilder struct {
 	cfg *config.Model
 }
 
-func newDeepseekModelBuilder(cfg *config.Model) *deepseekModelBuilder {
+func newDeepseekModelBuilder(cfg *config.Model) Service {
 	return &deepseekModelBuilder{
 		cfg: cfg,
 	}
