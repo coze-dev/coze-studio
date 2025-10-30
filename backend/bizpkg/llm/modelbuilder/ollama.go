@@ -84,6 +84,17 @@ func (o *ollamaModelBuilder) Build(ctx context.Context, params *LLMParams) (Tool
 	}
 	conf.Model = base.Model
 
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		conf.Thinking = &api.ThinkValue{
+			Value: ptr.Of(true),
+		}
+	case config.ThinkingType_Disable:
+		conf.Thinking = &api.ThinkValue{
+			Value: ptr.Of(false),
+		}
+	}
+
 	o.applyParamsToOllamaConfig(conf, params)
 
 	return ollama.NewChatModel(ctx, conf)

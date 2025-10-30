@@ -82,6 +82,13 @@ func (q *qwenModelBuilder) Build(ctx context.Context, params *LLMParams) (ToolCa
 	conf.BaseURL = base.BaseURL
 	conf.Model = base.Model
 
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		conf.EnableThinking = ptr.Of(true)
+	case config.ThinkingType_Disable:
+		conf.EnableThinking = ptr.Of(false)
+	}
+
 	q.applyParamsToQwenConfig(conf, params)
 
 	return qwen.NewChatModel(ctx, conf)

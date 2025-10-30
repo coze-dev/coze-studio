@@ -59,6 +59,58 @@ func (p *ModelType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type ThinkingType int64
+
+const (
+	ThinkingType_Default ThinkingType = 0
+	ThinkingType_Enable  ThinkingType = 1
+	ThinkingType_Disable ThinkingType = 2
+	ThinkingType_Auto    ThinkingType = 3
+)
+
+func (p ThinkingType) String() string {
+	switch p {
+	case ThinkingType_Default:
+		return "Default"
+	case ThinkingType_Enable:
+		return "Enable"
+	case ThinkingType_Disable:
+		return "Disable"
+	case ThinkingType_Auto:
+		return "Auto"
+	}
+	return "<UNSET>"
+}
+
+func ThinkingTypeFromString(s string) (ThinkingType, error) {
+	switch s {
+	case "Default":
+		return ThinkingType_Default, nil
+	case "Enable":
+		return ThinkingType_Enable, nil
+	case "Disable":
+		return ThinkingType_Disable, nil
+	case "Auto":
+		return ThinkingType_Auto, nil
+	}
+	return ThinkingType(0), fmt.Errorf("not a valid ThinkingType string")
+}
+
+func ThinkingTypePtr(v ThinkingType) *ThinkingType { return &v }
+func (p *ThinkingType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = ThinkingType(result.Int64)
+	return
+}
+
+func (p *ThinkingType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type ModelStatus int64
 
 const (
@@ -2913,9 +2965,10 @@ func (p *Connection) String() string {
 }
 
 type BaseConnectionInfo struct {
-	BaseURL string `thrift:"base_url,1" form:"base_url" json:"base_url" query:"base_url"`
-	APIKey  string `thrift:"api_key,2" form:"api_key" json:"api_key" query:"api_key"`
-	Model   string `thrift:"model,3" form:"model" json:"model" query:"model"`
+	BaseURL      string       `thrift:"base_url,1" form:"base_url" json:"base_url" query:"base_url"`
+	APIKey       string       `thrift:"api_key,2" form:"api_key" json:"api_key" query:"api_key"`
+	Model        string       `thrift:"model,3" form:"model" json:"model" query:"model"`
+	ThinkingType ThinkingType `thrift:"thinking_type,4" form:"thinking_type" json:"thinking_type" query:"thinking_type"`
 }
 
 func NewBaseConnectionInfo() *BaseConnectionInfo {
@@ -2937,10 +2990,15 @@ func (p *BaseConnectionInfo) GetModel() (v string) {
 	return p.Model
 }
 
+func (p *BaseConnectionInfo) GetThinkingType() (v ThinkingType) {
+	return p.ThinkingType
+}
+
 var fieldIDToName_BaseConnectionInfo = map[int16]string{
 	1: "base_url",
 	2: "api_key",
 	3: "model",
+	4: "thinking_type",
 }
 
 func (p *BaseConnectionInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -2980,6 +3038,14 @@ func (p *BaseConnectionInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3047,6 +3113,17 @@ func (p *BaseConnectionInfo) ReadField3(iprot thrift.TProtocol) error {
 	p.Model = _field
 	return nil
 }
+func (p *BaseConnectionInfo) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field ThinkingType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = ThinkingType(v)
+	}
+	p.ThinkingType = _field
+	return nil
+}
 
 func (p *BaseConnectionInfo) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3064,6 +3141,10 @@ func (p *BaseConnectionInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -3131,6 +3212,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *BaseConnectionInfo) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("thinking_type", thrift.I32, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.ThinkingType)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
 func (p *BaseConnectionInfo) String() string {

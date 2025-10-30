@@ -84,6 +84,21 @@ func (b *arkModelBuilder) Build(ctx context.Context, params *LLMParams) (ToolCal
 		chatModelConf.BaseURL = base.BaseURL
 	}
 
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		chatModelConf.Thinking = &model.Thinking{
+			Type: model.ThinkingTypeEnabled,
+		}
+	case config.ThinkingType_Disable:
+		chatModelConf.Thinking = &model.Thinking{
+			Type: model.ThinkingTypeDisabled,
+		}
+	case config.ThinkingType_Auto:
+		chatModelConf.Thinking = &model.Thinking{
+			Type: model.ThinkingTypeAuto,
+		}
+	}
+
 	arkConn := b.cfg.Connection.Ark
 	if arkConn != nil {
 		chatModelConf.Region = arkConn.Region

@@ -71,6 +71,17 @@ func (c *claudeModelBuilder) Build(ctx context.Context, params *LLMParams) (Tool
 		conf.BaseURL = &base.BaseURL
 	}
 
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		conf.Thinking = &claude.Thinking{
+			Enable: true,
+		}
+	case config.ThinkingType_Disable:
+		conf.Thinking = &claude.Thinking{
+			Enable: false,
+		}
+	}
+
 	c.applyParamsToChatModelConfig(conf, params)
 
 	return claude.NewChatModel(ctx, conf)
