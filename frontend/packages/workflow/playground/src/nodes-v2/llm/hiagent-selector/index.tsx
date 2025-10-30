@@ -101,7 +101,6 @@ export const HiAgentSelector: React.FC<HiAgentSelectorProps> = ({
               modelType: undefined,
               temperature: undefined,
             };
-            console.log('[HiAgentSelector] onChange called with agent:', agent.name, 'newValue:', newValue);
             onChange(newValue);
           }
         }}

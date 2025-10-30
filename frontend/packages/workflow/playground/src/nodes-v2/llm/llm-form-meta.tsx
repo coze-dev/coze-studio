@@ -29,7 +29,11 @@ import {
   DataEvent,
 } from '@flowgram-adapter/free-layout-editor';
 import { PublicScopeProvider } from '@coze-workflow/variable';
-import { nodeUtils, ViewVariableType } from '@coze-workflow/nodes';
+import {
+  nodeUtils,
+  ViewVariableType,
+  WorkflowNodeData,
+} from '@coze-workflow/nodes';
 import {
   BlockInput,
   concatTestId,
@@ -41,6 +45,7 @@ import {
 import { I18n } from '@coze-arch/i18n';
 import { IconCozPlus, IconCozMinus } from '@coze-arch/coze-design/icons';
 import { IconButton } from '@coze-arch/coze-design';
+import { StandardNodeType } from '@coze-workflow/base/types';
 
 import { type IModelValue } from '@/typing';
 import { WorkflowModelsService } from '@/services';
@@ -61,6 +66,9 @@ import { useGetWorkflowMode, useGlobalState } from '@/hooks';
 import { FormCard } from '@/form-extensions/components/form-card';
 import { ColumnsTitleWithAction } from '@/form-extensions/components/columns-title-with-action';
 import { ModelSelect } from '@/components/model-select';
+import hiagentIcon from '@/assets/icons/hiagent.png';
+import difyIcon from '@/assets/icons/dify.svg';
+import internalAgentIcon from '@/assets/icons/internal-agent.png';
 
 import { nodeMetaValidate } from '../materials/node-meta-validate';
 import { SettingOnError } from '../components/setting-on-error';
@@ -410,36 +418,52 @@ export const LLM_FORM_META: FormMetaV2<FormData> = {
         event: DataEvent.onValueChange,
         effect: ({ formValues, form, context }) => {
           const model = get(formValues, 'model') as IModelValue | undefined;
-          console.log('[LLM Effect] Model changed:', model);
           if (!model) return;
 
           // Generate subtitle based on model type
           let subtitle = model?.modelName || '';
+          const templateIcon =
+            context?.playgroundContext?.getNodeTemplateInfoByType?.(
+              StandardNodeType.LLM,
+            )?.icon;
+          const currentNodeMeta = form.getValueIn('nodeMeta');
+          let icon = currentNodeMeta?.icon ?? templateIcon;
+
           if (model?.isHiagent) {
             if (model?.externalAgentPlatform === 'dify') {
               subtitle = `Dify: ${model.modelName || ''}`;
+              icon = difyIcon;
+            } else if (model?.externalAgentPlatform === 'singleagent') {
+              subtitle = `内部智能体: ${model.modelName || ''}`;
+              icon = internalAgentIcon;
             } else {
               subtitle = `HiAgent: ${model.modelName || ''}`;
+              icon = hiagentIcon;
             }
+          } else {
+            icon = templateIcon ?? currentNodeMeta?.icon;
           }
-
-          console.log('[LLM Effect] Setting subtitle to:', subtitle);
 
           // Update entire nodeMeta object to trigger proper change detection
           // 同时更新 subtitle（小写）和 subTitle（驼峰）以确保兼容性
-          const currentNodeMeta = form.getValueIn('nodeMeta');
           form.setValueIn('nodeMeta', {
             ...currentNodeMeta,
             subtitle: subtitle,    // 小写（用于验证器）
             subTitle: subtitle,    // 驼峰（用于NodeHeader组件渲染）
+            icon,
           });
-
-          console.log('[LLM Effect] Updated nodeMeta:', form.getValueIn('nodeMeta'));
 
           // Manually trigger node title change to force re-render
           if (context) {
-            console.log('[LLM Effect] Triggering fireNodesTitleChange');
             context.playgroundContext.nodesService.fireNodesTitleChange();
+
+            if (icon) {
+              const nodeDataEntity =
+                context.node?.getData<WorkflowNodeData>(WorkflowNodeData);
+              nodeDataEntity?.updateNodeData<StandardNodeType.LLM>({
+                icon,
+              });
+            }
           }
         },
       },

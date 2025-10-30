@@ -14,45 +14,77 @@
  * limitations under the License.
  */
 
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react';
 
 import { useWorkflowNode } from '@coze-workflow/base';
 import { I18n } from '@coze-arch/i18n';
 import { CozAvatar } from '@coze-arch/coze-design';
 import { useWorkflowModels } from '@/hooks';
 import { Field } from './field';
+import hiagentIcon from '@/assets/icons/hiagent.png';
+import difyIcon from '@/assets/icons/dify.svg';
+import internalAgentIcon from '@/assets/icons/internal-agent.png';
 
 export function Model() {
   const { data } = useWorkflowNode();
-  const [modelName, setModelName] = useState(data?.model?.modelName);
   const { models } = useWorkflowModels();
 
-  useEffect(() => {
-    // fix:
-    // The drop-down box on the right shows that the model name is obtained in the name field, not the modelName.
-    // Therefore, you need to find the original model according to the modeType, display the name field, and keep the display on both sides consistent.
-    if (data?.model?.modelType) {
-      const model = models.find(v => v.model_type === data?.model?.modelType);
-      if (model) {
-        setModelName(model.name);
+  const { displayName, avatarSrc } = useMemo(() => {
+    const model = data?.model;
+    if (!model) {
+      return { displayName: '', avatarSrc: undefined as string | undefined };
+    }
+
+    if (model.isHiagent) {
+      if (model.externalAgentPlatform === 'dify') {
+        return {
+          displayName: `Dify: ${model.modelName ?? ''}`,
+          avatarSrc: difyIcon as string | undefined,
+        };
+      }
+      if (model.externalAgentPlatform === 'singleagent') {
+        return {
+          displayName: `内部智能体: ${model.modelName ?? ''}`,
+          avatarSrc: internalAgentIcon as string | undefined,
+        };
+      }
+      return {
+        displayName: `HiAgent: ${model.modelName ?? ''}`,
+        avatarSrc: hiagentIcon as string | undefined,
+      };
+    }
+
+    if (model.modelType) {
+      const matched = models.find(v => v.model_type === model.modelType);
+      if (matched) {
+        return {
+          displayName: matched.name,
+          avatarSrc: matched.model_icon,
+        };
       }
     }
-  }, [models, data, data?.model]);
+
+    return {
+      displayName: model.modelName ?? '',
+      avatarSrc: data?.nodeMeta?.icon,
+    };
+  }, [data?.model, data?.nodeMeta?.icon, models]);
 
   return (
-    <Field label={I18n.t('workflow_detail_llm_model')} isEmpty={!modelName}>
+    <Field label={I18n.t('workflow_detail_llm_model')} isEmpty={!displayName}>
       <div className="flex items-center leading-[20px]">
         <CozAvatar
           size={'mini'}
           shape="square"
-          src={
+          src={[
+            avatarSrc,
             models.find(item => item.model_type === data?.model?.modelType)
-              ?.model_icon
-          }
+              ?.model_icon,
+          ].find(Boolean)}
           className={'shrink-0 h-4 w-4 mr-1'}
           data-testid="bot-detail.model-config-modal.model-avatar"
         />
-        {modelName}
+        {displayName}
       </div>
     </Field>
   );

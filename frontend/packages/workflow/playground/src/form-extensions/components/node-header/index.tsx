@@ -103,6 +103,7 @@ interface NodeHeaderProps {
 
 export const NodeHeader: React.FC<NodeHeaderProps> = ({
   title,
+  subTitle,
   description,
   readonly,
   readonlyAllowDeleteOperation,
@@ -322,65 +323,107 @@ export const NodeHeader: React.FC<NodeHeaderProps> = ({
                       'readonly',
                     )}
                   >
-                    <Typography.Paragraph
-                      ellipsis={{
-                        rows: 1,
-                        showTooltip: {
-                          type: 'tooltip',
-                          opts: {
-                            style: {
-                              width: '100%',
-                              wordBreak: 'break-word',
+                    <div className={styles['title-container']}>
+                      <Typography.Paragraph
+                        ellipsis={{
+                          rows: 1,
+                          showTooltip: {
+                            type: 'tooltip',
+                            opts: {
+                              style: {
+                                width: '100%',
+                                wordBreak: 'break-word',
+                              },
                             },
                           },
-                        },
-                      }}
-                    >
-                      {editableTitle}
-                      {showTrigger ? (
-                        <span className="h-full inline-flex flex-row items-center">
-                          <Tag
-                            size="mini"
-                            className={'ml-[4px]'}
-                            prefixIcon={<IconCozTrigger />}
-                            color={triggerIsOpen ? 'brand' : 'primary'}
-                          >
-                            {I18n.t(
-                              'workflow_start_trigger_triggername',
-                              {},
-                              '触发器',
-                            )}
-                          </Tag>
-                        </span>
-                      ) : undefined}
-                    </Typography.Paragraph>
+                        }}
+                      >
+                        {editableTitle}
+                        {showTrigger ? (
+                          <span className="h-full inline-flex flex-row items-center">
+                            <Tag
+                              size="mini"
+                              className={'ml-[4px]'}
+                              prefixIcon={<IconCozTrigger />}
+                              color={triggerIsOpen ? 'brand' : 'primary'}
+                            >
+                              {I18n.t(
+                                'workflow_start_trigger_triggername',
+                                {},
+                                '触发器',
+                              )}
+                            </Tag>
+                          </span>
+                        ) : undefined}
+                      </Typography.Paragraph>
+                      {subTitle?.trim() ? (
+                        <Typography.Text
+                          size="small"
+                          className={styles.subtitle}
+                          ellipsis={{
+                            rows: 1,
+                            showTooltip: {
+                              opts: {
+                                style: {
+                                  wordBreak: 'break-word',
+                                  width: '100%',
+                                },
+                              },
+                            },
+                          }}
+                        >
+                          {subTitle}
+                        </Typography.Text>
+                      ) : null}
+                    </div>
                     <ReferenceNodeOrigin node={node} />
                     <ReferenceNodeVersion node={node} />
                   </div>
                 ) : (
-                  <Input
-                    onBlur={() => {
-                      onTitleChange(editableTitle);
-                      onBlur();
-                    }}
-                    ref={titleInput}
-                    // size="small"
-                    readonly={_readonly}
-                    value={editableTitle}
-                    onChange={e => {
-                      handleTitleChange(e);
-                      onChange();
-                    }}
-                    className={`${styles.input} ${
-                      showError ? styles.inputError : ''
-                    }`}
-                    placeholder={I18n.t('workflow_detail_node_name_default')}
-                    data-testid={concatTestId(
-                      getNodeTestId(),
-                      'input',
-                      'rename',
-                    )}
-                  />
+                  <div className={styles['input-editable']}>
+                    <Input
+                      onBlur={() => {
+                        onTitleChange(editableTitle);
+                        onBlur();
+                      }}
+                      ref={titleInput}
+                      // size="small"
+                      readonly={_readonly}
+                      value={editableTitle}
+                      onChange={e => {
+                        handleTitleChange(e);
+                        onChange();
+                      }}
+                      className={`${styles.input} ${
+                        showError ? styles.inputError : ''
+                      }`}
+                      placeholder={I18n.t('workflow_detail_node_name_default')}
+                      data-testid={concatTestId(
+                        getNodeTestId(),
+                        'input',
+                        'rename',
+                      )}
+                    />
+                    {subTitle?.trim() ? (
+                      <Typography.Text
+                        size="small"
+                        className={styles.subtitle}
+                        ellipsis={{
+                          rows: 1,
+                          showTooltip: {
+                            opts: {
+                              style: {
+                                wordBreak: 'break-word',
+                                width: '100%',
+                              },
+                            },
+                          },
+                        }}
+                      >
+                        {subTitle}
+                      </Typography.Text>
+                    ) : null}
+                  </div>
                 );
               }}
             </ValidationErrorWrapper>

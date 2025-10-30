@@ -112,8 +112,6 @@ export const SingleAgentSelector: React.FC<SingleAgentSelectorProps> = ({
         onChange={singleagentId => {
           const agent = singleAgents.find(a => a.id === singleagentId);
           if (agent) {
-            console.log('[SingleAgentSelector] Selected agent:', agent.name, 'id:', singleagentId);
-
             onChange({
               ...value,
               // 标记为使用外部智能体（架构复用）
