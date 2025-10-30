@@ -132,13 +132,28 @@ func UpdateKnowledgeConfig(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	if req.KnowledgeConfig.EmbeddingConfig == nil {
+		invalidParamRequestResponse(c, "EmbeddingConfig is nil")
+		return
+	}
+
+	if req.KnowledgeConfig.EmbeddingConfig.Connection == nil {
+		invalidParamRequestResponse(c, "Connection is nil")
+		return
+	}
+
+	if req.KnowledgeConfig.EmbeddingConfig.Connection.EmbeddingInfo == nil {
+		invalidParamRequestResponse(c, "EmbeddingInfo is nil")
+		return
+	}
+
 	embedding, err := impl.GetEmbedding(ctx, req.KnowledgeConfig.EmbeddingConfig)
 	if err != nil {
 		invalidParamRequestResponse(c, fmt.Sprintf("get embedding failed: %v", err))
 		return
 	}
 
-	if req.KnowledgeConfig.EmbeddingConfig.Connection.EmbeddingInfo.Dims == 0 {
+	if req.KnowledgeConfig.EmbeddingConfig.Connection.EmbeddingInfo.Dims <= 0 {
 		req.KnowledgeConfig.EmbeddingConfig.Connection.EmbeddingInfo.Dims = int32(embedding.Dimensions())
 
 		embedding, err = impl.GetEmbedding(ctx, req.KnowledgeConfig.EmbeddingConfig)

@@ -30,7 +30,7 @@ type ollamaModelBuilder struct {
 	cfg *config.Model
 }
 
-func newOllamaModelBuilder(cfg *config.Model) *ollamaModelBuilder {
+func newOllamaModelBuilder(cfg *config.Model) Service {
 	return &ollamaModelBuilder{
 		cfg: cfg,
 	}
@@ -83,6 +83,17 @@ func (o *ollamaModelBuilder) Build(ctx context.Context, params *LLMParams) (Tool
 		conf.BaseURL = base.BaseURL
 	}
 	conf.Model = base.Model
+
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		conf.Thinking = &api.ThinkValue{
+			Value: ptr.Of(true),
+		}
+	case config.ThinkingType_Disable:
+		conf.Thinking = &api.ThinkValue{
+			Value: ptr.Of(false),
+		}
+	}
 
 	o.applyParamsToOllamaConfig(conf, params)
 

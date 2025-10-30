@@ -52,9 +52,9 @@ func GetEmbedding(ctx context.Context, cfg *config.EmbeddingConfig) (embedding.E
 			APIVersion: openaiConnCfg.APIVersion,
 		}
 
-		if openaiConnCfg.RequestDims > 0 {
+		if embeddingInfo.Dims > 0 {
 			// some openai model not support request dims
-			openAICfg.Dimensions = ptr.Of(int(openaiConnCfg.RequestDims))
+			openAICfg.Dimensions = ptr.Of(int(embeddingInfo.Dims))
 		}
 
 		emb, err = wrap.NewOpenAIEmbedder(ctx, openAICfg, int64(embeddingInfo.Dims), int(cfg.MaxBatchSize))

@@ -30,7 +30,7 @@ type qwenModelBuilder struct {
 	cfg *config.Model
 }
 
-func newQwenModelBuilder(cfg *config.Model) *qwenModelBuilder {
+func newQwenModelBuilder(cfg *config.Model) Service {
 	return &qwenModelBuilder{
 		cfg: cfg,
 	}
@@ -81,6 +81,13 @@ func (q *qwenModelBuilder) Build(ctx context.Context, params *LLMParams) (ToolCa
 	conf.APIKey = base.APIKey
 	conf.BaseURL = base.BaseURL
 	conf.Model = base.Model
+
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		conf.EnableThinking = ptr.Of(true)
+	case config.ThinkingType_Disable:
+		conf.EnableThinking = ptr.Of(false)
+	}
 
 	q.applyParamsToQwenConfig(conf, params)
 

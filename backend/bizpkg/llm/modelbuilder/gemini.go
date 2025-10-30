@@ -30,7 +30,7 @@ type geminiModelBuilder struct {
 	cfg *config.Model
 }
 
-func newGeminiModelBuilder(cfg *config.Model) *geminiModelBuilder {
+func newGeminiModelBuilder(cfg *config.Model) Service {
 	return &geminiModelBuilder{
 		cfg: cfg,
 	}
@@ -67,7 +67,6 @@ func (g *geminiModelBuilder) applyParamsToGeminiConfig(conf *gemini.Config, para
 	if params.EnableThinking != nil {
 		conf.ThinkingConfig = &genai.ThinkingConfig{
 			IncludeThoughts: *params.EnableThinking,
-			ThinkingBudget:  nil,
 		}
 	}
 }
@@ -95,6 +94,17 @@ func (g *geminiModelBuilder) Build(ctx context.Context, params *LLMParams) (Tool
 	conf := g.getDefaultGeminiConfig()
 	conf.Client = client
 	conf.Model = base.Model
+
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		conf.ThinkingConfig = &genai.ThinkingConfig{
+			IncludeThoughts: true,
+		}
+	case config.ThinkingType_Disable:
+		conf.ThinkingConfig = &genai.ThinkingConfig{
+			IncludeThoughts: false,
+		}
+	}
 
 	g.applyParamsToGeminiConfig(conf, params)
 

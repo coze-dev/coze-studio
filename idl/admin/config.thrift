@@ -62,6 +62,13 @@ struct Model {
     10: i64 delete_at_ms
 }
 
+enum ThinkingType {
+    Default = 0 
+    Enable = 1
+    Disable = 2
+    Auto = 3
+}
+
 
 enum ModelStatus {
     StatusDefault = 0  // Default state when not configured, equivalent to StatusInUse
@@ -84,6 +91,7 @@ struct BaseConnectionInfo {
     1: string base_url
     2: string api_key
     3: string model
+    4: ThinkingType thinking_type
 }
 
 struct EmbeddingInfo {
@@ -97,7 +105,6 @@ struct ArkConnInfo {
 }
 
 struct OpenAIConnInfo {
-    5: i32 request_dims
     6: bool by_azure
     7: string api_version
 }

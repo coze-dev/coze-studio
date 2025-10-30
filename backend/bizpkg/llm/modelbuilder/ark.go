@@ -33,7 +33,7 @@ type arkModelBuilder struct {
 	cfg *config.Model
 }
 
-func newArkModelBuilder(cfg *config.Model) *arkModelBuilder {
+func newArkModelBuilder(cfg *config.Model) Service {
 	return &arkModelBuilder{
 		cfg: cfg,
 	}
@@ -82,6 +82,21 @@ func (b *arkModelBuilder) Build(ctx context.Context, params *LLMParams) (ToolCal
 	chatModelConf.Model = base.Model
 	if base.BaseURL != "" {
 		chatModelConf.BaseURL = base.BaseURL
+	}
+
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		chatModelConf.Thinking = &model.Thinking{
+			Type: model.ThinkingTypeEnabled,
+		}
+	case config.ThinkingType_Disable:
+		chatModelConf.Thinking = &model.Thinking{
+			Type: model.ThinkingTypeDisabled,
+		}
+	case config.ThinkingType_Auto:
+		chatModelConf.Thinking = &model.Thinking{
+			Type: model.ThinkingTypeAuto,
+		}
 	}
 
 	arkConn := b.cfg.Connection.Ark

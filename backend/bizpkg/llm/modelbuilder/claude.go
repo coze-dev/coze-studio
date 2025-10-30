@@ -28,7 +28,7 @@ type claudeModelBuilder struct {
 	cfg *config.Model
 }
 
-func newClaudeModelBuilder(cfg *config.Model) *claudeModelBuilder {
+func newClaudeModelBuilder(cfg *config.Model) Service {
 	return &claudeModelBuilder{
 		cfg: cfg,
 	}
@@ -69,6 +69,17 @@ func (c *claudeModelBuilder) Build(ctx context.Context, params *LLMParams) (Tool
 	conf.Model = base.Model
 	if base.BaseURL != "" {
 		conf.BaseURL = &base.BaseURL
+	}
+
+	switch base.ThinkingType {
+	case config.ThinkingType_Enable:
+		conf.Thinking = &claude.Thinking{
+			Enable: true,
+		}
+	case config.ThinkingType_Disable:
+		conf.Thinking = &claude.Thinking{
+			Enable: false,
+		}
 	}
 
 	c.applyParamsToChatModelConfig(conf, params)

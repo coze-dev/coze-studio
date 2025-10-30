@@ -82,9 +82,8 @@ func getKnowledgeConfigurationFromOldConfig() *config.KnowledgeConfig {
 					APIType: envkey.GetStringD("ARK_EMBEDDING_API_TYPE", "text_api"),
 				},
 				Openai: &config.OpenAIConnInfo{
-					ByAzure:     envkey.GetBoolD("OPENAI_EMBEDDING_BY_AZURE", false),
-					APIVersion:  envkey.GetString("OPENAI_EMBEDDING_API_VERSION"),
-					RequestDims: envkey.GetI32D("OPENAI_EMBEDDING_REQUEST_DIMS", 1024),
+					ByAzure:    envkey.GetBoolD("OPENAI_EMBEDDING_BY_AZURE", false),
+					APIVersion: envkey.GetString("OPENAI_EMBEDDING_API_VERSION"),
 				},
 
 				Gemini: &config.GeminiConnInfo{

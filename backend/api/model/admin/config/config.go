@@ -59,6 +59,58 @@ func (p *ModelType) Value() (driver.Value, error) {
 	return int64(*p), nil
 }
 
+type ThinkingType int64
+
+const (
+	ThinkingType_Default ThinkingType = 0
+	ThinkingType_Enable  ThinkingType = 1
+	ThinkingType_Disable ThinkingType = 2
+	ThinkingType_Auto    ThinkingType = 3
+)
+
+func (p ThinkingType) String() string {
+	switch p {
+	case ThinkingType_Default:
+		return "Default"
+	case ThinkingType_Enable:
+		return "Enable"
+	case ThinkingType_Disable:
+		return "Disable"
+	case ThinkingType_Auto:
+		return "Auto"
+	}
+	return "<UNSET>"
+}
+
+func ThinkingTypeFromString(s string) (ThinkingType, error) {
+	switch s {
+	case "Default":
+		return ThinkingType_Default, nil
+	case "Enable":
+		return ThinkingType_Enable, nil
+	case "Disable":
+		return ThinkingType_Disable, nil
+	case "Auto":
+		return ThinkingType_Auto, nil
+	}
+	return ThinkingType(0), fmt.Errorf("not a valid ThinkingType string")
+}
+
+func ThinkingTypePtr(v ThinkingType) *ThinkingType { return &v }
+func (p *ThinkingType) Scan(value interface{}) (err error) {
+	var result sql.NullInt64
+	err = result.Scan(value)
+	*p = ThinkingType(result.Int64)
+	return
+}
+
+func (p *ThinkingType) Value() (driver.Value, error) {
+	if p == nil {
+		return nil, nil
+	}
+	return int64(*p), nil
+}
+
 type ModelStatus int64
 
 const (
@@ -2913,9 +2965,10 @@ func (p *Connection) String() string {
 }
 
 type BaseConnectionInfo struct {
-	BaseURL string `thrift:"base_url,1" form:"base_url" json:"base_url" query:"base_url"`
-	APIKey  string `thrift:"api_key,2" form:"api_key" json:"api_key" query:"api_key"`
-	Model   string `thrift:"model,3" form:"model" json:"model" query:"model"`
+	BaseURL      string       `thrift:"base_url,1" form:"base_url" json:"base_url" query:"base_url"`
+	APIKey       string       `thrift:"api_key,2" form:"api_key" json:"api_key" query:"api_key"`
+	Model        string       `thrift:"model,3" form:"model" json:"model" query:"model"`
+	ThinkingType ThinkingType `thrift:"thinking_type,4" form:"thinking_type" json:"thinking_type" query:"thinking_type"`
 }
 
 func NewBaseConnectionInfo() *BaseConnectionInfo {
@@ -2937,10 +2990,15 @@ func (p *BaseConnectionInfo) GetModel() (v string) {
 	return p.Model
 }
 
+func (p *BaseConnectionInfo) GetThinkingType() (v ThinkingType) {
+	return p.ThinkingType
+}
+
 var fieldIDToName_BaseConnectionInfo = map[int16]string{
 	1: "base_url",
 	2: "api_key",
 	3: "model",
+	4: "thinking_type",
 }
 
 func (p *BaseConnectionInfo) Read(iprot thrift.TProtocol) (err error) {
@@ -2980,6 +3038,14 @@ func (p *BaseConnectionInfo) Read(iprot thrift.TProtocol) (err error) {
 		case 3:
 			if fieldTypeId == thrift.STRING {
 				if err = p.ReadField3(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 4:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField4(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -3047,6 +3113,17 @@ func (p *BaseConnectionInfo) ReadField3(iprot thrift.TProtocol) error {
 	p.Model = _field
 	return nil
 }
+func (p *BaseConnectionInfo) ReadField4(iprot thrift.TProtocol) error {
+
+	var _field ThinkingType
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = ThinkingType(v)
+	}
+	p.ThinkingType = _field
+	return nil
+}
 
 func (p *BaseConnectionInfo) Write(oprot thrift.TProtocol) (err error) {
 	var fieldId int16
@@ -3064,6 +3141,10 @@ func (p *BaseConnectionInfo) Write(oprot thrift.TProtocol) (err error) {
 		}
 		if err = p.writeField3(oprot); err != nil {
 			fieldId = 3
+			goto WriteFieldError
+		}
+		if err = p.writeField4(oprot); err != nil {
+			fieldId = 4
 			goto WriteFieldError
 		}
 	}
@@ -3131,6 +3212,22 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 3 end error: ", p), err)
+}
+func (p *BaseConnectionInfo) writeField4(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("thinking_type", thrift.I32, 4); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(int32(p.ThinkingType)); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 4 end error: ", p), err)
 }
 
 func (p *BaseConnectionInfo) String() string {
@@ -3465,9 +3562,8 @@ func (p *ArkConnInfo) String() string {
 }
 
 type OpenAIConnInfo struct {
-	RequestDims int32  `thrift:"request_dims,5" form:"request_dims" json:"request_dims" query:"request_dims"`
-	ByAzure     bool   `thrift:"by_azure,6" form:"by_azure" json:"by_azure" query:"by_azure"`
-	APIVersion  string `thrift:"api_version,7" form:"api_version" json:"api_version" query:"api_version"`
+	ByAzure    bool   `thrift:"by_azure,6" form:"by_azure" json:"by_azure" query:"by_azure"`
+	APIVersion string `thrift:"api_version,7" form:"api_version" json:"api_version" query:"api_version"`
 }
 
 func NewOpenAIConnInfo() *OpenAIConnInfo {
@@ -3475,10 +3571,6 @@ func NewOpenAIConnInfo() *OpenAIConnInfo {
 }
 
 func (p *OpenAIConnInfo) InitDefault() {
-}
-
-func (p *OpenAIConnInfo) GetRequestDims() (v int32) {
-	return p.RequestDims
 }
 
 func (p *OpenAIConnInfo) GetByAzure() (v bool) {
@@ -3490,7 +3582,6 @@ func (p *OpenAIConnInfo) GetAPIVersion() (v string) {
 }
 
 var fieldIDToName_OpenAIConnInfo = map[int16]string{
-	5: "request_dims",
 	6: "by_azure",
 	7: "api_version",
 }
@@ -3513,14 +3604,6 @@ func (p *OpenAIConnInfo) Read(iprot thrift.TProtocol) (err error) {
 		}
 
 		switch fieldId {
-		case 5:
-			if fieldTypeId == thrift.I32 {
-				if err = p.ReadField5(iprot); err != nil {
-					goto ReadFieldError
-				}
-			} else if err = iprot.Skip(fieldTypeId); err != nil {
-				goto SkipFieldError
-			}
 		case 6:
 			if fieldTypeId == thrift.BOOL {
 				if err = p.ReadField6(iprot); err != nil {
@@ -3566,17 +3649,6 @@ ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
 }
 
-func (p *OpenAIConnInfo) ReadField5(iprot thrift.TProtocol) error {
-
-	var _field int32
-	if v, err := iprot.ReadI32(); err != nil {
-		return err
-	} else {
-		_field = v
-	}
-	p.RequestDims = _field
-	return nil
-}
 func (p *OpenAIConnInfo) ReadField6(iprot thrift.TProtocol) error {
 
 	var _field bool
@@ -3606,10 +3678,6 @@ func (p *OpenAIConnInfo) Write(oprot thrift.TProtocol) (err error) {
 		goto WriteStructBeginError
 	}
 	if p != nil {
-		if err = p.writeField5(oprot); err != nil {
-			fieldId = 5
-			goto WriteFieldError
-		}
 		if err = p.writeField6(oprot); err != nil {
 			fieldId = 6
 			goto WriteFieldError
@@ -3636,22 +3704,6 @@ WriteStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
 }
 
-func (p *OpenAIConnInfo) writeField5(oprot thrift.TProtocol) (err error) {
-	if err = oprot.WriteFieldBegin("request_dims", thrift.I32, 5); err != nil {
-		goto WriteFieldBeginError
-	}
-	if err := oprot.WriteI32(p.RequestDims); err != nil {
-		return err
-	}
-	if err = oprot.WriteFieldEnd(); err != nil {
-		goto WriteFieldEndError
-	}
-	return nil
-WriteFieldBeginError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 begin error: ", p), err)
-WriteFieldEndError:
-	return thrift.PrependError(fmt.Sprintf("%T write field 5 end error: ", p), err)
-}
 func (p *OpenAIConnInfo) writeField6(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("by_azure", thrift.BOOL, 6); err != nil {
 		goto WriteFieldBeginError
