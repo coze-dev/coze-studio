@@ -717,7 +717,7 @@ func (k *KnowledgeApplicationService) DeleteSlice(ctx context.Context, req *data
 		sliceIDs = append(sliceIDs, sliceID)
 	}
 
-	err := k.checkPermission(ctx, nil, nil, nil, nil, sliceIDs)
+	err := k.checkPermission(ctx, uid, nil, nil, nil, sliceIDs)
 	if err != nil {
 		logs.CtxErrorf(ctx, "check permission failed, err: %v", err)
 		return dataset.NewDeleteSliceResponse(), err
