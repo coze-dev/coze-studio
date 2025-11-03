@@ -28,11 +28,12 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
+	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
 	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
-	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	saEntity "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
@@ -228,10 +229,10 @@ func (a *OpenapiAgentRunApplication) buildDisplayContent(_ context.Context, ar *
 	return ""
 }
 
-func (a *OpenapiAgentRunApplication) parseQueryContent(ctx context.Context, multiAdditionalMessages []*entity.AdditionalMessage) ([]*entity.AdditionalMessage, []*message.InputMetaData, message.ContentType, error) {
+func (a *OpenapiAgentRunApplication) parseQueryContent(ctx context.Context, multiAdditionalMessages []*entity.AdditionalMessage) ([]*entity.AdditionalMessage, []*crossmessage.InputMetaData, crossmessage.ContentType, error) {
 
-	var multiContent []*message.InputMetaData
-	var contentType message.ContentType
+	var multiContent []*crossmessage.InputMetaData
+	var contentType crossmessage.ContentType
 	var filterMultiAdditionalMessages []*entity.AdditionalMessage
 	filterMultiAdditionalMessages = multiAdditionalMessages
 
@@ -258,7 +259,7 @@ func (a *OpenapiAgentRunApplication) parseAdditionalMessages(ctx context.Context
 		if item.Role != string(schema.User) && item.Role != string(schema.Assistant) {
 			return nil, errors.New("additional message role only support user and assistant")
 		}
-		if item.Type != nil && !slices.Contains([]message.MessageType{message.MessageTypeQuestion, message.MessageTypeAnswer}, message.MessageType(*item.Type)) {
+		if item.Type != nil && !slices.Contains([]crossmessage.MessageType{crossmessage.MessageTypeQuestion, crossmessage.MessageTypeAnswer}, crossmessage.MessageType(*item.Type)) {
 			return nil, errors.New("additional message type only support question and answer now")
 		}
 
@@ -266,9 +267,9 @@ func (a *OpenapiAgentRunApplication) parseAdditionalMessages(ctx context.Context
 			Role: schema.RoleType(item.Role),
 		}
 		if item.Type != nil {
-			addOne.Type = message.MessageType(*item.Type)
+			addOne.Type = crossmessage.MessageType(*item.Type)
 		} else {
-			addOne.Type = message.MessageTypeQuestion
+			addOne.Type = crossmessage.MessageTypeQuestion
 		}
 
 		if item.ContentType == run.ContentTypeText {
@@ -276,20 +277,20 @@ func (a *OpenapiAgentRunApplication) parseAdditionalMessages(ctx context.Context
 				continue
 			}
 
-			addOne.ContentType = message.ContentTypeText
-			addOne.Content = []*message.InputMetaData{{
-				Type: message.InputTypeText,
+			addOne.ContentType = crossmessage.ContentTypeText
+			addOne.Content = []*crossmessage.InputMetaData{{
+				Type: crossmessage.InputTypeText,
 				Text: item.Content,
 			}}
 		}
 
 		if item.ContentType == run.ContentTypeMixApi {
 
-			if ptr.From(item.Type) == string(message.MessageTypeAnswer) {
+			if ptr.From(item.Type) == string(crossmessage.MessageTypeAnswer) {
 				return nil, errors.New(" answer messages only support text content")
 			}
 
-			addOne.ContentType = message.ContentTypeMix
+			addOne.ContentType = crossmessage.ContentTypeMix
 			var inputs []*run.AdditionalContent
 			err := json.Unmarshal([]byte(item.Content), &inputs)
 
@@ -301,14 +302,14 @@ func (a *OpenapiAgentRunApplication) parseAdditionalMessages(ctx context.Context
 				if one == nil {
 					continue
 				}
-				switch message.InputType(one.Type) {
-				case message.InputTypeText:
+				switch crossmessage.InputType(one.Type) {
+				case crossmessage.InputTypeText:
 
-					addOne.Content = append(addOne.Content, &message.InputMetaData{
-						Type: message.InputTypeText,
+					addOne.Content = append(addOne.Content, &crossmessage.InputMetaData{
+						Type: crossmessage.InputTypeText,
 						Text: ptr.From(one.Text),
 					})
-				case message.InputTypeImage, message.InputTypeFile:
+				case crossmessage.InputTypeImage, crossmessage.InputTypeFile:
 
 					var fileUrl, fileURI string
 					if one.GetFileURL() != "" {
@@ -323,9 +324,9 @@ func (a *OpenapiAgentRunApplication) parseAdditionalMessages(ctx context.Context
 						fileUrl = fileInfo.File.Url
 						fileURI = fileInfo.File.TosURI
 					}
-					addOne.Content = append(addOne.Content, &message.InputMetaData{
-						Type: message.InputType(one.Type),
-						FileData: []*message.FileData{
+					addOne.Content = append(addOne.Content, &crossmessage.InputMetaData{
+						Type: crossmessage.InputType(one.Type),
+						FileData: []*crossmessage.FileData{
 							{
 								Url: fileUrl,
 								URI: fileURI,
@@ -415,6 +416,212 @@ func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
 	}
 	mCM, _ := json.Marshal(chunkMessage)
 	return mCM
+}
+
+func (a *OpenapiAgentRunApplication) GetByID(ctx context.Context, req *run.RetrieveChatOpenRequest) (*run.RetrieveChatOpenResponse, error) {
+	resp := new(run.RetrieveChatOpenResponse)
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	// Get agent run record by chat ID
+	runRecord, err := ConversationSVC.AgentRunDomainSVC.GetByID(ctx, req.ChatID)
+	if err != nil {
+		return nil, err
+	}
+	if runRecord == nil {
+		return nil, errorx.New(errno.ErrRecordNotFound)
+	}
+
+	// Get conversation data and check permissions
+	conversationData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, req.ConversationID)
+	if err != nil {
+		return nil, err
+	}
+
+	if userID != conversationData.CreatorID {
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
+	}
+
+	// Build response with chat detail
+	resp.ChatDetail = &run.ChatV3ChatDetail{
+		ID:             runRecord.ID,
+		ConversationID: runRecord.ConversationID,
+		BotID:          runRecord.AgentID,
+		Status:         string(runRecord.Status),
+		SectionID:      ptr.Of(runRecord.SectionID),
+		CreatedAt:      ptr.Of(int32(runRecord.CreatedAt / 1000)),
+		CompletedAt:    ptr.Of(int32(runRecord.CompletedAt / 1000)),
+		FailedAt:       ptr.Of(int32(runRecord.FailedAt / 1000)),
+	}
+
+	// Add usage information if available
+	if runRecord.Usage != nil {
+		resp.ChatDetail.Usage = &run.Usage{
+			TokenCount:   ptr.Of(int32(runRecord.Usage.LlmTotalTokens)),
+			InputTokens:  ptr.Of(int32(runRecord.Usage.LlmPromptTokens)),
+			OutputTokens: ptr.Of(int32(runRecord.Usage.LlmCompletionTokens)),
+		}
+	}
+
+	return resp, nil
+}
+
+func (a *OpenapiAgentRunApplication) ListChatMessageApi(ctx context.Context, req *message.ListChatMessageApiRequest) (*message.ListChatMessageApiResponse, error) {
+	resp := new(message.ListChatMessageApiResponse)
+
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	userID := apiKeyInfo.UserID
+
+	// Get conversation data and check permissions
+	conversationData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, req.ConversationID)
+	if err != nil {
+		return nil, err
+	}
+
+	if userID != conversationData.CreatorID {
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
+	}
+
+	// Get messages by run IDs
+	messages, err := ConversationSVC.MessageDomainSVC.GetByRunIDs(ctx, req.ConversationID, []int64{req.ChatID})
+	if err != nil {
+		return nil, err
+	}
+
+	// Convert domain messages to API messages
+	var apiMessages []*message.ChatV3MessageDetail
+	for _, msg := range messages {
+		apiMessage := &message.ChatV3MessageDetail{
+			ID:               msg.ID,
+			ConversationID:   msg.ConversationID,
+			BotID:            msg.AgentID,
+			Role:             string(msg.Role),
+			Type:             string(msg.MessageType),
+			Content:          msg.Content,
+			ContentType:      string(msg.ContentType),
+			MetaData:         msg.Ext,
+			ChatID:           msg.RunID,
+			ReasoningContent: ptr.Of(msg.ReasoningContent),
+			CreatedAt:        ptr.Of(msg.CreatedAt / 1000),
+			SectionID:        ptr.Of(msg.SectionID),
+		}
+		apiMessages = append(apiMessages, apiMessage)
+	}
+
+	resp.Messages = apiMessages
+	return resp, nil
+}
+
+func (a *OpenapiAgentRunApplication) OpenapiAgentRunSync(ctx context.Context, ar *run.ChatV3Request) (*run.RetrieveChatOpenResponse, error) {
+	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
+	creatorID := apiKeyInfo.UserID
+	connectorID := apiKeyInfo.ConnectorID
+
+	if ptr.From(ar.ConnectorID) == consts.WebSDKConnectorID {
+		connectorID = ptr.From(ar.ConnectorID)
+	}
+	agentInfo, caErr := a.checkAgent(ctx, ar, connectorID)
+	if caErr != nil {
+		logs.CtxErrorf(ctx, "checkAgent err:%v", caErr)
+		return nil, caErr
+	}
+
+	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
+	if ccErr != nil {
+		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
+		return nil, ccErr
+	}
+
+	spaceID := agentInfo.SpaceID
+	arr, err := a.buildAgentRunRequest(ctx, ar, connectorID, spaceID, conversationData)
+	if err != nil {
+		logs.CtxErrorf(ctx, "buildAgentRunRequest err:%v", err)
+		return nil, err
+	}
+
+	// Execute agent run synchronously
+	streamer, err := ConversationSVC.AgentRunDomainSVC.AgentRun(ctx, arr)
+	if err != nil {
+		return nil, err
+	}
+
+	var finalChatDetail *run.ChatV3ChatDetail
+	var backgroundProcessingStarted bool
+
+	startBackgroundProcessing := func() {
+		if !backgroundProcessingStarted {
+			backgroundProcessingStarted = true
+			go func() {
+				defer func() {
+					if r := recover(); r != nil {
+						logs.CtxErrorf(ctx, "background stream processing panic: %v", r)
+					}
+				}()
+				for {
+					_, recvErr := streamer.Recv()
+					if recvErr != nil {
+						if errors.Is(recvErr, io.EOF) {
+							logs.CtxInfof(ctx, "background stream processing completed")
+						} else {
+							logs.CtxErrorf(ctx, "background stream processing error: %v", recvErr)
+						}
+						break
+					}
+				}
+			}()
+		}
+	}
+
+	for {
+		chunk, recvErr := streamer.Recv()
+		logs.CtxInfof(ctx, "chunk :%v, err:%v", conv.DebugJsonToStr(chunk), recvErr)
+		if recvErr != nil {
+			if errors.Is(recvErr, io.EOF) {
+				break
+			}
+			return nil, errorx.New(errno.ErrConversationAgentRunError, errorx.KV("msg", recvErr.Error()))
+		}
+
+		switch chunk.Event {
+		case entity.RunEventError:
+			return nil, errorx.New(int32(chunk.Error.Code), errorx.KV("msg", chunk.Error.Msg))
+		case entity.RunEventCreated:
+			chunkRunItem := chunk.ChunkRunItem
+			finalChatDetail = &run.ChatV3ChatDetail{
+				ID:             chunkRunItem.ID,
+				ConversationID: chunkRunItem.ConversationID,
+				BotID:          chunkRunItem.AgentID,
+				Status:         string(chunkRunItem.Status),
+				SectionID:      ptr.Of(chunkRunItem.SectionID),
+				CreatedAt:      ptr.Of(int32(chunkRunItem.CreatedAt / 1000)),
+				CompletedAt:    ptr.Of(int32(chunkRunItem.CompletedAt / 1000)),
+				FailedAt:       ptr.Of(int32(chunkRunItem.FailedAt / 1000)),
+			}
+			if chunkRunItem.Usage != nil {
+				finalChatDetail.Usage = &run.Usage{
+					TokenCount:   ptr.Of(int32(chunkRunItem.Usage.LlmTotalTokens)),
+					InputTokens:  ptr.Of(int32(chunkRunItem.Usage.LlmPromptTokens)),
+					OutputTokens: ptr.Of(int32(chunkRunItem.Usage.LlmCompletionTokens)),
+				}
+			}
+			startBackgroundProcessing()
+			goto exitLoop
+		default:
+			logs.CtxInfof(ctx, "received event: %v, starting background processing and continuing to listen", chunk.Event)
+			startBackgroundProcessing()
+		}
+	}
+exitLoop:
+
+	if finalChatDetail == nil {
+		return nil, errorx.New(errno.ErrConversationAgentRunError, errorx.KV("msg", "no final result received"))
+	}
+
+	resp := &run.RetrieveChatOpenResponse{
+		ChatDetail: finalChatDetail,
+	}
+	return resp, nil
 }
 
 func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.CancelChatApiRequest) (*run.CancelChatApiResponse, error) {

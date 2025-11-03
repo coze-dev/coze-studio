@@ -258,3 +258,15 @@ struct CancelChatApiResponse {
     1:   ChatV3ChatDetail ChatV3ChatDetail (agw.key = "data")
     255: base.BaseResp               BaseResp
 }
+
+struct RetrieveChatOpenRequest {
+    1:   required  i64 ConversationID (api.query = "conversation_id", agw.source = "query", agw.key = "conversation_id", api.js_conv='true'),
+    2:   required  i64 ChatID (api.query = "chat_id", agw.source = "query", agw.key = "chat_id", api.js_conv='true'),
+    255: base.Base Base
+}
+
+struct RetrieveChatOpenResponse {
+    1: optional ChatV3ChatDetail ChatDetail (api.body = "data", agw.key = "data")
+
+    255: base.BaseResp BaseResp
+}
