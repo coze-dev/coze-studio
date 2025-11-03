@@ -268,5 +268,7 @@ struct RetrieveChatOpenRequest {
 struct RetrieveChatOpenResponse {
     1: optional ChatV3ChatDetail ChatDetail (api.body = "data", agw.key = "data")
 
+    253: required i32 Code (api.body = "code"),
+    254: required string Msg (api.body = "msg")
     255: base.BaseResp BaseResp
 }

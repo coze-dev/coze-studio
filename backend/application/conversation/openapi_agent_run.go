@@ -418,7 +418,7 @@ func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
 	return mCM
 }
 
-func (a *OpenapiAgentRunApplication) GetByID(ctx context.Context, req *run.RetrieveChatOpenRequest) (*run.RetrieveChatOpenResponse, error) {
+func (a *OpenapiAgentRunApplication) RetrieveRunRecord(ctx context.Context, req *run.RetrieveChatOpenRequest) (*run.RetrieveChatOpenResponse, error) {
 	resp := new(run.RetrieveChatOpenResponse)
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)

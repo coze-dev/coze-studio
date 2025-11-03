@@ -9063,6 +9063,8 @@ func (p *ListChatMessageApiRequest) String() string {
 
 type ListChatMessageApiResponse struct {
 	Messages []*ChatV3MessageDetail `thrift:"Messages,1,optional" form:"Messages" json:"Messages,omitempty" query:"Messages"`
+	Code     int64                  `thrift:"code,253" form:"code" json:"code" query:"code"`
+	Msg      string                 `thrift:"msg,254" form:"msg" json:"msg" query:"msg"`
 	BaseResp *base.BaseResp         `thrift:"BaseResp,255" form:"BaseResp" json:"BaseResp" query:"BaseResp"`
 }
 
@@ -9082,6 +9084,14 @@ func (p *ListChatMessageApiResponse) GetMessages() (v []*ChatV3MessageDetail) {
 	return p.Messages
 }
 
+func (p *ListChatMessageApiResponse) GetCode() (v int64) {
+	return p.Code
+}
+
+func (p *ListChatMessageApiResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
 var ListChatMessageApiResponse_BaseResp_DEFAULT *base.BaseResp
 
 func (p *ListChatMessageApiResponse) GetBaseResp() (v *base.BaseResp) {
@@ -9093,6 +9103,8 @@ func (p *ListChatMessageApiResponse) GetBaseResp() (v *base.BaseResp) {
 
 var fieldIDToName_ListChatMessageApiResponse = map[int16]string{
 	1:   "Messages",
+	253: "code",
+	254: "msg",
 	255: "BaseResp",
 }
 
@@ -9125,6 +9137,22 @@ func (p *ListChatMessageApiResponse) Read(iprot thrift.TProtocol) (err error) {
 		case 1:
 			if fieldTypeId == thrift.LIST {
 				if err = p.ReadField1(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 253:
+			if fieldTypeId == thrift.I64 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
 					goto ReadFieldError
 				}
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
@@ -9190,6 +9218,28 @@ func (p *ListChatMessageApiResponse) ReadField1(iprot thrift.TProtocol) error {
 	p.Messages = _field
 	return nil
 }
+func (p *ListChatMessageApiResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int64
+	if v, err := iprot.ReadI64(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *ListChatMessageApiResponse) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
+	return nil
+}
 func (p *ListChatMessageApiResponse) ReadField255(iprot thrift.TProtocol) error {
 	_field := base.NewBaseResp()
 	if err := _field.Read(iprot); err != nil {
@@ -9207,6 +9257,14 @@ func (p *ListChatMessageApiResponse) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -9256,6 +9314,38 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *ListChatMessageApiResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("code", thrift.I64, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI64(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *ListChatMessageApiResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 func (p *ListChatMessageApiResponse) writeField255(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {

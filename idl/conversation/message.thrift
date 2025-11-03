@@ -243,5 +243,7 @@ struct ListChatMessageApiRequest {
 
 struct ListChatMessageApiResponse {
     1:   optional      list<ChatV3MessageDetail> Messages (agw.key = "data")
+    253: i64                           code
+    254: string                        msg
     255: base.BaseResp BaseResp
 }

@@ -10383,6 +10383,8 @@ func (p *RetrieveChatOpenRequest) String() string {
 
 type RetrieveChatOpenResponse struct {
 	ChatDetail *ChatV3ChatDetail `thrift:"ChatDetail,1,optional" form:"data" json:"data,omitempty"`
+	Code       int32             `thrift:"Code,253,required" form:"code,required" json:"code,required"`
+	Msg        string            `thrift:"Msg,254,required" form:"msg,required" json:"msg,required"`
 	BaseResp   *base.BaseResp    `thrift:"BaseResp,255" form:"BaseResp" json:"BaseResp" query:"BaseResp"`
 }
 
@@ -10402,6 +10404,14 @@ func (p *RetrieveChatOpenResponse) GetChatDetail() (v *ChatV3ChatDetail) {
 	return p.ChatDetail
 }
 
+func (p *RetrieveChatOpenResponse) GetCode() (v int32) {
+	return p.Code
+}
+
+func (p *RetrieveChatOpenResponse) GetMsg() (v string) {
+	return p.Msg
+}
+
 var RetrieveChatOpenResponse_BaseResp_DEFAULT *base.BaseResp
 
 func (p *RetrieveChatOpenResponse) GetBaseResp() (v *base.BaseResp) {
@@ -10413,6 +10423,8 @@ func (p *RetrieveChatOpenResponse) GetBaseResp() (v *base.BaseResp) {
 
 var fieldIDToName_RetrieveChatOpenResponse = map[int16]string{
 	1:   "ChatDetail",
+	253: "Code",
+	254: "Msg",
 	255: "BaseResp",
 }
 
@@ -10427,6 +10439,8 @@ func (p *RetrieveChatOpenResponse) IsSetBaseResp() bool {
 func (p *RetrieveChatOpenResponse) Read(iprot thrift.TProtocol) (err error) {
 	var fieldTypeId thrift.TType
 	var fieldId int16
+	var issetCode bool = false
+	var issetMsg bool = false
 
 	if _, err = iprot.ReadStructBegin(); err != nil {
 		goto ReadStructBeginError
@@ -10447,6 +10461,24 @@ func (p *RetrieveChatOpenResponse) Read(iprot thrift.TProtocol) (err error) {
 				if err = p.ReadField1(iprot); err != nil {
 					goto ReadFieldError
 				}
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 253:
+			if fieldTypeId == thrift.I32 {
+				if err = p.ReadField253(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetCode = true
+			} else if err = iprot.Skip(fieldTypeId); err != nil {
+				goto SkipFieldError
+			}
+		case 254:
+			if fieldTypeId == thrift.STRING {
+				if err = p.ReadField254(iprot); err != nil {
+					goto ReadFieldError
+				}
+				issetMsg = true
 			} else if err = iprot.Skip(fieldTypeId); err != nil {
 				goto SkipFieldError
 			}
@@ -10471,6 +10503,15 @@ func (p *RetrieveChatOpenResponse) Read(iprot thrift.TProtocol) (err error) {
 		goto ReadStructEndError
 	}
 
+	if !issetCode {
+		fieldId = 253
+		goto RequiredFieldNotSetError
+	}
+
+	if !issetMsg {
+		fieldId = 254
+		goto RequiredFieldNotSetError
+	}
 	return nil
 ReadStructBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
@@ -10485,6 +10526,8 @@ ReadFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
 ReadStructEndError:
 	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+RequiredFieldNotSetError:
+	return thrift.NewTProtocolExceptionWithType(thrift.INVALID_DATA, fmt.Errorf("required field %s is not set", fieldIDToName_RetrieveChatOpenResponse[fieldId]))
 }
 
 func (p *RetrieveChatOpenResponse) ReadField1(iprot thrift.TProtocol) error {
@@ -10493,6 +10536,28 @@ func (p *RetrieveChatOpenResponse) ReadField1(iprot thrift.TProtocol) error {
 		return err
 	}
 	p.ChatDetail = _field
+	return nil
+}
+func (p *RetrieveChatOpenResponse) ReadField253(iprot thrift.TProtocol) error {
+
+	var _field int32
+	if v, err := iprot.ReadI32(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Code = _field
+	return nil
+}
+func (p *RetrieveChatOpenResponse) ReadField254(iprot thrift.TProtocol) error {
+
+	var _field string
+	if v, err := iprot.ReadString(); err != nil {
+		return err
+	} else {
+		_field = v
+	}
+	p.Msg = _field
 	return nil
 }
 func (p *RetrieveChatOpenResponse) ReadField255(iprot thrift.TProtocol) error {
@@ -10512,6 +10577,14 @@ func (p *RetrieveChatOpenResponse) Write(oprot thrift.TProtocol) (err error) {
 	if p != nil {
 		if err = p.writeField1(oprot); err != nil {
 			fieldId = 1
+			goto WriteFieldError
+		}
+		if err = p.writeField253(oprot); err != nil {
+			fieldId = 253
+			goto WriteFieldError
+		}
+		if err = p.writeField254(oprot); err != nil {
+			fieldId = 254
 			goto WriteFieldError
 		}
 		if err = p.writeField255(oprot); err != nil {
@@ -10553,6 +10626,38 @@ WriteFieldBeginError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 begin error: ", p), err)
 WriteFieldEndError:
 	return thrift.PrependError(fmt.Sprintf("%T write field 1 end error: ", p), err)
+}
+func (p *RetrieveChatOpenResponse) writeField253(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("Code", thrift.I32, 253); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteI32(p.Code); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 253 end error: ", p), err)
+}
+func (p *RetrieveChatOpenResponse) writeField254(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteFieldBegin("Msg", thrift.STRING, 254); err != nil {
+		goto WriteFieldBeginError
+	}
+	if err := oprot.WriteString(p.Msg); err != nil {
+		return err
+	}
+	if err = oprot.WriteFieldEnd(); err != nil {
+		goto WriteFieldEndError
+	}
+	return nil
+WriteFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 begin error: ", p), err)
+WriteFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write field 254 end error: ", p), err)
 }
 func (p *RetrieveChatOpenResponse) writeField255(oprot thrift.TProtocol) (err error) {
 	if err = oprot.WriteFieldBegin("BaseResp", thrift.STRUCT, 255); err != nil {

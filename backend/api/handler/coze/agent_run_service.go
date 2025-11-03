@@ -219,7 +219,7 @@ func RetrieveChatOpen(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	resp, err := conversation.ConversationOpenAPISVC.GetByID(ctx, &req)
+	resp, err := conversation.ConversationOpenAPISVC.RetrieveRunRecord(ctx, &req)
 	if err != nil {
 		c.String(consts.StatusInternalServerError, err.Error())
 		return
