@@ -112,7 +112,7 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 
 		resp, err := conversation.ConversationOpenAPISVC.OpenapiAgentRunSync(ctx, &req)
 		if err != nil {
-			c.String(consts.StatusInternalServerError, err.Error())
+			invalidParamRequestResponse(c, err.Error())
 			return
 		}
 		c.JSON(consts.StatusOK, resp)
