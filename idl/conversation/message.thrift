@@ -217,3 +217,33 @@ struct ListMessageApiResponse {
     253: i64                           code
     254: string                        msg
 }
+
+
+struct ChatV3MessageDetail {
+    1: required i64 ID (api.body = "id",api.js_conv='true'),
+    2: required i64 ConversationID (api.body = "conversation_id",api.js_conv='true'),
+    3: required i64 BotID (api.body = "bot_id",api.js_conv='true'),
+    4: required string Role (api.body = "role"),
+    5: required string Type (api.body = "type"),
+    6: required string Content (api.body = "content"),
+    7: required string ContentType (api.body = "content_type"),
+    8: optional map<string, string> MetaData (api.body = "meta_data"),
+    9: required i64 ChatID (api.body = "chat_id",api.js_conv='true')
+    10: optional i64 SectionID (api.body="section_id",api.js_conv='true')
+    11: optional i64 CreatedAt (api.body = "created_at")
+    12: optional i64 UpdatedAt (api.body = "updated_at")
+    13: optional string ReasoningContent (api.body = "reasoning_content")
+}
+
+struct ListChatMessageApiRequest {
+    1:   required  i64 ConversationID (api.query = "conversation_id", agw.source = "query", agw.key = "conversation_id", api.js_conv='true'), //connector层的会话id
+    2:   required  i64 ChatID (api.query = "chat_id", agw.source = "query", agw.key = "chat_id", api.js_conv='true'), 
+    255: base.Base Base
+}
+
+struct ListChatMessageApiResponse {
+    1:   optional      list<ChatV3MessageDetail> Messages (agw.key = "data")
+    253: i64                           code
+    254: string                        msg
+    255: base.BaseResp BaseResp
+}

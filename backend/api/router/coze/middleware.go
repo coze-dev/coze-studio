@@ -1639,3 +1639,23 @@ func _retrieveconversationapiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _retrievechatopenMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _chat0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _message0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _listchatmessageapiMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

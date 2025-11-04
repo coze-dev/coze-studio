@@ -108,6 +108,18 @@ func ChatV3(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
+	if req.Stream != nil && !*req.Stream {
+
+		resp, err := conversation.ConversationOpenAPISVC.OpenapiAgentRunSync(ctx, &req)
+		if err != nil {
+			invalidParamRequestResponse(c, err.Error())
+			return
+		}
+		c.JSON(consts.StatusOK, resp)
+		return
+	}
+
+	// Streaming mode (default)
 	c.SetStatusCode(http.StatusOK)
 	c.Response.Header.Set("X-Accel-Buffering", "no")
 	sseSender := sseImpl.NewSSESender(sse.NewStream(c))
@@ -194,4 +206,24 @@ func preprocessChatV3Parameters(c *app.RequestContext) error {
 	}
 
 	return nil
+}
+
+// RetrieveChatOpen .
+// @router /v3/chat/retrieve [GET]
+func RetrieveChatOpen(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req run.RetrieveChatOpenRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := conversation.ConversationOpenAPISVC.RetrieveRunRecord(ctx, &req)
+	if err != nil {
+		c.String(consts.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
 }

@@ -501,5 +501,13 @@ func Register(r *server.Hertz) {
 		_v3.POST("/chat", append(_chatv3Mw(), coze.ChatV3)...)
 		_chat := _v3.Group("/chat", _chatMw()...)
 		_chat.POST("/cancel", append(_cancelchatapiMw(), coze.CancelChatApi)...)
+		_chat.GET("/retrieve", append(_retrievechatopenMw(), coze.RetrieveChatOpen)...)
+		{
+			_chat0 := _v3.Group("/chat", _chat0Mw()...)
+			{
+				_message0 := _chat0.Group("/message", _message0Mw()...)
+				_message0.GET("/list", append(_listchatmessageapiMw(), coze.ListChatMessageApi)...)
+			}
+		}
 	}
 }
