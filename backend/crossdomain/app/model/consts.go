@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-package entity
+package model
 
-import "github.com/coze-dev/coze-studio/backend/crossdomain/app/model"
-
-type PublishStatus = model.PublishStatus
+type PublishStatus int
 
 const (
 	PublishStatusOfPacking             PublishStatus = 0
@@ -29,7 +27,7 @@ const (
 	PublishStatusOfPublishDone         PublishStatus = 5
 )
 
-type ConnectorPublishStatus = model.ConnectorPublishStatus
+type ConnectorPublishStatus int
 
 const (
 	ConnectorPublishStatusOfDefault  ConnectorPublishStatus = 0
@@ -39,7 +37,7 @@ const (
 	ConnectorPublishStatusOfDisable  ConnectorPublishStatus = 4
 )
 
-type ResourceType = model.ResourceType
+type ResourceType string
 
 const (
 	ResourceTypeOfPlugin    ResourceType = "plugin"
@@ -48,7 +46,7 @@ const (
 	ResourceTypeOfDatabase  ResourceType = "database"
 )
 
-type ResourceCopyStatus = model.ResourceCopyStatus
+type ResourceCopyStatus int
 
 const (
 	ResourceCopyStatusOfSuccess    ResourceCopyStatus = 1

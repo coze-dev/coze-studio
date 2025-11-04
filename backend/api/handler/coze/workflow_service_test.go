@@ -72,19 +72,19 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/knowledgemock"
 	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/message/messagemock"
+	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/permission/permissionmock"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/impl"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/pluginmock"
 	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
-	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/permission/permissionmock"
-	permission "github.com/coze-dev/coze-studio/backend/domain/permission"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	msgentity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	entity4 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
+	permission "github.com/coze-dev/coze-studio/backend/domain/permission"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	entity3 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	entity5 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -189,7 +189,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		})
 		// Add API auth info for OpenAPI endpoints
 		ctxcache.Store(c, consts.OpenapiAuthKeyInCtx, &entity2.ApiKey{
-			UserID: 123,
+			UserID:      123,
 			ConnectorID: consts.APIConnectorID,
 		})
 		ctx.Next(c)
@@ -1083,15 +1083,11 @@ func (r *wfTestRunner) openapiResume(id string, eventID string, resumeData strin
 	assert.NoError(r.t, err)
 
 	if hResp.StatusCode() != http.StatusOK {
-		r.t.Fatalf("unexpected status code: %d, body: %s", hResp.StatusCode(), string(hResp.Body()))
-		return nil
+		r.t.Errorf("unexpected status code: %d, body: %s", hResp.StatusCode(), string(hResp.Body()))
 	}
 
 	re, err := sse.NewReader(hResp)
-	if err != nil {
-		r.t.Fatalf("failed to create SSE reader: %v, response body: %s", err, string(hResp.Body()))
-		return nil
-	}
+	assert.NoError(r.t, err)
 
 	return re
 }
