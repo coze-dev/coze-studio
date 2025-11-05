@@ -34,6 +34,7 @@ import {
   type SortedConversationItem,
 } from '@/types/conversations';
 import { Layout } from '@/types/client';
+import { useUserInfo } from '@/components/studio-open-chat/hooks';
 
 import {
   PcConversationItem,
@@ -93,6 +94,8 @@ export const ConversationList = forwardRef<
       })),
     );
 
+    const userInfo = useUserInfo();
+
     const conversationRef = useRef<ChatState['currentConversationInfo']>();
     const [addLoading, setAddLoading] = useState(false);
     const {
@@ -114,6 +117,7 @@ export const ConversationList = forwardRef<
           bot_id: botId,
           // @ts-expect-error: 有这个属性，但是 openapi 没有暴露
           connector_id: connectorId,
+          user_id: IS_OPEN_SOURCE ? userInfo?.id : undefined,
         });
         if (res?.id) {
           conversationRef.current = {
