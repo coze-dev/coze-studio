@@ -23,10 +23,10 @@ import { type ChatActionLockService } from '../../service/chat-action-lock';
 import { type useSendMessageAndAutoUpdate } from '../../hooks/messages/use-send-message/new-message';
 import { type StoreSet } from '../../context/chat-area-context/type';
 import { checkNoneMessageGroupMemberLeft } from './message-group-exhaustive-check';
-import { debugMessageGroup } from './debug-message-group';
+import { debugAllMessageGroups, debugMessageGroup } from './debug-message-group';
 
 export const regenerateMessage = async ({
-  messageGroup: { memberSet, groupId },
+  messageGroup,
   context: { storeSet, chatActionLockService, reporter, sendMessage },
 }: {
   messageGroup: MessageGroup;
@@ -37,6 +37,7 @@ export const regenerateMessage = async ({
     sendMessage: ReturnType<typeof useSendMessageAndAutoUpdate>;
   };
 }) => {
+  const { memberSet, groupId } = messageGroup;
   if (chatActionLockService.answerAction.getIsLock(groupId, 'regenerate')) {
     return;
   }
@@ -45,45 +46,77 @@ export const regenerateMessage = async ({
   }
   const { useMessagesStore, useSuggestionsStore } = storeSet;
   const { clearSuggestions } = useSuggestionsStore.getState();
-  const { deleteMessageByIdList, messages } = useMessagesStore.getState();
+  const { deleteMessageByIdList, messages, messageGroupList } =
+    useMessagesStore.getState();
   const {
-    userMessageId,
+    userMessageId: initialUserMessageId,
     llmAnswerMessageIdList,
     functionCallMessageIdList,
     followUpMessageIdList,
     ...rest
   } = memberSet;
+  let userMessageId = initialUserMessageId;
   checkNoneMessageGroupMemberLeft(rest);
 
   if (!userMessageId) {
     // 调试信息
-    const { messages } = useMessagesStore.getState();
     debugMessageGroup(messageGroup, messages, 'Regenerate - Missing UserMessageId');
+    debugAllMessageGroups(messageGroupList, messages);
     
-    // 尝试从消息组中查找用户消息
-    const userMessages = messages.filter(msg => 
-      msg.role === 'user' && 
-      msg.reply_id === groupId
+    // 优先尝试直接根据 groupId 匹配用户消息
+    const directUserMessage = messages.find(
+      msg => msg.role === 'user' && getMessageUniqueKey(msg) === groupId,
     );
-    
-    if (userMessages.length > 0) {
-      // 使用找到的用户消息
-      userMessageId = userMessages[0].message_id || userMessages[0].extra_info?.local_message_id;
-      console.log('[Regenerate] Found user message as fallback:', userMessageId);
+
+    if (directUserMessage) {
+      userMessageId = getMessageUniqueKey(directUserMessage);
+      console.log('[Regenerate] Found user message via groupId:', userMessageId);
+    } else {
+      // 尝试根据回答消息的 reply_id 反查用户消息
+      const answerMessageId = llmAnswerMessageIdList.at(0);
+      const answerMessage = answerMessageId
+        ? findMessageById(messages, answerMessageId)
+        : undefined;
+      const candidateUserId = answerMessage?.reply_id;
+      if (candidateUserId) {
+        const candidateUserMessage =
+          findMessageById(messages, candidateUserId) ||
+          messages.find(
+            msg =>
+              msg.role === 'user' &&
+              getMessageUniqueKey(msg) === candidateUserId,
+          );
+        if (candidateUserMessage) {
+          userMessageId = getMessageUniqueKey(candidateUserMessage);
+          console.log('[Regenerate] Found user message via answer reply:', userMessageId);
+        }
+      }
     }
-    
+
     if (!userMessageId) {
-      reporter.sendTracker('regenerate_message_error', {
-        error: 'userMessageId_not_found',
-        groupId,
-        memberSet: JSON.stringify(memberSet),
+      const latestUserMessage = messages.find(msg => msg.role === 'user');
+      if (latestUserMessage) {
+        userMessageId = getMessageUniqueKey(latestUserMessage);
+        console.log('[Regenerate] Fallback to latest user message:', userMessageId);
+      }
+    }
+
+    if (!userMessageId) {
+      reporter.error({
+        message: 'regenerate_message_error',
+        error: new Error('userMessageId_not_found'),
+        meta: {
+          groupId,
+          memberSet: JSON.stringify(memberSet),
+        },
       });
       console.error('[Regenerate] Failed to find userMessageId for group:', groupId);
       throw new Error('regenerate message failed to get userMessageId');
     }
   }
 
-  const userMessage = findMessageById(messages, userMessageId) || 
+  const userMessage =
+    findMessageById(messages, userMessageId) ||
     messages.find(msg => msg.role === 'user' && msg.reply_id === groupId);
 
   if (!userMessage) {

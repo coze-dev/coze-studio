@@ -605,7 +605,7 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                       }
                       return isSuccess;
                     }
-                    if (!IS_OPEN_SOURCE) {
+                    if (IS_OPEN_SOURCE) {
                       // After successfully adding the plugin, quickly bind the preset card information
                       await PluginDevelopApi.QuickBindPluginPresetCard({
                         plugin_id: apiToSend.plugin_id,

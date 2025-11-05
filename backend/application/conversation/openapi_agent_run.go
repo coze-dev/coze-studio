@@ -465,11 +465,29 @@ func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *
 		case entity.RunEventCreated, entity.RunEventCancelled, entity.RunEventInProgress, entity.RunEventFailed, entity.RunEventCompleted:
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiChatMessage(chunk)))
 		case entity.RunEventMessageDelta, entity.RunEventMessageCompleted:
-			// 🔥 过滤输出节点的中间消息：如果是MessageDelta且包含message_title，则跳过
+			// 🔥 过滤输出节点的中间消息：如果是MessageDelta且满足以下条件，则跳过
 			if chunk.Event == entity.RunEventMessageDelta && chunk.ChunkMessageItem != nil {
+				shouldSkip := false
+
+				// 条件1：原始Ext中包含message_title（单智能体自主规划模式）
 				if messageTitle, exists := chunk.ChunkMessageItem.Ext["message_title"]; exists && messageTitle != "" {
-					// 跳过输出节点的delta消息，只保留completed消息
+					shouldSkip = true
 					logs.CtxInfof(ctx, "跳过输出节点的delta消息: message_title=%s", messageTitle)
+				}
+
+				// 条件2：content以THINKING-开头（chatflow模式）
+				if strings.HasPrefix(chunk.ChunkMessageItem.Content, "THINKING-") {
+					shouldSkip = true
+					logs.CtxInfof(ctx, "跳过THINKING-前缀的delta消息: content=%s", chunk.ChunkMessageItem.Content)
+				}
+
+				// 条件3：content是卡片消息（chatflow模式）
+				if isCardMessage(chunk.ChunkMessageItem.Content) {
+					shouldSkip = true
+					logs.CtxInfof(ctx, "跳过卡片消息的delta消息")
+				}
+
+				if shouldSkip {
 					continue
 				}
 			}
@@ -499,23 +517,48 @@ func buildARSM2ApiMessage(chunk *entity.AgentRunResponse) []byte {
 		CreatedAt:        ptr.Of(chunkMessageItem.CreatedAt / 1000),
 	}
 
-	// 🔥 添加ynet_type字段逻辑：根据message_title的存在和内容判断类型
-	if chunkMessage.MetaData != nil {
-		if messageTitle, exists := chunkMessage.MetaData["message_title"]; exists && messageTitle != "" {
-			// 如果存在message_title，根据content内容判断类型
-			if strings.HasPrefix(chunkMessage.Content, "THINKING-") {
-				// 如果content以"THINKING-"开头，设置为action类型，并去掉THINKING-前缀
-				chunkMessage.MetaData["ynet_type"] = "action"
-				chunkMessage.Content = strings.TrimPrefix(chunkMessage.Content, "THINKING-")
-			} else {
-				// 否则设置为tool_message类型
-				chunkMessage.MetaData["ynet_type"] = "tool_message"
-			}
+	// 🔥 添加ynet_type字段逻辑：根据content内容判断类型
+	if chunkMessage.MetaData == nil {
+		chunkMessage.MetaData = make(map[string]string)
+	}
+
+	// 情况1：THINKING-前缀的消息 -> action类型
+	if strings.HasPrefix(chunkMessage.Content, "THINKING-") {
+		chunkMessage.MetaData["ynet_type"] = "action"
+		chunkMessage.Content = strings.TrimPrefix(chunkMessage.Content, "THINKING-")
+		// 如果没有message_title，根据内容生成一个
+		if _, exists := chunkMessage.MetaData["message_title"]; !exists {
+			chunkMessage.MetaData["message_title"] = "执行中"
+		}
+	} else if isCardMessage(chunkMessage.Content) {
+		// 情况2：卡片消息（包含contentList的JSON） -> tool_message类型
+		chunkMessage.MetaData["ynet_type"] = "tool_message"
+		// 如果没有message_title，生成一个默认值
+		if _, exists := chunkMessage.MetaData["message_title"]; !exists {
+			chunkMessage.MetaData["message_title"] = "输出"
 		}
 	}
 
 	mCM, _ := json.Marshal(chunkMessage)
 	return mCM
+}
+
+// isCardMessage 判断是否为卡片消息（包含contentList的JSON）
+func isCardMessage(content string) bool {
+	// 检查是否包含contentList字段（卡片消息的标志）
+	if !strings.Contains(content, "contentList") {
+		return false
+	}
+
+	// 尝试解析为JSON，确认结构正确
+	var data map[string]interface{}
+	if err := json.Unmarshal([]byte(content), &data); err != nil {
+		return false
+	}
+
+	// 检查是否包含contentList数组
+	_, hasContentList := data["contentList"]
+	return hasContentList
 }
 
 func buildARSM2ApiChatMessage(chunk *entity.AgentRunResponse) []byte {
