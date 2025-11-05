@@ -188,8 +188,8 @@ const getConversationInfo = async ({
           await cozeApiSdk.conversations.create(
             {
               bot_id: botId,
-              // @ts-expect-error: connector_id is not in the type
               messages: historyMessage,
+              // @ts-expect-error: connector_id is not in the type
               connector_id: connectorId,
               user_id: IS_OPEN_SOURCE ? userInfo?.id : undefined,
             },
