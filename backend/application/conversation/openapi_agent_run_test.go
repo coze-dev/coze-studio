@@ -275,10 +275,11 @@ func TestOpenapiAgentRun_CreateNewConversation(t *testing.T) {
 		ID:        22222,
 		CreatorID: 12345,
 		SectionID: 98765,
+		UserID:    ptr.Of("test-user"),
 	}
 	mockConversation.EXPECT().Create(ctx, gomock.Any()).DoAndReturn(func(ctx context.Context, meta *convEntity.CreateMeta) (*convEntity.Conversation, error) {
 		assert.Equal(t, int64(67890), meta.AgentID)
-		assert.Equal(t, int64(12345), meta.UserID)
+		assert.Equal(t, "test-user", ptr.From(meta.UserID))
 		assert.Equal(t, common.Scene_SceneOpenApi, meta.Scene)
 		return mockConv, nil
 	})
