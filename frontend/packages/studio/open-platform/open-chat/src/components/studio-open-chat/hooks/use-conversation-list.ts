@@ -27,11 +27,13 @@ import {
 
 import { type ChatState } from '../store/store';
 import { useChatAppProps, useChatAppStore } from '../store';
+import { useUserInfo } from './use-user-info';
 import { usePaginationRequest } from './use-pagination-request';
 
 // 扩展ListConversationReq类型以满足PaginationParams约束
 type ExtendedListConversationReq = ListConversationReq & {
   sort_field: 'created_at' | 'updated_at';
+  user_id?: string; // 开源专有
   [key: string]: unknown;
 };
 
@@ -76,6 +78,8 @@ export const useConversationList = (
     })),
   );
 
+  const userInfo = useUserInfo();
+
   const { data, hasMore, loadMore, loading } = usePaginationRequest<
     Conversation,
     ExtendedListConversationReq
@@ -99,6 +103,7 @@ export const useConversationList = (
       bot_id: botId,
       connector_id: connectorId,
       sort_field: order,
+      user_id: IS_OPEN_SOURCE ? userInfo?.id : undefined,
     },
     pageSize,
     initialPageNum,
