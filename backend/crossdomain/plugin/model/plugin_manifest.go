@@ -112,11 +112,15 @@ func (mf *PluginManifest) Validate(skipAuthPayload bool) (err error) {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
 			"description for human is required"))
 	}
-	if mf.API.Type != consts.PluginTypeOfCloud {
+
+	if mf.API.Type != consts.PluginTypeOfCloud && mf.API.Type != consts.PluginTypeOfCustom {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid api type '%s'", mf.API.Type))
 	}
-
+	// auth.type=none,return nil
+	if mf.Auth.Type == consts.AuthzTypeOfNone {
+		return nil
+	}
 	err = mf.validateAuthInfo(skipAuthPayload)
 	if err != nil {
 		return err
