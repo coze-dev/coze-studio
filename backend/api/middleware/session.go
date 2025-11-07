@@ -99,7 +99,7 @@ func AdminAuthMW() app.HandlerFunc {
 
 		adminEmails := strings.Split(baseConf.AdminEmails, ",")
 		for _, adminEmail := range adminEmails {
-			if adminEmail == session.UserEmail {
+			if strings.EqualFold(adminEmail, session.UserEmail) {
 				ctx.Next(c)
 				return
 			}
