@@ -19,6 +19,8 @@ package es
 import (
 	"encoding/json"
 	"io"
+
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types/enums/totalhitsrelation"
 )
 
 type BulkIndexerItem struct {
@@ -66,10 +68,6 @@ type Hit struct {
 }
 
 type TotalHits struct {
-	Relation TotalHitsRelation `json:"relation"`
-	Value    int64             `json:"value"`
-}
-
-type TotalHitsRelation struct {
-	Name string
+	Relation totalhitsrelation.TotalHitsRelation `json:"relation"`
+	Value    int64                               `json:"value"`
 }
