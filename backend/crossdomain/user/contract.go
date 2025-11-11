@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package crossuser
+package user
 
 import (
 	"context"
