@@ -309,7 +309,7 @@ func TestOpenapiAgentRun_AgentRunError(t *testing.T) {
 	// Mock agent check success
 	mockAgent := &saEntity.SingleAgent{
 		SingleAgent: &singleagent.SingleAgent{
-			AgentID: 67890,
+			AgentID:   67890,
 			SpaceID:   54321,
 			CreatorID: 12345,
 		},
@@ -936,18 +936,17 @@ func (m *MockStreamReader) Recv() (*entity.AgentRunResponse, error) {
 	return response, nil
 }
 
-
 func newMockStreamReader(chunks []*entity.AgentRunResponse) *schema.StreamReader[*entity.AgentRunResponse] {
-	
+
 	sr, sw := schema.Pipe[*entity.AgentRunResponse](10)
-	
+
 	go func() {
 		defer sw.Close()
 		for _, chunk := range chunks {
 			sw.Send(chunk, nil)
 		}
 	}()
-	
+
 	return sr
 }
 
@@ -1140,7 +1139,7 @@ func TestOpenapiAgentRunSync_StreamError(t *testing.T) {
 
 	assert.Error(t, err)
 	assert.Nil(t, result)
-	
+
 	assert.Contains(t, err.Error(), "code=500")
 }
 

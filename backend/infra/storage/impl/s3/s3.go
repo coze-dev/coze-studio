@@ -209,6 +209,8 @@ func (t *s3Client) GetObject(ctx context.Context, objectKey string) ([]byte, err
 		return nil, err
 	}
 
+	defer result.Body.Close()
+
 	return body, nil
 }
 

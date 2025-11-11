@@ -58,7 +58,7 @@ func NewAuthzChecker() *AuthzChecker {
 func (c *AuthzChecker) registerResourceQueryers() {
 
 	c.resourceQueryers[ResourceTypeWorkspace] = NewWorkspaceResourceQueryer()
-	
+
 	c.resourceQueryers[ResourceTypeAgent] = NewAgentResourceQueryer()
 
 	c.resourceQueryers[ResourceTypePlugin] = NewPluginResourceQueryer()

@@ -424,7 +424,7 @@ func getExecUserID(ctx context.Context) string {
 	if execCtx.RootCtx.ExeCfg.ConnectorUID != "" {
 		return execCtx.RootCtx.ExeCfg.ConnectorUID
 	}
-	
+
 	uIDStr := strconv.FormatInt(execCtx.RootCtx.ExeCfg.Operator, 10)
 	return uIDStr
 }

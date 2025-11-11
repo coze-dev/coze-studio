@@ -26,8 +26,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/user"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 
 	databaseModel "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
