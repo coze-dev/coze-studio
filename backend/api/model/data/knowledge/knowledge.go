@@ -122,7 +122,7 @@ type CreateDatasetRequest struct {
 	FormatType FormatType `thrift:"format_type,5" form:"format_type" json:"format_type" query:"format_type"`
 	// Open to third-party business identity, coze pass 0 or no pass
 	BizID int64 `thrift:"biz_id,6" form:"biz_id" json:"biz_id,string" query:"biz_id"`
-	//project ID
+	// Project ID
 	ProjectID int64      `thrift:"project_id,7" form:"project_id" json:"project_id,string" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -7429,12 +7429,12 @@ func (p *DeleteDatasetOpenApiResponse) String() string {
 
 type ListDatasetOpenApiRequest struct {
 	Name *string `thrift:"name,1,optional" json:"name,omitempty" query:"name"`
-	// 类型
+	// Type
 	FormatType *FormatType `thrift:"format_type,2,optional" json:"format_type,omitempty" query:"format_type"`
 	PageNum    *int32      `thrift:"page_num,3,optional" json:"page_num,omitempty" query:"page_num"`
 	PageSize   *int32      `thrift:"page_size,4,optional" json:"page_size,omitempty" query:"page_size"`
 	SpaceID    int64       `thrift:"space_id,5" json:"space_id,string" query:"space_id"`
-	// 新增project ID
+	// Project ID
 	ProjectID *string    `thrift:"project_id,6,optional" json:"project_id,omitempty" query:"project_id"`
 	Base      *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }
@@ -8424,12 +8424,12 @@ func (p *ListDatasetOpenApiData) String() string {
 
 type ListPhotoOpenApiRequest struct {
 	DatasetID int64 `thrift:"dataset_id,1,required" json:"dataset_id,string,required" path:"dataset_id,required"`
-	// 页数，从 1 开始
+	// Page number, starting from 1
 	PageNum  *int32 `thrift:"page_num,2,optional" json:"page_num,omitempty" query:"page_num"`
 	PageSize *int32 `thrift:"page_size,3,optional" json:"page_size,omitempty" query:"page_size"`
-	// 搜索关键字，对图片名称和图片描述进行搜索
+	// Search keyword, searches image names and image descriptions
 	Keyword *string `thrift:"keyword,4,optional" json:"keyword,omitempty" query:"keyword"`
-	// 是否有描述信息
+	// Whether there is description information
 	HasCaption *bool      `thrift:"has_caption,5,optional" json:"has_caption,omitempty" query:"has_caption"`
 	Base       *base.Base `thrift:"Base,255,optional" form:"Base" json:"Base,omitempty" query:"Base"`
 }

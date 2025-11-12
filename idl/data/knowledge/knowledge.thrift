@@ -11,7 +11,7 @@ struct CreateDatasetRequest  {
     4: string icon_uri                // Knowledge Base Avatar URI
     5: common.FormatType format_type
     6: i64 biz_id (agw.js_conv="str", api.js_conv="true") // Open to third-party business identity, coze pass 0 or no pass
-    7: i64 project_id (agw.js_conv="str", api.js_conv="true") //project ID
+    7: i64 project_id (agw.js_conv="str", api.js_conv="true") // Project ID
 
     255: optional base.Base Base
 }
@@ -202,11 +202,11 @@ struct DeleteDatasetOpenApiResponse {
 
 struct ListDatasetOpenApiRequest {
     1  : optional string            name        (api.query = "name")                                           ,
-    2  : optional common.FormatType format_type (api.query = "format_type")                                    , // 类型
+    2  : optional common.FormatType format_type (api.query = "format_type")                                    , // Type
     3  : optional i32               page_num    (api.query = "page_num")                                       ,
     4  : optional i32               page_size   (api.query = "page_size")                                      ,
     5  :          i64               space_id    (agw.js_conv="str", api.js_conv="true", api.query = "space_id"),
-    6  : optional string            project_id  (api.query = "project_id")                                     , // 新增project ID
+    6  : optional string            project_id  (api.query = "project_id")                                     , // Project ID
 
     255: optional base.Base         Base                                                                       ,
 }
@@ -227,10 +227,10 @@ struct ListDatasetOpenApiData {
 
 struct ListPhotoOpenApiRequest {
     1  : required i64       dataset_id  (agw.js_conv='str', api.js_conv="true", api.path = "dataset_id"),
-    2  : optional i32       page_num    (api.query = "page_num")                                        , // 页数，从 1 开始
+    2  : optional i32       page_num    (api.query = "page_num")                                        , // Page number, starting from 1
     3  : optional i32       page_size   (api.query = "page_size")                                       ,
-    4  : optional string    keyword     (api.query = "keyword")                                         , // 搜索关键字，对图片名称和图片描述进行搜索
-    5  : optional bool      has_caption (api.query = "has_caption")                                     , // 是否有描述信息
+    4  : optional string    keyword     (api.query = "keyword")                                         , // Search keyword, searches image names and image descriptions
+    5  : optional bool      has_caption (api.query = "has_caption")                                     , // Whether there is description information
 
     255: optional base.Base Base                                                                        ,
 }
