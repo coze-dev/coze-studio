@@ -54,6 +54,11 @@ var needAuthPath = map[string]bool{
 	"/v1/conversation/retrieve":        true,
 	"/v3/chat/retrieve":                true,
 	"/v3/chat/message/list":            true,
+
+	"/open_api/knowledge/document/create": true,
+	"/open_api/knowledge/document/update": true,
+	"/open_api/knowledge/document/list":   true,
+	"/v1/datasets":                        true,
 }
 
 var needAuthFunc = map[string]bool{
@@ -63,6 +68,10 @@ var needAuthFunc = map[string]bool{
 
 	"^/v1/workflows/[0-9]+$": true,
 	"^/v1/apps/[0-9]+$":      true,
+
+	"^/v1/datasets/[0-9]+$":         true, // v1/datasets/:dataset_id
+	"^/v1/datasets/[0-9]+/images$":  true, // v1/datasets/:dataset_id/images
+	"^/v1/datasets/[0-9]+/process$": true, // v1/datasets/:dataset_id/process
 }
 
 func parseBearerAuthToken(authHeader string) string {
