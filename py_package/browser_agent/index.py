@@ -220,6 +220,8 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                                        timeout=aiohttp.ClientTimeout(total=30),
                                        headers={
                                             'x-sandbox-taskid':ctx.conversation_id,
+                                            'x-tt-env':'ppe_coze_sandbox',
+                                            'x-use-ppe':'1',
                                         }) as response:
                     if response.status == 200:
                         reader = response.content
@@ -267,6 +269,8 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
             keep_alive=False,
             headers={
                 'x-sandbox-taskid':ctx.conversation_id,
+                'x-tt-env':'ppe_coze_sandbox',
+                'x-use-ppe':'1',
             },
         )
         browser_session = BrowserSession(
@@ -311,7 +315,6 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                 await event_queue.put(genSSEData(
                     stream_id=ctx.conversation_id,
                     content=data,
-                    is_last_packet_in_msg=True,
                     reply_content_type= ReplyContentType(content_type=content_type)
                 ))
                 if islogin:
@@ -368,10 +371,16 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
         agent_task = asyncio.create_task(agent.run(20,on_step_end=on_step_end))
         ctx.logger.info(f"[{task_id}] Agent started running")
 
-        # 事件流生成
+        # 事件流生成 - 简化的取消检测
+        cancelled = False
+        
         while True:
             try:
-                # 等待事件或检查任务完成
+                # 如果已标记取消，立即跳出循环
+                if cancelled:
+                    break
+                
+                # 等待事件或检查任务完成 - 使用更安全的取消检测
                 try:
                     event = await asyncio.wait_for(event_queue.get(), timeout=0.5)
                     yield event
@@ -381,16 +390,34 @@ async def RunBrowserUseAgent(ctx: RunBrowserUseAgentCtx) -> AsyncGenerator[SSEDa
                         break
                         
                 except asyncio.TimeoutError:
-                    # 检查 Agent 任务是否完成
+                    # 检查 Agent 任务是否完成或被取消
                     if agent_task.done():
+                        # 检查任务是否因为取消而完成
+                        if agent_task.cancelled():
+                            ctx.logger.info(f"[{task_id}] Agent task was cancelled internally")
+                            cancelled = True
                         break
+                    
                     continue
+                    
             except asyncio.CancelledError:
-                ctx.logger.info(f"[{task_id}] Task was cancelled")
-                agent_task.cancel()
+                ctx.logger.info(f"[{task_id}] Task was cancelled - stopping agent immediately")
+                cancelled = True
+                
+                # 立即取消agent任务，不等待完成
+                if not agent_task.done():
+                    agent_task.cancel()
+                
+                # 快速清理资源，不等待
                 if agent:
-                    agent.pause()
-                    await agent.close()
+                    try:
+                        agent.pause()
+                        # 不等待close完成，直接继续
+                        asyncio.create_task(agent.close())
+                    except Exception:
+                        pass  # 忽略清理错误
+                
+                # 直接重新抛出异常，不发送任何事件
                 raise
             except Exception as e:
                 ctx.logger.error(f"[{task_id}] Error in event streaming: {e}")
