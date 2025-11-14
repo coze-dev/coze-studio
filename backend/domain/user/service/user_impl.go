@@ -465,6 +465,40 @@ func (u *userImpl) GetUserSpaceList(ctx context.Context, userID int64) (spaces [
 	}), nil
 }
 
+func (u *userImpl) GetUserSpaceBySpaceID(ctx context.Context, spaceID []int64) (spaces []*userEntity.Space, err error) {
+	if len(spaceID) == 0 {
+		return nil, errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "spaceID cannot be empty"))
+	}
+
+	spaceModels, err := u.SpaceRepo.GetSpaceByIDs(ctx, spaceID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(spaceModels) == 0 {
+		return []*userEntity.Space{}, nil
+	}
+
+	uris := slices.ToMap(spaceModels, func(sm *model.Space) (string, bool) {
+		return sm.IconURI, false
+	})
+
+	urls := make(map[string]string, len(uris))
+	for uri := range uris {
+		if uri != "" {
+			url, err := u.IconOSS.GetObjectUrl(ctx, uri)
+			if err != nil {
+				return nil, err
+			}
+			urls[uri] = url
+		}
+	}
+
+	return slices.Transform(spaceModels, func(sm *model.Space) *userEntity.Space {
+		return spacePo2Do(sm, urls[sm.IconURI])
+	}), nil
+}
+
 func spacePo2Do(space *model.Space, iconUrl string) *userEntity.Space {
 	return &userEntity.Space{
 		ID:          space.ID,

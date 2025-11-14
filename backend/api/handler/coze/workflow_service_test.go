@@ -72,6 +72,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/knowledgemock"
 	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/crossdomain/message/messagemock"
+	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/permission/permissionmock"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/impl"
 	pluginmodel "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
@@ -81,6 +83,7 @@ import (
 	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	entity4 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
+	permission "github.com/coze-dev/coze-studio/backend/domain/permission"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	entity3 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	entity5 "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
@@ -180,6 +183,11 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 		c = ctxcache.Init(c)
 		ctxcache.Store(c, consts.SessionDataKeyInCtx, &userentity.Session{
 			UserID: 123,
+		})
+		// Add API auth info for OpenAPI endpoints
+		ctxcache.Store(c, consts.OpenapiAuthKeyInCtx, &entity2.ApiKey{
+			UserID:      123,
+			ConnectorID: consts.APIConnectorID,
 		})
 		ctx.Next(c)
 	})
@@ -329,6 +337,11 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	crossmessage.SetDefaultSVC(mockMessage)
 	mockAgentRun := agentrunmock.NewMockAgentRun(ctrl)
 	crossagentrun.SetDefaultSVC(mockAgentRun)
+
+	// Initialize permission service for tests
+	mockPermission := permissionmock.NewMockPermission(ctrl)
+	mockPermission.EXPECT().CheckAuthz(gomock.Any(), gomock.Any()).Return(&permission.CheckAuthzResult{Decision: permission.Allow}, nil).AnyTimes()
+	crosspermission.SetDefaultSVC(mockPermission)
 
 	mockey.Mock((*user.UserApplicationService).MGetUserBasicInfo).Return(&playground.MGetUserBasicInfoResponse{
 		UserBasicInfoMap: make(map[string]*playground.UserBasicInfo),
@@ -1029,6 +1042,8 @@ func (r *wfTestRunner) openapiStream(id string, input any) *sse.Reader {
 	hReq.SetMethod("POST")
 	hReq.SetBody(m)
 	hReq.SetHeader("Content-Type", "application/json")
+	// Add Authorization header for API authentication
+	hReq.SetHeader("Authorization", "Bearer test-api-key-123")
 	err = c.Do(context.Background(), hReq, hResp)
 	assert.NoError(r.t, err)
 
@@ -1059,6 +1074,8 @@ func (r *wfTestRunner) openapiResume(id string, eventID string, resumeData strin
 	hReq.SetMethod("POST")
 	hReq.SetBody(m)
 	hReq.SetHeader("Content-Type", "application/json")
+	// Add Authorization header for API authentication
+	hReq.SetHeader("Authorization", "Bearer test-api-key-123")
 	err = c.Do(context.Background(), hReq, hResp)
 	assert.NoError(r.t, err)
 

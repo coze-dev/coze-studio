@@ -226,6 +226,8 @@ func (t *tosClient) GetObject(ctx context.Context, objectKey string) ([]byte, er
 		return nil, err
 	}
 
+	defer getOutput.Content.Close()
+
 	return body, nil
 }
 

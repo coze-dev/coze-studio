@@ -16,7 +16,9 @@
 
 package entity
 
-type PublishStatus int
+import "github.com/coze-dev/coze-studio/backend/crossdomain/app/model"
+
+type PublishStatus = model.PublishStatus
 
 const (
 	PublishStatusOfPacking             PublishStatus = 0
@@ -27,7 +29,7 @@ const (
 	PublishStatusOfPublishDone         PublishStatus = 5
 )
 
-type ConnectorPublishStatus int
+type ConnectorPublishStatus = model.ConnectorPublishStatus
 
 const (
 	ConnectorPublishStatusOfDefault  ConnectorPublishStatus = 0
@@ -37,7 +39,7 @@ const (
 	ConnectorPublishStatusOfDisable  ConnectorPublishStatus = 4
 )
 
-type ResourceType string
+type ResourceType = model.ResourceType
 
 const (
 	ResourceTypeOfPlugin    ResourceType = "plugin"
@@ -46,7 +48,7 @@ const (
 	ResourceTypeOfDatabase  ResourceType = "database"
 )
 
-type ResourceCopyStatus int
+type ResourceCopyStatus = model.ResourceCopyStatus
 
 const (
 	ResourceCopyStatusOfSuccess    ResourceCopyStatus = 1

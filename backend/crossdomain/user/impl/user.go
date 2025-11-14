@@ -40,3 +40,7 @@ func InitDomainService(u service.User) crossuser.User {
 func (u *impl) GetUserSpaceList(ctx context.Context, userID int64) (spaces []*entity.Space, err error) {
 	return u.DomainSVC.GetUserSpaceList(ctx, userID)
 }
+
+func (u *impl) GetUserSpaceBySpaceID(ctx context.Context, spaceID []int64) (space []*entity.Space, err error) {
+	return u.DomainSVC.GetUserSpaceBySpaceID(ctx, spaceID)
+}

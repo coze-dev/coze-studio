@@ -274,6 +274,10 @@ func (i *InvocationArgs) setDefaultValues(ctx context.Context, projectInfo *mode
 	}
 
 	_, bodySchema := i.Tool.Operation.GetReqBodySchema()
+	if bodySchema == nil || bodySchema.Value == nil {
+		return nil
+	}
+
 	i.Body, err = setBodyDefaultValues(ctx, i.Body, bodySchema.Value, projectInfo, userID)
 	if err != nil {
 		return err

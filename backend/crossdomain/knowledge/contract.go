@@ -32,6 +32,8 @@ type Knowledge interface {
 	Store(ctx context.Context, document *model.CreateDocumentRequest) (*model.CreateDocumentResponse, error)
 	Delete(ctx context.Context, r *model.DeleteDocumentRequest) (*model.DeleteDocumentResponse, error)
 	ListKnowledgeDetail(ctx context.Context, req *model.ListKnowledgeDetailRequest) (*model.ListKnowledgeDetailResponse, error)
+	MGetSlice(ctx context.Context, request *model.MGetSliceRequest) (response *model.MGetSliceResponse, err error)
+	MGetDocument(ctx context.Context, request *model.MGetDocumentRequest) (response *model.MGetDocumentResponse, err error)
 }
 
 var defaultSVC Knowledge

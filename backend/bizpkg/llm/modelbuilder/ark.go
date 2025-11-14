@@ -23,6 +23,7 @@ import (
 	"github.com/volcengine/volcengine-go-sdk/service/arkruntime/model"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
@@ -70,6 +71,18 @@ func (b *arkModelBuilder) applyParamsToChatModelConfig(chatModelConf *ark.ChatMo
 		arkThinkingType := ternary.IFElse(*params.EnableThinking, model.ThinkingTypeEnabled, model.ThinkingTypeDisabled)
 		chatModelConf.Thinking = &model.Thinking{
 			Type: arkThinkingType,
+		}
+	}
+
+	switch params.ResponseFormat {
+	case bot_common.ModelResponseFormat_Text,
+		bot_common.ModelResponseFormat_Markdown:
+		chatModelConf.ResponseFormat = &ark.ResponseFormat{
+			Type: model.ResponseFormatText,
+		}
+	case bot_common.ModelResponseFormat_JSON:
+		chatModelConf.ResponseFormat = &ark.ResponseFormat{
+			Type: model.ResponseFormatJsonObject,
 		}
 	}
 }

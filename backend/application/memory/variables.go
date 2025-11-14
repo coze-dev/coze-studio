@@ -26,9 +26,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/kvmemory"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
 	model "github.com/coze-dev/coze-studio/backend/crossdomain/variables/model"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
+	"github.com/coze-dev/coze-studio/backend/domain/permission"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
@@ -213,7 +215,28 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		req.UserID = *uid
 	}
 
-	// TODO: project owner check
+	projectID, err := strconv.ParseInt(req.ProjectID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+
+	checkResult, err := crosspermission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		OperatorID: *uid,
+		ResourceIdentifier: []*permission.ResourceIdentifier{
+			{
+				Type:   permission.ResourceTypeApp,
+				ID:     []int64{projectID},
+				Action: permission.ActionRead,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if checkResult.Decision != permission.Allow {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "no permission"))
+	}
 
 	sysVars := v.DomainSVC.GetSysVariableConf(ctx).ToVariables()
 
@@ -259,7 +282,7 @@ func (v *VariableApplicationService) UpdateProjectVariable(ctx context.Context, 
 		}
 	}
 
-	_, err := v.DomainSVC.UpsertProjectMeta(ctx, req.ProjectID, "", req.UserID, entity.NewVariables(list))
+	_, err = v.DomainSVC.UpsertProjectMeta(ctx, req.ProjectID, "", req.UserID, entity.NewVariables(list))
 	if err != nil {
 		return nil, err
 	}
@@ -327,6 +350,15 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
 	connectorUID := ternary.IFElse(req.UserID == 0, *uid, req.UserID)
 
+	resourceID, err := strconv.ParseInt(bizID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	err = v.checkPermission(ctx, uid, isProjectKV, resourceID, permission.ActionRead)
+	if err != nil {
+		return nil, err
+	}
+
 	e := entity.NewUserVariableMeta(&model.UserVariableMeta{
 		BizType:      bizType,
 		BizID:        bizID,
@@ -343,6 +375,32 @@ func (v *VariableApplicationService) GetPlayGroundMemory(ctx context.Context, re
 	return &kvmemory.GetProfileMemoryResponse{
 		Memories: res,
 	}, nil
+}
+
+func (v *VariableApplicationService) checkPermission(ctx context.Context, uid *int64, isProjectKV bool, resourceID int64, action permission.Action) error {
+	checkResult, err := crosspermission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		OperatorID: *uid,
+		ResourceIdentifier: []*permission.ResourceIdentifier{
+			{
+				Type: func() permission.ResourceType {
+					if isProjectKV {
+						return permission.ResourceTypeApp
+					}
+					return permission.ResourceTypeAgent
+				}(),
+				ID:     []int64{resourceID},
+				Action: action,
+			},
+		},
+	})
+	if err != nil {
+		return err
+	}
+
+	if checkResult.Decision != permission.Allow {
+		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "no permission"))
+	}
+	return nil
 }
 
 func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, req *kvmemory.SetKvMemoryReq) (*kvmemory.SetKvMemoryResp, error) {
@@ -362,6 +420,15 @@ func (v *VariableApplicationService) SetVariableInstance(ctx context.Context, re
 	version := ternary.IFElse(isProjectKV, versionStr, "")
 	connectId := ternary.IFElse(req.ConnectorID == nil, consts.CozeConnectorID, req.GetConnectorID())
 	connectorUID := ternary.IFElse(req.GetUserID() == 0, *uid, req.GetUserID())
+
+	resourceID, err := strconv.ParseInt(bizID, 10, 64)
+	if err != nil {
+		return nil, err
+	}
+	err = v.checkPermission(ctx, uid, isProjectKV, resourceID, permission.ActionRead)
+	if err != nil {
+		return nil, err
+	}
 
 	e := entity.NewUserVariableMeta(&model.UserVariableMeta{
 		BizType:      bizType,

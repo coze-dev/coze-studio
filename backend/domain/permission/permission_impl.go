@@ -26,18 +26,30 @@ func NewService() Permission {
 	return &permissionImpl{}
 }
 
-func (p *permissionImpl) CheckPermission(ctx context.Context, req *CheckPermissionRequest) (*CheckPermissionResponse, error) {
-	return &CheckPermissionResponse{Decision: 0}, nil
+func DefaultSVC() Permission {
+	return NewService()
 }
 
-func (p *permissionImpl) CheckSingleAgentOperatePermission(ctx context.Context, botID, spaceID int64) (bool, error) {
-	return true, nil
-}
+func (p *permissionImpl) CheckAuthz(ctx context.Context, req *CheckAuthzData) (*CheckAuthzResult, error) {
 
-func (p *permissionImpl) CheckSpaceOperatePermission(ctx context.Context, spaceID int64, path, ticket string) (bool, error) {
-	return true, nil
-}
+	authzChecker := NewAuthzChecker()
 
-func (p *permissionImpl) UserSpaceCheck(ctx context.Context, spaceId, userId int64) (bool, error) {
-	return true, nil
+	for _, resourceIdentifier := range req.ResourceIdentifier {
+		allowed, err := authzChecker.CheckResourcePermission(ctx, &ResourcePermissionRequest{
+			ResourceType: resourceIdentifier.Type,
+			ResourceIDs:  resourceIdentifier.ID,
+			Action:       resourceIdentifier.Action,
+			OperatorID:   req.OperatorID,
+			IsDraft:      req.IsDraft,
+		})
+		if err != nil {
+			return nil, err
+		}
+
+		if !allowed {
+			return &CheckAuthzResult{Decision: Deny}, nil
+		}
+	}
+
+	return &CheckAuthzResult{Decision: Allow}, nil
 }

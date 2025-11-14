@@ -106,3 +106,14 @@ func (c *impl) ObtainAgentByIdentity(ctx context.Context, identity *model.AgentI
 	}
 	return agentInfo.SingleAgent, nil
 }
+
+func (c *impl) GetSingleAgentDraft(ctx context.Context, agentID int64) (*model.SingleAgent, error) {
+	agentInfo, err := c.DomainSVC.GetSingleAgentDraft(ctx, agentID)
+	if err != nil {
+		return nil, err
+	}
+	if agentInfo == nil {
+		return nil, nil
+	}
+	return agentInfo.SingleAgent, nil
+}

@@ -44,7 +44,6 @@ func newConversation(db *gorm.DB, opts ...gen.DOOption) conversation {
 	tableName := _conversation.conversationDo.TableName()
 	_conversation.ALL = field.NewAsterisk(tableName)
 	_conversation.ID = field.NewInt64(tableName, "id")
-	_conversation.Name = field.NewString(tableName, "name")
 	_conversation.ConnectorID = field.NewInt64(tableName, "connector_id")
 	_conversation.AgentID = field.NewInt64(tableName, "agent_id")
 	_conversation.Scene = field.NewInt32(tableName, "scene")
@@ -54,6 +53,8 @@ func newConversation(db *gorm.DB, opts ...gen.DOOption) conversation {
 	_conversation.Status = field.NewInt32(tableName, "status")
 	_conversation.CreatedAt = field.NewInt64(tableName, "created_at")
 	_conversation.UpdatedAt = field.NewInt64(tableName, "updated_at")
+	_conversation.Name = field.NewString(tableName, "name")
+	_conversation.UserID = field.NewString(tableName, "user_id")
 
 	_conversation.fillFieldMap()
 
@@ -66,7 +67,6 @@ type conversation struct {
 
 	ALL         field.Asterisk
 	ID          field.Int64  // id
-	Name        field.String // conversation name
 	ConnectorID field.Int64  // Publish Connector ID
 	AgentID     field.Int64  // agent_id
 	Scene       field.Int32  // conversation scene
@@ -76,6 +76,8 @@ type conversation struct {
 	Status      field.Int32  // status: 1-normal 2-deleted
 	CreatedAt   field.Int64  // Create Time in Milliseconds
 	UpdatedAt   field.Int64  // Update Time in Milliseconds
+	Name        field.String // conversation name
+	UserID      field.String // user id
 
 	fieldMap map[string]field.Expr
 }
@@ -93,7 +95,6 @@ func (c conversation) As(alias string) *conversation {
 func (c *conversation) updateTableName(table string) *conversation {
 	c.ALL = field.NewAsterisk(table)
 	c.ID = field.NewInt64(table, "id")
-	c.Name = field.NewString(table, "name")
 	c.ConnectorID = field.NewInt64(table, "connector_id")
 	c.AgentID = field.NewInt64(table, "agent_id")
 	c.Scene = field.NewInt32(table, "scene")
@@ -103,6 +104,8 @@ func (c *conversation) updateTableName(table string) *conversation {
 	c.Status = field.NewInt32(table, "status")
 	c.CreatedAt = field.NewInt64(table, "created_at")
 	c.UpdatedAt = field.NewInt64(table, "updated_at")
+	c.Name = field.NewString(table, "name")
+	c.UserID = field.NewString(table, "user_id")
 
 	c.fillFieldMap()
 
@@ -119,9 +122,8 @@ func (c *conversation) GetFieldByName(fieldName string) (field.OrderExpr, bool) 
 }
 
 func (c *conversation) fillFieldMap() {
-	c.fieldMap = make(map[string]field.Expr, 11)
+	c.fieldMap = make(map[string]field.Expr, 12)
 	c.fieldMap["id"] = c.ID
-	c.fieldMap["name"] = c.Name
 	c.fieldMap["connector_id"] = c.ConnectorID
 	c.fieldMap["agent_id"] = c.AgentID
 	c.fieldMap["scene"] = c.Scene
@@ -131,6 +133,8 @@ func (c *conversation) fillFieldMap() {
 	c.fieldMap["status"] = c.Status
 	c.fieldMap["created_at"] = c.CreatedAt
 	c.fieldMap["updated_at"] = c.UpdatedAt
+	c.fieldMap["name"] = c.Name
+	c.fieldMap["user_id"] = c.UserID
 }
 
 func (c conversation) clone(db *gorm.DB) conversation {

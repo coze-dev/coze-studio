@@ -20,6 +20,8 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/coze-dev/coze-studio/backend/application/permission"
+
 	"github.com/coze-dev/coze-studio/backend/application/app"
 	"github.com/coze-dev/coze-studio/backend/application/base/appinfra"
 	"github.com/coze-dev/coze-studio/backend/application/connector"
@@ -41,6 +43,8 @@ import (
 	singleagentImpl "github.com/coze-dev/coze-studio/backend/crossdomain/agent/impl"
 	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun"
 	agentrunImpl "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/impl"
+	crossapp "github.com/coze-dev/coze-studio/backend/crossdomain/app"
+	appImpl "github.com/coze-dev/coze-studio/backend/crossdomain/app/impl"
 	crossconnector "github.com/coze-dev/coze-studio/backend/crossdomain/connector"
 	connectorImpl "github.com/coze-dev/coze-studio/backend/crossdomain/connector/impl"
 	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
@@ -53,6 +57,8 @@ import (
 	knowledgeImpl "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/impl"
 	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
 	messageImpl "github.com/coze-dev/coze-studio/backend/crossdomain/message/impl"
+	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
+	permissionImpl "github.com/coze-dev/coze-studio/backend/crossdomain/permission/impl"
 	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
 	pluginImpl "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/impl"
 	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/search"
@@ -90,6 +96,8 @@ type basicServices struct {
 	templateSVC  *template.ApplicationService
 	openAuthSVC  *openauth.OpenAuthApplicationService
 	uploadSVC    *upload.UploadService
+
+	permissionSVC *permission.PermissionApplicationService
 }
 
 type primaryServices struct {
@@ -101,6 +109,7 @@ type primaryServices struct {
 	knowledgeSVC *knowledge.KnowledgeApplicationService
 	workflowSVC  *workflow.ApplicationService
 	shortcutSVC  *shortcutcmd.ShortcutCmdApplicationService
+	appSVC       *app.APPApplicationService
 }
 
 type complexServices struct {
@@ -138,6 +147,9 @@ func Init(ctx context.Context) (err error) {
 		return fmt.Errorf("Init - initVitalServices failed, err: %v", err)
 	}
 
+	// Initialize permission service first as it's required by other services
+	crosspermission.SetDefaultSVC(permissionImpl.InitDomainService(basicServices.permissionSVC.DomainSVC))
+
 	crossconnector.SetDefaultSVC(connectorImpl.InitDomainService(basicServices.connectorSVC.DomainSVC))
 	crossdatabase.SetDefaultSVC(databaseImpl.InitDomainService(primaryServices.memorySVC.DatabaseDomainSVC))
 	crossknowledge.SetDefaultSVC(knowledgeImpl.InitDomainService(primaryServices.knowledgeSVC.DomainSVC))
@@ -152,6 +164,8 @@ func Init(ctx context.Context) (err error) {
 	crossdatacopy.SetDefaultSVC(dataCopyImpl.InitDomainService(basicServices.infra))
 	crosssearch.SetDefaultSVC(searchImpl.InitDomainService(complexServices.searchSVC.DomainSVC))
 	crossupload.SetDefaultSVC(uploadImpl.InitDomainService(basicServices.uploadSVC.UploadSVC))
+
+	crossapp.SetDefaultSVC(appImpl.InitDomainService(complexServices.appSVC.DomainSVC))
 
 	return nil
 }
@@ -179,6 +193,8 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		Storage: infra.OSS,
 	})
 
+	permissionSVC := permission.InitService(&permission.ServiceComponents{})
+
 	return &basicServices{
 		infra:        infra,
 		eventbus:     e,
@@ -189,6 +205,8 @@ func initBasicServices(ctx context.Context, infra *appinfra.AppDependencies, e *
 		templateSVC:  templateSVC,
 		openAuthSVC:  openAuthSVC,
 		uploadSVC:    uploadSVC,
+
+		permissionSVC: permissionSVC,
 	}, nil
 }
 

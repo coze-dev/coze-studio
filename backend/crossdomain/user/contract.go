@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package crossuser
+package user
 
 import (
 	"context"
@@ -24,9 +24,10 @@ import (
 
 type EntitySpace = entity.Space
 
-//go:generate mockgen -destination ../../../internal/mock/crossdomain/crossuser/crossuser.go --package mockCrossUser -source crossuser.go
+//go:generate mockgen -destination ../../internal/mock/crossdomain/crossuser/crossuser.go --package mockCrossUser -source contract.go
 type User interface {
 	GetUserSpaceList(ctx context.Context, userID int64) (spaces []*EntitySpace, err error)
+	GetUserSpaceBySpaceID(ctx context.Context, spaceID []int64) (space []*EntitySpace, err error)
 }
 
 var defaultSVC User

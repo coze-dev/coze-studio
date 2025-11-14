@@ -45,6 +45,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/workflow"
 	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	connectorModel "github.com/coze-dev/coze-studio/backend/crossdomain/connector/model"
+
 	knowledgeModel "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
@@ -52,6 +53,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/app/service"
 	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
+	"github.com/coze-dev/coze-studio/backend/domain/permission"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
@@ -389,7 +391,37 @@ func (a *APPApplicationService) getLatestPublishRecord(ctx context.Context, appI
 	return latestRecord, nil
 }
 
+func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
+	// Use permission service to check workspace access
+	result, err := permission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		ResourceIdentifier: []*permission.ResourceIdentifier{
+			{
+				Type:   permission.ResourceTypeWorkspace,
+				ID:     []int64{spaceID},
+				Action: permission.ActionRead,
+			},
+		},
+		OperatorID: uid,
+	})
+	if err != nil {
+		return fmt.Errorf("failed to check workspace permission: %w", err)
+	}
+
+	if result.Decision != permission.Allow {
+		return fmt.Errorf("user %d does not have access to space %d", uid, spaceID)
+	}
+
+	return nil
+}
+
 func (a *APPApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	err = checkUserSpace(ctx, uid, req.GetSpaceID())
+	if err != nil {
+		return nil, err
+	}
+
 	err = a.projectEventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Updated,
 		Project: &searchEntity.ProjectDocument{

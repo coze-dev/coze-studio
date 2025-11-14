@@ -40,11 +40,12 @@ func (c *conversationImpl) Create(ctx context.Context, req *entity.CreateMeta) (
 	var resp *entity.Conversation
 
 	doData := &entity.Conversation{
-		CreatorID:   req.UserID,
+		CreatorID:   req.CreatorID,
 		AgentID:     req.AgentID,
 		Scene:       req.Scene,
 		ConnectorID: req.ConnectorID,
 		Ext:         req.Ext,
+		UserID:      req.UserID,
 	}
 
 	resp, err := c.ConversationRepo.Create(ctx, doData)

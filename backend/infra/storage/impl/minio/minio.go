@@ -204,6 +204,9 @@ func (m *minioClient) GetObject(ctx context.Context, objectKey string) ([]byte, 
 	if err != nil {
 		return nil, fmt.Errorf("ReadObject failed: %v", err)
 	}
+
+	defer obj.Close()
+
 	return data, nil
 }
 

@@ -63,10 +63,18 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, sseSen
 		return caErr
 	}
 
+	if creatorID != agentInfo.CreatorID {
+		return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "agent not match"))
+	}
+
 	conversationData, ccErr := a.checkConversation(ctx, ar, creatorID, connectorID)
 	if ccErr != nil {
 		logs.CtxErrorf(ctx, "checkConversation err:%v", ccErr)
 		return ccErr
+	}
+
+	if conversationData.CreatorID != creatorID {
+		return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
 	}
 
 	spaceID := agentInfo.SpaceID
@@ -83,7 +91,7 @@ func (a *OpenapiAgentRunApplication) OpenapiAgentRun(ctx context.Context, sseSen
 	return nil
 }
 
-func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *run.ChatV3Request, userID int64, connectorID int64) (*convEntity.Conversation, error) {
+func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *run.ChatV3Request, creatorID int64, connectorID int64) (*convEntity.Conversation, error) {
 	var conversationData *convEntity.Conversation
 	if ptr.From(ar.ConversationID) > 0 {
 		conData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, ptr.From(ar.ConversationID))
@@ -97,9 +105,10 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 
 		conData, err := ConversationSVC.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID:     ar.BotID,
-			UserID:      userID,
+			CreatorID:   creatorID,
 			ConnectorID: connectorID,
 			Scene:       common.Scene_SceneOpenApi,
+			UserID:      ptr.Of(ar.User),
 		})
 		if err != nil {
 			return nil, err
@@ -112,7 +121,7 @@ func (a *OpenapiAgentRunApplication) checkConversation(ctx context.Context, ar *
 		ar.ConversationID = ptr.Of(conversationData.ID)
 	}
 
-	if conversationData.CreatorID != userID {
+	if conversationData.CreatorID != creatorID {
 		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "user not match"))
 	}
 
@@ -641,6 +650,10 @@ func (a *OpenapiAgentRunApplication) CancelRun(ctx context.Context, req *run.Can
 	conversationData, err := ConversationSVC.ConversationDomainSVC.GetByID(ctx, req.ConversationID)
 	if err != nil {
 		return nil, err
+	}
+
+	if req.ConversationID != runRecord.ConversationID {
+		return nil, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "conversation not match"))
 	}
 
 	if userID != conversationData.CreatorID {

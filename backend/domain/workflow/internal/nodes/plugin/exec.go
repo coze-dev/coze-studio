@@ -43,7 +43,7 @@ func ExecutePlugin(ctx context.Context, input map[string]any, pe *vo.PluginEntit
 	}
 
 	var uID string
-	if cfg.AgentID != nil {
+	if cfg.ConnectorUID != "" {
 		uID = cfg.ConnectorUID
 	} else {
 		uID = conv.Int64ToStr(cfg.Operator)

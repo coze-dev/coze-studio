@@ -36,6 +36,7 @@ import (
 	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/database"
 	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	singleagent "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/service"
 	variableEntity "github.com/coze-dev/coze-studio/backend/domain/memory/variables/entity"
@@ -624,7 +625,36 @@ func (s *SingleAgentApplicationService) ListAgentPublishHistory(ctx context.Cont
 	return resp, nil
 }
 
+func checkUserSpace(ctx context.Context, uid int64, spaceID int64) error {
+	spaces, err := crossuser.DefaultSVC().GetUserSpaceList(ctx, uid)
+	if err != nil {
+		return err
+	}
+
+	var match bool
+	for _, s := range spaces {
+		if s.ID == spaceID {
+			match = true
+			break
+		}
+	}
+
+	if !match {
+		return fmt.Errorf("user %d does not have access to space %d", uid, spaceID)
+	}
+
+	return nil
+}
+
 func (s *SingleAgentApplicationService) ReportUserBehavior(ctx context.Context, req *playground.ReportUserBehaviorRequest) (resp *playground.ReportUserBehaviorResponse, err error) {
+
+	uid := ctxutil.MustGetUIDFromCtx(ctx)
+
+	err = checkUserSpace(ctx, uid, req.GetSpaceID())
+	if err != nil {
+		return nil, err
+	}
+
 	err = s.appContext.EventBus.PublishProject(ctx, &searchEntity.ProjectDomainEvent{
 		OpType: searchEntity.Updated,
 		Project: &searchEntity.ProjectDocument{

@@ -115,6 +115,21 @@ func (mr *MockKnowledgeMockRecorder) ListKnowledgeDetail(ctx, req any) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListKnowledgeDetail", reflect.TypeOf((*MockKnowledge)(nil).ListKnowledgeDetail), ctx, req)
 }
 
+// MGetDocument mocks base method.
+func (m *MockKnowledge) MGetDocument(ctx context.Context, request *knowledge.MGetDocumentRequest) (*knowledge.MGetDocumentResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetDocument", ctx, request)
+	ret0, _ := ret[0].(*knowledge.MGetDocumentResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetDocument indicates an expected call of MGetDocument.
+func (mr *MockKnowledgeMockRecorder) MGetDocument(ctx, request any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetDocument", reflect.TypeOf((*MockKnowledge)(nil).MGetDocument), ctx, request)
+}
+
 // MGetKnowledgeByID mocks base method.
 func (m *MockKnowledge) MGetKnowledgeByID(ctx context.Context, request *knowledge.MGetKnowledgeByIDRequest) (*knowledge.MGetKnowledgeByIDResponse, error) {
 	m.ctrl.T.Helper()
@@ -128,6 +143,21 @@ func (m *MockKnowledge) MGetKnowledgeByID(ctx context.Context, request *knowledg
 func (mr *MockKnowledgeMockRecorder) MGetKnowledgeByID(ctx, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetKnowledgeByID", reflect.TypeOf((*MockKnowledge)(nil).MGetKnowledgeByID), ctx, request)
+}
+
+// MGetSlice mocks base method.
+func (m *MockKnowledge) MGetSlice(ctx context.Context, request *knowledge.MGetSliceRequest) (*knowledge.MGetSliceResponse, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "MGetSlice", ctx, request)
+	ret0, _ := ret[0].(*knowledge.MGetSliceResponse)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MGetSlice indicates an expected call of MGetSlice.
+func (mr *MockKnowledgeMockRecorder) MGetSlice(ctx, request any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MGetSlice", reflect.TypeOf((*MockKnowledge)(nil).MGetSlice), ctx, request)
 }
 
 // Retrieve mocks base method.
