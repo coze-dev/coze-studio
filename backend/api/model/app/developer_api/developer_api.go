@@ -1268,7 +1268,7 @@ func (p CommitStatus) String() string {
 	case CommitStatus_Undefined:
 		return "Undefined"
 	case CommitStatus_Uptodate:
-		return "Uptodate"
+		return "Up-to-date"
 	case CommitStatus_Behind:
 		return "Behind"
 	case CommitStatus_NoDraftReplica:
@@ -1281,7 +1281,7 @@ func CommitStatusFromString(s string) (CommitStatus, error) {
 	switch s {
 	case "Undefined":
 		return CommitStatus_Undefined, nil
-	case "Uptodate":
+	case "Up-to-date":
 		return CommitStatus_Uptodate, nil
 	case "Behind":
 		return CommitStatus_Behind, nil
