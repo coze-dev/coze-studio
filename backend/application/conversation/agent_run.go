@@ -322,6 +322,7 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 		DisplayContent:   c.buildDisplayContent(ctx, ar),
 		SpaceID:          spaceID,
 		UserID:           conv.Int64ToStr(userID),
+		CozeUID:          conversationData.CreatorID,
 		SectionID:        conversationData.SectionID,
 		PreRetrieveTools: shortcutCMDData,
 		IsDraft:          ptr.From(ar.DraftMode),
