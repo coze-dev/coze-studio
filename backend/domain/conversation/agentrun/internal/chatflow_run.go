@@ -56,6 +56,7 @@ func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) 
 
 	executeConfig := crossworkflow.ExecuteConfig{
 		ID:           wfID,
+		Operator:     art.GetRunMeta().CozeUID,
 		ConnectorID:  art.GetRunMeta().ConnectorID,
 		ConnectorUID: art.GetRunMeta().UserID,
 		AgentID:      ptr.Of(art.GetRunMeta().AgentID),
