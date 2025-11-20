@@ -62,12 +62,12 @@ func (a agentToolDraftPO) ToDO() *entity.ToolInfo {
 }
 
 func (at *AgentToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
-	table := at.query.AgentToolDraft
-	selected = append(selected, table.ID)
-
 	if opt == nil {
 		return selected
 	}
+
+	table := at.query.AgentToolDraft
+	selected = append(selected, table.ID)
 
 	if opt.ToolID {
 		selected = append(selected, table.ToolID)
