@@ -60,9 +60,15 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    # start service
    # for macOS or Linux
    make web  
-   # for windows
+   # for windows in powershell
+   cd docker
    cp .env.example .env
-   docker compose -f ./docker/docker-compose.yml up
+   docker compose -f ./docker-compose.yml up
+
+   # for windows in CMD
+   cd docker
+   copy .env.example .env
+   docker compose -f ./docker-compose.yml up
    ```
    
    **启动失败常见问题可参考[常见问题](https://github.com/coze-dev/coze-studio/wiki/9.-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98)**。

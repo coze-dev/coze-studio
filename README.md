@@ -57,9 +57,16 @@ Deployment steps:
    # start service
    # for macOS or Linux
    make web  
-   # for windows
+   
+   # for windows in powershell
+   cd docker
    cp .env.example .env
-   docker compose -f ./docker/docker-compose.yml up
+   docker compose -f ./docker-compose.yml up
+
+   # for windows in CMD
+   cd docker
+   copy .env.example .env
+   docker compose -f ./docker-compose.yml up
    ```
 
    For common startup failure issues, **please refer to the [FAQ](https://github.com/coze-dev/coze-studio/wiki/9.-FAQ)**.
