@@ -82,6 +82,9 @@ func (dao *KnowledgeDocumentDAO) FindDocumentByCondition(ctx context.Context, op
 	if opts.CreatorID > 0 {
 		do = do.Where(k.CreatorID.Eq(opts.CreatorID))
 	}
+	if opts.Name != nil && *opts.Name != "" {
+		do = do.Where(k.Name.Like("%" + *opts.Name + "%"))
+	}
 	if len(opts.IDs) > 0 {
 		do = do.Where(k.ID.In(opts.IDs...))
 	}

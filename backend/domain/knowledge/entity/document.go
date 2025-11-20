@@ -76,6 +76,7 @@ type WhereDocumentOpt struct {
 	StatusIn     []int32
 	StatusNotIn  []int32
 	CreatorID    int64
+	Name         *string
 	Limit        int
 	Offset       *int
 	Cursor       *string
