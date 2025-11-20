@@ -465,6 +465,7 @@ func Register(r *server.Hertz) {
 				_document0 := _knowledge1.Group("/document", _document0Mw()...)
 				_document0.POST("/create", append(_createdocumentopenapiMw(), coze.CreateDocumentOpenAPI)...)
 				_document0.POST("/list", append(_listdocumentopenapiMw(), coze.ListDocumentOpenAPI)...)
+				_document0.POST("/delete", append(_updatedocumentopenapiMw(), coze.DeleteDocumentOpenAPI)...)
 				_document0.POST("/update", append(_updatedocumentopenapiMw(), coze.UpdateDocumentOpenAPI)...)
 			}
 		}
