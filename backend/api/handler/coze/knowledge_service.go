@@ -181,7 +181,7 @@ func DeleteDocument(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp := new(dataset.DeleteDocumentResponse)
-	resp, err = application.KnowledgeSVC.DeleteDocument(ctx, &req)
+	resp, err = application.KnowledgeSVC.DeleteDocument(ctx, &req, false)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
@@ -587,6 +587,26 @@ func CreateDocumentOpenAPI(ctx context.Context, c *app.RequestContext) {
 
 	resp := new(dataset.CreateDocumentResponse)
 	resp, err = application.KnowledgeSVC.CreateDocument(ctx, &req, true)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// DeleteDocumentOpenAPI .
+// @router /open_api/knowledge/document/delete [POST]
+func DeleteDocumentOpenAPI(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req dataset.DeleteDocumentRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		c.String(consts.StatusBadRequest, err.Error())
+		return
+	}
+
+	resp := new(dataset.DeleteDocumentResponse)
+	resp, err = application.KnowledgeSVC.DeleteDocument(ctx, &req, true)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
