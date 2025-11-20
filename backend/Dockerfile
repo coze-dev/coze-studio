@@ -27,7 +27,7 @@ WORKDIR /app
 # bind-tools for nslookup etc., file for debugging file types
 RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file deno curl
 
-RUN deno run -A jsr:@eyurtsev/pyodide-sandbox -c "print('Hello, World')"
+RUN deno run -A jsr:@langchain/pyodide-sandbox -c "print('Hello, World')"
 
 # Install Python build dependencies, create venv, install packages, then remove build deps
 RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
