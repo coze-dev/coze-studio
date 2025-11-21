@@ -71,6 +71,8 @@ func (p *PluginVersionDAO) getSelected(opt *PluginSelectedOption) (selected []fi
 	}
 
 	table := p.query.PluginVersion
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
 	if opt.PluginID {
 		selected = append(selected, table.PluginID)
