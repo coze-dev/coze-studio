@@ -72,10 +72,9 @@ func (p *PluginDraftDAO) getSelected(opt *PluginSelectedOption) (selected []fiel
 	}
 
 	table := p.query.PluginDraft
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
-	if opt.PluginID {
-		selected = append(selected, table.ID)
-	}
 	if opt.OpenapiDoc {
 		selected = append(selected, table.OpenapiDoc)
 	}

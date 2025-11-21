@@ -67,6 +67,8 @@ func (at *AgentToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []fi
 	}
 
 	table := at.query.AgentToolDraft
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
 	if opt.ToolID {
 		selected = append(selected, table.ToolID)

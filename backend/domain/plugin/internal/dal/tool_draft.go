@@ -71,10 +71,9 @@ func (t *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Ex
 	}
 
 	table := t.query.ToolDraft
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
-	if opt.ToolID {
-		selected = append(selected, table.ID)
-	}
 	if opt.ActivatedStatus {
 		selected = append(selected, table.ActivatedStatus)
 	}
