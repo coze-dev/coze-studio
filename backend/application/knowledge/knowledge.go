@@ -531,8 +531,10 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 			return dataset.NewListDocumentResponse(), err
 		}
 	}
+	//keyword := req.GetKeyword()
 	listResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 		KnowledgeID: req.GetDatasetID(),
+		//Keyword:     &keyword,
 		DocumentIDs: docIDs,
 		Limit:       &limit,
 		Offset:      &offset,
@@ -554,12 +556,14 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 	return resp, nil
 }
 
-func (k *KnowledgeApplicationService) DeleteDocument(ctx context.Context, req *dataset.DeleteDocumentRequest) (*dataset.DeleteDocumentResponse, error) {
+func (k *KnowledgeApplicationService) DeleteDocument(ctx context.Context, req *dataset.DeleteDocumentRequest, fromOpenAPI bool) (*dataset.DeleteDocumentResponse, error) {
+
 	if len(req.GetDocumentIds()) == 0 {
 		return dataset.NewDeleteDocumentResponse(), errors.New("document ids is empty")
 	}
 
-	uid := ctxutil.GetUIDFromCtx(ctx)
+	uid, err := getUID(ctx, fromOpenAPI)
+
 	if uid == nil {
 		return nil, errorx.New(errno.ErrKnowledgePermissionCode, errorx.KV("msg", "session required"))
 	}
