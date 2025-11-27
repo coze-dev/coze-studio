@@ -531,10 +531,10 @@ func (k *KnowledgeApplicationService) ListDocument(ctx context.Context, req *dat
 			return dataset.NewListDocumentResponse(), err
 		}
 	}
-	keyword := req.GetKeyword()
+	//keyword := req.GetKeyword()
 	listResp, err := k.DomainSVC.ListDocument(ctx, &service.ListDocumentRequest{
 		KnowledgeID: req.GetDatasetID(),
-		Keyword:     &keyword,
+		//Keyword:     &keyword,
 		DocumentIDs: docIDs,
 		Limit:       &limit,
 		Offset:      &offset,
