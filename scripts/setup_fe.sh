@@ -1,9 +1,12 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FRONTEND_DIR="${1:-${SCRIPT_DIR}/../frontend}"
 
 set -ex
+
+# 在 Windows Git Bash 环境中添加 Node.js 和其他必要的路径
+export PATH="/d/软件2:/c/Users/HuYun/AppData/Roaming/npm:$PATH"
 
 # Set color variables
 RED='\033[0;31m'

@@ -1,5 +1,8 @@
 .PHONY: debug fe server sync_db dump_db middleware web down clean python help
 
+# 在 Windows 上使用 Git Bash（使用完整路径避免使用 WSL bash）
+SHELL := D:/Git/Git/bin/bash.exe
+
 # 定义脚本路径
 SCRIPTS_DIR := ./scripts
 BUILD_FE_SCRIPT := $(SCRIPTS_DIR)/build_fe.sh
@@ -26,7 +29,7 @@ env:
 
 fe:
 	@echo "Building frontend..."
-	@bash $(BUILD_FE_SCRIPT)
+	@$(SHELL) $(BUILD_FE_SCRIPT)
 
 server: env
 	@if [ ! -d "$(STATIC_DIR)" ]; then \
@@ -34,11 +37,11 @@ server: env
 		$(MAKE) fe; \
 	fi
 	@echo "Building and run server..."
-	@APP_ENV=debug bash $(BUILD_SERVER_SCRIPT) -start
+	@APP_ENV=debug $(SHELL) $(BUILD_SERVER_SCRIPT) -start
 
 build_server:
 	@echo "Building server..."
-	@bash $(BUILD_SERVER_SCRIPT)
+	@$(SHELL) $(BUILD_SERVER_SCRIPT)
 
 sync_db: env
 	@echo "Syncing database..."
@@ -47,7 +50,7 @@ sync_db: env
 dump_db: env dump_sql_schema
 	@echo "Dumping database..."
 	@. $(ENV_FILE); \
-	bash $(DUMP_DB_SCRIPT)
+	$(SHELL) $(DUMP_DB_SCRIPT)
 
 sql_init:
 	@echo "Init sql data..."
@@ -79,7 +82,7 @@ clean: down
 
 python:
 	@echo "Setting up Python..."
-	@bash $(SETUP_PYTHON_SCRIPT)
+	@$(SHELL) $(SETUP_PYTHON_SCRIPT)
 
 dump_sql_schema:
 	@echo "Dumping mysql schema to $(MYSQL_SCHEMA)..."
@@ -98,7 +101,7 @@ atlas-hash:
 setup_es_index:
 	@echo "Setting up Elasticsearch index..."
 	@. $(ENV_FILE); \
-	bash $(ES_SETUP_SCRIPT) --index-dir $(ES_INDEX_SCHEMA) --docker-host false --es-address "$$ES_ADDR"
+	$(SHELL) $(ES_SETUP_SCRIPT) --index-dir $(ES_INDEX_SCHEMA) --docker-host false --es-address "$$ES_ADDR"
 
 help:
 	@echo "Usage: make [target]"

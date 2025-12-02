@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# 在 Windows Git Bash 环境中添加必要的路径
+export PATH="/c/Program Files/Go/bin:/c/Go/bin:$PATH"
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BASE_DIR="$(cd "$SCRIPT_DIR/../../" && pwd)"
 BACKEND_DIR="$BASE_DIR/backend"
