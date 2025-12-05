@@ -26,6 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/infra/storage/impl/minio"
 	"github.com/coze-dev/coze-studio/backend/infra/storage/impl/s3"
 	"github.com/coze-dev/coze-studio/backend/infra/storage/impl/tos"
+	"github.com/coze-dev/coze-studio/backend/pkg/envkey"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
@@ -41,7 +42,7 @@ func New(ctx context.Context) (Storage, error) {
 			os.Getenv(consts.MinIOAK),
 			os.Getenv(consts.MinIOSK),
 			os.Getenv(consts.StorageBucket),
-			false,
+			envkey.GetBoolD("MINIO_USE_SSL", false),
 		)
 	case "tos":
 		return tos.New(
@@ -76,7 +77,7 @@ func NewImagex(ctx context.Context) (imagex.ImageX, error) {
 			os.Getenv(consts.MinIOAK),
 			os.Getenv(consts.MinIOSK),
 			os.Getenv(consts.StorageBucket),
-			false,
+			envkey.GetBoolD("MINIO_USE_SSL", false),
 		)
 	case "tos":
 		return tos.NewStorageImagex(
