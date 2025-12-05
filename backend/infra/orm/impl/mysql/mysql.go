@@ -19,7 +19,10 @@ package mysql
 import (
 	"fmt"
 	"os"
+	"time"
 
+	"github.com/coze-dev/coze-studio/backend/pkg/envkey"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -30,6 +33,18 @@ func New() (*gorm.DB, error) {
 	if err != nil {
 		return nil, fmt.Errorf("mysql open, dsn: %s, err: %w", dsn, err)
 	}
+
+	sqlDB, err := db.DB()
+	if err != nil {
+		logs.Errorf("InitDB. db.DB() fail. err:%v", err)
+		return nil, err
+	}
+
+	// 连接池配置
+	sqlDB.SetMaxIdleConns(envkey.GetIntD("MYSQL_MAX_IDLE_CONNS", 10))
+	sqlDB.SetMaxOpenConns(envkey.GetIntD("MYSQL_MAX_OPEN_CONNS", 100))
+	sqlDB.SetConnMaxLifetime(time.Duration(envkey.GetIntD("MYSQL_CONN_MAX_LIFETIME", 3600)) * time.Second)
+	sqlDB.SetConnMaxIdleTime(time.Duration(envkey.GetIntD("MYSQL_CONN_MAX_IDLE_TIME", 600)) * time.Second)
 
 	return db, nil
 }
