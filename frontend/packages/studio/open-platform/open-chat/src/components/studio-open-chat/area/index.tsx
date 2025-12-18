@@ -17,7 +17,10 @@
 import React, { type FC, useEffect, useMemo, useRef } from 'react';
 
 import cs from 'classnames';
-import { ChatFlowRender } from '@coze-common/chat-workflow-render';
+import {
+  ChatFlowRender,
+  WorkflowRender,
+} from '@coze-common/chat-workflow-render';
 import {
   ChatArea,
   useInitStatus,
@@ -26,6 +29,7 @@ import {
 import { I18n } from '@coze-arch/i18n/intl';
 
 import { type StudioChatAreaProps } from '@/types/props';
+import { OpenApiSource } from '@/types/open';
 import { Layout } from '@/types/client';
 
 import { useChatAppProps } from '../store';
@@ -54,6 +58,13 @@ export const StudioChatArea: FC<StudioChatAreaProps> = ({
   const refContainer = useRef<HTMLDivElement>(null);
   const { readonly } = useChatAppProps();
 
+  const { source } = chatConfig;
+
+  const contentBox = useMemo(
+    () => (source === OpenApiSource.ChatFlow ? ChatFlowRender : WorkflowRender),
+    [source],
+  );
+
   const chatAreaComponentTypes: Partial<ComponentTypesMap> = useMemo(
     () => ({
       chatInputIntegration: {
@@ -64,9 +75,9 @@ export const StudioChatArea: FC<StudioChatAreaProps> = ({
           </>
         ),
       },
-      contentBox: ChatFlowRender,
+      contentBox,
     }),
-    [renderChatInputTopSlot],
+    [renderChatInputTopSlot, contentBox],
   );
   useEffect(() => {
     switch (initStatus) {
