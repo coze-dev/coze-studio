@@ -15,6 +15,7 @@ permissions:
   contents: read
   actions: read
 
+
 jobs:
   setup:
     strategy:
