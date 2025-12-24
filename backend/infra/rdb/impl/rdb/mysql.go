@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
 
 	"gorm.io/gorm"
@@ -49,6 +50,9 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 	// build column definitions
 	columnDefs := make([]string, 0, len(req.Table.Columns))
 	for _, col := range req.Table.Columns {
+		if !isValidIdentifier(col.Name) {
+			return nil, fmt.Errorf("invalid column name format: %s", col.Name)
+		}
 		colDef := fmt.Sprintf("`%s` %s", col.Name, col.DataType)
 
 		if col.Length != nil {
@@ -66,14 +70,14 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 			} else if col.DataType == entity.TypeText {
 				// do nothing
 			} else {
-				colDef += fmt.Sprintf(" DEFAULT '%s'", *col.DefaultValue)
+				colDef += fmt.Sprintf(" DEFAULT '%s'", escapeString(*col.DefaultValue))
 			}
 		}
 		if col.AutoIncrement {
 			colDef += " AUTO_INCREMENT"
 		}
 		if col.Comment != nil {
-			colDef += fmt.Sprintf(" COMMENT '%s'", *col.Comment)
+			colDef += fmt.Sprintf(" COMMENT '%s'", escapeString(*col.Comment))
 		}
 
 		columnDefs = append(columnDefs, colDef)
@@ -81,6 +85,15 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 
 	// build index definitions
 	for _, idx := range req.Table.Indexes {
+		if idx.Name != "" && !isValidIdentifier(idx.Name) {
+			return nil, fmt.Errorf("invalid index name format: %s", idx.Name)
+		}
+		for _, col := range idx.Columns {
+			if !isValidIdentifier(col) {
+				return nil, fmt.Errorf("invalid column name in index: %s", col)
+			}
+		}
+
 		var idxDef string
 		switch idx.Type {
 		case entity.PrimaryKey:
@@ -102,7 +115,7 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 			tableOptions = append(tableOptions, fmt.Sprintf("AUTO_INCREMENT=%d", *req.Table.Options.AutoIncrement))
 		}
 		if req.Table.Options.Comment != nil {
-			tableOptions = append(tableOptions, fmt.Sprintf("COMMENT='%s'", *req.Table.Options.Comment))
+			tableOptions = append(tableOptions, fmt.Sprintf("COMMENT='%s'", escapeString(*req.Table.Options.Comment)))
 		}
 	}
 
@@ -114,6 +127,10 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 		}
 
 		tableName = genName
+	}
+
+	if !isValidIdentifier(tableName) {
+		return nil, fmt.Errorf("invalid table name format: %s", tableName)
 	}
 
 	createSQL := fmt.Sprintf("CREATE TABLE IF NOT EXISTS `%s` (\n  %s\n) %s",
@@ -132,6 +149,15 @@ func (m *mysqlService) CreateTable(ctx context.Context, req *rdb.CreateTableRequ
 	resTable := req.Table
 	resTable.Name = tableName
 	return &rdb.CreateTableResponse{Table: resTable}, nil
+}
+
+func isValidIdentifier(name string) bool {
+	match, _ := regexp.MatchString(`^[a-zA-Z_][a-zA-Z0-9_]*$`, name)
+	return match
+}
+
+func escapeString(value string) string {
+	return strings.ReplaceAll(value, "'", "''")
 }
 
 // AlterTable alter table
