@@ -1,0 +1,64 @@
+{{- if .Values.cozeWeb.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ printf "%s-web" (include "opencoze.fullname" .) }}
+  labels:
+    {{- include "opencoze.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.cozeWeb.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: {{ .Release.Name }}
+      app.kubernetes.io/name: {{ include "opencoze.name" . }}
+      app.kubernetes.io/component: web
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        app.kubernetes.io/instance: {{ .Release.Name }}
+        app.kubernetes.io/name: {{ include "opencoze.name" . }}
+        app.kubernetes.io/component: web
+    spec:
+      initContainers:
+        - name: wait-for-server
+          image: {{ .Values.images.busybox }}
+          command: ['sh', '-c', 'until nc -z {{ include "opencoze.fullname" . }}-server 8888; do echo waiting for coze-server; sleep 2; done']
+      containers:
+        - name: {{ .Chart.Name }}-web
+          image: "{{ .Values.cozeWeb.image.repository }}:{{ .Values.cozeWeb.image.tag }}"
+          imagePullPolicy: {{ .Values.cozeWeb.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx/nginx.conf
+              subPath: nginx.conf
+            - name: nginx-default-config
+              mountPath: /etc/nginx/conf.d/default.conf
+              subPath: default.conf
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      volumes:
+        - name: nginx-config
+          configMap:
+            name: {{ include "opencoze.fullname" . }}-nginx-config
+        - name: nginx-default-config
+          configMap:
+            name: {{ include "opencoze.fullname" . }}-nginx-default-config
+{{- end }}

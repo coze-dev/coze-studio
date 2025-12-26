@@ -23,18 +23,37 @@ spec:
       containers:
         - name: minio
           image: "{{ .Values.minio.image.repository }}:{{ .Values.minio.image.tag }}"
-          args:
-            - server
-            - /data
-            - --console-address
-            - ":{{ .Values.minio.service.consolePort }}"
           env:
             - name: MINIO_ROOT_USER
               value: {{ .Values.minio.accessKey | quote }}
             - name: MINIO_ROOT_PASSWORD
               value: {{ .Values.minio.secretKey | quote }}
+            - name: STORAGE_BUCKET
+              value: {{ .Values.minio.bucket | quote }}
             - name: MINIO_DEFAULT_BUCKETS
               value: "{{ .Values.minio.bucket }},{{ .Values.milvus.bucketName }}"
+          command:
+            - /bin/sh
+            - -c
+            - |
+              # Run initialization in background
+              (
+                # Wait for MinIO to be ready
+                until (/usr/bin/mc alias set localminio http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD}) do
+                  echo "Waiting for MinIO to be ready..."
+                  sleep 1
+                done
+
+                # Create bucket
+                /usr/bin/mc mb --ignore-existing localminio/${STORAGE_BUCKET}
+
+                # Create default_icon directory marker if not exists
+                echo "MinIO bucket ${STORAGE_BUCKET} created successfully."
+                echo "MinIO initialization complete."
+              ) &
+
+              # Start minio server in foreground
+              exec minio server /data --console-address ":{{ .Values.minio.service.consolePort }}"
           ports:
             - containerPort: {{ .Values.minio.service.port }}
             - containerPort: {{ .Values.minio.service.consolePort }}
