@@ -170,6 +170,7 @@ export const NodeHeader: React.FC<NodeHeaderProps> = ({
   const container = usePlaygroundContainer();
   const handleCopy = useCallback(
     async (_: unknown, e: MouseEvent) => {
+      e.stopPropagation();
       const {
         WorkflowCopyShortcutsContribution,
         WorkflowPasteShortcutsContribution,
@@ -178,7 +179,6 @@ export const NodeHeader: React.FC<NodeHeaderProps> = ({
       const pasteService = container.get(WorkflowPasteShortcutsContribution);
       const data = await copyService.toData([node]);
       pasteService.apply(data);
-      e.stopPropagation();
     },
     [container, node],
   );
