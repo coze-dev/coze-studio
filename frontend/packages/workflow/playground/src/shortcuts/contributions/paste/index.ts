@@ -126,6 +126,33 @@ export class WorkflowPasteShortcutsContribution
     });
     return nodes;
   }
+  /** Apply clipboard data */
+  public async apply(
+    data: WorkflowClipboardData,
+  ): Promise<WorkflowNodeEntity[]> {
+    const { source, json: rawJSON } = data;
+    const json = generateUniqueWorkflow({
+      json: rawJSON,
+      isUniqueId: (id: string) => !this.entityManager.getEntityById(id),
+    });
+
+    // You need to initialize the node data before rebuilding the node
+    await this.saveService.initNodeData(json.nodes as WorkflowNodeJSON[]);
+
+    const titleCache: string[] = [];
+    const offset = this.calcPasteOffset(data.bounds);
+    const container = this.getSelectedContainer();
+    const nodes = await this.render({
+      json,
+      source,
+      titleCache,
+      offset,
+      parent: container,
+      toContainer: container,
+    });
+    this.selectNodes(nodes);
+    return nodes;
+  }
   /** Handling replication events */
   private async handle(
     _event: KeyboardEvent,
@@ -160,33 +187,6 @@ export class WorkflowPasteShortcutsContribution
       // The data in the clipboard itself is not fixed, so there is no need to report an error.
       return;
     }
-  }
-  /** Apply clipboard data */
-  private async apply(
-    data: WorkflowClipboardData,
-  ): Promise<WorkflowNodeEntity[]> {
-    const { source, json: rawJSON } = data;
-    const json = generateUniqueWorkflow({
-      json: rawJSON,
-      isUniqueId: (id: string) => !this.entityManager.getEntityById(id),
-    });
-
-    // You need to initialize the node data before rebuilding the node
-    await this.saveService.initNodeData(json.nodes as WorkflowNodeJSON[]);
-
-    const titleCache: string[] = [];
-    const offset = this.calcPasteOffset(data.bounds);
-    const container = this.getSelectedContainer();
-    const nodes = await this.render({
-      json,
-      source,
-      titleCache,
-      offset,
-      parent: container,
-      toContainer: container,
-    });
-    this.selectNodes(nodes);
-    return nodes;
   }
   /** Calculate Paste Offset */
   private calcPasteOffset(boundsData: WorkflowClipboardRect): IPoint {
