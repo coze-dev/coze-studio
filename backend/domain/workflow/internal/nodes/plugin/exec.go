@@ -65,6 +65,14 @@ func ExecutePlugin(ctx context.Context, input map[string]any, pe *vo.PluginEntit
 	if pe.PluginVersion != nil {
 		execOpts = append(execOpts, model.WithToolVersion(*pe.PluginVersion))
 	}
+	if cfg.ConversationID != nil {
+		execOpts = append(execOpts, model.WithConversationID(*cfg.ConversationID))
+	}
+	if cfg.AgentID != nil {
+		execOpts = append(execOpts, model.WithProjectInfo(&model.ProjectInfo{
+			ProjectID: *cfg.AgentID,
+		}))
+	}
 
 	r, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, execOpts...)
 	if err != nil {
