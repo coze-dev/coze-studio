@@ -38,22 +38,27 @@ import (
 const HeaderAuthorizationKey = "Authorization"
 
 var needAuthPath = map[string]bool{
-	"/v3/chat":                         true,
-	"/v1/conversations":                true,
-	"/v1/conversation/create":          true,
-	"/v1/conversation/message/list":    true,
-	"/v1/files/upload":                 true,
-	"/v1/workflow/run":                 true,
-	"/v1/workflow/stream_run":          true,
-	"/v1/workflow/stream_resume":       true,
-	"/v1/workflow/get_run_history":     true,
-	"/v1/bot/get_online_info":          true,
-	"/v1/workflows/chat":               true,
-	"/v1/workflow/conversation/create": true,
-	"/v3/chat/cancel":                  true,
-	"/v1/conversation/retrieve":        true,
-	"/v3/chat/retrieve":                true,
-	"/v3/chat/message/list":            true,
+	"/v3/chat":                            true,
+	"/v1/conversations":                   true,
+	"/v1/conversation/create":             true,
+	"/v1/conversation/message/list":       true,
+	"/v1/files/upload":                    true,
+	"/v1/workflow/run":                    true,
+	"/v1/workflow/stream_run":             true,
+	"/v1/workflow/stream_resume":          true,
+	"/v1/workflow/get_run_history":        true,
+	"/v1/bot/get_online_info":             true,
+	"/v1/workflows/chat":                  true,
+	"/v1/workflow/conversation/create":    true,
+	"/v3/chat/cancel":                     true,
+	"/v1/conversation/retrieve":           true,
+	"/v3/chat/retrieve":                   true,
+	"/v3/chat/message/list":               true,
+	"/open_api/knowledge/document/delete": true,
+	"/open_api/knowledge/document/create": true,
+	"/open_api/knowledge/document/update": true,
+	"/open_api/knowledge/document/list":   true,
+	"/v1/datasets":                        true,
 }
 
 var needAuthFunc = map[string]bool{
@@ -63,6 +68,10 @@ var needAuthFunc = map[string]bool{
 
 	"^/v1/workflows/[0-9]+$": true,
 	"^/v1/apps/[0-9]+$":      true,
+
+	"^/v1/datasets/[0-9]+$":         true, // v1/datasets/:dataset_id
+	"^/v1/datasets/[0-9]+/images$":  true, // v1/datasets/:dataset_id/images
+	"^/v1/datasets/[0-9]+/process$": true, // v1/datasets/:dataset_id/process
 }
 
 func parseBearerAuthToken(authHeader string) string {

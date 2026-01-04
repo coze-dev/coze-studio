@@ -126,7 +126,7 @@ struct PhotoFilter {
 }
 
 struct ListPhotoResponse {
-    1: list<PhotoInfo> photo_infos
+    1: list<common.PhotoInfo> photo_infos
     2: i32             total
 
     253: required i64 code
@@ -134,19 +134,7 @@ struct ListPhotoResponse {
     255: required base.BaseResp BaseResp(api.none="true")
 }
 
-struct PhotoInfo { // Picture Knowledge Base One picture corresponds to one document
-    1:  string             name  // image name
-    2:  i64                document_id(agw.js_conv='str', api.js_conv='true') // Document ID
-    3:  string             url             // image link
-    4:  string             caption         // picture description information
-    5:  i32                create_time     // create_time
-    6:  i32                update_time     // update time
-    7:  i64                creator_id (agw.js_conv="str", api.js_conv='true', agw.key="creator_id", api.body="creator_id")      // creator_id
-    8:  string             type            // Image suffix jpg, png, etc
-    9: i32                size            // image size
-    10: common.DocumentStatus status       // status
-    11: common.DocumentSource source_type     // source
-}
+
 
 struct PhotoDetailRequest {
     1: required list<string>  document_ids (agw.js_conv='str') // Document ID List
@@ -155,7 +143,7 @@ struct PhotoDetailRequest {
 }
 
 struct PhotoDetailResponse {
-    1: map<string, PhotoInfo> photo_infos // Mapping document ID to image information
+    1: map<string, common.PhotoInfo> photo_infos // Mapping document ID to image information
     253: required i64 code
     254: required string msg
     255: required base.BaseResp BaseResp(api.none="true")
@@ -241,23 +229,11 @@ struct GetDocumentProgressRequest {
     255: optional base.Base Base
 }
 struct GetDocumentProgressResponse {
-    1: list<DocumentProgress> data
+    1: list<common.DocumentProgress> data
 
     253: required i64 code
     254: required string msg
     255: optional base.BaseResp BaseResp
-}
-
-struct DocumentProgress {
-    1: i64               document_id(agw.js_conv="str", api.js_conv='true')
-    2: i32                  progress // Knowledge Base Progress Percentage
-    3: common.DocumentStatus status
-    4: optional string     status_descript  // A detailed description of the status; if the slice fails, a failure message is returned
-    5: string document_name
-    6: optional i64     remaining_time // Remaining time in seconds
-    7: optional i64     size
-    8: optional string  type
-    9: optional string  url
 }
 
 // Get the table file meta information uploaded by the database

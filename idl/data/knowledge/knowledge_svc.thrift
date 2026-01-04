@@ -38,4 +38,27 @@ service DatasetService {
     review.CreateDocumentReviewResponse CreateDocumentReview(1:review.CreateDocumentReviewRequest req) (api.post='/api/knowledge/review/create', api.category="knowledge",agw.preserve_base="true")
     review.MGetDocumentReviewResponse MGetDocumentReview(1:review.MGetDocumentReviewRequest req) (api.post='/api/knowledge/review/mget', api.category="knowledge",agw.preserve_base="true")
     review.SaveDocumentReviewResponse SaveDocumentReview(1:review.SaveDocumentReviewRequest req) (api.post='/api/knowledge/review/save', api.category="knowledge",agw.preserve_base="true")
+
+
+    document.CreateDocumentResponse CreateDocumentOpenAPI(1:document.CreateDocumentRequest req)
+    (api.post='/open_api/knowledge/document/create', api.category="knowledge",api.tag="openapi",  agw.preserve_base="true")
+    document.UpdateDocumentResponse UpdateDocumentOpenAPI(1:document.UpdateDocumentRequest req)
+    (api.post='/open_api/knowledge/document/update', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+    document.ListDocumentResponse ListDocumentOpenAPI(1:document.ListDocumentRequest req)
+    (api.post='/open_api/knowledge/document/list', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+
+    knowledge.CreateDatasetOpenApiResponse CreateDatasetOpenAPI(1:knowledge.CreateDatasetOpenApiRequest req)
+    (api.post='/v1/datasets', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+     knowledge.ListDatasetOpenApiResponse ListDatasetOpenAPI(1: knowledge.ListDatasetOpenApiRequest req)
+    (api.get='/v1/datasets', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+     knowledge.UpdateDatasetOpenApiResponse UpdateDatasetOpenAPI(1: knowledge.UpdateDatasetOpenApiRequest req)
+    (api.put='/v1/datasets/:dataset_id', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+    knowledge.DeleteDatasetOpenApiResponse DeleteDatasetOpenAPI(1: knowledge.DeleteDatasetOpenApiRequest req)
+    (api.delete='/v1/datasets/:dataset_id', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+
+    knowledge.ListPhotoOpenApiResponse ListPhotoDocumentOpenAPI(1: knowledge.ListPhotoOpenApiRequest req)
+    (api.get='/v1/datasets/:dataset_id/images', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+    knowledge.GetDocumentProgressOpenApiResponse GetDocumentProgressOpenAPI(1: knowledge.GetDocumentProgressOpenApiRequest req)
+    (api.post='/v1/datasets/:dataset_id/process', api.category="knowledge", api.tag="openapi", agw.preserve_base="true")
+
 }

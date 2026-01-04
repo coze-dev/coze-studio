@@ -152,6 +152,7 @@ type CreateDocumentResponse struct {
 type ListDocumentRequest struct {
 	KnowledgeID int64
 	DocumentIDs []int64
+	Keyword     *string
 	Limit       *int
 	Offset      *int
 	Cursor      *string
