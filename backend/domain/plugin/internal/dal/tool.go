@@ -69,7 +69,7 @@ func (t *ToolDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
 	table := t.query.Tool
 	// Always include ID, it may be used as cursor in pagination loops
 	selected = append(selected, table.ID)
-	
+
 	if opt.ActivatedStatus {
 		selected = append(selected, table.ActivatedStatus)
 	}

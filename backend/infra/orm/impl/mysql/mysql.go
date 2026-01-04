@@ -21,10 +21,11 @@ import (
 	"os"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/pkg/envkey"
-	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+
+	"github.com/coze-dev/coze-studio/backend/pkg/envkey"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 func New() (*gorm.DB, error) {

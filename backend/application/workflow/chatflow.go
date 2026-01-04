@@ -18,7 +18,6 @@ package workflow
 
 import (
 	"context"
-
 	"errors"
 	"fmt"
 	"runtime/debug"
@@ -1276,16 +1275,14 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 		userID     = apiKeyInfo.UserID
 		env        = ternary.IFElse(req.GetDraftMode(), vo.Draft, vo.Online)
 		cID        int64
-		//spaceID = mustParseInt64(req.GetSpaceID())
-		//_       = spaceID
 	)
 
 	checkResult, err := permission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
 		OperatorID: userID,
 		ResourceIdentifier: []*permission.ResourceIdentifier{
 			{
-				Type:   permission.ResourceTypeWorkflow,
-				ID:     []int64{mustParseInt64(req.GetWorkflowID())},
+				Type:   permission.ResourceTypeApp,
+				ID:     []int64{mustParseInt64(req.GetAppID())},
 				Action: permission.ActionRead,
 			},
 		},

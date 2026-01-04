@@ -91,6 +91,26 @@ func GetWorkflowDomainSVC() domainWorkflow.Service {
 }
 
 func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
+	if err := w.refreshNodeIconURLCache(ctx); err != nil {
+		return err
+	}
+	safego.Go(ctx, func() {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if err := w.refreshNodeIconURLCache(context.Background()); err != nil {
+					logs.Errorf("failed to refresh node icon url cache: %v", err)
+				}
+			}
+		}
+	})
+
+	return nil
+}
+
+func (w *ApplicationService) refreshNodeIconURLCache(ctx context.Context) error {
 	category2NodeMetaList, _, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, nil)
 	if err != nil {
 		logs.Errorf("failed to list node meta for icon url cache: %v", err)
@@ -100,13 +120,14 @@ func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
 	eg, gCtx := errgroup.WithContext(ctx)
 	for _, nodeMetaList := range category2NodeMetaList {
 		for _, nodeMeta := range nodeMetaList {
+			nodeMeta := nodeMeta
 			eg.Go(func() error {
 				if len(nodeMeta.IconURI) == 0 {
 					// For custom nodes, if IconURI is not set, there will be no icon.
 					logs.Warnf("node '%s' has an empty IconURI, it will have no icon", nodeMeta.Name)
 					return nil
 				}
-				url, err := w.TosClient.GetObjectUrl(gCtx, nodeMeta.IconURI)
+				url, err := w.TosClient.GetObjectUrl(gCtx, nodeMeta.IconURI, storage.WithExpire(int64(time.Hour.Seconds())))
 				if err != nil {
 					logs.Warnf("failed to get object url for node %s: %v", nodeMeta.Name, err)
 					return err
@@ -126,7 +147,7 @@ func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
 		return err
 	}
 
-	logs.Infof("node icon url cache initialized with %d entries", len(nodeIconURLCache))
+	logs.Infof("node icon url cache refreshed with %d entries", len(nodeIconURLCache))
 	return nil
 }
 
