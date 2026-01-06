@@ -21,11 +21,11 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
 )
 
@@ -57,6 +57,8 @@ type Knowledge interface {
 	ListSlice(ctx context.Context, request *ListSliceRequest) (response *ListSliceResponse, err error)
 	ListPhotoSlice(ctx context.Context, request *ListPhotoSliceRequest) (response *ListPhotoSliceResponse, err error)
 	GetSlice(ctx context.Context, request *GetSliceRequest) (response *GetSliceResponse, err error)
+	MGetSlice(ctx context.Context, request *MGetSliceRequest) (response *MGetSliceResponse, err error)
+	MGetDocument(ctx context.Context, request *MGetDocumentRequest) (response *MGetDocumentResponse, err error)
 	Retrieve(ctx context.Context, request *RetrieveRequest) (response *RetrieveResponse, err error)
 	CreateDocumentReview(ctx context.Context, request *CreateDocumentReviewRequest) (response *CreateDocumentReviewResponse, err error)
 	MGetDocumentReview(ctx context.Context, request *MGetDocumentReviewRequest) (response *MGetDocumentReviewResponse, err error)
@@ -150,6 +152,7 @@ type CreateDocumentResponse struct {
 type ListDocumentRequest struct {
 	KnowledgeID int64
 	DocumentIDs []int64
+	Keyword     *string
 	Limit       *int
 	Offset      *int
 	Cursor      *string
@@ -213,7 +216,7 @@ type RetrieveContext struct {
 	// Retrieve the document information involved
 	Documents []*model.KnowledgeDocument
 	// A chat model for nl2sql and message to query
-	ChatModel chatmodel.BaseChatModel
+	ChatModel modelbuilder.BaseChatModel
 }
 
 type KnowledgeInfo struct {
@@ -353,6 +356,22 @@ type ExtractPhotoCaptionRequest struct {
 
 type ExtractPhotoCaptionResponse struct {
 	Caption string
+}
+
+type MGetSliceRequest struct {
+	SliceIDs []int64
+}
+
+type MGetSliceResponse struct {
+	Slices []*entity.Slice
+}
+
+type MGetDocumentRequest struct {
+	DocumentIDs []int64
+}
+
+type MGetDocumentResponse struct {
+	Documents []*entity.Document
 }
 type MGetKnowledgeByIDRequest = knowledge.MGetKnowledgeByIDRequest
 type MGetKnowledgeByIDResponse = knowledge.MGetKnowledgeByIDResponse

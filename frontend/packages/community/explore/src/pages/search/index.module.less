@@ -1,0 +1,231 @@
+.layout-container {
+  background: transparent;
+
+  .content {
+    display: flex;
+    flex-direction: row;
+    padding: 0;
+
+    .left-content {
+      display: flex;
+      flex-direction: column;
+      flex-grow: 1;
+      // width: 100%;
+      max-width: calc(100% - 184px);
+
+      .sort-select {
+        width: 120px;
+        padding: 4px;
+      }
+
+      .top-container {
+        padding: 0 24px;
+
+      }
+
+      .nav-wraper {
+        display: flex;
+        flex-shrink: 0;
+        align-items: center;
+        justify-content: space-between;
+
+        height: 64px;
+
+        border-top: 1px solid transparent; //如果top不设置，居中会偏，由于bottom-border不会计算进居中的高度
+        border-bottom: 1px solid transparent;
+
+
+      }
+
+      .divider {
+
+        @apply coz-stroke-primary;
+
+        border-top-color: transparent;
+      }
+
+      .bottom {
+        position: relative;
+        overflow-y: auto;
+        flex-grow: 1;
+        padding: 8px 24px;
+
+        &::-webkit-scrollbar {
+          display: none;
+          width: 0;
+          height: 0;
+        }
+
+        .pagination {
+          position: relative;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          width: 100%;
+          margin: 32px 0;
+
+          :global(.semi-page-item-active) {
+            color: var(--semi-color-primary);
+            background-color: var(--semi-color-primary-light-default);
+            border-color: transparent;
+          }
+        }
+      }
+
+    }
+  }
+
+  &.screen-xl1-5 {
+    .entity-selector-container,
+    .content {
+      width: 1388px;
+      margin: 0 auto;
+    }
+  }
+
+  .sideSheet {
+    pointer-events: none;
+    z-index: 111;
+
+    * {
+      pointer-events: auto;
+    }
+
+    :global {
+      .semi-sidesheet-header {
+        padding: 0;
+      }
+
+      .semi-sidesheet-body {
+        margin-top: 12px;
+
+        &::-webkit-scrollbar {
+          width: 6px;
+          background-color: transparent;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background-color: rgba(29, 28, 35, 30%);
+          border-radius: 6px;
+        }
+      }
+    }
+  }
+
+  &.responsive {
+    .top-container {
+      border-top: 1px solid transparent; //如果top不设置，居中会偏，由于bottom-border不会计算进居中的高度
+      border-bottom: 1px solid transparent;
+    }
+
+    .content .left-content {
+      max-width: 100%;
+      padding-right: 0;
+      padding-left: 0;
+    }
+
+    .entity-selector-container {
+      scrollbar-width: none;
+      overflow: scroll;
+      padding-bottom: 10px;
+    }
+  }
+}
+
+.empty {
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+
+  :global {
+    .semi-empty-footer {
+      display: flex;
+      justify-content: center;
+    }
+  }
+}
+
+.documentNoScroll {
+  overflow: hidden;
+
+  :global {
+    .semi-layout {
+      overflow: hidden;
+    }
+  }
+}
+
+.right-content {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+
+  width: 184px;
+  padding: 0 24px 0 0;
+
+  .top {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+
+    height: 56px;
+
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 22px;
+    text-align: left;
+
+    @apply coz-fg-plus;
+
+    .reset {
+      cursor: pointer;
+
+      font-size: 12px;
+      font-weight: 400;
+      line-height: 16px;
+      text-align: left;
+
+      @apply coz-fg-hglt;
+
+      &.default {
+        @apply coz-fg-secondary;
+
+        cursor: default;
+      }
+    }
+  }
+
+  .bottom {
+    overflow-y: auto;
+    flex-grow: 1;
+    padding: 6px;
+
+    &::-webkit-scrollbar {
+      display: none;
+      width: 0;
+      height: 0;
+    }
+  }
+
+  &.is-mobile {
+    width: 100%;
+    padding: 0;
+
+    .top {
+      height: 22px;
+      margin-top: 12px;
+      margin-bottom: 16px;
+    }
+  }
+}
+
+.scroll-container {
+  :global {
+    .responsive-list-container {
+      gap: 20px;
+    }
+  }
+}

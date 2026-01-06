@@ -24,11 +24,11 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
@@ -57,7 +57,7 @@ func (t toolPO) ToDO() *entity.ToolInfo {
 		SubURL:          &t.SubURL,
 		Method:          ptr.Of(t.Method),
 		Operation:       t.Operation,
-		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
+		ActivatedStatus: ptr.Of(consts.ActivatedStatus(t.ActivatedStatus)),
 	}
 }
 
@@ -67,10 +67,9 @@ func (t *ToolDAO) getSelected(opt *ToolSelectedOption) (selected []field.Expr) {
 	}
 
 	table := t.query.Tool
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
-	if opt.ToolID {
-		selected = append(selected, table.ID)
-	}
 	if opt.ActivatedStatus {
 		selected = append(selected, table.ActivatedStatus)
 	}

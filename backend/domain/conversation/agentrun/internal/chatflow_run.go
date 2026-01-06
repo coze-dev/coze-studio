@@ -26,12 +26,12 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -41,7 +41,7 @@ import (
 
 func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) (err error) {
 
-	mh := &MesssageEventHanlder{
+	mh := &MessageEventHandler{
 		sw:           art.SW,
 		messageEvent: art.MessageEvent,
 	}
@@ -56,6 +56,7 @@ func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) 
 
 	executeConfig := crossworkflow.ExecuteConfig{
 		ID:           wfID,
+		Operator:     art.GetRunMeta().CozeUID,
 		ConnectorID:  art.GetRunMeta().ConnectorID,
 		ConnectorUID: art.GetRunMeta().UserID,
 		AgentID:      ptr.Of(art.GetRunMeta().AgentID),
@@ -78,9 +79,15 @@ func (art *AgentRuntime) ChatflowRun(ctx context.Context, imagex imagex.ImageX) 
 		executeConfig.RoundID = &art.RunRecord.ID
 		executeConfig.UserMessage = transMessageToSchemaMessage(ctx, []*msgEntity.Message{art.GetInput()}, imagex)[0]
 		executeConfig.MaxHistoryRounds = ptr.Of(getAgentHistoryRounds(art.GetAgentInfo()))
-		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig, map[string]any{
+		chatInput := map[string]any{
 			"USER_INPUT": concatWfInput(art),
-		})
+		}
+		if art.GetRunMeta().ChatflowParameters != nil {
+			for k, v := range art.GetRunMeta().ChatflowParameters {
+				chatInput[k] = v
+			}
+		}
+		wfStreamer, err = crossworkflow.DefaultSVC().StreamExecute(ctx, executeConfig, chatInput)
 	}
 	if err != nil {
 		return err
@@ -110,7 +117,7 @@ func concatWfInput(rtDependence *AgentRuntime) string {
 	return strings.Trim(input, ",")
 }
 
-func (art *AgentRuntime) pullWfStream(ctx context.Context, events *schema.StreamReader[*crossworkflow.WorkflowMessage], mh *MesssageEventHanlder) {
+func (art *AgentRuntime) pullWfStream(ctx context.Context, events *schema.StreamReader[*crossworkflow.WorkflowMessage], mh *MessageEventHandler) {
 
 	fullAnswerContent := bytes.NewBuffer([]byte{})
 	var usage *msgEntity.UsageExt

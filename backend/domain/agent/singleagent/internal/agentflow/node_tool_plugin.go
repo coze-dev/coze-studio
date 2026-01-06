@@ -16,20 +16,20 @@
 
 package agentflow
 
+// TODO(fanlv):  remove pluginEntity
 import (
 	"context"
 
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	pluginEntity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -38,17 +38,21 @@ type toolConfig struct {
 	userID        string
 	agentIdentity *entity.AgentIdentity
 	toolConf      []*bot_common.PluginInfo
+
+	conversationID int64
 }
 
 func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool, error) {
-	req := &service.MGetAgentToolsRequest{
+	req := &model.MGetAgentToolsRequest{
 		SpaceID: conf.spaceID,
 		AgentID: conf.agentIdentity.AgentID,
 		IsDraft: conf.agentIdentity.IsDraft,
-		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) pluginEntity.VersionAgentTool {
-			return pluginEntity.VersionAgentTool{
+		VersionAgentTools: slices.Transform(conf.toolConf, func(a *bot_common.PluginInfo) model.VersionAgentTool {
+			return model.VersionAgentTool{
 				ToolID:       a.GetApiId(),
 				AgentVersion: ptr.Of(conf.agentIdentity.Version),
+				PluginFrom:   a.PluginFrom,
+				PluginID:     a.GetPluginId(),
 			}
 		}),
 	}
@@ -57,9 +61,9 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 		return nil, err
 	}
 
-	projectInfo := &plugin.ProjectInfo{
+	projectInfo := &model.ProjectInfo{
 		ProjectID:      conf.agentIdentity.AgentID,
-		ProjectType:    plugin.ProjectTypeOfAgent,
+		ProjectType:    consts.ProjectTypeOfAgent,
 		ProjectVersion: ptr.Of(conf.agentIdentity.Version),
 		ConnectorID:    conf.agentIdentity.ConnectorID,
 	}
@@ -71,6 +75,9 @@ func newPluginTools(ctx context.Context, conf *toolConfig) ([]tool.InvokableTool
 			isDraft:     conf.agentIdentity.IsDraft,
 			projectInfo: projectInfo,
 			toolInfo:    ti,
+			pluginFrom:  ti.Source,
+
+			conversationID: conf.conversationID,
 		})
 	}
 
@@ -81,7 +88,11 @@ type pluginInvokableTool struct {
 	userID      string
 	isDraft     bool
 	toolInfo    *pluginEntity.ToolInfo
-	projectInfo *plugin.ProjectInfo
+	projectInfo *model.ProjectInfo
+
+	pluginFrom *bot_common.PluginFrom
+
+	conversationID int64
 }
 
 func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error) {
@@ -106,24 +117,26 @@ func (p *pluginInvokableTool) Info(ctx context.Context) (*schema.ToolInfo, error
 }
 
 func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON string, _ ...tool.Option) (string, error) {
-	req := &service.ExecuteToolRequest{
+	req := &model.ExecuteToolRequest{
 		UserID:          p.userID,
 		PluginID:        p.toolInfo.PluginID,
 		ToolID:          p.toolInfo.ID,
 		ExecDraftTool:   false,
+		PluginFrom:      p.pluginFrom,
 		ArgumentsInJson: argumentsInJSON,
-		ExecScene: func() plugin.ExecuteScene {
+		ExecScene: func() consts.ExecuteScene {
 			if p.isDraft {
-				return plugin.ExecSceneOfDraftAgent
+				return consts.ExecSceneOfDraftAgent
 			}
-			return plugin.ExecSceneOfOnlineAgent
+			return consts.ExecSceneOfOnlineAgent
 		}(),
 	}
 
-	opts := []pluginEntity.ExecuteToolOpt{
-		plugin.WithInvalidRespProcessStrategy(plugin.InvalidResponseProcessStrategyOfReturnDefault),
-		plugin.WithToolVersion(p.toolInfo.GetVersion()),
-		plugin.WithProjectInfo(p.projectInfo),
+	opts := []model.ExecuteToolOpt{
+		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
+		model.WithToolVersion(p.toolInfo.GetVersion()),
+		model.WithProjectInfo(p.projectInfo),
+		model.WithPluginHTTPHeader(p.conversationID),
 	}
 
 	resp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, opts...)

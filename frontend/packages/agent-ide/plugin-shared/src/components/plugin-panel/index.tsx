@@ -69,6 +69,8 @@ import {
   PluginType,
 } from '@coze-arch/bot-api/plugin_develop';
 import { type Int64 } from '@coze-arch/bot-api/developer_api';
+import { ProductEntityType } from '@coze-arch/bot-api/product_api';
+import { PluginFrom } from '@coze-arch/bot-api/playground_api';
 
 import s from './index.module.less';
 import { type SimplifyProductInfo } from '../../service/fetch-plugin';
@@ -84,7 +86,7 @@ import {
   IconCozDesktop,
   IconCozInfoCircle,
 } from '@coze-arch/coze-design/icons';
-
+import { ActivatePopover } from './activate-popover';
 import { isBoolean, isUndefined } from 'lodash-es';
 import {
   type CommercialSetting,
@@ -249,19 +251,29 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
   const timePrefixText = showPublishTime
     ? I18n.t('mkl_plugin_publish')
     : showCreateTime
-    ? I18n.t('mkl_plugin_created')
-    : I18n.t('mkl_plugin_updated');
+      ? I18n.t('mkl_plugin_created')
+      : I18n.t('mkl_plugin_updated');
   const timeToShow =
     (showPublishTime
       ? Number(listed_at)
       : showCreateTime
-      ? Number(create_time)
-      : Number(update_time)) || 0;
+        ? Number(create_time)
+        : Number(update_time)) || 0;
 
   const renderAuthStatus = () => {
     if (isUndefined(auth_mode) || auth_mode === PluginAuthMode.NoAuth) {
       return null;
     }
+    if (auth_mode === PluginAuthMode.NeedInstalled) {
+      return (
+        <ActivatePopover id={productId}>
+          <Tag color="yellow" className="font-medium !py-2px !px-4px !h-20px">
+            待开通
+          </Tag>
+        </ActivatePopover>
+      );
+    }
+
     if (
       auth_mode === PluginAuthMode.Required ||
       auth_mode === PluginAuthMode.Supported
@@ -479,7 +491,9 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
             data-testid="plugin-panel-item-pluginapi"
             isAdded={isAdded}
             pluginApi={api}
+            productId={productInfo?.id}
             from={from}
+            auth_mode={auth_mode}
             workflowNodes={
               pluginApiNodesMap[`${api?.plugin_id}_${api?.api_id}`] ?? []
             }
@@ -531,6 +545,10 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                   project_id,
                   version_name,
                   version_ts,
+                  plugin_from:
+                    productInfo?.entity_type === ProductEntityType.SaasPlugin
+                      ? PluginFrom.FromSaas
+                      : PluginFrom.Default,
                 };
                 // Check whether the name of the Plugins currently to be added has a duplicate name in the added list (the model does not support it, so this is added)
                 if (
@@ -559,6 +577,10 @@ export const PluginPanel: React.FC<PluginPanelProps> = ({
                             PluginType.PLUGIN,
                             PluginType.APP,
                             PluginType.LOCAL,
+                            ...(productInfo?.entity_type ===
+                            ProductEntityType.SaasPlugin
+                              ? [ProductEntityType.SaasPlugin]
+                              : []),
                           ],
                           space_id: useSpaceStore.getState().getSpaceId(),
                         });

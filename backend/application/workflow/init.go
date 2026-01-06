@@ -28,8 +28,7 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
-
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	knowledge "github.com/coze-dev/coze-studio/backend/domain/knowledge/service"
 	dbservice "github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
@@ -37,14 +36,13 @@ import (
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/config"
+	wrapPlugin "github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/service"
-	workflowservice "github.com/coze-dev/coze-studio/backend/domain/workflow/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
 type ServiceComponents struct {
@@ -60,7 +58,7 @@ type ServiceComponents struct {
 	ImageX                   imagex.ImageX
 	CPStore                  compose.CheckPointStore
 	CodeRunner               coderunner.Runner
-	WorkflowBuildInChatModel chatmodel.BaseChatModel
+	WorkflowBuildInChatModel modelbuilder.BaseChatModel
 }
 
 func initWorkflowConfig() (workflow.WorkflowConfig, error) {
@@ -97,9 +95,10 @@ func InitService(_ context.Context, components *ServiceComponents) (*Application
 	workflow.SetRepository(workflowRepo)
 
 	workflowDomainSVC := service.NewWorkflowService(workflowRepo)
+	wrapPlugin.SetOSS(components.Tos)
 
-	code.SetCodeRunner(components.CodeRunner)
-	callbacks.AppendGlobalHandlers(workflowservice.GetTokenCallbackHandler())
+	coderunner.SetCodeRunner(components.CodeRunner)
+	callbacks.AppendGlobalHandlers(service.GetTokenCallbackHandler())
 
 	setEventBus(components.DomainNotifier)
 

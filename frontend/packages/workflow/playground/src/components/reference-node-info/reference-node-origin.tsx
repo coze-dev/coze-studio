@@ -18,10 +18,10 @@
  * Node source
  */
 
+import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { I18n } from '@coze-arch/i18n';
 import { IconCozStore, IconCozTray } from '@coze-arch/coze-design/icons';
 import { IconButton, Tooltip } from '@coze-arch/coze-design';
-import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 
 import { useNodeOrigin } from './use-node-origin';
 
@@ -32,7 +32,17 @@ interface ReferenceNodeOriginProps {
 export const ReferenceNodeOrigin: React.FC<ReferenceNodeOriginProps> = ({
   node,
 }) => {
-  const { isFromStore, isFromLibrary } = useNodeOrigin(node);
+  const { isFromStore, isFromLibrary, isFromCozeCnStore } = useNodeOrigin(node);
+
+  if (isFromCozeCnStore) {
+    return (
+      <Tooltip
+        content={I18n.t('workflow_node_from_cn_store') || 'From coze.cn store'}
+      >
+        <IconButton icon={<IconCozStore />} size="mini" color="secondary" />
+      </Tooltip>
+    );
+  }
 
   if (isFromStore) {
     return (

@@ -13,7 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	entity "github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
+	dto "github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -21,6 +21,7 @@ import (
 type MockOAuthRepository struct {
 	ctrl     *gomock.Controller
 	recorder *MockOAuthRepositoryMockRecorder
+	isgomock struct{}
 }
 
 // MockOAuthRepositoryMockRecorder is the mock recorder for MockOAuthRepository.
@@ -55,7 +56,7 @@ func (mr *MockOAuthRepositoryMockRecorder) BatchDeleteAuthorizationCodeByIDs(ctx
 }
 
 // DeleteAuthorizationCode mocks base method.
-func (m *MockOAuthRepository) DeleteAuthorizationCode(ctx context.Context, meta *entity.AuthorizationCodeMeta) error {
+func (m *MockOAuthRepository) DeleteAuthorizationCode(ctx context.Context, meta *dto.AuthorizationCodeMeta) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteAuthorizationCode", ctx, meta)
 	ret0, _ := ret[0].(error)
@@ -97,10 +98,10 @@ func (mr *MockOAuthRepositoryMockRecorder) DeleteInactiveAuthorizationCodeTokens
 }
 
 // GetAuthorizationCode mocks base method.
-func (m *MockOAuthRepository) GetAuthorizationCode(ctx context.Context, meta *entity.AuthorizationCodeMeta) (*entity.AuthorizationCodeInfo, bool, error) {
+func (m *MockOAuthRepository) GetAuthorizationCode(ctx context.Context, meta *dto.AuthorizationCodeMeta) (*dto.AuthorizationCodeInfo, bool, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthorizationCode", ctx, meta)
-	ret0, _ := ret[0].(*entity.AuthorizationCodeInfo)
+	ret0, _ := ret[0].(*dto.AuthorizationCodeInfo)
 	ret1, _ := ret[1].(bool)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -113,10 +114,10 @@ func (mr *MockOAuthRepositoryMockRecorder) GetAuthorizationCode(ctx, meta any) *
 }
 
 // GetAuthorizationCodeRefreshTokens mocks base method.
-func (m *MockOAuthRepository) GetAuthorizationCodeRefreshTokens(ctx context.Context, nextRefreshAt int64, limit int) ([]*entity.AuthorizationCodeInfo, error) {
+func (m *MockOAuthRepository) GetAuthorizationCodeRefreshTokens(ctx context.Context, nextRefreshAt int64, limit int) ([]*dto.AuthorizationCodeInfo, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAuthorizationCodeRefreshTokens", ctx, nextRefreshAt, limit)
-	ret0, _ := ret[0].([]*entity.AuthorizationCodeInfo)
+	ret0, _ := ret[0].([]*dto.AuthorizationCodeInfo)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -128,7 +129,7 @@ func (mr *MockOAuthRepositoryMockRecorder) GetAuthorizationCodeRefreshTokens(ctx
 }
 
 // UpdateAuthorizationCodeLastActiveAt mocks base method.
-func (m *MockOAuthRepository) UpdateAuthorizationCodeLastActiveAt(ctx context.Context, meta *entity.AuthorizationCodeMeta, lastActiveAtMs int64) error {
+func (m *MockOAuthRepository) UpdateAuthorizationCodeLastActiveAt(ctx context.Context, meta *dto.AuthorizationCodeMeta, lastActiveAtMs int64) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpdateAuthorizationCodeLastActiveAt", ctx, meta, lastActiveAtMs)
 	ret0, _ := ret[0].(error)
@@ -142,7 +143,7 @@ func (mr *MockOAuthRepositoryMockRecorder) UpdateAuthorizationCodeLastActiveAt(c
 }
 
 // UpsertAuthorizationCode mocks base method.
-func (m *MockOAuthRepository) UpsertAuthorizationCode(ctx context.Context, info *entity.AuthorizationCodeInfo) error {
+func (m *MockOAuthRepository) UpsertAuthorizationCode(ctx context.Context, info *dto.AuthorizationCodeInfo) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UpsertAuthorizationCode", ctx, info)
 	ret0, _ := ret[0].(error)

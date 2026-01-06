@@ -25,9 +25,9 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -235,7 +235,7 @@ func publishAgentPlugins(ctx context.Context, appContext *ServiceComponents, pub
 
 func publishShortcutCommand(ctx context.Context, appContext *ServiceComponents, publishInfo *entity.SingleAgentPublish, agent *entity.SingleAgent) (*entity.SingleAgent, error) {
 	logs.CtxInfof(ctx, "publishShortcutCommand agentID: %d, shortcutCommand: %v", agent.AgentID, agent.ShortcutCommand)
-	if agent.ShortcutCommand == nil || len(agent.ShortcutCommand) == 0 {
+	if len(agent.ShortcutCommand) == 0 {
 		return agent, nil
 	}
 	cmdIDs := slices.Transform(agent.ShortcutCommand, func(a string) int64 {

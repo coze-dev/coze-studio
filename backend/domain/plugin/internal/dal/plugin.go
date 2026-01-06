@@ -25,12 +25,13 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -49,7 +50,7 @@ type PluginDAO struct {
 type pluginPO model.Plugin
 
 func (p pluginPO) ToDO() *entity.PluginInfo {
-	return entity.NewPluginInfo(&plugin.PluginInfo{
+	return entity.NewPluginInfo(&pluginModel.PluginInfo{
 		ID:          p.ID,
 		SpaceID:     p.SpaceID,
 		DeveloperID: p.DeveloperID,
@@ -71,10 +72,9 @@ func (p *PluginDAO) getSelected(opt *PluginSelectedOption) (selected []field.Exp
 	}
 
 	table := p.query.Plugin
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
-	if opt.PluginID {
-		selected = append(selected, table.ID)
-	}
 	if opt.OpenapiDoc {
 		selected = append(selected, table.OpenapiDoc)
 	}
@@ -132,7 +132,7 @@ func (p *PluginDAO) MGet(ctx context.Context, pluginIDs []int64, opt *PluginSele
 	return plugins, nil
 }
 
-func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo dto.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
 	}
@@ -141,13 +141,13 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 	table := p.query.Plugin
 
 	switch *pageInfo.SortBy {
-	case entity.SortByCreatedAt:
+	case dto.SortByCreatedAt:
 		if *pageInfo.OrderByACS {
 			orderExpr = table.CreatedAt.Asc()
 		} else {
 			orderExpr = table.CreatedAt.Desc()
 		}
-	case entity.SortByUpdatedAt:
+	case dto.SortByUpdatedAt:
 		if *pageInfo.OrderByACS {
 			orderExpr = table.UpdatedAt.Asc()
 		} else {
@@ -174,64 +174,64 @@ func (p *PluginDAO) List(ctx context.Context, spaceID int64, pageInfo entity.Pag
 	return plugins, total, nil
 }
 
-func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
+func (p *PluginDAO) UpsertWithTX(ctx context.Context, tx *query.QueryTx, pluginInfo *entity.PluginInfo) (err error) {
 	table := tx.Plugin
-	_, err = table.WithContext(ctx).Select(table.ID).Where(table.ID.Eq(plugin.ID)).First()
+	_, err = table.WithContext(ctx).Select(table.ID).Where(table.ID.Eq(pluginInfo.ID)).First()
 	if err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return err
 		}
 
 		m := &model.Plugin{
-			ID:          plugin.ID,
-			SpaceID:     plugin.SpaceID,
-			DeveloperID: plugin.DeveloperID,
-			AppID:       plugin.GetAPPID(),
-			Manifest:    plugin.Manifest,
-			OpenapiDoc:  plugin.OpenapiDoc,
-			PluginType:  int32(plugin.PluginType),
-			IconURI:     plugin.GetIconURI(),
-			ServerURL:   plugin.GetServerURL(),
-			Version:     plugin.GetVersion(),
-			VersionDesc: plugin.GetVersionDesc(),
+			ID:          pluginInfo.ID,
+			SpaceID:     pluginInfo.SpaceID,
+			DeveloperID: pluginInfo.DeveloperID,
+			AppID:       pluginInfo.GetAPPID(),
+			Manifest:    pluginInfo.Manifest,
+			OpenapiDoc:  pluginInfo.OpenapiDoc,
+			PluginType:  int32(pluginInfo.PluginType),
+			IconURI:     pluginInfo.GetIconURI(),
+			ServerURL:   pluginInfo.GetServerURL(),
+			Version:     pluginInfo.GetVersion(),
+			VersionDesc: pluginInfo.GetVersionDesc(),
 		}
 
 		return table.WithContext(ctx).Create(m)
 	}
 
 	updateMap := map[string]any{}
-	if plugin.APPID != nil {
-		updateMap[table.AppID.ColumnName().String()] = *plugin.APPID
+	if pluginInfo.APPID != nil {
+		updateMap[table.AppID.ColumnName().String()] = *pluginInfo.APPID
 	}
-	if plugin.IconURI != nil {
-		updateMap[table.IconURI.ColumnName().String()] = *plugin.IconURI
+	if pluginInfo.IconURI != nil {
+		updateMap[table.IconURI.ColumnName().String()] = *pluginInfo.IconURI
 	}
-	if plugin.Version != nil {
-		updateMap[table.Version.ColumnName().String()] = *plugin.Version
+	if pluginInfo.Version != nil {
+		updateMap[table.Version.ColumnName().String()] = *pluginInfo.Version
 	}
-	if plugin.VersionDesc != nil {
-		updateMap[table.VersionDesc.ColumnName().String()] = *plugin.VersionDesc
+	if pluginInfo.VersionDesc != nil {
+		updateMap[table.VersionDesc.ColumnName().String()] = *pluginInfo.VersionDesc
 	}
-	if plugin.ServerURL != nil {
-		updateMap[table.ServerURL.ColumnName().String()] = *plugin.ServerURL
+	if pluginInfo.ServerURL != nil {
+		updateMap[table.ServerURL.ColumnName().String()] = *pluginInfo.ServerURL
 	}
-	if plugin.Manifest != nil {
-		b, err := json.Marshal(plugin.Manifest)
-		if err != nil {
-			return err
+	if pluginInfo.Manifest != nil {
+		b, mErr := json.Marshal(pluginInfo.Manifest)
+		if mErr != nil {
+			return mErr
 		}
 		updateMap[table.Manifest.ColumnName().String()] = b
 	}
-	if plugin.OpenapiDoc != nil {
-		b, err := json.Marshal(plugin.OpenapiDoc)
-		if err != nil {
-			return err
+	if pluginInfo.OpenapiDoc != nil {
+		b, mErr := json.Marshal(pluginInfo.OpenapiDoc)
+		if mErr != nil {
+			return mErr
 		}
 		updateMap[table.OpenapiDoc.ColumnName().String()] = b
 	}
 
 	_, err = table.WithContext(ctx).
-		Where(table.ID.Eq(plugin.ID)).
+		Where(table.ID.Eq(pluginInfo.ID)).
 		Updates(updateMap)
 	if err != nil {
 		return err

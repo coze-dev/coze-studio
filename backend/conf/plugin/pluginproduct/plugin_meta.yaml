@@ -844,7 +844,6 @@
       method: patch
       sub_url: /calendar/update_event/{event_id}
 - plugin_id: 22
-  product_id: 7379953949534715956
   deprecated: false
   version: v1.0.0
   openapi_doc_file: gaode_map.yaml

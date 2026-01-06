@@ -18,6 +18,7 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"testing"
@@ -27,14 +28,13 @@ import (
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 )
 
 func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnDefault(t *testing.T) {
 	executor := &toolExecutor{
-		invalidRespProcessStrategy: model.InvalidResponseProcessStrategyOfReturnDefault,
+		invalidRespProcessStrategy: consts.InvalidResponseProcessStrategyOfReturnDefault,
 	}
 
 	paramVal := `
@@ -109,7 +109,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnDefault(t *tes
 		},
 	}
 
-	processedParamValMap, err := executor.processWithInvalidRespProcessStrategyOfReturnDefault(nil, paramValMap, paramSchema)
+	processedParamValMap, err := executor.processWithInvalidRespProcessStrategyOfReturnDefault(context.Background(), paramValMap, paramSchema)
 	assert.NoError(t, err)
 	assert.NotNil(t, processedParamValMap)
 	assert.Equal(t, int64(1), processedParamValMap["a1"])
@@ -121,7 +121,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnDefault(t *tes
 
 func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnErr(t *testing.T) {
 	executor := &toolExecutor{
-		invalidRespProcessStrategy: model.InvalidResponseProcessStrategyOfReturnErr,
+		invalidRespProcessStrategy: consts.InvalidResponseProcessStrategyOfReturnErr,
 	}
 
 	mockey.PatchConvey("integer", t, func() {
@@ -147,7 +147,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnErr(t *testing
 				},
 			},
 		}
-		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(nil, paramValMap, paramSchema)
+		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(context.Background(), paramValMap, paramSchema)
 		var customErr errorx.StatusError
 		assert.True(t, errors.As(err, &customErr))
 		assert.Equal(t, "execute tool failed : expected 'a' to be of type 'string', but got 'json.Number'", customErr.Msg())
@@ -162,7 +162,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnErr(t *testing
 				},
 			},
 		}
-		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(nil, paramValMap, paramSchema)
+		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(context.Background(), paramValMap, paramSchema)
 		assert.NoError(t, err)
 	})
 
@@ -189,7 +189,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnErr(t *testing
 				},
 			},
 		}
-		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(nil, paramValMap, paramSchema)
+		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(context.Background(), paramValMap, paramSchema)
 		var customErr errorx.StatusError
 		assert.True(t, errors.As(err, &customErr))
 		assert.Equal(t, "execute tool failed : expected 'a' to be of type 'integer', but got 'string'", customErr.Msg())
@@ -204,7 +204,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnErr(t *testing
 				},
 			},
 		}
-		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(nil, paramValMap, paramSchema)
+		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(context.Background(), paramValMap, paramSchema)
 		assert.NoError(t, err)
 	})
 
@@ -231,7 +231,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnErr(t *testing
 				},
 			},
 		}
-		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(nil, paramValMap, paramSchema)
+		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(context.Background(), paramValMap, paramSchema)
 		var customErr errorx.StatusError
 		assert.True(t, errors.As(err, &customErr))
 		assert.Equal(t, "execute tool failed : expected 'a' to be of type 'string', but got 'bool'", customErr.Msg())
@@ -246,7 +246,7 @@ func TestToolExecutorProcessWithInvalidRespProcessStrategyOfReturnErr(t *testing
 				},
 			},
 		}
-		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(nil, paramValMap, paramSchema)
+		_, err = executor.processWithInvalidRespProcessStrategyOfReturnErr(context.Background(), paramValMap, paramSchema)
 		assert.NoError(t, err)
 	})
 }

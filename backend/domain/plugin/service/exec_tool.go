@@ -21,50 +21,50 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
+
 	"net/http"
-	"net/url"
 	"strconv"
-	"strings"
 
 	"github.com/bytedance/sonic"
 	"github.com/getkin/kin-openapi/openapi3"
-	"github.com/tidwall/sjson"
 
-	einoCompose "github.com/cloudwego/eino/compose"
-
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/variables"
-	"github.com/coze-dev/coze-studio/backend/api/model/data/variable/project_memory"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
-	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/encoder"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/service/tool"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
-	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
-	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolRequest, opts ...entity.ExecuteToolOpt) (resp *ExecuteToolResponse, err error) {
-	execOpt := &model.ExecuteToolOption{}
-	for _, opt := range opts {
-		opt(execOpt)
+func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *model.ExecuteToolRequest, opts ...model.ExecuteToolOpt) (resp *model.ExecuteToolResponse, err error) {
+	opt := &model.ExecuteToolOption{}
+	for _, fn := range opts {
+		fn(opt)
 	}
 
-	executor, err := p.buildToolExecutor(ctx, req, execOpt)
+	executor, err := p.buildToolExecutor(ctx, req, opt)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "buildToolExecutor failed")
 	}
 
-	result, err := executor.execute(ctx, req.ArgumentsInJson)
+	authInfo := executor.plugin.GetAuthInfo()
+	accessToken, authURL, err := p.acquireAccessTokenIfNeed(ctx, req, authInfo, executor.tool.Operation)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "acquireAccessToken failed")
+	}
+
+	result, err := executor.execute(ctx, req.ArgumentsInJson, accessToken, authURL)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "execute tool failed")
 	}
 
-	if req.ExecScene == model.ExecSceneOfToolDebug {
+	if req.ExecScene == consts.ExecSceneOfToolDebug {
 		err = p.toolRepo.UpdateDraftTool(ctx, &entity.ToolInfo{
 			ID:          req.ToolID,
 			DebugStatus: ptr.Of(common.APIDebugStatus_DebugPassed),
@@ -75,14 +75,14 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 	}
 
 	var respSchema openapi3.Responses
-	if execOpt.AutoGenRespSchema {
+	if opt.AutoGenRespSchema {
 		respSchema, err = p.genToolResponseSchema(ctx, result.RawResp)
 		if err != nil {
 			return nil, errorx.Wrapf(err, "genToolResponseSchema failed")
 		}
 	}
 
-	resp = &ExecuteToolResponse{
+	resp = &model.ExecuteToolResponse{
 		Tool:        executor.tool,
 		Request:     result.Request,
 		RawResp:     result.RawResp,
@@ -93,9 +93,49 @@ func (p *pluginServiceImpl) ExecuteTool(ctx context.Context, req *ExecuteToolReq
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *ExecuteToolRequest,
-	execOpt *model.ExecuteToolOption) (impl *toolExecutor, err error) {
+func (p *pluginServiceImpl) acquireAccessTokenIfNeed(ctx context.Context, req *model.ExecuteToolRequest, authInfo *model.AuthV2,
+	schema *model.Openapi3Operation) (accessToken string, authURL string, err error) {
+	if authInfo.Type == consts.AuthzTypeOfNone {
+		return "", "", nil
+	}
 
+	authMode := consts.ToolAuthModeOfRequired
+	if tmp, ok := schema.Extensions[consts.APISchemaExtendAuthMode].(string); ok {
+		authMode = consts.ToolAuthMode(tmp)
+	}
+
+	if authMode == consts.ToolAuthModeOfDisabled {
+		return "", "", nil
+	}
+
+	if authInfo.SubType == consts.AuthzSubTypeOfOAuthAuthorizationCode {
+		authorizationCode := &dto.AuthorizationCodeInfo{
+			Meta: &dto.AuthorizationCodeMeta{
+				UserID:   req.UserID,
+				PluginID: req.PluginID,
+				IsDraft:  req.ExecScene == consts.ExecSceneOfToolDebug,
+			},
+			Config: authInfo.AuthOfOAuthAuthorizationCode,
+		}
+
+		accessToken, err = p.GetAccessToken(ctx, &dto.OAuthInfo{
+			OAuthMode:         authInfo.SubType,
+			AuthorizationCode: authorizationCode,
+		})
+		if err != nil {
+			return "", "", err
+		}
+
+		authURL, err = genAuthURL(ctx, authorizationCode)
+		if err != nil {
+			return "", "", err
+		}
+	}
+
+	return accessToken, authURL, nil
+}
+
+func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *model.ExecuteToolRequest, opt *model.ExecuteToolOption) (impl *toolExecutor, err error) {
 	if req.UserID == "" {
 		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KV(errno.PluginMsgKey, "userID is required"))
 	}
@@ -105,14 +145,14 @@ func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *ExecuteT
 		tl *entity.ToolInfo
 	)
 	switch req.ExecScene {
-	case model.ExecSceneOfOnlineAgent:
-		pl, tl, err = p.getOnlineAgentPluginInfo(ctx, req, execOpt)
-	case model.ExecSceneOfDraftAgent:
-		pl, tl, err = p.getDraftAgentPluginInfo(ctx, req, execOpt)
-	case model.ExecSceneOfToolDebug:
-		pl, tl, err = p.getToolDebugPluginInfo(ctx, req, execOpt)
-	case model.ExecSceneOfWorkflow:
-		pl, tl, err = p.getWorkflowPluginInfo(ctx, req, execOpt)
+	case consts.ExecSceneOfOnlineAgent:
+		pl, tl, err = p.getOnlineAgentPluginInfo(ctx, req, opt)
+	case consts.ExecSceneOfDraftAgent:
+		pl, tl, err = p.getDraftAgentPluginInfo(ctx, req, opt)
+	case consts.ExecSceneOfToolDebug:
+		pl, tl, err = p.getToolDebugPluginInfo(ctx, req, opt)
+	case consts.ExecSceneOfWorkflow:
+		pl, tl, err = p.getWorkflowPluginInfo(ctx, req, opt)
 	default:
 		return nil, fmt.Errorf("invalid execute scene '%s'", req.ExecScene)
 	}
@@ -123,33 +163,54 @@ func (p *pluginServiceImpl) buildToolExecutor(ctx context.Context, req *ExecuteT
 	impl = &toolExecutor{
 		execScene:                  req.ExecScene,
 		userID:                     req.UserID,
+		conversationID:             opt.ConversationID,
 		plugin:                     pl,
 		tool:                       tl,
-		projectInfo:                execOpt.ProjectInfo,
-		invalidRespProcessStrategy: execOpt.InvalidRespProcessStrategy,
-		svc:                        p,
+		projectInfo:                opt.ProjectInfo,
+		invalidRespProcessStrategy: opt.InvalidRespProcessStrategy,
+		oss:                        p.oss,
 	}
 
-	if execOpt.Operation != nil {
-		impl.tool.Operation = execOpt.Operation
+	if opt.Operation != nil {
+		impl.tool.Operation = opt.Operation
 	}
 
 	return impl, nil
 }
 
-func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (onlinePlugin *entity.PluginInfo, onlineTool *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {
 		return nil, nil, fmt.Errorf("draft tool is not supported in online agent")
 	}
 
-	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
-	if err != nil {
-		return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
-	}
-	if !exist {
-		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+	var (
+		exist bool
+	)
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
+
+		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
+		}
+		if len(tools) == 0 {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		for _, tool := range tools[req.PluginID] {
+			if tool.ID == req.ToolID {
+				onlineTool = tool
+				break
+			}
+		}
+	} else {
+		onlineTool, exist, err = p.toolRepo.GetOnlineTool(ctx, req.ToolID)
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
+		}
+		if !exist {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
 	}
 
 	agentTool, exist, err := p.toolRepo.GetDraftAgentTool(ctx, execOpt.ProjectInfo.ProjectID, req.ToolID)
@@ -160,24 +221,35 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *Ex
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	if execOpt.ToolVersion == "" {
-		onlinePlugin, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
+		saasPlugins, err := p.GetSaasPluginInfo(ctx, []int64{req.PluginID})
 		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+			return nil, nil, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginID=%d", req.PluginID)
 		}
-		if !exist {
+		if len(saasPlugins) == 0 {
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 		}
+		onlinePlugin = saasPlugins[0]
 	} else {
-		onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
-			PluginID: req.PluginID,
-			Version:  execOpt.ToolVersion,
-		})
-		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetVersionPlugin failed, pluginID=%d, version=%s", req.PluginID, execOpt.ToolVersion)
-		}
-		if !exist {
-			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		if execOpt.ToolVersion == "" {
+			onlinePlugin, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+			if err != nil {
+				return nil, nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+			}
+			if !exist {
+				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+			}
+		} else {
+			onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
+				PluginID: req.PluginID,
+				Version:  execOpt.ToolVersion,
+			})
+			if err != nil {
+				return nil, nil, errorx.Wrapf(err, "GetVersionPlugin failed, pluginID=%d, version=%s", req.PluginID, execOpt.ToolVersion)
+			}
+			if !exist {
+				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+			}
 		}
 	}
 
@@ -189,22 +261,42 @@ func (p *pluginServiceImpl) getDraftAgentPluginInfo(ctx context.Context, req *Ex
 	return onlinePlugin, onlineTool, nil
 }
 
-func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (onlinePlugin *entity.PluginInfo, onlineTool *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {
 		return nil, nil, fmt.Errorf("draft tool is not supported in online agent")
 	}
 
-	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
-	if err != nil {
-		return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
-	}
-	if !exist {
-		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+	var (
+		exist bool
+	)
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
+
+		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
+		}
+		if len(tools) == 0 {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		for _, tool := range tools[req.PluginID] {
+			if tool.ID == req.ToolID {
+				onlineTool = tool
+				break
+			}
+		}
+	} else {
+		onlineTool, exist, err = p.toolRepo.GetOnlineTool(ctx, req.ToolID)
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "GetOnlineTool failed, toolID=%d", req.ToolID)
+		}
+		if !exist {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
 	}
 
-	agentTool, exist, err := p.toolRepo.GetVersionAgentTool(ctx, execOpt.ProjectInfo.ProjectID, entity.VersionAgentTool{
+	agentTool, exist, err := p.toolRepo.GetVersionAgentTool(ctx, execOpt.ProjectInfo.ProjectID, model.VersionAgentTool{
 		ToolID:       req.ToolID,
 		AgentVersion: execOpt.ProjectInfo.ProjectVersion,
 	})
@@ -216,24 +308,35 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *E
 		return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	if execOpt.ToolVersion == "" {
-		onlinePlugin, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
+		saasPlugins, err := p.GetSaasPluginInfo(ctx, []int64{req.PluginID})
 		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+			return nil, nil, errorx.Wrapf(err, "GetSaasPluginInfo failed, pluginID=%d", req.PluginID)
 		}
-		if !exist {
+		if len(saasPlugins) == 0 {
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 		}
+		onlinePlugin = saasPlugins[0]
 	} else {
-		onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
-			PluginID: req.PluginID,
-			Version:  execOpt.ToolVersion,
-		})
-		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetVersionPlugin failed, pluginID=%d, version=%s", req.PluginID, execOpt.ToolVersion)
-		}
-		if !exist {
-			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		if execOpt.ToolVersion == "" {
+			onlinePlugin, exist, err = p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID)
+			if err != nil {
+				return nil, nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+			}
+			if !exist {
+				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+			}
+		} else {
+			onlinePlugin, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
+				PluginID: req.PluginID,
+				Version:  execOpt.ToolVersion,
+			})
+			if err != nil {
+				return nil, nil, errorx.Wrapf(err, "GetVersionPlugin failed, pluginID=%d, version=%s", req.PluginID, execOpt.ToolVersion)
+			}
+			if !exist {
+				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+			}
 		}
 	}
 
@@ -245,8 +348,29 @@ func (p *pluginServiceImpl) getOnlineAgentPluginInfo(ctx context.Context, req *E
 	return onlinePlugin, onlineTool, nil
 }
 
-func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	execOpt *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
+
+	if req.PluginFrom != nil && *req.PluginFrom == bot_common.PluginFrom_FromSaas {
+		tools, plugin, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{req.PluginID})
+		if err != nil {
+			return nil, nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginID=%d", req.PluginID)
+		}
+		if len(tools) == 0 {
+			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		for _, tool := range tools[req.PluginID] {
+			if tool.ID == req.ToolID {
+				tl = tool
+				break
+			}
+		}
+		if plugin != nil {
+			pl = plugin[req.PluginID]
+		}
+
+		return pl, tl, nil
+	}
 
 	if req.ExecDraftTool {
 		var exist bool
@@ -286,7 +410,7 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 			}
 
 		} else {
-			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, entity.VersionPlugin{
+			pl, exist, err = p.pluginRepo.GetVersionPlugin(ctx, model.VersionPlugin{
 				PluginID: req.PluginID,
 				Version:  execOpt.ToolVersion,
 			})
@@ -297,7 +421,7 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 				return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 			}
 
-			tl, exist, err = p.toolRepo.GetVersionTool(ctx, entity.VersionTool{
+			tl, exist, err = p.toolRepo.GetVersionTool(ctx, model.VersionTool{
 				ToolID:  req.ToolID,
 				Version: execOpt.ToolVersion,
 			})
@@ -313,13 +437,13 @@ func (p *pluginServiceImpl) getWorkflowPluginInfo(ctx context.Context, req *Exec
 	return pl, tl, nil
 }
 
-func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *ExecuteToolRequest,
+func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *model.ExecuteToolRequest,
 	_ *model.ExecuteToolOption) (pl *entity.PluginInfo, tl *entity.ToolInfo, err error) {
 
 	if req.ExecDraftTool {
-		tl, exist, err := p.toolRepo.GetDraftTool(ctx, req.ToolID)
-		if err != nil {
-			return nil, nil, errorx.Wrapf(err, "GetDraftTool failed, toolID=%d", req.ToolID)
+		tool, exist, mErr := p.toolRepo.GetDraftTool(ctx, req.ToolID)
+		if mErr != nil {
+			return nil, nil, errorx.Wrapf(mErr, "GetDraftTool failed, toolID=%d", req.ToolID)
 		}
 		if !exist {
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
@@ -333,11 +457,11 @@ func (p *pluginServiceImpl) getToolDebugPluginInfo(ctx context.Context, req *Exe
 			return nil, nil, errorx.New(errno.ErrPluginRecordNotFound)
 		}
 
-		if tl.GetActivatedStatus() != model.ActivateTool {
-			return nil, nil, errorx.New(errno.ErrPluginDeactivatedTool, errorx.KV(errno.PluginMsgKey, tl.GetName()))
+		if tool.GetActivatedStatus() != consts.ActivateTool {
+			return nil, nil, errorx.New(errno.ErrPluginDeactivatedTool, errorx.KV(errno.PluginMsgKey, tool.GetName()))
 		}
 
-		return pl, tl, nil
+		return pl, tool, nil
 	}
 
 	tl, exist, err := p.toolRepo.GetOnlineTool(ctx, req.ToolID)
@@ -367,14 +491,14 @@ func (p *pluginServiceImpl) genToolResponseSchema(ctx context.Context, rawResp s
 			"the type of response only supports json map"))
 	}
 
-	resp := entity.DefaultOpenapi3Responses()
+	resp := model.DefaultOpenapi3Responses()
 
 	respSchema := parseResponseToBodySchemaRef(ctx, valMap)
 	if respSchema == nil {
 		return resp, nil
 	}
 
-	resp[strconv.Itoa(http.StatusOK)].Value.Content[model.MediaTypeJson].Schema = respSchema
+	resp[strconv.Itoa(http.StatusOK)].Value.Content[consts.MediaTypeJson].Schema = respSchema
 
 	return resp, nil
 }
@@ -457,92 +581,79 @@ type ExecuteResponse struct {
 }
 
 type toolExecutor struct {
-	execScene model.ExecuteScene
-	userID    string
-	plugin    *entity.PluginInfo
-	tool      *entity.ToolInfo
+	execScene      consts.ExecuteScene
+	userID         string
+	conversationID int64
 
-	projectInfo                *entity.ProjectInfo
-	invalidRespProcessStrategy model.InvalidResponseProcessStrategy
+	plugin *entity.PluginInfo
+	tool   *entity.ToolInfo
 
-	svc *pluginServiceImpl
+	projectInfo                *model.ProjectInfo
+	invalidRespProcessStrategy consts.InvalidResponseProcessStrategy
+
+	oss storage.Storage
 }
 
-func (t *toolExecutor) execute(ctx context.Context, argumentsInJson string) (resp *ExecuteResponse, err error) {
+func newToolInvocation(t *toolExecutor) tool.Invocation {
+	switch t.plugin.Manifest.API.Type {
+	case consts.PluginTypeOfCloud:
+		return tool.NewHttpCallImpl(t.conversationID)
+	case consts.PluginTypeOfMCP:
+		return tool.NewMcpCallImpl()
+	case consts.PluginTypeOfCustom:
+		return tool.NewCustomCallImpl()
+	default: // default to http call
+		return tool.NewHttpCallImpl(t.conversationID)
+	}
+}
+
+func (t *toolExecutor) execute(ctx context.Context, argumentsInJson, accessToken, authURL string) (resp *ExecuteResponse, err error) {
+	if argumentsInJson == "" {
+		return nil, errorx.New(errno.ErrPluginExecuteToolFailed,
+			errorx.KV(errno.PluginMsgKey, "argumentsInJson is required"))
+	}
+
+	invocation, err := tool.NewInvocationArgs(ctx, &tool.InvocationArgsBuilder{
+		ArgsInJson:     argumentsInJson,
+		ProjectInfo:    t.projectInfo,
+		UserID:         t.userID,
+		Plugin:         t.plugin,
+		Tool:           t.tool,
+		PluginManifest: t.plugin.Manifest,
+		ServerURL:      t.plugin.GetServerURL(),
+		AuthInfo: &tool.AuthInfo{
+			OAuth: &tool.OAuthInfo{
+				AccessToken: accessToken,
+				AuthURL:     authURL,
+			},
+			MetaInfo: t.plugin.GetAuthInfo(),
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if t.execScene != consts.ExecSceneOfToolDebug { // debug
+		// only assemble file uri to url in debug scene
+		err = invocation.AssembleFileURIToURL(ctx, t.oss)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	var requestStr, rawResp string
+	if t.plugin.Source != nil && *t.plugin.Source == bot_common.PluginFrom_FromSaas {
+		requestStr, rawResp, err = tool.NewSaasCallImpl().Do(ctx, invocation)
+	} else {
+		requestStr, rawResp, err = newToolInvocation(t).Do(ctx, invocation)
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
 	const defaultResp = "{}"
 
-	if argumentsInJson == "" {
-		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KV(errno.PluginMsgKey, "argumentsInJson is required"))
-	}
-
-	args, err := t.preprocessArgumentsInJson(ctx, argumentsInJson)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq, err := t.buildHTTPRequest(ctx, args)
-	if err != nil {
-		return nil, err
-	}
-
-	errMsg, err := t.injectAuthInfo(ctx, httpReq)
-	if err != nil {
-		return nil, err
-	}
-	if errMsg != "" {
-		event := &model.ToolInterruptEvent{
-			Event: model.InterruptEventTypeOfToolNeedOAuth,
-			ToolNeedOAuth: &model.ToolNeedOAuthInterruptEvent{
-				Message: errMsg,
-			},
-		}
-		return nil, einoCompose.NewInterruptAndRerunErr(event)
-	}
-
-	var reqBodyBytes []byte
-	if httpReq.GetBody != nil {
-		reqBody, err := httpReq.GetBody()
-		if err != nil {
-			return nil, err
-		}
-		defer reqBody.Close()
-
-		reqBodyBytes, err = io.ReadAll(reqBody)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	requestStr, err := genRequestString(httpReq, reqBodyBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	restyReq := t.svc.httpCli.NewRequest()
-	restyReq.Header = httpReq.Header
-	restyReq.Method = httpReq.Method
-	restyReq.URL = httpReq.URL.String()
-	if reqBodyBytes != nil {
-		restyReq.SetBody(reqBodyBytes)
-	}
-	restyReq.SetContext(ctx)
-
-	logs.CtxDebugf(ctx, "[execute] url=%s, header=%s, method=%s, body=%s",
-		restyReq.URL, restyReq.Header, restyReq.Method, restyReq.Body)
-
-	httpResp, err := restyReq.Send()
-	if err != nil {
-		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KVf(errno.PluginMsgKey, "http request failed, err=%s", err))
-	}
-
-	logs.CtxDebugf(ctx, "[execute] status=%s, response=%s", httpResp.Status(), httpResp.String())
-
-	if httpResp.StatusCode() != http.StatusOK {
-		return nil, errorx.New(errno.ErrPluginExecuteToolFailed,
-			errorx.KVf(errno.PluginMsgKey, "http request failed, status=%s\nresp=%s", httpResp.Status(), httpResp.String()))
-	}
-
-	rawResp := string(httpResp.Body())
 	if rawResp == "" {
 		return &ExecuteResponse{
 			Request:     requestStr,
@@ -566,448 +677,6 @@ func (t *toolExecutor) execute(ctx context.Context, argumentsInJson string) (res
 	}, nil
 }
 
-func genRequestString(req *http.Request, body []byte) (string, error) {
-	type Request struct {
-		Path   string            `json:"path"`
-		Header map[string]string `json:"header"`
-		Query  map[string]string `json:"query"`
-		Body   *[]byte           `json:"body"`
-	}
-
-	req_ := &Request{
-		Path:   req.URL.Path,
-		Header: map[string]string{},
-		Query:  map[string]string{},
-	}
-
-	if len(req.Header) > 0 {
-		for k, v := range req.Header {
-			req_.Header[k] = v[0]
-		}
-	}
-	if len(req.URL.Query()) > 0 {
-		for k, v := range req.URL.Query() {
-			req_.Query[k] = v[0]
-		}
-	}
-
-	requestStr, err := sonic.MarshalString(req_)
-	if err != nil {
-		return "", fmt.Errorf("[genRequestString] marshal failed, err=%s", err)
-	}
-
-	if len(body) > 0 {
-		requestStr, err = sjson.SetRaw(requestStr, "body", string(body))
-		if err != nil {
-			return "", fmt.Errorf("[genRequestString] set body failed, err=%s", err)
-		}
-	}
-
-	return requestStr, nil
-}
-
-func (t *toolExecutor) preprocessArgumentsInJson(ctx context.Context, argumentsInJson string) (args map[string]any, err error) {
-	args, err = t.prepareArguments(ctx, argumentsInJson)
-	if err != nil {
-		return nil, err
-	}
-
-	paramRefs := t.tool.Operation.Parameters
-	for _, paramRef := range paramRefs {
-		paramVal := paramRef.Value
-		if paramVal.In == openapi3.ParameterInCookie {
-			continue
-		}
-
-		scVal := paramVal.Schema.Value
-		typ := scVal.Type
-
-		if typ == openapi3.TypeObject {
-			return nil, fmt.Errorf("the type of parameter '%s' in '%s' cannot be 'object'", paramVal.In, paramVal.Name)
-		}
-
-		argValue, ok := args[paramVal.Name]
-		if !ok {
-			continue
-		}
-
-		if arr, ok := argValue.([]any); ok {
-			for i, e := range arr {
-				e, err = t.convertURItoURL(ctx, e, scVal)
-				if err != nil {
-					return nil, err
-				}
-				arr[i] = e
-			}
-		} else {
-			argValue, err = t.convertURItoURL(ctx, argValue, scVal)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		args[paramVal.Name] = argValue
-	}
-
-	_, bodySchema := t.getReqBodySchema(t.tool.Operation)
-	if bodySchema == nil || bodySchema.Value == nil {
-		return args, nil
-	}
-
-	// Body restricted to object type
-	if bodySchema.Value.Type != openapi3.TypeObject {
-		return nil, fmt.Errorf("[preprocessArgumentsInJson] requset body is not object, type=%s",
-			bodySchema.Value.Type)
-	}
-
-	if len(bodySchema.Value.Properties) == 0 {
-		return args, nil
-	}
-
-	for paramName, prop := range bodySchema.Value.Properties {
-		argValue, ok := args[paramName]
-		if !ok {
-			continue
-		}
-
-		if arr, ok := argValue.([]any); ok {
-			for i, e := range arr {
-				e, err = t.convertURItoURL(ctx, e, prop.Value)
-				if err != nil {
-					return nil, err
-				}
-				arr[i] = e
-			}
-		} else {
-			argValue, err = t.convertURItoURL(ctx, argValue, prop.Value)
-			if err != nil {
-				return nil, err
-			}
-		}
-
-		args[paramName] = argValue
-	}
-
-	return args, nil
-}
-
-func (t *toolExecutor) buildHTTPRequest(ctx context.Context, argMaps map[string]any) (httpReq *http.Request, err error) {
-	tool := t.tool
-	rawURL := t.plugin.GetServerURL() + tool.GetSubURL()
-
-	locArgs, err := t.getLocationArguments(ctx, argMaps, tool.Operation.Parameters)
-	if err != nil {
-		return nil, err
-	}
-
-	commonParams := t.plugin.Manifest.CommonParams
-
-	reqURL, err := locArgs.buildHTTPRequestURL(ctx, rawURL, commonParams)
-	if err != nil {
-		return nil, err
-	}
-
-	bodyArgs := map[string]any{}
-	for k, v := range argMaps {
-		if _, ok := locArgs.header[k]; ok {
-			continue
-		}
-		if _, ok := locArgs.path[k]; ok {
-			continue
-		}
-		if _, ok := locArgs.query[k]; ok {
-			continue
-		}
-		bodyArgs[k] = v
-	}
-
-	commonBody := commonParams[model.ParamInBody]
-	bodyBytes, contentType, err := t.buildRequestBody(ctx, tool.Operation, bodyArgs, commonBody)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq, err = http.NewRequestWithContext(ctx, tool.GetMethod(), reqURL.String(), bytes.NewBuffer(bodyBytes))
-	if err != nil {
-		return nil, err
-	}
-
-	commonHeader := commonParams[model.ParamInHeader]
-	header, err := locArgs.buildHTTPRequestHeader(ctx, commonHeader)
-	if err != nil {
-		return nil, err
-	}
-
-	httpReq.Header = header
-
-	if len(bodyBytes) > 0 {
-		httpReq.Header.Set("Content-Type", contentType)
-	}
-
-	return httpReq, nil
-}
-
-func (t *toolExecutor) prepareArguments(_ context.Context, argumentsInJson string) (map[string]any, error) {
-	args := map[string]any{}
-
-	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(argumentsInJson))
-	decoder.UseNumber()
-
-	// Suppose the output of the large model is of type object
-	input := map[string]any{}
-	err := decoder.Decode(&input)
-	if err != nil {
-		return nil, fmt.Errorf("[prepareArguments] unmarshal into map failed, input=%s, err=%v",
-			argumentsInJson, err)
-	}
-
-	for k, v := range input {
-		args[k] = v
-	}
-
-	return args, nil
-}
-
-func (t *toolExecutor) getLocationArguments(ctx context.Context, args map[string]any, paramRefs []*openapi3.ParameterRef) (*locationArguments, error) {
-	headerArgs := map[string]valueWithSchema{}
-	pathArgs := map[string]valueWithSchema{}
-	queryArgs := map[string]valueWithSchema{}
-
-	for _, paramRef := range paramRefs {
-		paramVal := paramRef.Value
-		if paramVal.In == openapi3.ParameterInCookie {
-			continue
-		}
-
-		scVal := paramVal.Schema.Value
-		typ := scVal.Type
-		if typ == openapi3.TypeObject {
-			return nil, fmt.Errorf("the type of '%s' parameter '%s' cannot be 'object'", paramVal.In, paramVal.Name)
-		}
-
-		argValue, ok := args[paramVal.Name]
-		if !ok {
-			var err error
-			argValue, err = t.getDefaultValue(ctx, scVal)
-			if err != nil {
-				return nil, err
-			}
-			if argValue == nil {
-				if !paramVal.Required {
-					continue
-				}
-				return nil, fmt.Errorf("the '%s' parameter '%s' is required", paramVal.In, paramVal.Name)
-			}
-		}
-
-		v := valueWithSchema{
-			argValue:    argValue,
-			paramSchema: paramVal,
-		}
-
-		switch paramVal.In {
-		case openapi3.ParameterInQuery:
-			queryArgs[paramVal.Name] = v
-		case openapi3.ParameterInHeader:
-			headerArgs[paramVal.Name] = v
-		case openapi3.ParameterInPath:
-			pathArgs[paramVal.Name] = v
-		}
-	}
-
-	locArgs := &locationArguments{
-		header: headerArgs,
-		path:   pathArgs,
-		query:  queryArgs,
-	}
-
-	return locArgs, nil
-}
-
-func (t *toolExecutor) convertURItoURL(ctx context.Context, arg any, scVal *openapi3.Schema) (newArg any, err error) {
-	if t.execScene != model.ExecSceneOfToolDebug {
-		return arg, nil
-	}
-	if scVal.Type != openapi3.TypeString {
-		return arg, nil
-	}
-
-	at := scVal.Extensions[model.APISchemaExtendAssistType]
-	if at == nil {
-		return arg, nil
-	}
-
-	_at, ok := at.(string)
-	if !ok {
-		return arg, nil
-	}
-	if !model.IsValidAPIAssistType(model.APIFileAssistType(_at)) {
-		return arg, nil
-	}
-
-	uri, ok := arg.(string)
-	if !ok {
-		return arg, nil
-	}
-
-	if strings.HasPrefix(uri, "http://") || strings.HasPrefix(uri, "https://") {
-		return arg, nil
-	}
-
-	newArg, err = t.svc.oss.GetObjectUrl(ctx, uri)
-	if err != nil {
-		return nil, errorx.Wrapf(err, "GetObjectUrl failed, uri=%s", uri)
-	}
-
-	return newArg, nil
-}
-
-func (t *toolExecutor) getDefaultValue(ctx context.Context, scVal *openapi3.Schema) (any, error) {
-	vn, exist := scVal.Extensions[model.APISchemaExtendVariableRef]
-	if !exist {
-		return scVal.Default, nil
-	}
-
-	vnStr, ok := vn.(string)
-	if !ok {
-		logs.CtxErrorf(ctx, "invalid variable_ref type '%T'", vn)
-		return nil, nil
-	}
-
-	variableVal, err := t.getVariableValue(ctx, vnStr)
-	if err != nil {
-		return nil, err
-	}
-
-	return variableVal, nil
-}
-
-func (t *toolExecutor) getVariableValue(ctx context.Context, keyword string) (any, error) {
-	info := t.projectInfo
-	if info == nil {
-		return nil, fmt.Errorf("project info is nil")
-	}
-
-	meta := &variables.UserVariableMeta{
-		BizType:      project_memory.VariableConnector_Bot,
-		BizID:        strconv.FormatInt(info.ProjectID, 10),
-		Version:      ptr.FromOrDefault(info.ProjectVersion, ""),
-		ConnectorUID: t.userID,
-		ConnectorID:  info.ConnectorID,
-	}
-	vals, err := crossvariables.DefaultSVC().GetVariableInstance(ctx, meta, []string{keyword})
-	if err != nil {
-		return nil, err
-	}
-
-	if len(vals) == 0 {
-		return nil, nil
-	}
-
-	return vals[0].Value, nil
-}
-
-func (t *toolExecutor) injectAuthInfo(_ context.Context, httpReq *http.Request) (errMsg string, error error) {
-	authInfo := t.plugin.GetAuthInfo()
-	if authInfo.Type == model.AuthzTypeOfNone {
-		return "", nil
-	}
-
-	if authInfo.Type == model.AuthzTypeOfService {
-		return t.injectServiceAPIToken(httpReq.Context(), httpReq, authInfo)
-	}
-
-	if authInfo.Type == model.AuthzTypeOfOAuth {
-		return t.injectOAuthAccessToken(httpReq.Context(), httpReq, authInfo)
-	}
-
-	return "", nil
-}
-
-func (t *toolExecutor) injectServiceAPIToken(ctx context.Context, httpReq *http.Request, authInfo *model.AuthV2) (errMsg string, err error) {
-	if authInfo.SubType == model.AuthzSubTypeOfServiceAPIToken {
-		authOfAPIToken := authInfo.AuthOfAPIToken
-		if authOfAPIToken == nil {
-			return "", fmt.Errorf("auth of api token is nil")
-		}
-
-		loc := strings.ToLower(string(authOfAPIToken.Location))
-		if loc == openapi3.ParameterInQuery {
-			query := httpReq.URL.Query()
-			if query.Get(authOfAPIToken.Key) == "" {
-				query.Set(authOfAPIToken.Key, authOfAPIToken.ServiceToken)
-				httpReq.URL.RawQuery = query.Encode()
-			}
-		}
-
-		if loc == openapi3.ParameterInHeader {
-			if httpReq.Header.Get(authOfAPIToken.Key) == "" {
-				httpReq.Header.Set(authOfAPIToken.Key, authOfAPIToken.ServiceToken)
-			}
-		}
-	}
-
-	return "", nil
-}
-
-func (t *toolExecutor) injectOAuthAccessToken(ctx context.Context, httpReq *http.Request, authInfo *model.AuthV2) (errMsg string, err error) {
-	authMode := model.ToolAuthModeOfRequired
-	if tmp, ok := t.tool.Operation.Extensions[model.APISchemaExtendAuthMode].(string); ok {
-		authMode = model.ToolAuthMode(tmp)
-	}
-
-	if authMode == model.ToolAuthModeOfDisabled {
-		return "", nil
-	}
-
-	var accessToken string
-
-	if authInfo.SubType == model.AuthzSubTypeOfOAuthAuthorizationCode {
-		i := &entity.AuthorizationCodeInfo{
-			Meta: &entity.AuthorizationCodeMeta{
-				UserID:   t.userID,
-				PluginID: t.plugin.ID,
-				IsDraft:  t.execScene == model.ExecSceneOfToolDebug,
-			},
-			Config: authInfo.AuthOfOAuthAuthorizationCode,
-		}
-
-		accessToken, err = t.svc.GetAccessToken(ctx, &entity.OAuthInfo{
-			OAuthMode:         authInfo.SubType,
-			AuthorizationCode: i,
-		})
-		if err != nil {
-			return "", err
-		}
-
-		if accessToken == "" && authMode != model.ToolAuthModeOfSupported {
-			errMsg = authCodeInvalidTokenErrMsg[i18n.GetLocale(ctx)]
-			if errMsg == "" {
-				errMsg = authCodeInvalidTokenErrMsg[i18n.LocaleEN]
-			}
-			authURL, err := genAuthURL(i)
-			if err != nil {
-				return "", err
-			}
-
-			errMsg = fmt.Sprintf(errMsg, t.plugin.Manifest.NameForHuman, authURL)
-
-			return errMsg, nil
-		}
-	}
-
-	if accessToken != "" {
-		httpReq.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-	}
-
-	return "", nil
-}
-
-var authCodeInvalidTokenErrMsg = map[i18n.Locale]string{
-	i18n.LocaleZH: "%s 插件需要授权使用。授权后即代表你同意与扣子中你所选择的 AI 模型分享数据。请[点击这里](%s)进行授权。",
-	i18n.LocaleEN: "The '%s' plugin requires authorization. By authorizing, you agree to share data with the AI model you selected in Coze. Please [click here](%s) to authorize.",
-}
-
 func (t *toolExecutor) processResponse(ctx context.Context, rawResp string) (trimmedResp string, err error) {
 	responses := t.tool.Operation.Responses
 	if len(responses) == 0 {
@@ -1018,9 +687,9 @@ func (t *toolExecutor) processResponse(ctx context.Context, rawResp string) (tri
 	if !ok {
 		return "", fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 	}
-	mType, ok := resp.Value.Content[model.MediaTypeJson] // only support application/json
+	mType, ok := resp.Value.Content[consts.MediaTypeJson] // only support application/json
 	if !ok {
-		return "", fmt.Errorf("the '%s' media type is not defined in response", model.MediaTypeJson)
+		return "", fmt.Errorf("the '%s' media type is not defined in response", consts.MediaTypeJson)
 	}
 
 	decoder := sonic.ConfigDefault.NewDecoder(bytes.NewBufferString(rawResp))
@@ -1039,19 +708,19 @@ func (t *toolExecutor) processResponse(ctx context.Context, rawResp string) (tri
 
 	var trimmedRespMap map[string]any
 	switch t.invalidRespProcessStrategy {
-	case model.InvalidResponseProcessStrategyOfReturnRaw:
+	case consts.InvalidResponseProcessStrategyOfReturnRaw:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnRaw(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
 		}
 
-	case model.InvalidResponseProcessStrategyOfReturnDefault:
+	case consts.InvalidResponseProcessStrategyOfReturnDefault:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnDefault(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
 		}
 
-	case model.InvalidResponseProcessStrategyOfReturnErr:
+	case consts.InvalidResponseProcessStrategyOfReturnErr:
 		trimmedRespMap, err = t.processWithInvalidRespProcessStrategyOfReturnErr(ctx, respMap, schemaVal)
 		if err != nil {
 			return "", err
@@ -1312,227 +981,11 @@ func (t *toolExecutor) disabledParam(schemaVal *openapi3.Schema) bool {
 		return false
 	}
 	globalDisable, localDisable := false, false
-	if v, ok := schemaVal.Extensions[model.APISchemaExtendLocalDisable]; ok {
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendLocalDisable]; ok {
 		localDisable = v.(bool)
 	}
-	if v, ok := schemaVal.Extensions[model.APISchemaExtendGlobalDisable]; ok {
+	if v, ok := schemaVal.Extensions[consts.APISchemaExtendGlobalDisable]; ok {
 		globalDisable = v.(bool)
 	}
 	return globalDisable || localDisable
-}
-
-type locationArguments struct {
-	header map[string]valueWithSchema
-	path   map[string]valueWithSchema
-	query  map[string]valueWithSchema
-}
-
-type valueWithSchema struct {
-	argValue    any
-	paramSchema *openapi3.Parameter
-}
-
-func (l *locationArguments) buildHTTPRequestURL(_ context.Context, rawURL string,
-	commonParams map[model.HTTPParamLocation][]*common.CommonParamSchema) (reqURL *url.URL, err error) {
-
-	if len(l.path) > 0 {
-		for k, v := range l.path {
-			vStr, err := encoder.EncodeParameter(v.paramSchema, v.argValue)
-			if err != nil {
-				return nil, err
-			}
-			rawURL = strings.ReplaceAll(rawURL, "{"+k+"}", vStr)
-		}
-	}
-
-	query := url.Values{}
-	if len(l.query) > 0 {
-		for k, val := range l.query {
-			switch v := val.argValue.(type) {
-			case []any:
-				for _, _v := range v {
-					query.Add(k, encoder.MustString(_v))
-				}
-			default:
-				query.Add(k, encoder.MustString(v))
-			}
-		}
-	}
-
-	commonQuery := commonParams[model.ParamInQuery]
-	for _, v := range commonQuery {
-		if _, ok := l.query[v.Name]; ok {
-			continue
-		}
-		query.Add(v.Name, v.Value)
-	}
-
-	encodeQuery := query.Encode()
-
-	reqURL, err = url.Parse(rawURL)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(reqURL.RawQuery) > 0 && len(encodeQuery) > 0 {
-		reqURL.RawQuery += "&" + encodeQuery
-	} else if len(encodeQuery) > 0 {
-		reqURL.RawQuery = encodeQuery
-	}
-
-	return reqURL, nil
-}
-
-func (l *locationArguments) buildHTTPRequestHeader(_ context.Context, commonHeaders []*common.CommonParamSchema) (http.Header, error) {
-	header := http.Header{}
-	if len(l.header) > 0 {
-		for k, v := range l.header {
-			switch vv := v.argValue.(type) {
-			case []any:
-				for _, _v := range vv {
-					header.Add(k, encoder.MustString(_v))
-				}
-			default:
-				header.Add(k, encoder.MustString(vv))
-			}
-		}
-	}
-
-	for _, h := range commonHeaders {
-		if header.Get(h.Name) != "" {
-			continue
-		}
-		header.Add(h.Name, h.Value)
-	}
-
-	return header, nil
-}
-
-func (t *toolExecutor) buildRequestBody(ctx context.Context, op *model.Openapi3Operation, bodyArgs map[string]any,
-	commonBody []*common.CommonParamSchema) (body []byte, contentType string, err error) {
-
-	var bodyMap map[string]any
-
-	contentType, bodySchema := t.getReqBodySchema(op)
-	if bodySchema != nil && len(bodySchema.Value.Properties) > 0 {
-		bodyMap, err = t.injectRequestBodyDefaultValue(ctx, bodySchema.Value, bodyArgs)
-		if err != nil {
-			return nil, "", err
-		}
-
-		for paramName, prop := range bodySchema.Value.Properties {
-			value, ok := bodyMap[paramName]
-			if !ok {
-				continue
-			}
-
-			_value, err := encoder.TryCorrectValueType(paramName, prop, value)
-			if err != nil {
-				return nil, "", err
-			}
-
-			bodyMap[paramName] = _value
-		}
-
-		body, err = encoder.EncodeBodyWithContentType(contentType, bodyMap)
-		if err != nil {
-			return nil, "", fmt.Errorf("[buildRequestBody] EncodeBodyWithContentType failed, err=%v", err)
-		}
-	}
-
-	commonBody_ := make([]*common.CommonParamSchema, 0, len(commonBody))
-	for _, v := range commonBody {
-		if _, ok := bodyMap[v.Name]; ok {
-			continue
-		}
-		commonBody_ = append(commonBody_, v)
-	}
-
-	for _, v := range commonBody_ {
-		body, err = sjson.SetRawBytes(body, v.Name, []byte(v.Value))
-		if err != nil {
-			return nil, "", fmt.Errorf("[buildRequestBody] SetRawBytes failed, err=%v", err)
-		}
-	}
-
-	return body, contentType, nil
-}
-
-func (t *toolExecutor) injectRequestBodyDefaultValue(ctx context.Context, sc *openapi3.Schema, vals map[string]any) (newVals map[string]any, err error) {
-	required := slices.ToMap(sc.Required, func(e string) (string, bool) {
-		return e, true
-	})
-
-	newVals = make(map[string]any, len(sc.Properties))
-
-	for paramName, prop := range sc.Properties {
-		paramSchema := prop.Value
-		if paramSchema.Type == openapi3.TypeObject {
-			val := vals[paramName]
-			if val == nil {
-				val = map[string]any{}
-			}
-
-			mapVal, ok := val.(map[string]any)
-			if !ok {
-				return nil, fmt.Errorf("[injectRequestBodyDefaultValue] parameter '%s' is not object", paramName)
-			}
-
-			newMapVal, err := t.injectRequestBodyDefaultValue(ctx, paramSchema, mapVal)
-			if err != nil {
-				return nil, err
-			}
-
-			if len(newMapVal) > 0 {
-				newVals[paramName] = newMapVal
-			}
-
-			continue
-		}
-
-		if val := vals[paramName]; val != nil {
-			newVals[paramName] = val
-			continue
-		}
-
-		defaultVal, err := t.getDefaultValue(ctx, paramSchema)
-		if err != nil {
-			return nil, err
-		}
-		if defaultVal == nil {
-			if !required[paramName] {
-				continue
-			}
-			return nil, fmt.Errorf("[injectRequestBodyDefaultValue] parameter '%s' is required", paramName)
-		}
-
-		newVals[paramName] = defaultVal
-	}
-
-	return newVals, nil
-}
-
-func (t *toolExecutor) getReqBodySchema(op *model.Openapi3Operation) (string, *openapi3.SchemaRef) {
-	if op.RequestBody == nil || len(op.RequestBody.Value.Content) == 0 {
-		return "", nil
-	}
-
-	var contentTypeArray = []string{
-		model.MediaTypeJson,
-		model.MediaTypeProblemJson,
-		model.MediaTypeFormURLEncoded,
-		model.MediaTypeXYaml,
-		model.MediaTypeYaml,
-	}
-
-	for _, ct := range contentTypeArray {
-		mType := op.RequestBody.Value.Content[ct]
-		if mType == nil {
-			continue
-		}
-
-		return ct, mType.Schema
-	}
-
-	return "", nil
 }

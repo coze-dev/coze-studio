@@ -52,9 +52,9 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -430,7 +430,7 @@ func (u *UploadService) UploadFileOpen(ctx context.Context, req *bot_open_api.Up
 	objName := genObjName(fileHeader.Filename, randID)
 	resp.File.FileName = fileHeader.Filename
 	resp.File.URI = objName
-	err = u.oss.PutObject(ctx, objName, data)
+	err = u.oss.PutObject(ctx, objName, data, storage.WithContentType(fileHeader.Header.Get("Content-Type")))
 	if err != nil {
 		return nil, errorx.New(errno.ErrUploadSystemErrorCode, errorx.KV("msg", "file upload to oss failed"))
 	}

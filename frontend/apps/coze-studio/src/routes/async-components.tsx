@@ -114,6 +114,13 @@ export const WorkflowPage = lazy(() =>
   })),
 );
 
+// search page
+export const SearchPage = lazy(() =>
+  import('@coze-community/explore').then(exps => ({
+    default: exps.SearchPage,
+  })),
+);
+
 // plugin resource page layout component
 export const PluginLayout = lazy(() => import('../pages/plugin/layout'));
 

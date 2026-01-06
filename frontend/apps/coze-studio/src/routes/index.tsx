@@ -33,6 +33,7 @@ import {
   spaceSubMenu,
   exploreSubMenu,
   WorkflowPage,
+  SearchPage,
   ProjectIDE,
   ProjectIDEPublish,
   Library,
@@ -244,6 +245,16 @@ export const router: ReturnType<typeof createBrowserRouter> =
           Component: WorkflowPage,
           loader: () => ({
             hasSider: false,
+            requireAuth: true,
+          }),
+        },
+
+        // search
+        {
+          path: 'search/:word',
+          Component: SearchPage,
+          loader: () => ({
+            hasSider: true,
             requireAuth: true,
           }),
         },

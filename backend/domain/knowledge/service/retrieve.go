@@ -29,20 +29,19 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"golang.org/x/sync/errgroup"
 
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	knowledgeModel "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/rerank"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/messages2query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/contract/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	"github.com/coze-dev/coze-studio/backend/infra/document/messages2query"
+	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql"
+	"github.com/coze-dev/coze-studio/backend/infra/document/rerank"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/sqlparser"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
@@ -140,15 +139,6 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 		}
 	}
 
-	var cm chatmodel.BaseChatModel
-	if req.ChatModelProtocol != nil && req.ChatModelConfig != nil {
-		cm, err = k.modelFactory.CreateChatModel(ctx, ptr.From(req.ChatModelProtocol), req.ChatModelConfig)
-		if err != nil {
-			return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode,
-				errorx.KV("msg", "invalid retriever chat model protocol or config"))
-		}
-	}
-
 	resp := RetrieveContext{
 		Ctx:              ctx,
 		OriginQuery:      req.Query,
@@ -157,7 +147,6 @@ func (k *knowledgeSVC) newRetrieveContext(ctx context.Context, req *RetrieveRequ
 		KnowledgeInfoMap: knowledgeInfoMap,
 		Strategy:         req.Strategy,
 		Documents:        enableDocs,
-		ChatModel:        cm,
 	}
 	return &resp, nil
 }
@@ -394,7 +383,8 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 	for i := range doc.TableInfo.Columns {
 		virtualColumnMap[convert.ColumnIDToRDBField(doc.TableInfo.Columns[i].ID)] = doc.TableInfo.Columns[i]
 	}
-	parsedSQL, err := sqlparser.NewSQLParser().ParseAndModifySQL(sql, replaceMap)
+
+	parsedSQL, err := sqlparser.New().ParseAndModifySQL(sql, replaceMap)
 	if err != nil {
 		logs.CtxErrorf(ctx, "parse sql failed: %v", err)
 		return nil, err
@@ -464,7 +454,7 @@ func (k *knowledgeSVC) nl2SqlExec(ctx context.Context, doc *model.KnowledgeDocum
 const pkID = "_knowledge_slice_id"
 
 func addSliceIdColumn(originalSql string) string {
-	sql, err := sqlparser.NewSQLParser().AddSelectFieldsToSelectSQL(originalSql, []string{pkID})
+	sql, err := sqlparser.New().AddSelectFieldsToSelectSQL(originalSql, []string{pkID})
 	if err != nil {
 		logs.Errorf("add slice id column failed: %v", err)
 		return originalSql

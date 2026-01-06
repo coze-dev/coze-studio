@@ -1,0 +1,31 @@
+.selector-container {
+  position: relative;
+  padding: 8px 24px 0;
+
+  .item {
+    cursor: pointer;
+
+    height: 32px;
+    padding: 6px 15px;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    color: rgba(6, 7, 9, 50%);
+    text-align: left;
+    white-space: nowrap;
+
+    border-radius: 8px;
+
+    @apply coz-fg-secondary;
+
+
+    &.isSelected,
+    &:hover {
+      color: rgba(6, 7, 9, 80%);
+      background-color: rgba(6, 7, 9, 4%);
+
+      @apply coz-mg-primary coz-fg-primary;
+    }
+  }
+}

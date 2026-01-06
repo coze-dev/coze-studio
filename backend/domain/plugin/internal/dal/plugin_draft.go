@@ -25,13 +25,14 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	pluginModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	plugin_develop_common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -71,10 +72,9 @@ func (p *PluginDraftDAO) getSelected(opt *PluginSelectedOption) (selected []fiel
 	}
 
 	table := p.query.PluginDraft
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
-	if opt.PluginID {
-		selected = append(selected, table.ID)
-	}
 	if opt.OpenapiDoc {
 		selected = append(selected, table.OpenapiDoc)
 	}
@@ -130,7 +130,7 @@ func (p *PluginDraftDAO) genPluginID(ctx context.Context) (id int64, err error) 
 			break
 		}
 		if i == retryTimes-1 {
-			return 0, fmt.Errorf("id %d is confilict with product plugin id.", id)
+			return 0, fmt.Errorf("id %d is conflict with product plugin id", id)
 		}
 	}
 
@@ -211,7 +211,7 @@ func (p *PluginDraftDAO) MGet(ctx context.Context, pluginIDs []int64, opt *Plugi
 	return plugins, nil
 }
 
-func (p *PluginDraftDAO) List(ctx context.Context, spaceID, appID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *PluginDraftDAO) List(ctx context.Context, spaceID, appID int64, pageInfo dto.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
 	}
@@ -220,13 +220,13 @@ func (p *PluginDraftDAO) List(ctx context.Context, spaceID, appID int64, pageInf
 	table := p.query.PluginDraft
 
 	switch *pageInfo.SortBy {
-	case entity.SortByCreatedAt:
+	case dto.SortByCreatedAt:
 		if *pageInfo.OrderByACS {
 			orderExpr = table.CreatedAt.Asc()
 		} else {
 			orderExpr = table.CreatedAt.Desc()
 		}
-	case entity.SortByUpdatedAt:
+	case dto.SortByUpdatedAt:
 		if *pageInfo.OrderByACS {
 			orderExpr = table.UpdatedAt.Asc()
 		} else {
@@ -314,7 +314,7 @@ func (p *PluginDraftDAO) CreateWithTX(ctx context.Context, tx *query.QueryTx, pl
 	return id, nil
 }
 
-func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) (err error) {
+func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, plugin *entity.PluginInfo) error {
 	table := tx.PluginDraft
 
 	updateMap := map[string]any{}
@@ -348,7 +348,7 @@ func (p *PluginDraftDAO) UpdateWithTX(ctx context.Context, tx *query.QueryTx, pl
 		updateMap[table.AppID.ColumnName().String()] = *plugin.APPID
 	}
 
-	_, err = table.WithContext(ctx).
+	_, err := table.WithContext(ctx).
 		Where(table.ID.Eq(plugin.ID)).
 		UpdateColumns(updateMap)
 	if err != nil {

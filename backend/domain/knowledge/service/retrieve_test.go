@@ -32,12 +32,14 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/nl2sql"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rdb_entity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/nl2sql"
-	mock_db "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/rdb"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	"github.com/coze-dev/coze-studio/backend/infra/document/nl2sql"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	rdb_entity "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	sqlparserImpl "github.com/coze-dev/coze-studio/backend/infra/sqlparser/impl/sqlparser"
+	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/nl2sql_mock"
+	mock_db "github.com/coze-dev/coze-studio/backend/internal/mock/infra/rdb"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/sets"
 )
@@ -59,6 +61,8 @@ func TestAddSliceIdColumn(t *testing.T) {
 			expected: "SELECT FROM users",
 		},
 	}
+	sqlparser.New = sqlparserImpl.NewSQLParser
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			actual := addSliceIdColumn(tt.input)

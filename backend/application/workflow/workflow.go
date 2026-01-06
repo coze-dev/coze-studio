@@ -31,10 +31,6 @@ import (
 	"golang.org/x/sync/errgroup"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	pluginmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
 	"github.com/coze-dev/coze-studio/backend/api/model/playground"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
@@ -46,16 +42,23 @@ import (
 	appmemory "github.com/coze-dev/coze-studio/backend/application/memory"
 	appplugin "github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/user"
-	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
-	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/contract/user"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/debugutil"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	crosspermission "github.com/coze-dev/coze-studio/backend/crossdomain/permission"
+	pluginConsts "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	crossuser "github.com/coze-dev/coze-studio/backend/crossdomain/user"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
+	"github.com/coze-dev/coze-studio/backend/domain/permission"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	domainWorkflow "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/i18n"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -88,6 +91,26 @@ func GetWorkflowDomainSVC() domainWorkflow.Service {
 }
 
 func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
+	if err := w.refreshNodeIconURLCache(ctx); err != nil {
+		return err
+	}
+	safego.Go(ctx, func() {
+		ticker := time.NewTicker(time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				if err := w.refreshNodeIconURLCache(context.Background()); err != nil {
+					logs.Errorf("failed to refresh node icon url cache: %v", err)
+				}
+			}
+		}
+	})
+
+	return nil
+}
+
+func (w *ApplicationService) refreshNodeIconURLCache(ctx context.Context) error {
 	category2NodeMetaList, _, err := GetWorkflowDomainSVC().ListNodeMeta(ctx, nil)
 	if err != nil {
 		logs.Errorf("failed to list node meta for icon url cache: %v", err)
@@ -97,13 +120,14 @@ func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
 	eg, gCtx := errgroup.WithContext(ctx)
 	for _, nodeMetaList := range category2NodeMetaList {
 		for _, nodeMeta := range nodeMetaList {
+			nodeMeta := nodeMeta
 			eg.Go(func() error {
 				if len(nodeMeta.IconURI) == 0 {
 					// For custom nodes, if IconURI is not set, there will be no icon.
 					logs.Warnf("node '%s' has an empty IconURI, it will have no icon", nodeMeta.Name)
 					return nil
 				}
-				url, err := w.TosClient.GetObjectUrl(gCtx, nodeMeta.IconURI)
+				url, err := w.TosClient.GetObjectUrl(gCtx, nodeMeta.IconURI, storage.WithExpire(int64(time.Hour.Seconds())))
 				if err != nil {
 					logs.Warnf("failed to get object url for node %s: %v", nodeMeta.Name, err)
 					return err
@@ -123,7 +147,7 @@ func (w *ApplicationService) InitNodeIconURLCache(ctx context.Context) error {
 		return err
 	}
 
-	logs.Infof("node icon url cache initialized with %d entries", len(nodeIconURLCache))
+	logs.Infof("node icon url cache refreshed with %d entries", len(nodeIconURLCache))
 	return nil
 }
 
@@ -976,22 +1000,22 @@ func (w *ApplicationService) CopyWorkflowFromAppToLibrary(ctx context.Context, w
 		return 0, nil, err
 	}
 
-	pluginMap := make(map[int64]*plugin.PluginEntity)
+	pluginMap := make(map[int64]*vo.PluginEntity)
 	pluginToolMap := make(map[int64]int64)
 
 	if len(ds.PluginIDs) > 0 {
 		for idx := range ds.PluginIDs {
 			id := ds.PluginIDs[idx]
-			response, err := appplugin.PluginApplicationSVC.CopyPlugin(ctx, &appplugin.CopyPluginRequest{
+			response, err := appplugin.PluginApplicationSVC.CopyPlugin(ctx, &dto.CopyPluginRequest{
 				PluginID:  id,
 				UserID:    ctxutil.MustGetUIDFromCtx(ctx),
-				CopyScene: pluginmodel.CopySceneOfToLibrary,
+				CopyScene: pluginConsts.CopySceneOfToLibrary,
 			})
 			if err != nil {
 				return 0, nil, err
 			}
 			pInfo := response.Plugin
-			pluginMap[id] = &plugin.PluginEntity{
+			pluginMap[id] = &vo.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
 			}
@@ -1109,9 +1133,9 @@ func (w *ApplicationService) DuplicateWorkflowsByAppID(ctx context.Context, sour
 		}
 	}()
 
-	pluginMap := make(map[int64]*plugin.PluginEntity)
+	pluginMap := make(map[int64]*vo.PluginEntity)
 	for o, n := range externalResource.PluginMap {
-		pluginMap[o] = &plugin.PluginEntity{
+		pluginMap[o] = &vo.PluginEntity{
 			PluginID: n,
 		}
 	}
@@ -1209,7 +1233,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 		return 0, nil, err
 	}
 
-	pluginMap := make(map[int64]*plugin.PluginEntity)
+	pluginMap := make(map[int64]*vo.PluginEntity)
 	if len(ds.PluginIDs) > 0 {
 		for idx := range ds.PluginIDs {
 			id := ds.PluginIDs[idx]
@@ -1217,7 +1241,7 @@ func (w *ApplicationService) MoveWorkflowFromAppToLibrary(ctx context.Context, w
 			if err != nil {
 				return 0, nil, err
 			}
-			pluginMap[id] = &plugin.PluginEntity{
+			pluginMap[id] = &vo.PluginEntity{
 				PluginID:      pInfo.ID,
 				PluginVersion: pInfo.Version,
 			}
@@ -1394,6 +1418,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 			}
 		}()
 
+		ctx := context.Background()
 		if msg.StateMessage != nil {
 			// stream run will skip all messages from workflow tools
 			if executeID > 0 && executeID != msg.StateMessage.ExecuteID {
@@ -1405,7 +1430,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:       strconv.Itoa(messageID),
 					Event:    string(DoneEvent),
-					DebugUrl: ptr.Of(fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID)),
+					DebugUrl: ptr.Of(debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID)),
 				}, nil
 			case entity.WorkflowFailed, entity.WorkflowCancel:
 				var wfe vo.WorkflowError
@@ -1415,7 +1440,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:           strconv.Itoa(messageID),
 					Event:        string(ErrEvent),
-					DebugUrl:     ptr.Of(fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID)),
+					DebugUrl:     ptr.Of(debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID)),
 					ErrorCode:    ptr.Of(int64(wfe.Code())),
 					ErrorMessage: ptr.Of(wfe.Msg()),
 				}, nil
@@ -1424,7 +1449,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 					return &workflow.OpenAPIStreamRunFlowResponse{
 						ID:       strconv.Itoa(messageID),
 						Event:    string(InterruptEvent),
-						DebugUrl: ptr.Of(fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID)),
+						DebugUrl: ptr.Of(debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID)),
 						InterruptData: &workflow.Interrupt{
 							EventID: fmt.Sprintf("%d/%d", executeID, msg.InterruptEvent.ID),
 							Type:    workflow.InterruptType(msg.InterruptEvent.EventType),
@@ -1436,7 +1461,7 @@ func convertStreamRunEvent(workflowID int64) func(msg *entity.Message) (res *wor
 				return &workflow.OpenAPIStreamRunFlowResponse{
 					ID:       strconv.Itoa(messageID),
 					Event:    string(InterruptEvent),
-					DebugUrl: ptr.Of(fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID)),
+					DebugUrl: ptr.Of(debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID)),
 					InterruptData: &workflow.Interrupt{
 						EventID: fmt.Sprintf("%d/%d", executeID, msg.InterruptEvent.ID),
 						Type:    workflow.InterruptType(msg.InterruptEvent.ToolInterruptEvent.EventType),
@@ -1509,6 +1534,12 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
 
+	runtimeUserID := func() *string {
+		if uID, ok := req.Ext["user_id"]; ok {
+			return ptr.Of(uID)
+		}
+		return nil
+	}()
 	parameters := make(map[string]any)
 	if req.Parameters != nil {
 		err := sonic.UnmarshalString(*req.Parameters, &parameters)
@@ -1553,15 +1584,20 @@ func (w *ApplicationService) OpenAPIStreamRun(ctx context.Context, req *workflow
 	}
 
 	exeCfg := workflowModel.ExecuteConfig{
-		ID:            meta.ID,
-		From:          workflowModel.FromSpecificVersion,
-		Version:       *meta.LatestPublishedVersion,
-		Operator:      userID,
-		Mode:          workflowModel.ExecuteModeRelease,
-		AppID:         appID,
-		AgentID:       agentID,
-		ConnectorID:   connectorID,
-		ConnectorUID:  strconv.FormatInt(userID, 10),
+		ID:          meta.ID,
+		From:        workflowModel.FromSpecificVersion,
+		Version:     *meta.LatestPublishedVersion,
+		Operator:    userID,
+		Mode:        workflowModel.ExecuteModeRelease,
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: connectorID,
+		ConnectorUID: func() string {
+			if runtimeUserID != nil {
+				return *runtimeUserID
+			}
+			return strconv.FormatInt(userID, 10)
+		}(),
 		TaskType:      workflowModel.TaskTypeForeground,
 		SyncPattern:   workflowModel.SyncPatternStream,
 		InputFailFast: true,
@@ -1620,6 +1656,31 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
+	runtimeUserID := func() *string {
+		if uID, ok := req.Ext["user_id"]; ok {
+			return ptr.Of(uID)
+		}
+		return nil
+	}()
+
+	checkResult, err := crosspermission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		OperatorID: userID,
+		ResourceIdentifier: []*permission.ResourceIdentifier{
+			{
+				Type:   permission.ResourceTypeWorkflow,
+				ID:     []int64{workflowID},
+				Action: permission.ActionRead,
+			},
+		},
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	if checkResult.Decision != permission.Allow {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "no permission"))
+	}
 
 	var connectorID int64
 	if req.IsSetConnectorID() {
@@ -1627,11 +1688,16 @@ func (w *ApplicationService) OpenAPIStreamResume(ctx context.Context, req *workf
 	}
 
 	sr, err := GetWorkflowDomainSVC().StreamResume(ctx, resumeReq, workflowModel.ExecuteConfig{
-		Operator:     userID,
-		Mode:         workflowModel.ExecuteModeRelease,
-		ConnectorID:  connectorID,
-		ConnectorUID: strconv.FormatInt(userID, 10),
-		BizType:      workflowModel.BizTypeWorkflow,
+		Operator:    userID,
+		Mode:        workflowModel.ExecuteModeRelease,
+		ConnectorID: connectorID,
+		ConnectorUID: func() string {
+			if runtimeUserID != nil {
+				return *runtimeUserID
+			}
+			return strconv.FormatInt(userID, 10)
+		}(),
+		BizType: workflowModel.BizTypeWorkflow,
 	})
 	if err != nil {
 		return nil, err
@@ -1657,6 +1723,12 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 
 	apiKeyInfo := ctxutil.GetApiAuthFromCtx(ctx)
 	userID := apiKeyInfo.UserID
+	runtimeUserID := func() *string {
+		if uID, ok := req.Ext["user_id"]; ok {
+			return ptr.Of(uID)
+		}
+		return nil
+	}()
 
 	parameters := make(map[string]any)
 	if req.Parameters != nil {
@@ -1702,15 +1774,20 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	}
 
 	exeCfg := workflowModel.ExecuteConfig{
-		ID:            meta.ID,
-		From:          workflowModel.FromSpecificVersion,
-		Version:       *meta.LatestPublishedVersion,
-		Operator:      userID,
-		Mode:          workflowModel.ExecuteModeRelease,
-		AppID:         appID,
-		AgentID:       agentID,
-		ConnectorID:   connectorID,
-		ConnectorUID:  strconv.FormatInt(userID, 10),
+		ID:          meta.ID,
+		From:        workflowModel.FromSpecificVersion,
+		Version:     *meta.LatestPublishedVersion,
+		Operator:    userID,
+		Mode:        workflowModel.ExecuteModeRelease,
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: connectorID,
+		ConnectorUID: func() string {
+			if runtimeUserID != nil {
+				return *runtimeUserID
+			}
+			return strconv.FormatInt(userID, 10)
+		}(),
 		InputFailFast: true,
 		BizType:       workflowModel.BizTypeWorkflow,
 	}
@@ -1729,7 +1806,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 
 		return &workflow.OpenAPIRunFlowResponse{
 			ExecuteID: ptr.Of(strconv.FormatInt(exeID, 10)),
-			DebugUrl:  ptr.Of(fmt.Sprintf(workflowModel.DebugURLTpl, exeID, meta.SpaceID, meta.ID)),
+			DebugUrl:  ptr.Of(debugutil.GetWorkflowDebugURL(ctx, meta.ID, meta.SpaceID, exeID)),
 		}, nil
 	}
 
@@ -1765,7 +1842,7 @@ func (w *ApplicationService) OpenAPIRun(ctx context.Context, req *workflow.OpenA
 	return &workflow.OpenAPIRunFlowResponse{
 		Data:      data,
 		ExecuteID: ptr.Of(strconv.FormatInt(wfExe.ID, 10)),
-		DebugUrl:  ptr.Of(fmt.Sprintf(workflowModel.DebugURLTpl, wfExe.ID, wfExe.SpaceID, meta.ID)),
+		DebugUrl:  ptr.Of(debugutil.GetWorkflowDebugURL(ctx, meta.ID, wfExe.SpaceID, wfExe.ID)),
 		Token:     ptr.Of(wfExe.TokenInfo.InputTokens + wfExe.TokenInfo.OutputTokens),
 		Cost:      ptr.Of("0.00000"),
 	}, nil
@@ -1826,7 +1903,7 @@ func (w *ApplicationService) OpenAPIGetWorkflowRunHistory(ctx context.Context, r
 				LogID:         ptr.Of(exe.LogID),
 				CreateTime:    ptr.Of(exe.CreatedAt.Unix()),
 				UpdateTime:    updateTime,
-				DebugUrl:      ptr.Of(fmt.Sprintf(workflowModel.DebugURLTpl, exe.ID, exe.SpaceID, exe.WorkflowID)),
+				DebugUrl:      ptr.Of(debugutil.GetWorkflowDebugURL(ctx, exe.WorkflowID, exe.SpaceID, exe.ID)),
 				Input:         exe.Input,
 				Output:        exe.Output,
 				Token:         ptr.Of(exe.TokenInfo.InputTokens + exe.TokenInfo.OutputTokens),
@@ -2650,10 +2727,11 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 		return nil, err
 	}
 
-	toolInfoResponse, err := crossplugin.DefaultSVC().GetPluginToolsInfo(ctx, &plugin.ToolsInfoRequest{
-		PluginEntity: plugin.PluginEntity{
+	toolInfoResponse, err := plugin.GetPluginToolsInfo(ctx, &plugin.ToolsInfoRequest{
+		PluginEntity: vo.PluginEntity{
 			PluginID:      pluginID,
 			PluginVersion: req.PluginVersion,
+			PluginFrom:    req.PluginFrom,
 		},
 		ToolIDs: []int64{toolID},
 	})
@@ -2691,6 +2769,7 @@ func (w *ApplicationService) GetApiDetail(ctx context.Context, req *workflow.Get
 			LatestVersion:       toolInfoResponse.LatestVersion,
 			PluginProductStatus: ternary.IFElse(toolInfoResponse.IsOfficial, int64(1), 0),
 			ProjectID:           ternary.IFElse(toolInfoResponse.AppID != 0, ptr.Of(strconv.FormatInt(toolInfoResponse.AppID, 10)), nil),
+			PluginFrom:          req.PluginFrom,
 		},
 		ToolInputs:  inputVars,
 		ToolOutputs: outputVars,
@@ -2717,7 +2796,6 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 	}
 
 	var (
-		pluginSvc           = crossplugin.DefaultSVC()
 		pluginToolsInfoReqs = make(map[int64]*plugin.ToolsInfoRequest)
 		pluginDetailMap     = make(map[string]*workflow.PluginDetail)
 		toolsDetailInfo     = make(map[string]*workflow.APIDetail)
@@ -2741,9 +2819,10 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 				r.ToolIDs = append(r.ToolIDs, toolID)
 			} else {
 				pluginToolsInfoReqs[pluginID] = &plugin.ToolsInfoRequest{
-					PluginEntity: plugin.PluginEntity{
+					PluginEntity: vo.PluginEntity{
 						PluginID:      pluginID,
 						PluginVersion: pl.PluginVersion,
+						PluginFrom:    pl.PluginFrom,
 					},
 					ToolIDs: []int64{toolID},
 					IsDraft: pl.IsDraft,
@@ -2752,7 +2831,7 @@ func (w *ApplicationService) GetLLMNodeFCSettingDetail(ctx context.Context, req 
 
 		}
 		for _, r := range pluginToolsInfoReqs {
-			resp, err := pluginSvc.GetPluginToolsInfo(ctx, r)
+			resp, err := plugin.GetPluginToolsInfo(ctx, r)
 			if err != nil {
 				return nil, err
 			}
@@ -2925,7 +3004,6 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 	var fcPluginSetting *workflow.FCPluginSetting
 	if req.GetPluginFcSetting() != nil {
 		var (
-			pluginSvc       = crossplugin.DefaultSVC()
 			pluginFcSetting = req.GetPluginFcSetting()
 			isDraft         = pluginFcSetting.GetIsDraft()
 		)
@@ -2941,14 +3019,15 @@ func (w *ApplicationService) GetLLMNodeFCSettingsMerged(ctx context.Context, req
 		}
 
 		pluginReq := &plugin.ToolsInfoRequest{
-			PluginEntity: plugin.PluginEntity{
-				PluginID: pluginID,
+			PluginEntity: vo.PluginEntity{
+				PluginID:   pluginID,
+				PluginFrom: pluginFcSetting.PluginFrom,
 			},
 			ToolIDs: []int64{toolID},
 			IsDraft: isDraft,
 		}
 
-		pInfo, err := pluginSvc.GetPluginToolsInfo(ctx, pluginReq)
+		pInfo, err := plugin.GetPluginToolsInfo(ctx, pluginReq)
 		if err != nil {
 			return nil, err
 		}

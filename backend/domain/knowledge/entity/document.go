@@ -17,16 +17,16 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
 )
 
 type Document struct {
-	knowledge.Info
+	model.Info
 
 	KnowledgeID      int64
-	Type             knowledge.DocumentType
+	Type             model.DocumentType
 	RawContent       string               // User-defined original content
 	URI              string               // Document URI
 	URL              string               // Document URL
@@ -76,6 +76,7 @@ type WhereDocumentOpt struct {
 	StatusIn     []int32
 	StatusNotIn  []int32
 	CreatorID    int64
+	Name         *string
 	Limit        int
 	Offset       *int
 	Cursor       *string

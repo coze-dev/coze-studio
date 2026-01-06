@@ -29,12 +29,12 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/mohae/deepcopy"
 
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -98,12 +98,12 @@ func (e *Event) SendStreamDoneEvent(sw *schema.StreamWriter[*entity.AgentRunResp
 	sw.Send(resp, nil)
 }
 
-type MesssageEventHanlder struct {
+type MessageEventHandler struct {
 	messageEvent *Event
 	sw           *schema.StreamWriter[*entity.AgentRunResponse]
 }
 
-func (mh *MesssageEventHanlder) handlerErr(_ context.Context, err error) {
+func (mh *MessageEventHandler) handlerErr(_ context.Context, err error) {
 
 	var errMsg string
 	var statusErr errorx.StatusError
@@ -123,7 +123,7 @@ func (mh *MesssageEventHanlder) handlerErr(_ context.Context, err error) {
 	})
 }
 
-func (mh *MesssageEventHanlder) handlerAckMessage(_ context.Context, input *msgEntity.Message) error {
+func (mh *MessageEventHandler) handlerAckMessage(_ context.Context, input *msgEntity.Message) error {
 	sendMsg := &entity.ChunkMessageItem{
 		ID:             input.ID,
 		ConversationID: input.ConversationID,
@@ -142,7 +142,7 @@ func (mh *MesssageEventHanlder) handlerAckMessage(_ context.Context, input *msgE
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
+func (mh *MessageEventHandler) handlerFunctionCall(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
 	cm := buildAgentMessage2Create(ctx, chunk, message.MessageTypeFunctionCall, rtDependence)
 
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
@@ -156,7 +156,7 @@ func (mh *MesssageEventHanlder) handlerFunctionCall(ctx context.Context, chunk *
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime, preToolResponseMsg *msgEntity.Message, toolResponseMsgContent string) error {
+func (mh *MessageEventHandler) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime, preToolResponseMsg *msgEntity.Message, toolResponseMsgContent string) error {
 
 	cm := buildAgentMessage2Create(ctx, chunk, message.MessageTypeToolResponse, rtDependence)
 
@@ -184,7 +184,7 @@ func (mh *MesssageEventHanlder) handlerTooResponse(ctx context.Context, chunk *e
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
+func (mh *MessageEventHandler) handlerSuggest(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
 	cm := buildAgentMessage2Create(ctx, chunk, message.MessageTypeFlowUp, rtDependence)
 
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
@@ -199,7 +199,7 @@ func (mh *MesssageEventHanlder) handlerSuggest(ctx context.Context, chunk *entit
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
+func (mh *MessageEventHandler) handlerKnowledge(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
 	cm := buildAgentMessage2Create(ctx, chunk, message.MessageTypeKnowledge, rtDependence)
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
@@ -212,7 +212,7 @@ func (mh *MesssageEventHanlder) handlerKnowledge(ctx context.Context, chunk *ent
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerAnswer(ctx context.Context, msg *entity.ChunkMessageItem, usage *msgEntity.UsageExt, rtDependence *AgentRuntime, preAnswerMsg *msgEntity.Message) error {
+func (mh *MessageEventHandler) handlerAnswer(ctx context.Context, msg *entity.ChunkMessageItem, usage *msgEntity.UsageExt, rtDependence *AgentRuntime, preAnswerMsg *msgEntity.Message) error {
 
 	if len(msg.Content) == 0 && len(ptr.From(msg.ReasoningContent)) == 0 {
 		return nil
@@ -265,7 +265,7 @@ func (mh *MesssageEventHanlder) handlerAnswer(ctx context.Context, msg *entity.C
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerFinalAnswerFinish(ctx context.Context, rtDependence *AgentRuntime) error {
+func (mh *MessageEventHandler) handlerFinalAnswerFinish(ctx context.Context, rtDependence *AgentRuntime) error {
 	cm := buildAgentMessage2Create(ctx, nil, message.MessageTypeVerbose, rtDependence)
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
@@ -278,7 +278,7 @@ func (mh *MesssageEventHanlder) handlerFinalAnswerFinish(ctx context.Context, rt
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerInterruptVerbose(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
+func (mh *MessageEventHandler) handlerInterruptVerbose(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime) error {
 	cm := buildAgentMessage2Create(ctx, chunk, message.MessageTypeInterrupt, rtDependence)
 	cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
 	if err != nil {
@@ -291,7 +291,7 @@ func (mh *MesssageEventHanlder) handlerInterruptVerbose(ctx context.Context, chu
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerWfUsage(ctx context.Context, msg *entity.ChunkMessageItem, usage *msgEntity.UsageExt) error {
+func (mh *MessageEventHandler) handlerWfUsage(ctx context.Context, msg *entity.ChunkMessageItem, usage *msgEntity.UsageExt) error {
 
 	if msg.Ext == nil {
 		msg.Ext = map[string]string{}
@@ -314,7 +314,7 @@ func (mh *MesssageEventHanlder) handlerWfUsage(ctx context.Context, msg *entity.
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime, firstAnswerMsg *msgEntity.Message, reasoningContent string) error {
+func (mh *MessageEventHandler) handlerInterrupt(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime, firstAnswerMsg *msgEntity.Message, reasoningContent string) error {
 	interruptData, cType, err := parseInterruptData(ctx, chunk.Interrupt)
 	if err != nil {
 		return err
@@ -366,7 +366,7 @@ func (mh *MesssageEventHanlder) handlerInterrupt(ctx context.Context, chunk *ent
 	return nil
 }
 
-func (mh *MesssageEventHanlder) handlerWfInterruptMsg(ctx context.Context, stateMsg *crossworkflow.StateMessage, rtDependence *AgentRuntime) {
+func (mh *MessageEventHandler) handlerWfInterruptMsg(ctx context.Context, stateMsg *crossworkflow.StateMessage, rtDependence *AgentRuntime) {
 	interruptData, cType, err := handlerWfInterruptEvent(ctx, stateMsg.InterruptEvent)
 	if err != nil {
 		return
@@ -412,7 +412,7 @@ func (mh *MesssageEventHanlder) handlerWfInterruptMsg(ctx context.Context, state
 	}
 }
 
-func (mh *MesssageEventHanlder) HandlerInput(ctx context.Context, rtDependence *AgentRuntime) (*msgEntity.Message, error) {
+func (mh *MessageEventHandler) HandlerInput(ctx context.Context, rtDependence *AgentRuntime) (*msgEntity.Message, error) {
 	msgMeta := buildAgentMessage2Create(ctx, nil, message.MessageTypeQuestion, rtDependence)
 
 	cm, err := crossmessage.DefaultSVC().Create(ctx, msgMeta)
@@ -425,4 +425,22 @@ func (mh *MesssageEventHanlder) HandlerInput(ctx context.Context, rtDependence *
 		return msgMeta, ackErr
 	}
 	return cm, nil
+}
+
+func (mh *MessageEventHandler) ParseAdditionalMessages(ctx context.Context, rtDependence *AgentRuntime, runRecord *entity.RunRecordMeta) error {
+
+	if len(rtDependence.GetRunMeta().AdditionalMessages) == 0 {
+		return nil
+	}
+
+	additionalMessages := make([]*message.Message, 0, len(rtDependence.GetRunMeta().AdditionalMessages))
+
+	for _, msg := range rtDependence.GetRunMeta().AdditionalMessages {
+		cm := buildAdditionalMessage2Create(ctx, runRecord, msg, rtDependence.GetRunMeta().UserID)
+		additionalMessages = append(additionalMessages, cm)
+	}
+
+	_, err := crossmessage.DefaultSVC().BatchCreate(ctx, additionalMessages)
+
+	return err
 }

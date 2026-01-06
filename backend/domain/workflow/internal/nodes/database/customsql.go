@@ -24,8 +24,8 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/database"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"

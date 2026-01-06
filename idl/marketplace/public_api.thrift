@@ -11,7 +11,92 @@ service PublicProductService {
     FavoriteProductResponse PublicFavoriteProduct(1: FavoriteProductRequest req)(api.post = "/api/marketplace/product/favorite", api.category = "PublicAPI")
     GetUserFavoriteListV2Response PublicGetUserFavoriteListV2(1: GetUserFavoriteListV2Request req)(api.get = "/api/marketplace/product/favorite/list.v2", api.category = "PublicAPI")
     DuplicateProductResponse PublicDuplicateProduct (1: DuplicateProductRequest req) (api.post = "/api/marketplace/product/duplicate", api.category = "PublicAPI")
+
+    SearchProductResponse PublicSearchProduct(1: SearchProductRequest req)(api.get = "/api/marketplace/product/search", api.category = "PublicAPI")
+    SearchSuggestResponse PublicSearchSuggest(1: SearchSuggestRequest req)(api.get = "/api/marketplace/product/search/suggest", api.category = "PublicAPI")
+
+    GetProductCategoryListResponse PublicGetProductCategoryList(1: GetProductCategoryListRequest req)(api.get = "/api/marketplace/product/category/list", api.category = "PublicAPI")
+
+    GetProductCallInfoResponse PublicGetProductCallInfo(1: GetProductCallInfoRequest req)(api.get = "/api/marketplace/product/call_info")
+
+    GetMarketPluginConfigResponse PublicGetMarketPluginConfig(1: GetMarketPluginConfigRequest req)(api.get = "/api/marketplace/product/config", api.category = "PublicAPI")
 }
+
+struct GetMarketPluginConfigRequest{
+}
+
+struct GetMarketPluginConfigResponse{
+    1  : required i32                       Code     (agw.key = "code",api.body = "code")   ,
+    2  : required string                    Message  (agw.key = "message",api.body = "message"),
+    3  : optional Configuration             Data     (agw.key = "data",api.body = "data")   ,
+    255: optional base.BaseResp             BaseResp                                                  ,
+}
+
+struct Configuration {
+    1: optional bool enable_saas_plugin
+}
+
+struct SearchProductRequest{
+    1  : required string                            Keyword            (api.query = "keyword")                                                     ,
+    2  : required i32                               PageNum            (api.query = "page_num")                                                    ,
+    3  : required i32                               PageSize           (api.query = "page_size")                                                   ,
+    4  : optional product_common.ProductEntityType  EntityType         (agw.key = "entity_type")                                                   ,
+    5  : optional product_common.SortType           SortType           (api.query = "sort_type")                                                   ,
+
+    11 : optional product_common.ProductPublishMode PublishMode        (agw.key = "publish_mode")                                                  , // Open/closed source
+    12 : optional list<i64>                         ModelIDs           (agw.js_conv="str",  agw.cli_conv="str", api.query = "model_ids")           , // Models used
+    13 : optional product_common.BotModType         BotModType         (agw.key = "bot_mod_type")                                                  , // Multimodal type
+    14 : optional list<product_common.Component>    Components         (agw.key = "components")                                                    , // Sub-attributes
+    15 : optional list<i64>                         PublishPlatformIDs (agw.js_conv="str",  agw.cli_conv="str", api.query = "publish_platform_ids"), // Publish platform IDs
+    16 : optional list<i64> CategoryIDs (agw.js_conv="str",  agw.cli_conv="str", api.query = "category_ids"), // Product category IDs
+    17 : optional bool IsOfficial (api.query = "is_official"), // Is official
+    18 : optional bool IsRecommend (api.query = "is_recommend"), // Is recommended
+
+    19 : optional string EntityTypes ( api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
+    20 : optional product_common.PluginType PluginType (agw.key = "plugin_type"), // Plugin type
+    21 : optional product_common.ProductPaidType ProductPaidType (agw.key = "product_paid_type"), // Product paid type
+
+    255: optional base.Base                         Base                                                                                           ,
+}
+
+struct SearchProductResponse{
+    1  : required i32                       Code     (agw.key = "code",api.body = "code")   ,
+    2  : required string                    Message  (agw.key = "message",api.body = "message"),
+    3  : optional SearchProductResponseData Data     (agw.key = "data",api.body = "data")   ,
+    255: optional base.BaseResp             BaseResp                      ,
+}
+
+struct SearchProductResponseData{
+    1: optional list<ProductInfo> Products (agw.key = "products",api.body = "products"),
+    2: optional i32               Total    (agw.key = "total",api.body = "total")   ,
+    3: optional bool              HasMore  (agw.key = "has_more",api.body = "has_more"),
+    4: optional map<product_common.ProductEntityType, i32> EntityTotal (agw.key = "entity_total",api.body = "entity_total"), // Entity count
+}
+
+struct SearchSuggestResponse{
+    1  : required i32                       Code     (agw.key = "code",api.body = "code")   ,
+    2  : required string                    Message  (agw.key = "message",api.body = "message"),
+    3  : optional SearchSuggestResponseData Data     (agw.key = "data",api.body = "data")   ,
+    255: optional base.BaseResp             BaseResp                      ,
+}
+
+struct SearchSuggestResponseData{
+    1: optional list<ProductMetaInfo> Suggestions (agw.key = "suggestions",api.body = "suggestions"), // Deprecated
+    2: optional bool HasMore (agw.key = "has_more",api.body = "has_more"),
+    3: optional list<ProductInfo> SuggestionV2(agw.key = "suggestion_v2",api.body = "suggestion_v2"),
+}
+
+
+struct SearchSuggestRequest {
+    1: optional string Keyword (api.query = "keyword"),
+    2: optional product_common.ProductEntityType EntityType (api.query = "entity_type"), // Optional, defaults to bot recommendation if not provided
+    3: optional i32 PageNum (api.query = "page_num"),
+    4: optional i32 PageSize (api.query = "page_size"),
+    5: optional string EntityTypes (api.query = "entity_types"), // Product type list, use this parameter first, then EntityType
+
+    255: optional base.Base                        Base                                  ,
+}
+
 
 struct FavoriteProductResponse {
     1  : required i32           Code            (agw.key = "code", api.body = "code")             ,
@@ -143,6 +228,8 @@ enum PluginAuthMode {
     Required   = 1, // Authorization required, but no authorization configuration
     Configured = 2, // Authorization is required and has been configured
     Supported  = 3, // Authorization is required, but the authorization configuration may be user-level and can be configured by the user himself
+
+    NeedInstalled = 9, // the third-party of coze saas plugin needs to be installed in the saas before it can be used.
 }
 
 struct PluginExtraInfo {
@@ -165,6 +252,7 @@ struct PluginExtraInfo {
 
     // for opencoze
     50: optional PluginAuthMode AuthMode (agw.key = "auth_mode", api.body= "auth_mode"),
+    51: optional string JumpSaasURL (agw.key = "jump_saas_url", api.body= "jump_saas_url"),
 }
 
 struct ToolParameter {
@@ -566,4 +654,86 @@ struct DuplicateProductData {
     // New ID after copy
     1: i64 NewEntityID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_entity_id")
     2: optional i64 NewPluginID (agw.js_conv="str", api.js_conv="str", agw.cli_conv="str", api.body = "new_plugin_id") // Plugin ID for workflow
+}
+
+
+struct GetProductCategoryListRequest {
+    1  :          product_common.ProductEntityType EntityType        (api.query = "entity_type")        ,
+    2  : optional bool                             NeedEmptyCategory (api.query = "need_empty_category"), // When listing, need to get the full category list to distinguish between listing and homepage scenarios
+    3  : optional string                           Lang (api.query = "lang"),
+
+    255: optional base.Base                        Base                                                 ,
+}
+
+struct GetProductCategoryListData{
+    1: required product_common.ProductEntityType EntityType (agw.key = "entity_type", api.body= "entity_type"),
+    2: optional list<ProductCategory>            Categories (agw.key = "categories", api.body= "categories") ,
+}
+
+struct GetProductCategoryListResponse {
+    1  : required i32                        Code     (agw.key = "code", api.body= "code")   ,
+    2  : required string                     Message  (agw.key = "message", api.body= "message"),
+    3  :          GetProductCategoryListData Data     (agw.key = "data", api.body= "data")   ,
+
+    255: optional base.BaseResp              BaseResp                      ,
+}
+
+struct GetProductCallInfoRequest {
+    1  : product_common.ProductEntityType  EntityType   (api.query="entity_type")                                       ,
+    2  : optional i64                      EntityID     (agw.js_conv="str", agw.cli_conv="str", api.query = "entity_id"),
+    3  : optional string                   EnterpriseID (api.query = "enterprise_id"),
+
+    255: optional base.Base Base,
+}
+
+enum UserLevel {
+    Free          = 0  , // Free version
+
+// Overseas
+    PremiumLite   = 10 , // PremiumLite
+    Premium       = 15 , // Premium
+    PremiumPlus   = 20 ,
+
+// Domestic
+    V1ProInstance = 100, // V1 Volcano Professional Edition
+
+    ProPersonal   = 110, // Personal flagship edition
+    Team          = 120, // Team edition
+    Enterprise    = 130, // Enterprise edition
+}
+
+struct ProductCallCountLimit {
+    1: bool is_unlimited, // Whether plugin tool calls are unlimited
+    2: i32 used_count, // Plugin tool calls used
+    3: i32 total_count, // Plugin total tool calls
+    4: i64 reset_datetime, // Plugin tool call count reset time
+    5: map<UserLevel, ProductCallCountLimit> call_count_limit_by_user_level, // Plugin tool call count limit by user level
+}
+
+struct ProductCallRateLimit {
+    1: i32 qps, // qps
+    2: map<UserLevel, ProductCallRateLimit> call_rate_limit_by_user_level, // Plugin tool call rate limit by user level
+}
+
+struct UserInfo {
+    1: optional string user_name, // User name
+    2: optional string nick_name, // User nickname
+    3: optional string avatar_url, // User avatar url
+}
+
+struct GetProductCallInfoData {
+    1: string mcp_json, // mcp configuration json string
+    2: UserLevel user_level, // Payment level
+    3: ProductCallCountLimit call_count_limit, // Plugin tool call count limit
+    4: ProductCallRateLimit call_rate_limit, // Plugin tool call rate limit
+    5: UserInfo user_info, // User info
+    6: optional string revert_time, // Enterprise revert time
+}
+
+struct GetProductCallInfoResponse {
+    1  : required i32                        Code     (agw.key = "code", api.body= "code")   ,
+    2  : required string                     Message  (agw.key = "message", api.body= "message"),
+    3  : optional GetProductCallInfoData    Data     (agw.key = "data", api.body= "data")   ,
+
+    255: optional base.BaseResp      BaseResp
 }

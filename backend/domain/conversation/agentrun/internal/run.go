@@ -23,13 +23,13 @@ import (
 	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/repository"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
@@ -107,12 +107,29 @@ func (rd *AgentRuntime) GetHistory() []*msgEntity.Message {
 
 func (art *AgentRuntime) Run(ctx context.Context) (err error) {
 
+	mh := &MessageEventHandler{
+		messageEvent: art.MessageEvent,
+		sw:           art.SW,
+	}
+
 	agentInfo, err := getAgentInfo(ctx, art.GetRunMeta().AgentID, art.GetRunMeta().IsDraft, art.GetRunMeta().ConnectorID)
 	if err != nil {
 		return
 	}
 
 	art.SetAgentInfo(agentInfo)
+
+	if len(art.GetRunMeta().AdditionalMessages) > 0 {
+		var additionalRunRecord *entity.RunRecordMeta
+		additionalRunRecord, err = art.RunRecordRepo.Create(ctx, art.GetRunMeta())
+		if err != nil {
+			return
+		}
+		err = mh.ParseAdditionalMessages(ctx, art, additionalRunRecord)
+		if err != nil {
+			return
+		}
+	}
 
 	history, err := art.getHistory(ctx)
 	if err != nil {
@@ -140,10 +157,7 @@ func (art *AgentRuntime) Run(ctx context.Context) (err error) {
 		}
 		art.RunProcess.StepToComplete(ctx, srRecord, art.SW, art.GetUsage())
 	}()
-	mh := &MesssageEventHanlder{
-		messageEvent: art.MessageEvent,
-		sw:           art.SW,
-	}
+
 	input, err := mh.HandlerInput(ctx, art)
 	if err != nil {
 		return

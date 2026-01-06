@@ -17,7 +17,10 @@
 import { useCallback } from 'react';
 
 import { type ShortCutCommand } from '@coze-common/chat-area-plugins-chat-shortcuts';
-import { type MixInitResponse } from '@coze-common/chat-area';
+import {
+  type UserSenderInfo,
+  type MixInitResponse,
+} from '@coze-common/chat-area';
 import i18n from '@coze-arch/i18n/intl';
 import { type BotInfo, type CozeAPI } from '@coze/api';
 
@@ -134,12 +137,14 @@ const getConversationInfo = async ({
   connectorId,
   defaultHistoryMessage,
   onDefaultHistoryClear,
+  userInfo,
 }: GetRequestInfoProps & {
   conversationId?: string;
   sectionId?: string;
   connectorId: string;
   defaultHistoryMessage?: MixInitResponse['messageList'];
   onDefaultHistoryClear?: () => void;
+  userInfo: UserSenderInfo | null;
 }): Promise<
   Pick<
     MixInitResponse,
@@ -161,6 +166,7 @@ const getConversationInfo = async ({
         connector_id: connectorId,
         page_num: 1,
         page_size: 1,
+        user_id: IS_OPEN_SOURCE ? userInfo?.id : undefined,
       },
     )) as {
       data: {
@@ -185,6 +191,7 @@ const getConversationInfo = async ({
               messages: historyMessage,
               // @ts-expect-error: connector_id is not in the type
               connector_id: connectorId,
+              user_id: IS_OPEN_SOURCE ? userInfo?.id : undefined,
             },
             {
               headers: {
@@ -204,6 +211,7 @@ const getConversationInfo = async ({
               bot_id: botId,
               // @ts-expect-error: connector_id is not in the type
               connector_id: connectorId,
+              user_id: IS_OPEN_SOURCE ? userInfo?.id : undefined,
             },
             {
               headers: {
@@ -329,6 +337,7 @@ export const useRequestInit = () => {
             connectorId,
             onDefaultHistoryClear,
             defaultHistoryMessage,
+            userInfo,
           }),
         ]);
       const prologue = (requestDataBotInfo.prologue || '').replaceAll(

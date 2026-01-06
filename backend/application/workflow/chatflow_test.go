@@ -26,12 +26,12 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
-	messageentity "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun/agentrunmock"
-	crossupload "github.com/coze-dev/coze-studio/backend/crossdomain/contract/upload"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/upload/uploadmock"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/agentrunmock"
+	messageentity "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	crossupload "github.com/coze-dev/coze-studio/backend/crossdomain/upload"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/upload/uploadmock"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	uploadentity "github.com/coze-dev/coze-studio/backend/domain/upload/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
@@ -213,6 +213,7 @@ func Test_toConversationMessage(t *testing.T) {
 				UserID:         strconv.FormatInt(userID, 10),
 				RunID:          roundID,
 				ContentType:    messageentity.ContentTypeMix,
+				DisplayContent: `[{"type": "text", "text": "hello"}]`,
 				MultiContent: []*messageentity.InputMetaData{
 					{Type: messageentity.InputTypeText, Text: "hello"},
 				},
@@ -240,6 +241,7 @@ func Test_toConversationMessage(t *testing.T) {
 				UserID:         strconv.FormatInt(userID, 10),
 				RunID:          roundID,
 				ContentType:    messageentity.ContentTypeMix,
+				DisplayContent: `[{"type": "file", "file_id": "123"}]`,
 				MultiContent: []*messageentity.InputMetaData{
 					{
 						Type: "file",

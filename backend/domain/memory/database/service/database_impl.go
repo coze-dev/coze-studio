@@ -31,24 +31,25 @@ import (
 	"github.com/tealeg/xlsx/v3"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
-	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/contract/variables"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
+	crossvariables "github.com/coze-dev/coze-studio/backend/crossdomain/variables"
 	entity2 "github.com/coze-dev/coze-studio/backend/domain/memory/database/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/convertor"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/dal/query"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/physicaltable"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/internal/sheet"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	entity3 "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/contract/sqlparser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	entity3 "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	sqlparsercontract "github.com/coze-dev/coze-studio/backend/infra/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -391,7 +392,7 @@ func (d databaseService) MGetDatabase(ctx context.Context, req *MGetDatabaseRequ
 	for _, onlineDatabase := range onlineDatabases {
 		if needSys, ok := onlineID2NeedSysFields[onlineDatabase.ID]; ok && needSys {
 			if onlineDatabase.FieldList == nil {
-				onlineDatabase.FieldList = make([]*database.FieldItem, 0, 3)
+				onlineDatabase.FieldList = make([]*model.FieldItem, 0, 3)
 			}
 			onlineDatabase.FieldList = append(onlineDatabase.FieldList, physicaltable.GetDisplayCreateTimeField(), physicaltable.GetDisplayUidField(), physicaltable.GetDisplayIDField())
 		}
@@ -1044,7 +1045,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		return nil, fmt.Errorf("SQL is empty")
 	}
 
-	operation, err := sqlparser.NewSQLParser().GetSQLOperation(*req.SQL)
+	operation, err := sqlparser.New().GetSQLOperation(*req.SQL)
 	if err != nil {
 		return nil, err
 	}
@@ -1071,7 +1072,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		},
 	}
 
-	parsedSQL, err := sqlparser.NewSQLParser().ParseAndModifySQL(*req.SQL, tableColumnMapping)
+	parsedSQL, err := sqlparser.New().ParseAndModifySQL(*req.SQL, tableColumnMapping)
 	if err != nil {
 		return nil, fmt.Errorf("parse sql failed: %v", err)
 	}
@@ -1079,7 +1080,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 	if tableInfo.RwMode == table.BotTableRWMode_LimitedReadWrite && len(req.UserID) != 0 {
 		switch operation {
 		case sqlparsercontract.OperationTypeSelect, sqlparsercontract.OperationTypeUpdate, sqlparsercontract.OperationTypeDelete:
-			parsedSQL, err = sqlparser.NewSQLParser().AppendSQLFilter(parsedSQL, sqlparsercontract.SQLFilterOpAnd, fmt.Sprintf("%s = '%s'", database.DefaultUidColName, req.UserID))
+			parsedSQL, err = sqlparser.New().AppendSQLFilter(parsedSQL, sqlparsercontract.SQLFilterOpAnd, fmt.Sprintf("%s = '%s'", database.DefaultUidColName, req.UserID))
 			if err != nil {
 				return nil, fmt.Errorf("append sql filter failed: %v", err)
 			}
@@ -1091,7 +1092,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 		if req.ConnectorID != nil {
 			cid = *req.ConnectorID
 		}
-		nums, err := sqlparser.NewSQLParser().GetInsertDataNums(parsedSQL)
+		nums, err := sqlparser.New().GetInsertDataNums(parsedSQL)
 		if err != nil {
 			return nil, err
 		}
@@ -1113,7 +1114,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 			for i, id := range ids {
 				iIDs[i] = id
 			}
-			parsedSQL, _, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
+			parsedSQL, _, err = sqlparser.New().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
 				{
 					ColName: database.DefaultCidColName,
 					Value:   cid,
@@ -1127,7 +1128,7 @@ func (d databaseService) executeCustomSQL(ctx context.Context, req *ExecuteSQLRe
 				return nil, fmt.Errorf("add columns to insert sql failed: %v", err)
 			}
 		} else if req.SQLType == database.SQLType_Parameterized {
-			parsedSQL, existingCols, err = sqlparser.NewSQLParser().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
+			parsedSQL, existingCols, err = sqlparser.New().AddColumnsToInsertSQL(parsedSQL, []sqlparsercontract.ColumnValue{
 				{
 					ColName: database.DefaultCidColName,
 				},

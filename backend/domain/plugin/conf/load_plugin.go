@@ -28,22 +28,23 @@ import (
 	"golang.org/x/mod/semver"
 	"gopkg.in/yaml.v3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 type pluginProductMeta struct {
-	PluginID       int64                  `yaml:"plugin_id" validate:"required"`
-	ProductID      int64                  `yaml:"product_id" validate:"required"`
-	Deprecated     bool                   `yaml:"deprecated"`
-	Version        string                 `yaml:"version" validate:"required"`
-	PluginType     common.PluginType      `yaml:"plugin_type" validate:"required"`
-	OpenapiDocFile string                 `yaml:"openapi_doc_file" validate:"required"`
-	Manifest       *entity.PluginManifest `yaml:"manifest" validate:"required"`
-	Tools          []*toolProductMeta     `yaml:"tools" validate:"required"`
+	PluginID       int64                 `yaml:"plugin_id" validate:"required"`
+	Deprecated     bool                  `yaml:"deprecated"`
+	Version        string                `yaml:"version" validate:"required"`
+	PluginType     common.PluginType     `yaml:"plugin_type" validate:"required"`
+	OpenapiDocFile string                `yaml:"openapi_doc_file" validate:"required"`
+	Manifest       *model.PluginManifest `yaml:"manifest" validate:"required"`
+	Tools          []*toolProductMeta    `yaml:"tools" validate:"required"`
 }
 
 type toolProductMeta struct {
@@ -176,14 +177,13 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 
 		pi := &PluginInfo{
 			Info: &model.PluginInfo{
-				ID:           m.PluginID,
-				RefProductID: &m.ProductID,
-				PluginType:   m.PluginType,
-				Version:      ptr.Of(m.Version),
-				IconURI:      ptr.Of(m.Manifest.LogoURL),
-				ServerURL:    ptr.Of(doc.Servers[0].URL),
-				Manifest:     m.Manifest,
-				OpenapiDoc:   doc,
+				ID:         m.PluginID,
+				PluginType: m.PluginType,
+				Version:    ptr.Of(m.Version),
+				IconURI:    ptr.Of(m.Manifest.LogoURL),
+				ServerURL:  ptr.Of(doc.Servers[0].URL),
+				Manifest:   m.Manifest,
+				OpenapiDoc: doc,
 			},
 			ToolIDs: make([]int64, 0, len(m.Tools)),
 		}
@@ -195,10 +195,10 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 
 		pluginProducts[m.PluginID] = pi
 
-		apis := make(map[entity.UniqueToolAPI]*model.Openapi3Operation, len(doc.Paths))
+		apis := make(map[dto.UniqueToolAPI]*model.Openapi3Operation, len(doc.Paths))
 		for subURL, pathItem := range doc.Paths {
 			for method, op := range pathItem.Operations() {
-				api := entity.UniqueToolAPI{
+				api := dto.UniqueToolAPI{
 					SubURL: subURL,
 					Method: strings.ToUpper(method),
 				}
@@ -217,7 +217,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 				continue
 			}
 
-			api := entity.UniqueToolAPI{
+			api := dto.UniqueToolAPI{
 				SubURL: t.SubURL,
 				Method: strings.ToUpper(t.Method),
 			}
@@ -242,7 +242,7 @@ func loadPluginProductMeta(ctx context.Context, basePath string) (err error) {
 					Method:          ptr.Of(t.Method),
 					SubURL:          ptr.Of(t.SubURL),
 					Operation:       op,
-					ActivatedStatus: ptr.Of(model.ActivateTool),
+					ActivatedStatus: ptr.Of(consts.ActivateTool),
 					DebugStatus:     ptr.Of(common.APIDebugStatus_DebugPassed),
 				},
 			}
@@ -269,10 +269,7 @@ func checkPluginMetaInfo(ctx context.Context, m *pluginProductMeta) (continued b
 		logs.CtxErrorf(ctx, "invalid plugin id '%d'", m.PluginID)
 		return false
 	}
-	if m.ProductID <= 0 {
-		logs.CtxErrorf(ctx, "invalid product id '%d'", m.ProductID)
-		return false
-	}
+
 	_, ok := toolProducts[m.PluginID]
 	if ok {
 		logs.CtxErrorf(ctx, "duplicate plugin id '%d'", m.PluginID)

@@ -26,7 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/datacopy/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/datacopy/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/datacopy/internal/dal/dao"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 type DataCopySVCConfig struct {

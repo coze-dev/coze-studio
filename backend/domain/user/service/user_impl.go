@@ -36,8 +36,8 @@ import (
 	userEntity "github.com/coze-dev/coze-studio/backend/domain/user/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/user/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/user/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -395,6 +395,7 @@ func (u *userImpl) ValidateSession(ctx context.Context, sessionKey string) (
 	return &userEntity.Session{
 		UserID:    userModel.ID,
 		Locale:    userModel.Locale,
+		UserEmail: userModel.Email,
 		CreatedAt: sessionModel.CreatedAt,
 		ExpiresAt: sessionModel.ExpiresAt,
 	}, true, nil
@@ -459,6 +460,40 @@ func (u *userImpl) GetUserSpaceList(ctx context.Context, userID int64) (spaces [
 		}
 		urls[uri] = url
 	}
+	return slices.Transform(spaceModels, func(sm *model.Space) *userEntity.Space {
+		return spacePo2Do(sm, urls[sm.IconURI])
+	}), nil
+}
+
+func (u *userImpl) GetUserSpaceBySpaceID(ctx context.Context, spaceID []int64) (spaces []*userEntity.Space, err error) {
+	if len(spaceID) == 0 {
+		return nil, errorx.New(errno.ErrUserInvalidParamCode, errorx.KV("msg", "spaceID cannot be empty"))
+	}
+
+	spaceModels, err := u.SpaceRepo.GetSpaceByIDs(ctx, spaceID)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(spaceModels) == 0 {
+		return []*userEntity.Space{}, nil
+	}
+
+	uris := slices.ToMap(spaceModels, func(sm *model.Space) (string, bool) {
+		return sm.IconURI, false
+	})
+
+	urls := make(map[string]string, len(uris))
+	for uri := range uris {
+		if uri != "" {
+			url, err := u.IconOSS.GetObjectUrl(ctx, uri)
+			if err != nil {
+				return nil, err
+			}
+			urls[uri] = url
+		}
+	}
+
 	return slices.Transform(spaceModels, func(sm *model.Space) *userEntity.Space {
 		return spacePo2Do(sm, urls[sm.IconURI])
 	}), nil

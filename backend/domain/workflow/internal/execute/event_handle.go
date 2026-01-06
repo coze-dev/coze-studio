@@ -27,7 +27,7 @@ import (
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/schema"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -35,6 +35,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ternary"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
@@ -113,7 +114,7 @@ func handleEvent(ctx context.Context, event *Event, repo workflow.Repository,
 
 		if parentNodeID != nil { // root workflow execution has already been created
 			var logID string
-			logID, _ = ctx.Value("log-id").(string)
+			logID, _ = ctx.Value(consts.CtxLogIDKey).(string)
 
 			wfExec := &entity.WorkflowExecution{
 				ID:                  exeID,

@@ -25,11 +25,11 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -70,6 +70,25 @@ func (dao *MessageDAO) Create(ctx context.Context, msg *entity.Message) (*entity
 	}
 
 	return dao.messagePO2DO(poData), nil
+}
+
+func (dao *MessageDAO) BatchCreate(ctx context.Context, msg []*entity.Message) ([]*entity.Message, error) {
+	poList := make([]*model.Message, 0, len(msg))
+	for _, m := range msg {
+		po, err := dao.messageDO2PO(ctx, m)
+		if err != nil {
+			return nil, err
+		}
+		poList = append(poList, po)
+	}
+
+	do := dao.query.Message.WithContext(ctx).Debug()
+	cErr := do.CreateInBatches(poList, len(poList))
+	if cErr != nil {
+		return nil, cErr
+	}
+
+	return dao.batchMessagePO2DO(poList), nil
 }
 
 func (dao *MessageDAO) List(ctx context.Context, listMeta *entity.ListMeta) ([]*entity.Message, bool, error) {

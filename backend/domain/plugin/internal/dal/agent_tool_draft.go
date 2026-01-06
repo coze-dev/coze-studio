@@ -24,10 +24,12 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -54,6 +56,8 @@ func (a agentToolDraftPO) ToDO() *entity.ToolInfo {
 		Method:    &a.Method,
 		SubURL:    &a.SubURL,
 		Operation: a.Operation,
+		Source:    ptr.Of(bot_common.PluginFrom(a.Source)),
+		AgentID:   ptr.Of(a.AgentID),
 	}
 }
 
@@ -63,6 +67,8 @@ func (at *AgentToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []fi
 	}
 
 	table := at.query.AgentToolDraft
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
 	if opt.ToolID {
 		selected = append(selected, table.ToolID)
@@ -206,9 +212,9 @@ func (at *AgentToolDraftDAO) batchCreateWithTX(ctx context.Context, tx *query.Qu
 
 	tls := make([]*model.AgentToolDraft, 0, len(tools))
 	for _, tl := range tools {
-		id, err := at.idGen.GenID(ctx)
-		if err != nil {
-			return err
+		id, gErr := at.idGen.GenID(ctx)
+		if gErr != nil {
+			return gErr
 		}
 		m := &model.AgentToolDraft{
 			ID:          id,
@@ -220,6 +226,9 @@ func (at *AgentToolDraftDAO) batchCreateWithTX(ctx context.Context, tx *query.Qu
 			ToolVersion: tl.GetVersion(),
 			ToolName:    tl.GetName(),
 			Operation:   tl.Operation,
+		}
+		if tl.Source != nil {
+			m.Source = int32(ptr.From(tl.Source))
 		}
 		tls = append(tls, m)
 	}

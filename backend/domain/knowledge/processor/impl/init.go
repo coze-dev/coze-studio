@@ -19,15 +19,16 @@ package impl
 import (
 	"context"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/processor"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/repository"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/parser"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/document/parser"
+	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
 type DocProcessorConfig struct {
@@ -68,7 +69,7 @@ func NewDocProcessor(ctx context.Context, config *DocProcessorConfig) (p process
 		p = &customDocProcessor{
 			baseDocProcessor: *base,
 		}
-		if config.Documents[0].Type == knowledge.DocumentTypeTable {
+		if config.Documents[0].Type == model.DocumentTypeTable {
 			p = &customTableProcessor{
 				baseDocProcessor: *base,
 			}

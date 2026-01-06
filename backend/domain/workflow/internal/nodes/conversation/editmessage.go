@@ -22,11 +22,9 @@ import (
 	"fmt"
 	"strconv"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
-	"github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -121,7 +119,7 @@ func (e *EditMessage) Invoke(ctx context.Context, input map[string]any) (map[str
 		return successMap, err
 	}
 
-	msg, err := message.DefaultSVC().GetMessageByID(ctx, messageID)
+	msg, err := crossmessage.DefaultSVC().GetMessageByID(ctx, messageID)
 	if err != nil {
 		return nil, err
 	}

@@ -19,7 +19,7 @@ package knowledge
 import (
 	"fmt"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 )
 
 func convertParsingType(p string) (knowledge.ParseMode, error) {

@@ -25,7 +25,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/internal/dal"
 	"github.com/coze-dev/coze-studio/backend/domain/openauth/openapiauth/internal/dal/model"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )

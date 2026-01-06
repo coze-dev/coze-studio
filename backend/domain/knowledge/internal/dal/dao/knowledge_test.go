@@ -27,7 +27,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/orm"
+	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/orm"
 )
 
 func TestKnowledgeSuite(t *testing.T) {

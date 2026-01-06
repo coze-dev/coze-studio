@@ -117,3 +117,66 @@ enum ColumnType {
     Boolean = 5                 // bool
     Image   = 6                 // picture
 }
+
+struct PhotoInfo { // Picture Knowledge Base One picture corresponds to one document
+    1:  string             name  // image name
+    2:  i64                document_id(agw.js_conv='str', api.js_conv='true') // Document ID
+    3:  string             url             // image link
+    4:  string             caption         // picture description information
+    5:  i32                create_time     // create_time
+    6:  i32                update_time     // update time
+    7:  i64                creator_id (agw.js_conv="str", api.js_conv='true', agw.key="creator_id", api.body="creator_id")      // creator_id
+    8:  string             type            // Image suffix jpg, png, etc
+    9: i32                size            // image size
+    10: DocumentStatus status       // status
+    11: DocumentSource source_type     // source
+}
+
+struct DocumentProgress {
+    1: i64               document_id(agw.js_conv="str", api.js_conv='true')
+    2: i32                  progress // Knowledge Base Progress Percentage
+    3: DocumentStatus status
+    4: optional string     status_descript  // A detailed description of the status; if the slice fails, a failure message is returned
+    5: string document_name
+    6: optional i64     remaining_time // Remaining time in seconds
+    7: optional i64     size
+    8: optional string  type
+    9: optional string  url
+}
+
+enum DatasetStatus {
+    DatasetProcessing = 0
+    DatasetReady      = 1
+    DatasetDeleted    = 2  // soft delete
+    DatasetForbid     = 3  // Do not enable
+    DatasetFailed      = 9
+}
+
+
+struct Dataset {
+    1:  i64 dataset_id(agw.js_conv="str", api.js_conv="true")
+    2:  string        name                 // Dataset name
+    3:  list<string>  file_list            // file list
+    4:  i64        all_file_size (agw.js_conv="str", api.js_conv="true") // All file sizes
+    5:  i32           bot_used_count       // Bot count
+    6:  DatasetStatus status
+    7:  list<string>  processing_file_list // List of file names in process, compatible with old logic
+    8:  i32           update_time          // Update time, second timestamp
+    9:  string        icon_url
+    10: string        description
+    11: string        icon_uri
+    12: bool          can_edit             // Can it be edited?
+    13: i32           create_time          // create_time, second timestamp
+    14: i64        creator_id  (agw.js_conv="str", api.js_conv="true")         // creator ID
+    15: i64        space_id   (agw.js_conv="str", api.js_conv="true")          // Space ID
+    18: list<string>  failed_file_list (agw.js_conv="str") // Processing failed files
+
+    19: FormatType  format_type
+    20: i32                slice_count        // number of segments
+    21: i32                hit_count          // hit count
+    22: i32                doc_count          // number of documents
+    23: ChunkStrategy  chunk_strategy  // slicing rule
+
+    24: list<string>     processing_file_id_list  // List of file IDs in process
+    25: string        project_id          //project ID
+}

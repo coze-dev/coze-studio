@@ -9,7 +9,7 @@ neverBuiltDependencies:
   - canvas
 
 overrides:
-  '@coze-arch/coze-design': 0.0.6-alpha.eec92c
+  '@coze-arch/coze-design': 0.0.7-alpha.985c0d
   inversify: 6.0.2
   sass@1.74.1>immutable: 3.8.2
   web-streams-polyfill: 3.3.2
@@ -61,8 +61,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/arch/bot-md-box-adapter
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../packages/arch/foundation-sdk
@@ -1144,8 +1144,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -1408,8 +1408,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -1508,8 +1508,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -1787,8 +1787,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -2028,8 +2028,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -2215,8 +2215,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -2427,8 +2427,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -2536,8 +2536,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -2630,8 +2630,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -2940,8 +2940,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -3027,8 +3027,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3400,8 +3400,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3581,8 +3581,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3721,8 +3721,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -3875,8 +3875,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4098,8 +4098,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4279,8 +4279,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4457,8 +4457,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4539,8 +4539,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-flags
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -4676,8 +4676,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -4912,8 +4912,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -5178,8 +5178,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5324,14 +5324,20 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
       '@coze-common/assets':
         specifier: workspace:*
         version: link:../../common/assets
+      '@coze-studio/api-schema':
+        specifier: workspace:*
+        version: link:../../arch/api-schema
+      ahooks:
+        specifier: 3.7.8
+        version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
@@ -5418,8 +5424,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5591,8 +5597,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5700,8 +5706,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -5912,8 +5918,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/fetch-stream':
         specifier: workspace:*
         version: link:../../arch/fetch-stream
@@ -6096,8 +6102,8 @@ importers:
         specifier: workspace:*
         version: link:../space-bot
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -6235,8 +6241,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/fetch-stream':
         specifier: workspace:*
         version: link:../../arch/fetch-stream
@@ -6557,8 +6563,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -6826,8 +6832,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -7114,8 +7120,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -7208,8 +7214,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -8402,8 +8408,8 @@ importers:
   ../../../frontend/packages/arch/foundation-sdk:
     devDependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../config/eslint-config
@@ -8487,8 +8493,8 @@ importers:
   ../../../frontend/packages/arch/i18n:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-studio/studio-i18n-resource-adapter':
         specifier: workspace:*
         version: link:../resources/studio-i18n-resource
@@ -9235,8 +9241,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -9414,8 +9420,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../../config/eslint-config
@@ -9510,8 +9516,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-common/chat-area-utils':
         specifier: workspace:*
         version: link:../utils
@@ -9861,8 +9867,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-typings
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -10136,8 +10142,8 @@ importers:
   ../../../frontend/packages/common/chat-area/chat-workflow-render:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -10378,8 +10384,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -10520,8 +10526,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -10617,8 +10623,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-common/chat-area':
         specifier: workspace:*
         version: link:../chat-area
@@ -10879,8 +10885,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -11237,8 +11243,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
@@ -11368,8 +11374,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -11483,8 +11489,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -11740,9 +11746,15 @@ importers:
       '@coze-arch/bot-semi':
         specifier: workspace:*
         version: link:../../components/bot-semi
+      '@coze-arch/bot-tea':
+        specifier: workspace:*
+        version: link:../../arch/bot-tea
+      '@coze-arch/bot-utils':
+        specifier: workspace:*
+        version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -11770,9 +11782,24 @@ importers:
       ahooks:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
+      axios:
+        specifier: ^1.4.0
+        version: 1.10.0(debug@4.3.3)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
+      dayjs:
+        specifier: ^1.11.7
+        version: 1.11.13
+      lodash-es:
+        specifier: ^4.17.21
+        version: 4.17.21
+      query-string:
+        specifier: ^8.1.0
+        version: 8.2.0
+      zustand:
+        specifier: ^4.4.7
+        version: 4.5.7(@types/react@18.2.37)(immer@10.1.1)(react@18.2.0)
     devDependencies:
       '@coze-arch/bot-env':
         specifier: workspace:*
@@ -11936,30 +11963,60 @@ importers:
 
   ../../../frontend/packages/community/explore:
     dependencies:
+      '@ahooksjs/use-url-state':
+        specifier: ^3.5.1
+        version: 3.5.1(react-router@6.30.1)(react@18.2.0)
       '@coze-arch/bot-api':
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/bot-hooks':
         specifier: workspace:*
         version: link:../../arch/bot-hooks
+      '@coze-arch/bot-icons':
+        specifier: workspace:*
+        version: link:../../components/bot-icons
+      '@coze-arch/bot-semi':
+        specifier: workspace:*
+        version: link:../../components/bot-semi
+      '@coze-arch/bot-studio-store':
+        specifier: workspace:*
+        version: link:../../arch/bot-store
+      '@coze-arch/bot-tea':
+        specifier: workspace:*
+        version: link:../../arch/bot-tea
+      '@coze-arch/bot-utils':
+        specifier: workspace:*
+        version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
+      '@coze-arch/responsive-kit':
+        specifier: workspace:*
+        version: link:../../arch/responsive-kit
       '@coze-community/components':
         specifier: workspace:*
         version: link:../component
       '@coze-studio/api-schema':
         specifier: workspace:*
         version: link:../../arch/api-schema
+      '@coze-studio/components':
+        specifier: workspace:*
+        version: link:../../studio/components
+      '@coze-studio/entity-adapter':
+        specifier: workspace:*
+        version: link:../../studio/entity-adapter
       ahooks:
         specifier: 3.7.8
         version: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
       classnames:
         specifier: ^2.3.2
         version: 2.5.1
+      query-string:
+        specifier: ^8.1.0
+        version: 8.2.0
       react-router-dom:
         specifier: ^6.11.1
         version: 6.30.1(react-dom@18.2.0)(react@18.2.0)
@@ -12363,8 +12420,8 @@ importers:
         specifier: workspace:*
         version: link:../bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -12463,8 +12520,8 @@ importers:
         specifier: workspace:*
         version: link:../bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -12639,8 +12696,8 @@ importers:
         specifier: workspace:*
         version: link:../bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -12967,8 +13024,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -13079,8 +13136,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../../arch/i18n
@@ -13224,8 +13281,8 @@ importers:
         specifier: workspace:*
         version: link:../../../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../../arch/i18n
@@ -13595,8 +13652,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -13767,8 +13824,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -13870,8 +13927,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14094,8 +14151,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -14269,8 +14326,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/pdfjs-shadow':
         specifier: workspace:*
         version: link:../../../arch/pdfjs-shadow
@@ -14345,8 +14402,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14632,8 +14689,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14717,8 +14774,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -14835,8 +14892,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -15083,8 +15140,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -15243,8 +15300,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -15383,8 +15440,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-typings
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../../config/eslint-config
@@ -15458,8 +15515,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -15894,8 +15951,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -15985,8 +16042,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -16070,8 +16127,8 @@ importers:
   ../../../frontend/packages/foundation/browser-upgrade-banner:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16219,8 +16276,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-foundation/account-adapter':
         specifier: workspace:*
         version: link:../account-adapter
@@ -16268,8 +16325,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16362,8 +16419,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -16553,8 +16610,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16899,8 +16956,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-hooks
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -16981,8 +17038,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17164,8 +17221,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-icons
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17258,8 +17315,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17385,8 +17442,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17443,8 +17500,8 @@ importers:
   ../../../frontend/packages/project-ide/biz-plugin-registry-adapter:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-project-ide/biz-plugin':
         specifier: workspace:*
         version: link:../biz-plugin
@@ -17519,8 +17576,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-typings
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17738,8 +17795,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -17832,8 +17889,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/fetch-stream':
         specifier: workspace:*
         version: link:../../arch/fetch-stream
@@ -18202,8 +18259,8 @@ importers:
   ../../../frontend/packages/studio/bot-utils:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -18381,8 +18438,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -18541,8 +18598,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-store
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -18934,8 +18991,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/eslint-config':
         specifier: workspace:*
         version: link:../../../../config/eslint-config
@@ -19078,8 +19135,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -19217,8 +19274,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -19500,8 +19557,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -19582,8 +19639,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -20114,8 +20171,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20360,8 +20417,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-tea
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20463,8 +20520,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20747,8 +20804,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -20865,8 +20922,8 @@ importers:
         specifier: workspace:*
         version: link:../../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../../arch/foundation-sdk
@@ -21074,8 +21131,8 @@ importers:
         specifier: ^6.34.1
         version: 6.37.2
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -21202,8 +21259,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-hooks
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -21517,8 +21574,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/foundation-sdk':
         specifier: workspace:*
         version: link:../../arch/foundation-sdk
@@ -21716,8 +21773,8 @@ importers:
   ../../../frontend/packages/workflow/fabric-canvas:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -21846,8 +21903,8 @@ importers:
         specifier: workspace:*
         version: link:../../components/bot-semi
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -22022,8 +22079,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -22230,8 +22287,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/hooks':
         specifier: workspace:*
         version: link:../../arch/hooks
@@ -22690,8 +22747,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-flags
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/report-tti':
         specifier: workspace:*
         version: link:../../arch/report-tti
@@ -22830,8 +22887,8 @@ importers:
   ../../../frontend/packages/workflow/setters:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -22987,8 +23044,8 @@ importers:
         specifier: workspace:*
         version: link:../../arch/bot-utils
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../arch/i18n
@@ -23123,8 +23180,8 @@ importers:
   ../../../frontend/packages/workflow/test-run-next/form:
     dependencies:
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -23242,8 +23299,8 @@ importers:
         specifier: ^6.34.1
         version: 6.37.2
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-editor/editor':
         specifier: 0.1.0-alpha.dd871b
         version: 0.1.0-alpha.dd871b(@codemirror/autocomplete@6.18.6)(@codemirror/language@6.11.1)(@codemirror/merge@6.10.2)(@codemirror/state@6.5.2)(@codemirror/view@6.37.2)(@lezer/common@1.2.3)(@types/react@18.2.37)(react-dom@18.2.0)(react@18.2.0)(typescript@5.8.2)(vue@3.5.16)
@@ -23300,8 +23357,8 @@ importers:
         specifier: workspace:*
         version: link:../../../arch/bot-api
       '@coze-arch/coze-design':
-        specifier: 0.0.6-alpha.eec92c
-        version: 0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
+        specifier: 0.0.7-alpha.985c0d
+        version: 0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       '@coze-arch/i18n':
         specifier: workspace:*
         version: link:../../../arch/i18n
@@ -23516,6 +23573,19 @@ packages:
       ua-parser-js: 0.7.40
     transitivePeerDependencies:
       - debug
+    dev: false
+
+  /@ahooksjs/use-url-state@3.5.1(react-router@6.30.1)(react@18.2.0):
+    resolution: {integrity: sha512-XTrOLZKOAXahDD1Evg+aSN6qNzoh/FuvRKbUtB/0RhYvz57tyXRPbED0KXK4h2C3ZyHUKBJcVCSDcd6EsTyMyQ==}
+    peerDependencies:
+      react: 18.2.0
+      react-router: ^5.0.0 || ^6.0.0
+    dependencies:
+      ahooks: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
+      query-string: 6.14.1
+      react: 18.2.0
+      react-router: 6.30.1(react@18.2.0)
+      tslib: 2.8.1
     dev: false
 
   /@alloc/quick-lru@5.2.0:
@@ -25685,29 +25755,29 @@ packages:
     dev: true
     optional: true
 
-  /@coze-arch/arco-icon@0.0.6-alpha.eec92c(react@18.2.0):
-    resolution: {integrity: sha512-BzQdOtawSp92Uyg4LFvJSyawaFlJ4xliKvwlzbfMyK1hnFDpLLvx2UVP08o5+UrFBFllUtosErYolnNp+qF9dA==}
+  /@coze-arch/arco-icon@0.0.6-alpha.985c0d(react@18.2.0):
+    resolution: {integrity: sha512-DtHARfICp7dkdbUBqf6dyhVuoSvAQxm59a0MimCyJ8QnyJap97mqGDgFZ/yvOkeCfnF32rKqaFsYgG0YIx1NbA==}
     peerDependencies:
       react: 18.2.0
     dependencies:
       react: 18.2.0
 
-  /@coze-arch/arco-illustration@0.0.12-alpha.eec92c(react@18.2.0):
-    resolution: {integrity: sha512-mTJQ9sHC/MqYxcpkmu/mYkoPOjiA3ICZ+37vysi9FlY0yXsO7aZ0aWceF4ew2vlYIPfrqJ/YTAj5HhGy64vevw==}
+  /@coze-arch/arco-illustration@0.0.12-alpha.985c0d(react@18.2.0):
+    resolution: {integrity: sha512-Z1GsMK8kJhLzlssHBbmHFqF16PDLtva+wTNsDe1nBguYgxJP+fFD2M5W862A+tPR1B4W7OZWaq1HnCKY2NuuXw==}
     peerDependencies:
       react: 18.2.0
     dependencies:
       react: 18.2.0
 
-  /@coze-arch/coze-design@0.0.6-alpha.eec92c(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0):
-    resolution: {integrity: sha512-NS7rSPmTuFx+9XKm1eujh7CxOK7DSmD861rLZDDuXndTRrnub8yYlR6nbcLqjKwiZQrRgLr107vXnC51SxS9Qg==}
+  /@coze-arch/coze-design@0.0.7-alpha.985c0d(@types/react@18.2.37)(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-PyFKDHlNx0aNuzXu+XGtscJu5kTTVsdRVLcP1KvYNBDAfxz/tDpw6xisVsaR28kHY/D/OIinJ0vMvuinaHnExQ==}
     peerDependencies:
       react: 18.2.0
       react-dom: 18.2.0
     dependencies:
-      '@coze-arch/arco-icon': 0.0.6-alpha.eec92c(react@18.2.0)
-      '@coze-arch/arco-illustration': 0.0.12-alpha.eec92c(react@18.2.0)
-      '@coze-arch/semi-theme-hand01': 0.0.6-alpha.eec92c
+      '@coze-arch/arco-icon': 0.0.6-alpha.985c0d(react@18.2.0)
+      '@coze-arch/arco-illustration': 0.0.12-alpha.985c0d(react@18.2.0)
+      '@coze-arch/semi-theme-hand01': 0.0.6-alpha.985c0d
       '@douyinfe/semi-ui': 2.72.3(acorn@8.15.0)(react-dom@18.2.0)(react@18.2.0)
       ahooks: 3.7.8(patch_hash=sa4ddrxdk2yhjzudeck6u5ww3i)(react@18.2.0)
       class-variance-authority: 0.7.1
@@ -25734,8 +25804,8 @@ packages:
   /@coze-arch/semi-theme-hand01@0.0.6-alpha.346d77:
     resolution: {integrity: sha512-64YfAtHYVpssHXA4YOVu40CVUpZ+1JqESGA+esVI0lvFoNfdxF8WY5GkuIz5Xlj/73IKfgwIrxUHxM4EosAfMA==}
 
-  /@coze-arch/semi-theme-hand01@0.0.6-alpha.eec92c:
-    resolution: {integrity: sha512-mamZcgMbMHxr34Vp4IKqa0QESrW8OUfUJSze8tqefiUgIOvM0b1OsBvClQHCvkwByI60rENl1p6ff9FOhKyk7w==}
+  /@coze-arch/semi-theme-hand01@0.0.6-alpha.985c0d:
+    resolution: {integrity: sha512-69y9cz4PFQO7kkVIVAylk2cCyCSH3GKSLft6Y7h6QT483/6+CYeWCR8aLCuDZz/DjXOLR3uLqByXC8IqyuVu1g==}
 
   /@coze-editor/code-language-json@0.1.0-alpha.dd871b(@codemirror/language@6.11.1)(@codemirror/state@6.5.2)(@codemirror/view@6.37.2)(@coze-editor/code-language-shared@0.1.0-alpha.dd871b):
     resolution: {integrity: sha512-wMg/4HMZNKcUFtGTBhZHVb2PyZzGWwIjF7jXpBkNc2y+lKyINblpMdWGhyaovI/JVHxFUTaUysSiwuGoI55Gug==}
@@ -42252,6 +42322,11 @@ packages:
     dependencies:
       to-regex-range: 5.0.1
 
+  /filter-obj@1.1.0:
+    resolution: {integrity: sha512-8rXg1ZnX7xzy2NGDVkBVaAy+lSlPNwad13BtgSlLuxfIslyt5Vg64U7tFcCt4WS1R0hvtnQybT/IyCkGZ3DpXQ==}
+    engines: {node: '>=0.10.0'}
+    dev: false
+
   /filter-obj@5.1.0:
     resolution: {integrity: sha512-qWeTREPoT7I0bifpPUXtxkZJ1XJzxWtfoWWkdVGqa+eCr3SHW/Ocp89o8vLvbUuQnadybJpjOKu4V+RwO6sGng==}
     engines: {node: '>=14.16'}
@@ -49041,6 +49116,16 @@ packages:
     engines: {node: '>=0.6'}
     dev: false
 
+  /query-string@6.14.1:
+    resolution: {integrity: sha512-XDxAeVmpfu1/6IjyT/gXHOl+S0vQ9owggJ30hhWKdHAsNPOcasn5o9BW0eejZqL2e4vMjhAxoW3jVHcD6mbcYw==}
+    engines: {node: '>=6'}
+    dependencies:
+      decode-uri-component: 0.2.2
+      filter-obj: 1.1.0
+      split-on-first: 1.1.0
+      strict-uri-encode: 2.0.0
+    dev: false
+
   /query-string@8.2.0:
     resolution: {integrity: sha512-tUZIw8J0CawM5wyGBiDOAp7ObdRQh4uBor/fUR9ZjmbZVvw95OD9If4w3MQxr99rg0DJZ/9CIORcpEqU5hQG7g==}
     engines: {node: '>=14.16'}
@@ -51856,6 +51941,11 @@ packages:
       wicked-good-xpath: 1.3.0
     dev: false
 
+  /split-on-first@1.1.0:
+    resolution: {integrity: sha512-43ZssAJaMusuKWL8sKUBQXHWOpq8d6CfN/u1p4gUzfJkM05C8rxTmYrkIPTXapZpORA6LkkzcUulJ8FqA7Uudw==}
+    engines: {node: '>=6'}
+    dev: false
+
   /split-on-first@3.0.0:
     resolution: {integrity: sha512-qxQJTx2ryR0Dw0ITYyekNQWpz6f8dGd7vffGNflQQ3Iqj9NJ6qiZ7ELpZsJ/QBhIVAiDfXdag3+Gp8RvWa62AA==}
     engines: {node: '>=12'}
@@ -52199,6 +52289,11 @@ packages:
 
   /stream-source@0.3.5:
     resolution: {integrity: sha512-ZuEDP9sgjiAwUVoDModftG0JtYiLUV8K4ljYD1VyUMRWtbVf92474o4kuuul43iZ8t/hRuiDAx1dIJSvirrK/g==}
+    dev: false
+
+  /strict-uri-encode@2.0.0:
+    resolution: {integrity: sha512-QwiXZgpRcKkhTj2Scnn++4PKtWsH0kpzZ62L2R6c/LUVYv7hVnZqcg2+sMuT6R7Jusu1vviK/MFsu6kNJfWlEQ==}
+    engines: {node: '>=4'}
     dev: false
 
   /string-hash@1.1.3:

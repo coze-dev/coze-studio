@@ -19,6 +19,7 @@ package intentdetector
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
@@ -77,10 +78,40 @@ func (t *historyChatTemplate) Format(ctx context.Context, vs map[string]any, opt
 
 	finalMessages := make([]*schema.Message, 0, len(baseMessages)+len(historyMessages))
 	finalMessages = append(finalMessages, baseMessages[0]) // System prompt
-	finalMessages = append(finalMessages, historyMessages...)
+	finalMessages = append(finalMessages, handleHistoryMessages(historyMessages)...)
 	if len(baseMessages) > 1 {
 		finalMessages = append(finalMessages, baseMessages[1:]...) // User prompt and any others
 	}
 
 	return finalMessages, nil
+}
+
+func handleHistoryMessages(historyMessages []*schema.Message) []*schema.Message {
+	for _, msg := range historyMessages {
+		var sb strings.Builder
+		if msg.Content != "" {
+			sb.WriteString(msg.Content)
+		}
+
+		for _, part := range msg.MultiContent {
+			if sb.Len() > 0 {
+				sb.WriteString("\n")
+			}
+			switch part.Type {
+			case schema.ChatMessagePartTypeText:
+				sb.WriteString(part.Text)
+			case schema.ChatMessagePartTypeImageURL:
+				sb.WriteString(part.ImageURL.URL)
+			case schema.ChatMessagePartTypeAudioURL:
+				sb.WriteString(part.AudioURL.URL)
+			case schema.ChatMessagePartTypeVideoURL:
+				sb.WriteString(part.VideoURL.URL)
+			case schema.ChatMessagePartTypeFileURL:
+				sb.WriteString(part.FileURL.URL)
+			}
+		}
+		msg.Content = sb.String()
+		msg.MultiContent = nil
+	}
+	return historyMessages
 }

@@ -25,13 +25,14 @@ import (
 	"gorm.io/gen/field"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
@@ -60,7 +61,7 @@ func (t toolDraftPO) ToDO() *entity.ToolInfo {
 		Method:          ptr.Of(t.Method),
 		Operation:       t.Operation,
 		DebugStatus:     ptr.Of(common.APIDebugStatus(t.DebugStatus)),
-		ActivatedStatus: ptr.Of(plugin.ActivatedStatus(t.ActivatedStatus)),
+		ActivatedStatus: ptr.Of(consts.ActivatedStatus(t.ActivatedStatus)),
 	}
 }
 
@@ -70,10 +71,9 @@ func (t *ToolDraftDAO) getSelected(opt *ToolSelectedOption) (selected []field.Ex
 	}
 
 	table := t.query.ToolDraft
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
-	if opt.ToolID {
-		selected = append(selected, table.ID)
-	}
 	if opt.ActivatedStatus {
 		selected = append(selected, table.ActivatedStatus)
 	}
@@ -174,7 +174,7 @@ func (t *ToolDraftDAO) MGet(ctx context.Context, toolIDs []int64, opt *ToolSelec
 	return tools, nil
 }
 
-func (t *ToolDraftDAO) GetWithAPI(ctx context.Context, pluginID int64, api entity.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
+func (t *ToolDraftDAO) GetWithAPI(ctx context.Context, pluginID int64, api dto.UniqueToolAPI) (tool *entity.ToolInfo, exist bool, err error) {
 	table := t.query.ToolDraft
 	tl, err := table.WithContext(ctx).
 		Where(
@@ -195,8 +195,8 @@ func (t *ToolDraftDAO) GetWithAPI(ctx context.Context, pluginID int64, api entit
 	return tool, true, nil
 }
 
-func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []entity.UniqueToolAPI, opt *ToolSelectedOption) (tools map[entity.UniqueToolAPI]*entity.ToolInfo, err error) {
-	tools = make(map[entity.UniqueToolAPI]*entity.ToolInfo, len(apis))
+func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []dto.UniqueToolAPI, opt *ToolSelectedOption) (tools map[dto.UniqueToolAPI]*entity.ToolInfo, err error) {
+	tools = make(map[dto.UniqueToolAPI]*entity.ToolInfo, len(apis))
 
 	table := t.query.ToolDraft
 	chunks := slices.Chunks(apis, 10)
@@ -226,7 +226,7 @@ func (t *ToolDraftDAO) MGetWithAPIs(ctx context.Context, pluginID int64, apis []
 			return nil, err
 		}
 		for _, tl := range tls {
-			api := entity.UniqueToolAPI{
+			api := dto.UniqueToolAPI{
 				SubURL: tl.SubURL,
 				Method: tl.Method,
 			}
@@ -299,12 +299,12 @@ func (t *ToolDraftDAO) Update(ctx context.Context, tool *entity.ToolInfo) (err e
 	return nil
 }
 
-func (t *ToolDraftDAO) List(ctx context.Context, pluginID int64, pageInfo entity.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
+func (t *ToolDraftDAO) List(ctx context.Context, pluginID int64, pageInfo dto.PageInfo) (tools []*entity.ToolInfo, total int64, err error) {
 	if pageInfo.SortBy == nil || pageInfo.OrderByACS == nil {
 		return nil, 0, fmt.Errorf("sortBy or orderByACS is empty")
 	}
 
-	if *pageInfo.SortBy != entity.SortByCreatedAt {
+	if *pageInfo.SortBy != dto.SortByCreatedAt {
 		return nil, 0, fmt.Errorf("invalid sortBy '%v'", *pageInfo.SortBy)
 	}
 
@@ -359,9 +359,9 @@ func (t *ToolDraftDAO) BatchCreateWithTX(ctx context.Context, tx *query.QueryTx,
 	tls := make([]*model.ToolDraft, 0, len(tools))
 
 	for _, tool := range tools {
-		id, err := t.genToolID(ctx)
-		if err != nil {
-			return nil, err
+		id, mErr := t.genToolID(ctx)
+		if mErr != nil {
+			return nil, mErr
 		}
 
 		toolIDs = append(toolIDs, id)

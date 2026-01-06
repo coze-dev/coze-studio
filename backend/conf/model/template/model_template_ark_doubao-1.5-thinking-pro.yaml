@@ -116,6 +116,7 @@ meta:
         top_k: 0
         stop: []
         enable_thinking: true
+        enable_base64_url: false
         ark:
             region: ""
             access_key: ""

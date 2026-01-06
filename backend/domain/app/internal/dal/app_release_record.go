@@ -28,7 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/app/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 
@@ -72,10 +72,9 @@ func (r *APPReleaseRecordDAO) getSelected(opt *APPSelectedOption) (selected []fi
 	}
 
 	table := r.query.AppReleaseRecord
+	// Always include ID, it may be used as cursor in pagination loops
+	selected = append(selected, table.ID)
 
-	if opt.PublishRecordID {
-		selected = append(selected, table.ID)
-	}
 	if opt.APPID {
 		selected = append(selected, table.AppID)
 	}

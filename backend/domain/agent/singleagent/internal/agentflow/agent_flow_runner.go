@@ -20,21 +20,21 @@ import (
 	"context"
 	"errors"
 	"io"
-	"slices"
 
 	"github.com/google/uuid"
 
 	"github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/contract/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	crossworkflow "github.com/coze-dev/coze-studio/backend/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/safego"
+	"github.com/coze-dev/coze-studio/backend/pkg/urltobase64url"
 )
 
 type AgentState struct {
@@ -202,24 +202,28 @@ func (r *AgentRunner) preHandlerInput(input *schema.Message) *schema.Message {
 			if !r.isSupportImage() {
 				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
+				v.ImageURL = transImageURLToBase64(v.ImageURL, r.enableLocalFileToLLMWithBase64())
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeFileURL:
 			if !r.isSupportFile() {
 				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
+				v.FileURL = transFileURLToBase64(v.FileURL, r.enableLocalFileToLLMWithBase64())
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeAudioURL:
 			if !r.isSupportAudio() {
 				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
+				v.AudioURL = transAudioURLToBase64(v.AudioURL, r.enableLocalFileToLLMWithBase64())
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeVideoURL:
 			if !r.isSupportVideo() {
 				unSupportMultiPart = append(unSupportMultiPart, v)
 			} else {
+				v.VideoURL = transVideoURLToBase64(v.VideoURL, r.enableLocalFileToLLMWithBase64())
 				multiContent = append(multiContent, v)
 			}
 		case schema.ChatMessagePartTypeText:
@@ -280,17 +284,76 @@ func (r *AgentRunner) preHandlerHistory(history []*schema.Message) []*schema.Mes
 }
 
 func (r *AgentRunner) isSupportMultiContent() bool {
-	return len(r.modelInfo.Meta.Capability.InputModal) > 1
+	return r.modelInfo.Capability.GetSupportMultiModal()
 }
 func (r *AgentRunner) isSupportImage() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalImage)
+	return r.modelInfo.Capability.GetImageUnderstanding()
 }
 func (r *AgentRunner) isSupportFile() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalFile)
+	return false
 }
 func (r *AgentRunner) isSupportAudio() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalAudio)
+	return r.modelInfo.Capability.GetAudioUnderstanding()
 }
 func (r *AgentRunner) isSupportVideo() bool {
-	return slices.Contains(r.modelInfo.Meta.Capability.InputModal, modelmgr.ModalVideo)
+	return r.modelInfo.Capability.GetVideoUnderstanding()
+}
+
+func (r *AgentRunner) enableLocalFileToLLMWithBase64() bool {
+	return r.modelInfo.EnableBase64URL
+}
+
+func transImageURLToBase64(imageUrl *schema.ChatMessageImageURL, enableBase64Url bool) *schema.ChatMessageImageURL {
+	if !enableBase64Url {
+		return imageUrl
+	}
+	fileData, err := urltobase64url.URLToBase64(imageUrl.URL)
+	if err != nil {
+		return imageUrl
+	}
+	imageUrl.URL = fileData.Base64Url
+	imageUrl.MIMEType = fileData.MimeType
+	return imageUrl
+}
+
+func transFileURLToBase64(fileUrl *schema.ChatMessageFileURL, enableBase64Url bool) *schema.ChatMessageFileURL {
+
+	if !enableBase64Url {
+		return fileUrl
+	}
+	fileData, err := urltobase64url.URLToBase64(fileUrl.URL)
+	if err != nil {
+		return fileUrl
+	}
+	fileUrl.URL = fileData.Base64Url
+	fileUrl.MIMEType = fileData.MimeType
+	return fileUrl
+}
+
+func transAudioURLToBase64(audioUrl *schema.ChatMessageAudioURL, enableBase64Url bool) *schema.ChatMessageAudioURL {
+
+	if !enableBase64Url {
+		return audioUrl
+	}
+	fileData, err := urltobase64url.URLToBase64(audioUrl.URL)
+	if err != nil {
+		return audioUrl
+	}
+	audioUrl.URL = fileData.Base64Url
+	audioUrl.MIMEType = fileData.MimeType
+	return audioUrl
+}
+
+func transVideoURLToBase64(videoUrl *schema.ChatMessageVideoURL, enableBase64Url bool) *schema.ChatMessageVideoURL {
+
+	if !enableBase64Url {
+		return videoUrl
+	}
+	fileData, err := urltobase64url.URLToBase64(videoUrl.URL)
+	if err != nil {
+		return videoUrl
+	}
+	videoUrl.URL = fileData.Base64Url
+	videoUrl.MIMEType = fileData.MimeType
+	return videoUrl
 }

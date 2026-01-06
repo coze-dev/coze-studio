@@ -16,6 +16,18 @@
 
 import * as marketplace_common from './marketplace_common';
 export { marketplace_common };
+export enum BotModType {
+  SingleAgent = 1,
+  MultiAgent = 2,
+}
+export enum Component {
+  UsePlugin = 1,
+  UseWorkFlow = 2,
+  UseKnowledge = 3,
+  UseVoice = 4,
+  UseCard = 5,
+  UseImageWorkflow = 6,
+}
 export enum ProductEntityType {
   Bot = 1,
   Plugin = 2,
@@ -45,6 +57,8 @@ export enum ProductEntityType {
   Common = 99,
   /** Special Topics (Compatible with previous designs) */
   Topic = 101,
+  /** Saas plugin,the plugins from coze saas */
+  SaasPlugin = 901,
 }
 export enum SortType {
   Heat = 1,

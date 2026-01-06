@@ -19,11 +19,11 @@ package entity
 import (
 	"github.com/xuri/excelize/v2"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/knowledge"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 )
 
-type Database = database.Database
+type Database = model.Database
 
 // DatabaseFilter Database filter criteria
 type DatabaseFilter struct {
@@ -52,7 +52,7 @@ type TableReaderMeta struct {
 	SheetId       int64
 	HeaderLineIdx int64
 	StartLineIdx  int64
-	ReaderMethod  database.TableReadDataMethod
+	ReaderMethod  model.TableReadDataMethod
 	ReadLineCnt   int64
 	Schema        []*knowledge.DocTableColumn
 }

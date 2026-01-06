@@ -24,8 +24,8 @@ import (
 	"github.com/bytedance/sonic"
 
 	"github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/es"
+	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
@@ -36,13 +36,14 @@ type resourceHandlerImpl struct {
 	esClient es.Client
 }
 
-var defaultResourceHandler *resourceHandlerImpl // deprecate
+var defaultResourceHandler *resourceHandlerImpl
 
 func NewResourceHandler(ctx context.Context, e es.Client) ConsumerHandler {
 	handler := &resourceHandlerImpl{
 		esClient: e,
 	}
 
+	defaultResourceHandler = handler
 	return handler
 }
 

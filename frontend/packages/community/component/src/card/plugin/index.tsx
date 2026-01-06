@@ -35,13 +35,23 @@ interface ProductInfo extends explore.ProductInfo {
 export type PluginCardProps = ProductInfo & {
   isInstalled?: boolean;
   isShowInstallButton?: boolean;
+  className?: string;
 };
 
 export const PluginCard: FC<PluginCardProps> = props => (
-  <CardContainer className={styles.plugin} shadowMode="default">
+  <CardContainer
+    className={cls(styles.plugin, props.className)}
+    shadowMode="default"
+    onClick={() => {
+      const url = props?.plugin_extra?.jump_saas_url;
+
+      if (url) {
+        window.open(url, '_blank');
+      }
+    }}
+  >
     <div className={styles['plugin-wrapper']}>
       <PluginCardBody {...props} />
-
       <Space
         className={cls(styles['btn-container'], {
           [styles['one-column-grid']]:

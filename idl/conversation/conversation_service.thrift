@@ -12,4 +12,5 @@ service ConversationService {
     conversation.ListConversationsApiResponse ListConversationsApi(1: conversation.ListConversationsApiRequest request) (api.get = '/v1/conversations', api.category = "conversation", api.tag="openapi", agw.preserve_base = "true")
     conversation.UpdateConversationApiResponse UpdateConversationApi(1: conversation.UpdateConversationApiRequest request) (api.put = '/v1/conversations/:conversation_id', api.category = "conversation", api.tag="openapi", agw.preserve_base = "true")
     conversation.DeleteConversationApiResponse DeleteConversationApi(1: conversation.DeleteConversationApiRequest req)(api.delete='/v1/conversations/:conversation_id', api.category="conversation", api.tag="openapi", agw.preserve_base="true")
+    conversation.RetrieveConversationApiResponse RetrieveConversationApi(1: conversation.RetrieveConversationApiRequest request) (api.get = '/v1/conversation/retrieve', api.category = "conversation", api.tag="openapi", agw.preserve_base = "true") //查询会话详情
 }

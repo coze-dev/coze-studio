@@ -24,8 +24,8 @@ import (
 	"github.com/bytedance/sonic"
 
 	"github.com/coze-dev/coze-studio/backend/domain/search/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/es"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/es"
+	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
@@ -38,13 +38,14 @@ type projectHandlerImpl struct {
 
 type ConsumerHandler = eventbus.ConsumerHandler
 
-var defaultProjectHandle *projectHandlerImpl // deprecate
+var defaultProjectHandle *projectHandlerImpl
 
 func NewProjectHandler(ctx context.Context, e es.Client) ConsumerHandler {
 	handler := &projectHandlerImpl{
 		esClient: e,
 	}
 
+	defaultProjectHandle = handler
 	return handler
 }
 

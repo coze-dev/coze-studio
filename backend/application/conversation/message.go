@@ -24,8 +24,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	singleAgentEntity "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
@@ -141,7 +141,7 @@ func (c *ConversationApplicationService) getCurrentConversation(ctx context.Cont
 		// create conversation
 		ccNew, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID:     agentID,
-			UserID:      userID,
+			CreatorID:   userID,
 			Scene:       scene,
 			ConnectorID: ptr.From(connectorID),
 		})
@@ -322,8 +322,24 @@ func (c *ConversationApplicationService) DeleteMessage(ctx context.Context, mr *
 
 func (c *ConversationApplicationService) BreakMessage(ctx context.Context, mr *message.BreakMessageRequest) (*message.BreakMessageResponse, error) {
 	resp := new(message.BreakMessageResponse)
+	messageInfo, err := c.MessageDomainSVC.GetByID(ctx, mr.GetAnswerMessageID())
+	if err != nil {
+		return resp, err
+	}
+	if messageInfo == nil {
+		return resp, errorx.New(errno.ErrConversationMessageNotFound)
+	}
 
-	err := c.MessageDomainSVC.Broken(ctx, &entity.BrokenMeta{
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if messageInfo.UserID != conv.Int64ToStr(*userID) {
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "permission denied"))
+	}
+
+	if messageInfo.ConversationID != mr.ConversationID {
+		return resp, errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "conversation not match"))
+	}
+
+	err = c.MessageDomainSVC.Broken(ctx, &entity.BrokenMeta{
 		ID:       *mr.AnswerMessageID,
 		Position: mr.BrokenPos,
 	})

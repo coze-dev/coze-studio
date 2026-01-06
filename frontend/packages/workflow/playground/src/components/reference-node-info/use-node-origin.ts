@@ -19,6 +19,7 @@ import { useMemo } from 'react';
 import { type FlowNodeEntity } from '@flowgram-adapter/free-layout-editor';
 import { WorkflowNodeData } from '@coze-workflow/nodes';
 import { type StandardNodeType } from '@coze-workflow/base';
+import { PluginFrom } from '@coze-arch/bot-api/playground_api';
 
 import { isApiNode, isSubWorkflowNode } from '@/services/node-version-service';
 
@@ -48,10 +49,10 @@ export const useNodeOrigin = (node: FlowNodeEntity) => {
    * 2. Nodes do not come from the project
    * 3. There is a shelf status
    */
-  const isFromStore =
-    isApi &&
-    !isFromProject &&
-    !!nodeData.getNodeData<StandardNodeType.Api>().pluginProductStatus;
+  const apiData = nodeData.getNodeData<StandardNodeType.Api>();
+  const isFromStore = isApi && !isFromProject && !!apiData.pluginProductStatus;
+  const isFromCozeCnStore =
+    isApi && !isFromProject && apiData.plugin_from === PluginFrom.FromSaas;
 
   /**
    * Is it from the resource library?
@@ -64,5 +65,6 @@ export const useNodeOrigin = (node: FlowNodeEntity) => {
     isApi,
     isFromStore,
     isFromLibrary,
+    isFromCozeCnStore,
   };
 };

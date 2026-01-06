@@ -20,8 +20,6 @@ import (
 	"github.com/cloudwego/eino/compose"
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/repository"
 	singleagent "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/service"
@@ -34,12 +32,11 @@ import (
 	shortcutCmd "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/chatmodel"
-	"github.com/coze-dev/coze-studio/backend/pkg/jsoncache"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
+	"github.com/coze-dev/coze-studio/backend/pkg/kvstore"
 )
 
 type (
@@ -56,7 +53,6 @@ type ServiceComponents struct {
 	ImageX      imagex.ImageX
 	EventBus    search.ProjectEventBus
 	CounterRepo repository.CounterRepository
-	ModelMgr    modelmgr.Manager
 
 	KnowledgeDomainSVC   knowledge.Knowledge
 	PluginDomainSVC      service.PluginService
@@ -73,11 +69,9 @@ func InitService(c *ServiceComponents) (*SingleAgentApplicationService, error) {
 	domainComponents := &singleagent.Components{
 		AgentDraftRepo:   repository.NewSingleAgentRepo(c.DB, c.IDGen, c.Cache),
 		AgentVersionRepo: repository.NewSingleAgentVersionRepo(c.DB, c.IDGen),
-		PublishInfoRepo:  jsoncache.New[entity.PublishInfo]("agent:publish:last:", c.Cache),
+		PublishInfoRepo:  kvstore.New[entity.PublishInfo](c.DB),
 		CounterRepo:      repository.NewCounterRepo(c.Cache),
 		CPStore:          c.CPStore,
-		ModelFactory:     chatmodel.NewDefaultFactory(),
-		ModelMgr:         c.ModelMgr,
 	}
 
 	singleAgentDomainSVC := singleagent.NewService(domainComponents)

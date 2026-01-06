@@ -24,11 +24,11 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/intelligence/common"
-	search2 "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/marketplace_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	search2 "github.com/coze-dev/coze-studio/backend/crossdomain/search/model"
 	searchEntity "github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
@@ -84,7 +84,7 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 				info, err := s.packIntelligenceData(ctx, data)
 				if err != nil {
 					logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", data.ID, data.Type, data.GetName(), err)
-					return err
+					return nil
 				}
 
 				lock.Lock()
@@ -98,11 +98,11 @@ func (s *SearchApplicationService) GetDraftIntelligenceList(ctx context.Context,
 		info, err := s.packIntelligenceData(ctx, searchResp.Data[0])
 		if err != nil {
 			logs.CtxErrorf(ctx, "[packIntelligenceData] failed id %v, type %d , name %s, err: %v", searchResp.Data[0].ID, searchResp.Data[0].Type, searchResp.Data[0].GetName(), err)
-			return nil, err
+		} else {
+			lock.Lock()
+			intelligenceDataList[0] = info
+			lock.Unlock()
 		}
-		lock.Lock()
-		intelligenceDataList[0] = info
-		lock.Unlock()
 	}
 	err = tasks.Wait()
 	if err != nil {

@@ -20,6 +20,7 @@ import type {
   ApiDetailData,
   BlockInput,
 } from '@coze-workflow/base';
+import { type PluginFrom } from '@coze-arch/bot-api/playground_api';
 import type {
   PluginProductStatus,
   ProductUnlistType,
@@ -99,6 +100,7 @@ export interface ApiNodeDataDTO {
       apiParam: BlockInput[];
       inputParameters?: BlockInput[];
       inputDefs?: DTODefine.InputVariableDTO[];
+      pluginFrom?: PluginFrom;
       batch?: {
         batchEnable: boolean;
         batchSize: number;

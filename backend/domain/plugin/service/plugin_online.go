@@ -21,12 +21,14 @@ import (
 	"fmt"
 	"sort"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	searchModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/search"
 	pluginCommon "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	resCommon "github.com/coze-dev/coze-studio/backend/api/model/resource/common"
-	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/contract/search"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	crosssearch "github.com/coze-dev/coze-studio/backend/crossdomain/search"
+	searchModel "github.com/coze-dev/coze-studio/backend/crossdomain/search/model"
 	pluginConf "github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -54,11 +56,6 @@ func (p *pluginServiceImpl) MGetOnlinePlugins(ctx context.Context, pluginIDs []i
 		return nil, errorx.Wrapf(err, "MGetOnlinePlugins failed, pluginIDs=%v", pluginIDs)
 	}
 
-	res := make([]*model.PluginInfo, 0, len(plugins))
-	for _, pl := range plugins {
-		res = append(res, pl.PluginInfo)
-	}
-
 	return plugins, nil
 }
 
@@ -83,7 +80,7 @@ func (p *pluginServiceImpl) MGetOnlineTools(ctx context.Context, toolIDs []int64
 	return tools, nil
 }
 
-func (p *pluginServiceImpl) MGetVersionTools(ctx context.Context, versionTools []entity.VersionTool) (tools []*entity.ToolInfo, err error) {
+func (p *pluginServiceImpl) MGetVersionTools(ctx context.Context, versionTools []model.VersionTool) (tools []*entity.ToolInfo, err error) {
 	tools, err = p.toolRepo.MGetVersionTools(ctx, versionTools)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "MGetVersionTools failed, versionTools=%v", versionTools)
@@ -92,7 +89,7 @@ func (p *pluginServiceImpl) MGetVersionTools(ctx context.Context, versionTools [
 	return tools, nil
 }
 
-func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPluginProductsRequest) (resp *ListPluginProductsResponse, err error) {
+func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *dto.ListPluginProductsRequest) (resp *dto.ListPluginProductsResponse, err error) {
 	plugins := slices.Transform(pluginConf.GetAllPluginProducts(), func(p *pluginConf.PluginInfo) *entity.PluginInfo {
 		return entity.NewPluginInfo(p.Info)
 	})
@@ -100,7 +97,20 @@ func (p *pluginServiceImpl) ListPluginProducts(ctx context.Context, req *ListPlu
 		return plugins[i].GetRefProductID() < plugins[j].GetRefProductID()
 	})
 
-	return &ListPluginProductsResponse{
+	// official plugins
+	officialPlugins, _, err := p.pluginRepo.ListCustomOnlinePlugins(ctx, 999999, dto.PageInfo{
+		Page:       1,
+		Size:       1000,
+		OrderByACS: ptr.Of(true),
+		SortBy:     ptr.Of(dto.SortByCreatedAt),
+	})
+	if err != nil {
+		return nil, errorx.Wrapf(err, "ListCustomOnlinePlugins failed, spaceID=999999")
+	}
+
+	plugins = append(plugins, officialPlugins...)
+
+	return &dto.ListPluginProductsResponse{
 		Plugins: plugins,
 		Total:   int64(len(plugins)),
 	}, nil
@@ -128,7 +138,7 @@ func (p *pluginServiceImpl) GetAPPAllPlugins(ctx context.Context, appID int64) (
 	return plugins, nil
 }
 
-func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, versionPlugins []entity.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
+func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, versionPlugins []model.VersionPlugin) (plugins []*entity.PluginInfo, err error) {
 	plugins, err = p.pluginRepo.MGetVersionPlugins(ctx, versionPlugins)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "MGetVersionPlugins failed, versionPlugins=%v", versionPlugins)
@@ -137,7 +147,7 @@ func (p *pluginServiceImpl) MGetVersionPlugins(ctx context.Context, versionPlugi
 	return plugins, nil
 }
 
-func (p *pluginServiceImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo entity.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
+func (p *pluginServiceImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID int64, pageInfo dto.PageInfo) (plugins []*entity.PluginInfo, total int64, err error) {
 	if pageInfo.Name == nil || *pageInfo.Name == "" {
 		plugins, total, err = p.pluginRepo.ListCustomOnlinePlugins(ctx, spaceID, pageInfo)
 		if err != nil {
@@ -154,7 +164,7 @@ func (p *pluginServiceImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID
 			resCommon.ResType_Plugin,
 		},
 		OrderFiledName: func() string {
-			if pageInfo.SortBy == nil || *pageInfo.SortBy != entity.SortByCreatedAt {
+			if pageInfo.SortBy == nil || *pageInfo.SortBy != dto.SortByCreatedAt {
 				return searchModel.FieldOfUpdateTime
 			}
 			return searchModel.FieldOfCreateTime
@@ -186,7 +196,7 @@ func (p *pluginServiceImpl) ListCustomOnlinePlugins(ctx context.Context, spaceID
 	return plugins, total, nil
 }
 
-func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *MGetPluginLatestVersionResponse, err error) {
+func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginIDs []int64) (resp *model.MGetPluginLatestVersionResponse, err error) {
 	plugins, err := p.pluginRepo.MGetOnlinePlugins(ctx, pluginIDs,
 		repository.WithPluginID(),
 		repository.WithPluginVersion())
@@ -199,14 +209,14 @@ func (p *pluginServiceImpl) MGetPluginLatestVersion(ctx context.Context, pluginI
 		versions[pl.ID] = pl.GetVersion()
 	}
 
-	resp = &MGetPluginLatestVersionResponse{
+	resp = &model.MGetPluginLatestVersionResponse{
 		Versions: versions,
 	}
 
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginRequest) (resp *CopyPluginResponse, err error) {
+func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *dto.CopyPluginRequest) (resp *dto.CopyPluginResponse, err error) {
 	err = p.checkCanCopyPlugin(ctx, req.PluginID, req.CopyScene)
 	if err != nil {
 		return nil, err
@@ -224,7 +234,7 @@ func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginReque
 		toolMap[tool.ID] = tool
 	}
 
-	plugin, tools, err = p.pluginRepo.CopyPlugin(ctx, &repository.CopyPluginRequest{
+	plugin, _, err = p.pluginRepo.CopyPlugin(ctx, &repository.CopyPluginRequest{
 		Plugin: plugin,
 		Tools:  tools,
 	})
@@ -232,7 +242,7 @@ func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginReque
 		return nil, errorx.Wrapf(err, "CopyPlugin failed, pluginID=%d", req.PluginID)
 	}
 
-	resp = &CopyPluginResponse{
+	resp = &dto.CopyPluginResponse{
 		Plugin: plugin,
 		Tools:  toolMap,
 	}
@@ -240,17 +250,17 @@ func (p *pluginServiceImpl) CopyPlugin(ctx context.Context, req *CopyPluginReque
 	return resp, nil
 }
 
-func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *CopyPluginRequest, plugin *entity.PluginInfo, tools []*entity.ToolInfo) {
+func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *dto.CopyPluginRequest, plugin *entity.PluginInfo, tools []*entity.ToolInfo) {
 	plugin.Version = nil
 	plugin.VersionDesc = nil
 
 	plugin.DeveloperID = req.UserID
 
-	if req.CopyScene != model.CopySceneOfAPPDuplicate {
+	if req.CopyScene != consts.CopySceneOfAPPDuplicate {
 		plugin.SetName(fmt.Sprintf("%s_copy", plugin.GetName()))
 	}
 
-	if req.CopyScene == model.CopySceneOfToLibrary {
+	if req.CopyScene == consts.CopySceneOfToLibrary {
 		const (
 			defaultVersion     = "v0.0.1"
 			defaultVersionDesc = "copy to library"
@@ -265,7 +275,7 @@ func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *CopyPluginReque
 		}
 	}
 
-	if req.CopyScene == model.CopySceneOfToAPP {
+	if req.CopyScene == consts.CopySceneOfToAPP {
 		plugin.APPID = req.TargetAPPID
 
 		for _, tool := range tools {
@@ -273,27 +283,27 @@ func (p *pluginServiceImpl) changePluginAndToolsInfoForCopy(req *CopyPluginReque
 		}
 	}
 
-	if req.CopyScene == model.CopySceneOfAPPDuplicate {
+	if req.CopyScene == consts.CopySceneOfAPPDuplicate {
 		plugin.APPID = req.TargetAPPID
 	}
 }
 
-func (p *pluginServiceImpl) checkCanCopyPlugin(ctx context.Context, pluginID int64, scene model.CopyScene) (err error) {
+func (p *pluginServiceImpl) checkCanCopyPlugin(ctx context.Context, pluginID int64, scene consts.CopyScene) (err error) {
 	switch scene {
-	case model.CopySceneOfToAPP, model.CopySceneOfDuplicate, model.CopySceneOfAPPDuplicate:
+	case consts.CopySceneOfToAPP, consts.CopySceneOfDuplicate, consts.CopySceneOfAPPDuplicate:
 		return nil
-	case model.CopySceneOfToLibrary:
+	case consts.CopySceneOfToLibrary:
 		return p.checkToolsDebugStatus(ctx, pluginID)
 	default:
 		return fmt.Errorf("unsupported copy scene '%s'", scene)
 	}
 }
 
-func (p *pluginServiceImpl) getCopySourcePluginAndTools(ctx context.Context, pluginID int64, scene model.CopyScene) (plugin *entity.PluginInfo, tools []*entity.ToolInfo, err error) {
+func (p *pluginServiceImpl) getCopySourcePluginAndTools(ctx context.Context, pluginID int64, scene consts.CopyScene) (plugin *entity.PluginInfo, tools []*entity.ToolInfo, err error) {
 	switch scene {
-	case model.CopySceneOfToAPP:
+	case consts.CopySceneOfToAPP:
 		return p.getOnlinePluginAndTools(ctx, pluginID)
-	case model.CopySceneOfToLibrary, model.CopySceneOfDuplicate, model.CopySceneOfAPPDuplicate:
+	case consts.CopySceneOfToLibrary, consts.CopySceneOfDuplicate, consts.CopySceneOfAPPDuplicate:
 		return p.getDraftPluginAndTools(ctx, pluginID)
 	default:
 		return nil, nil, fmt.Errorf("unsupported copy scene '%s'", scene)

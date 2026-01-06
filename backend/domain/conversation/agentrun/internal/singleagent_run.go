@@ -25,14 +25,14 @@ import (
 	"github.com/cloudwego/eino/schema"
 	"github.com/mohae/deepcopy"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
-	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agent"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
+	crossagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
@@ -49,8 +49,10 @@ func (art *AgentRuntime) AgentStreamExecute(ctx context.Context, imagex imagex.I
 		AgentID:          art.GetRunMeta().AgentID,
 		IsDraft:          art.GetRunMeta().IsDraft,
 		UserID:           art.GetRunMeta().UserID,
+		ConversationId:   art.GetRunMeta().ConversationID,
 		ConnectorID:      art.GetRunMeta().ConnectorID,
 		PreRetrieveTools: art.GetRunMeta().PreRetrieveTools,
+		CustomVariables:  art.GetRunMeta().CustomVariables,
 		Input:            transMessageToSchemaMessage(ctx, []*msgEntity.Message{art.GetInput()}, imagex)[0],
 		HistoryMsg:       transMessageToSchemaMessage(ctx, historyPairs(art.GetHistory()), imagex),
 		ResumeInfo:       parseResumeInfo(ctx, art.GetHistory()),
@@ -80,7 +82,7 @@ func (art *AgentRuntime) AgentStreamExecute(ctx context.Context, imagex imagex.I
 
 func (art *AgentRuntime) push(ctx context.Context, mainChan chan *entity.AgentRespEvent) {
 
-	mh := &MesssageEventHanlder{
+	mh := &MessageEventHandler{
 		sw:           art.SW,
 		messageEvent: art.MessageEvent,
 	}

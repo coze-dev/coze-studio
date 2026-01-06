@@ -23,10 +23,10 @@ import (
 	"strconv"
 	"sync"
 
-	knowledgeModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
 	"github.com/coze-dev/coze-studio/backend/api/model/resource"
 	"github.com/coze-dev/coze-studio/backend/api/model/resource/common"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	knowledgeModel "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/search/entity"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -123,6 +123,9 @@ func (s *SearchApplicationService) LibraryResourceList(ctx context.Context, req 
 	for _, res := range resources {
 		if res == nil {
 			continue
+		}
+		if res.CreatorID != nil && *res.CreatorID != *userID {
+			return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "user can't search resources created by themselves"))
 		}
 		filterResource = append(filterResource, res)
 	}
@@ -276,6 +279,12 @@ func (s *SearchApplicationService) getAPPAllResources(ctx context.Context, appID
 }
 
 func (s *SearchApplicationService) packAPPResources(ctx context.Context, resources []*entity.ResourceDocument) ([]*common.ProjectResourceGroup, error) {
+
+	uid := ctxutil.GetUIDFromCtx(ctx)
+	if uid == nil {
+		return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
 	workflowGroup := &common.ProjectResourceGroup{
 		GroupType:    common.ProjectResourceGroupType_Workflow,
 		ResourceList: []*common.ProjectResourceInfo{},
@@ -293,6 +302,10 @@ func (s *SearchApplicationService) packAPPResources(ctx context.Context, resourc
 	tasks := taskgroup.NewUninterruptibleTaskGroup(ctx, 10)
 	for idx := range resources {
 		v := resources[idx]
+
+		if v.OwnerID != nil && *v.OwnerID != *uid {
+			return nil, errorx.New(errno.ErrSearchPermissionCode, errorx.KV("msg", "user can't search resources created by others"))
+		}
 
 		tasks.Go(func() error {
 			ri, err := s.packProjectResource(ctx, v)

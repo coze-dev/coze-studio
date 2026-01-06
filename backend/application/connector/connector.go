@@ -21,7 +21,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/connector/entity"
 	connector "github.com/coze-dev/coze-studio/backend/domain/connector/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
 type ConnectorApplicationService struct {

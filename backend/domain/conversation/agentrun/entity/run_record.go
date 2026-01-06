@@ -21,9 +21,9 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	message2 "github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+	singleagent "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
 )
 
@@ -106,24 +106,35 @@ type MetaInfo struct {
 }
 
 type AgentRunMeta struct {
-	ConversationID   int64                    `json:"conversation_id"`
-	ConnectorID      int64                    `json:"connector_id"`
-	SpaceID          int64                    `json:"space_id"`
-	Scene            common.Scene             `json:"scene"`
-	SectionID        int64                    `json:"section_id"`
-	Name             string                   `json:"name"`
-	UserID           string                   `json:"user_id"`
-	CozeUID          int64                    `json:"coze_uid"`
-	AgentID          int64                    `json:"agent_id"`
-	ContentType      message.ContentType      `json:"content_type"`
-	Content          []*message.InputMetaData `json:"content"`
-	PreRetrieveTools []*Tool                  `json:"tools"`
-	IsDraft          bool                     `json:"is_draft"`
-	CustomerConfig   *CustomerConfig          `json:"customer_config"`
-	DisplayContent   string                   `json:"display_content"`
-	CustomVariables  map[string]string        `json:"custom_variables"`
-	Version          string                   `json:"version"`
-	Ext              map[string]string        `json:"ext"`
+	ConversationID     int64                    `json:"conversation_id"`
+	ConnectorID        int64                    `json:"connector_id"`
+	SpaceID            int64                    `json:"space_id"`
+	Scene              common.Scene             `json:"scene"`
+	SectionID          int64                    `json:"section_id"`
+	Name               string                   `json:"name"`
+	UserID             string                   `json:"user_id"`
+	CozeUID            int64                    `json:"coze_uid"`
+	AgentID            int64                    `json:"agent_id"`
+	ContentType        message.ContentType      `json:"content_type"`
+	Content            []*message.InputMetaData `json:"content"`
+	PreRetrieveTools   []*Tool                  `json:"tools"`
+	IsDraft            bool                     `json:"is_draft"`
+	CustomerConfig     *CustomerConfig          `json:"customer_config"`
+	DisplayContent     string                   `json:"display_content"`
+	CustomVariables    map[string]string        `json:"custom_variables"`
+	Version            string                   `json:"version"`
+	Ext                map[string]string        `json:"ext"`
+	AdditionalMessages []*AdditionalMessage     `json:"additional_messages"`
+	ChatflowParameters map[string]any           `json:"chatflow_parameters"`
+}
+
+type AdditionalMessage struct {
+	Role        schema.RoleType          `json:"role"`
+	Type        message.MessageType      `json:"type"`
+	Content     []*message.InputMetaData `json:"content"`
+	ContentType message.ContentType      `json:"content_type"`
+	Name        *string                  `json:"name"`
+	Meta        map[string]string        `json:"meta"`
 }
 
 type UpdateMeta struct {

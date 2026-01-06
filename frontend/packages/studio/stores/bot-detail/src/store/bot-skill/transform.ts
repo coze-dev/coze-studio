@@ -1,3 +1,4 @@
+/* eslint-disable max-len */
 /*
  * Copyright 2025 coze-dev Authors
  *
@@ -47,6 +48,7 @@ import {
   SuggestedQuestionsShowMode,
   type LayoutInfo,
   DisablePromptCalling,
+  type PluginFrom,
 } from '@coze-arch/bot-api/playground_api';
 import { SuggestReplyMode } from '@coze-arch/bot-api/developer_api';
 import { type ShortCutStruct } from '@coze-agent-ide/tool-config';
@@ -104,6 +106,7 @@ export const transformDto2Vo = {
           // The historical reason for this type is that each service on the server level is not unified, and the actual business use is the enumeration type
           plugin_type: plugin?.plugin_type as unknown as PluginType,
           status: plugin?.plugin_status as unknown as PluginStatus,
+          plugin_from: plugin?.plugin_from as unknown as PluginFrom,
         };
       }) ?? [],
 
@@ -318,6 +321,7 @@ export const transformVo2Dto = {
       api_id: plugin.api_id,
       plugin_id: plugin.plugin_id,
       api_name: plugin.name,
+      plugin_from: plugin.plugin_from,
     })),
 
   workflow: (
@@ -331,7 +335,7 @@ export const transformVo2Dto = {
           flow_mode: w.flow_mode,
           workflow_name: w.name,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any),
+        }) as any,
     ),
 
   knowledge: (knowledge: KnowledgeConfig): BotInfoForUpdate['knowledge'] => ({

@@ -30,6 +30,7 @@ import classnames from 'classnames';
 import {
   useEntityFromContext,
   useService,
+  usePlaygroundContainer,
 } from '@flowgram-adapter/free-layout-editor';
 import {
   type WorkflowNodeEntity,
@@ -166,10 +167,21 @@ export const NodeHeader: React.FC<NodeHeaderProps> = ({
     }, 10);
   };
 
-  const handleCopy = (_, e: MouseEvent) => {
-    e.stopPropagation();
-    editService.copyNode(node);
-  };
+  const container = usePlaygroundContainer();
+  const handleCopy = useCallback(
+    async (_: unknown, e: MouseEvent) => {
+      e.stopPropagation();
+      const {
+        WorkflowCopyShortcutsContribution,
+        WorkflowPasteShortcutsContribution,
+      } = await import('@/shortcuts');
+      const copyService = container.get(WorkflowCopyShortcutsContribution);
+      const pasteService = container.get(WorkflowPasteShortcutsContribution);
+      const data = await copyService.toData([node]);
+      pasteService.apply(data);
+    },
+    [container, node],
+  );
 
   const handleDecapsulate = (_, e: MouseEvent) => {
     e.stopPropagation();

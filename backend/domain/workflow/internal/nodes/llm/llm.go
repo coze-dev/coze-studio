@@ -34,15 +34,13 @@ import (
 	callbacks2 "github.com/cloudwego/eino/utils/callbacks"
 	"golang.org/x/exp/maps"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
-	crossmodel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	workflow3 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/contract/knowledge"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	crossmodelmgr "github.com/coze-dev/coze-studio/backend/crossdomain/contract/modelmgr"
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
+	crossknowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -50,7 +48,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
+	wrapPlugin "github.com/coze-dev/coze-studio/backend/domain/workflow/plugin"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -166,7 +164,7 @@ type RetrievalStrategy struct {
 }
 
 type KnowledgeRecallConfig struct {
-	ChatModel                model.BaseChatModel
+	ChatModel                modelbuilder.BaseChatModel
 	RetrievalStrategy        *RetrievalStrategy
 	SelectedKnowledgeDetails []*knowledge.KnowledgeDetail
 }
@@ -175,9 +173,9 @@ type Config struct {
 	SystemPrompt                      string
 	UserPrompt                        string
 	OutputFormat                      Format
-	LLMParams                         *crossmodel.LLMParams
+	LLMParams                         *vo.LLMParams
 	FCParam                           *vo.FCParam
-	BackupLLMParams                   *crossmodel.LLMParams
+	BackupLLMParams                   *vo.LLMParams
 	ChatHistorySetting                *vo.ChatHistorySetting
 	AssociateStartNodeUserInputFields map[string]struct{}
 }
@@ -218,11 +216,11 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 
 	var resFormat Format
 	switch convertedLLMParam.ResponseFormat {
-	case crossmodel.ResponseFormatText:
+	case vo.ResponseFormatText:
 		resFormat = FormatText
-	case crossmodel.ResponseFormatMarkdown:
+	case vo.ResponseFormatMarkdown:
 		resFormat = FormatMarkdown
-	case crossmodel.ResponseFormatJSON:
+	case vo.ResponseFormatJSON:
 		resFormat = FormatJSON
 	default:
 		return nil, fmt.Errorf("unsupported response format: %d", convertedLLMParam.ResponseFormat)
@@ -299,8 +297,8 @@ func (c *Config) Adapt(_ context.Context, n *vo.Node, _ ...nodes.AdaptOption) (*
 	return ns, nil
 }
 
-func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
-	p := &crossmodel.LLMParams{}
+func llmParamsToLLMParam(params vo.LLMParam) (*vo.LLMParams, error) {
+	p := &vo.LLMParams{}
 	for _, param := range params {
 		switch param.Name {
 		case "temperature":
@@ -323,7 +321,7 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 			if err != nil {
 				return nil, err
 			}
-			p.ResponseFormat = crossmodel.ResponseFormat(int64Val)
+			p.ResponseFormat = vo.ResponseFormat(int64Val)
 		case "modleName":
 			strVal := param.Input.Value.Content.(string)
 			p.ModelName = strVal
@@ -368,8 +366,8 @@ func llmParamsToLLMParam(params vo.LLMParam) (*crossmodel.LLMParams, error) {
 	return p, nil
 }
 
-func simpleLLMParamsToLLMParams(params vo.SimpleLLMParam) (*crossmodel.LLMParams, error) {
-	p := &crossmodel.LLMParams{}
+func simpleLLMParamsToLLMParams(params vo.SimpleLLMParam) (*vo.LLMParams, error) {
+	p := &vo.LLMParams{}
 	p.ModelName = params.ModelName
 	p.ModelType = params.ModelType
 	p.Temperature = &params.Temperature
@@ -387,7 +385,7 @@ func getReasoningContent(message *schema.Message) string {
 func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2.BuildOption) (any, error) {
 	var (
 		err                   error
-		chatModel, fallbackM  model.BaseChatModel
+		chatModel, fallbackM  modelbuilder.BaseChatModel
 		info, fallbackI       *modelmgr.Model
 		modelWithInfo         ModelWithInfo
 		tools                 []tool.BaseTool
@@ -395,7 +393,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		knowledgeRecallConfig *KnowledgeRecallConfig
 	)
 
-	chatModel, info, err = crossmodelmgr.DefaultSVC().GetModel(ctx, c.LLMParams)
+	chatModel, info, err = modelbuilder.BuildModelByID(ctx, c.LLMParams.ModelType, c.LLMParams.ToModelBuilderLLMParams())
 	if err != nil {
 		return nil, err
 	}
@@ -404,7 +402,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 	if exceptionConf != nil && exceptionConf.MaxRetry > 0 {
 		backupModelParams := c.BackupLLMParams
 		if backupModelParams != nil {
-			fallbackM, fallbackI, err = crossmodelmgr.DefaultSVC().GetModel(ctx, backupModelParams)
+			fallbackM, fallbackI, err = modelbuilder.BuildModelByID(ctx, backupModelParams.ModelType, backupModelParams.ToModelBuilderLLMParams())
 			if err != nil {
 				return nil, err
 			}
@@ -461,7 +459,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		}
 
 		if fcParams.PluginFCParam != nil {
-			pluginToolsInvokableReq := make(map[int64]*plugin.ToolsInvokableRequest)
+			pluginToolsInvokableReq := make(map[int64]*wrapPlugin.ToolsInvokableRequest)
 			for _, p := range fcParams.PluginFCParam.PluginList {
 				pid, err := strconv.ParseInt(p.PluginID, 10, 64)
 				if err != nil {
@@ -482,18 +480,19 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 				}
 
 				if req, ok := pluginToolsInvokableReq[pid]; ok {
-					req.ToolsInvokableInfo[toolID] = &plugin.ToolsInvokableInfo{
+					req.ToolsInvokableInfo[toolID] = &wrapPlugin.ToolsInvokableInfo{
 						ToolID:                      toolID,
 						RequestAPIParametersConfig:  requestParameters,
 						ResponseAPIParametersConfig: responseParameters,
 					}
 				} else {
-					pluginToolsInfoRequest := &plugin.ToolsInvokableRequest{
-						PluginEntity: plugin.PluginEntity{
+					pluginToolsInfoRequest := &wrapPlugin.ToolsInvokableRequest{
+						PluginEntity: vo.PluginEntity{
 							PluginID:      pid,
 							PluginVersion: ptr.Of(p.PluginVersion),
+							PluginFrom:    p.PluginFrom,
 						},
-						ToolsInvokableInfo: map[int64]*plugin.ToolsInvokableInfo{
+						ToolsInvokableInfo: map[int64]*wrapPlugin.ToolsInvokableInfo{
 							toolID: {
 								ToolID:                      toolID,
 								RequestAPIParametersConfig:  requestParameters,
@@ -507,7 +506,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 			}
 			inInvokableTools := make([]tool.BaseTool, 0, len(fcParams.PluginFCParam.PluginList))
 			for _, req := range pluginToolsInvokableReq {
-				toolMap, err := crossplugin.DefaultSVC().GetPluginInvokableTools(ctx, req)
+				toolMap, err := wrapPlugin.GetPluginInvokableTools(ctx, req)
 				if err != nil {
 					return nil, err
 				}
@@ -624,7 +623,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		sp := newPromptTpl(schema.System, c.SystemPrompt, inputs)
 		up := newPromptTpl(schema.User, userPrompt, inputs, withReservedKeys([]string{knowledgeUserPromptTemplateKey}), withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
-		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting, modelWithInfo)
 
 		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory,
 			compose.WithStatePreHandler(func(ctx context.Context, in map[string]any, state llmState) (map[string]any, error) {
@@ -639,7 +638,7 @@ func (c *Config) Build(ctx context.Context, ns *schema2.NodeSchema, _ ...schema2
 		sp := newPromptTpl(schema.System, c.SystemPrompt, ns.InputTypes)
 		up := newPromptTpl(schema.User, userPrompt, ns.InputTypes, withAssociateUserInputFields(c.AssociateStartNodeUserInputFields))
 		template := newPrompts(sp, up, modelWithInfo)
-		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting)
+		templateWithChatHistory := newPromptsWithChatHistory(template, c.ChatHistorySetting, modelWithInfo)
 
 		_ = g.AddChatTemplateNode(templateNodeKey, templateWithChatHistory)
 

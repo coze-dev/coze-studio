@@ -18,7 +18,6 @@ package workflow
 
 import (
 	"context"
-
 	"errors"
 	"fmt"
 	"runtime/debug"
@@ -29,15 +28,18 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
-	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/contract/agentrun"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
-	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/contract/message"
-	crossupload "github.com/coze-dev/coze-studio/backend/crossdomain/contract/upload"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/debugutil"
+	crossagentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun"
+
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
+	crossmessage "github.com/coze-dev/coze-studio/backend/crossdomain/message"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
+	crossupload "github.com/coze-dev/coze-studio/backend/crossdomain/upload"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	agententity "github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/permission"
 	"github.com/coze-dev/coze-studio/backend/domain/upload/service"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -468,6 +470,41 @@ func (w *ApplicationService) ListApplicationConversationDef(ctx context.Context,
 
 	return resp, nil
 }
+func checkPermission(ctx context.Context, userID int64, workflowID int64, appID *int64, agentID *int64) error {
+	rd := []*permission.ResourceIdentifier{
+		{
+			Type:   permission.ResourceTypeWorkflow,
+			ID:     []int64{workflowID},
+			Action: permission.ActionRead,
+		},
+	}
+	if appID != nil {
+		rd = append(rd, &permission.ResourceIdentifier{
+			Type:   permission.ResourceTypeApp,
+			ID:     []int64{*appID},
+			Action: permission.ActionRead,
+		})
+	}
+	if agentID != nil {
+		rd = append(rd, &permission.ResourceIdentifier{
+			Type:   permission.ResourceTypeAgent,
+			ID:     []int64{*agentID},
+			Action: permission.ActionRead,
+		})
+	}
+
+	checkResult, err := permission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		OperatorID:         userID,
+		ResourceIdentifier: rd,
+	})
+	if err != nil {
+		return err
+	}
+	if checkResult.Decision != permission.Allow {
+		return errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "no permission"))
+	}
+	return nil
+}
 
 func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workflow.ChatFlowRunRequest) (
 	_ *schema.StreamReader[[]*workflow.ChatFlowRunResponse], err error) {
@@ -512,11 +549,22 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 		apiKeyInfo     = ctxutil.GetApiAuthFromCtx(ctx)
 		userID         = apiKeyInfo.UserID
 		connectorID    int64
+		runtimeUserID  = func() *string {
+			if uID, ok := req.Ext["user_id"]; ok {
+				return ptr.Of(uID)
+			}
+			return nil
+		}()
 	)
 	if len(req.GetConnectorID()) == 0 {
 		connectorID = ternary.IFElse(isDebug, consts.CozeConnectorID, apiKeyInfo.ConnectorID)
 	} else {
 		connectorID = mustParseInt64(req.GetConnectorID())
+	}
+
+	err = checkPermission(ctx, userID, workflowID, appID, agentID)
+	if err != nil {
+		return nil, err
 	}
 
 	if req.IsSetAppID() {
@@ -633,11 +681,16 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 			ExecuteID:  info.ExecID,
 			ResumeData: lastUserMessage.Content,
 		}, workflowModel.ExecuteConfig{
-			Operator:     userID,
-			Mode:         ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
-			ConnectorID:  connectorID,
-			ConnectorUID: strconv.FormatInt(userID, 10),
-			BizType:      workflowModel.BizTypeWorkflow,
+			Operator:    userID,
+			Mode:        ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
+			ConnectorID: connectorID,
+			ConnectorUID: func() string {
+				if runtimeUserID != nil {
+					return *runtimeUserID
+				}
+				return strconv.FormatInt(userID, 10)
+			}(),
+			BizType: workflowModel.BizTypeWorkflow,
 		})
 
 		if err != nil {
@@ -661,15 +714,20 @@ func (w *ApplicationService) OpenAPIChatFlowRun(ctx context.Context, req *workfl
 	}
 
 	exeCfg := workflowModel.ExecuteConfig{
-		ID:            mustParseInt64(req.GetWorkflowID()),
-		From:          locator,
-		Version:       version,
-		Operator:      userID,
-		Mode:          ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
-		AppID:         appID,
-		AgentID:       agentID,
-		ConnectorID:   connectorID,
-		ConnectorUID:  strconv.FormatInt(userID, 10),
+		ID:          mustParseInt64(req.GetWorkflowID()),
+		From:        locator,
+		Version:     version,
+		Operator:    userID,
+		Mode:        ternary.IFElse(isDebug, workflowModel.ExecuteModeDebug, workflowModel.ExecuteModeRelease),
+		AppID:       appID,
+		AgentID:     agentID,
+		ConnectorID: connectorID,
+		ConnectorUID: func() string {
+			if runtimeUserID != nil {
+				return *runtimeUserID
+			}
+			return strconv.FormatInt(userID, 10)
+		}(),
 		TaskType:      workflowModel.TaskTypeForeground,
 		SyncPattern:   workflowModel.SyncPatternStream,
 		InputFailFast: true,
@@ -740,9 +798,6 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 		userMessage    = info.userMessage
 		spaceID        int64
 		executeID      int64
-
-		outputCount int32
-		inputCount  int32
 
 		intermediateMessage *message.Message
 
@@ -818,19 +873,23 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 					BotID:          strconv.FormatInt(bizID, 10),
 					Status:         vo.Completed,
 					ExecuteID:      strconv.FormatInt(executeID, 10),
-					Usage: &vo.Usage{
-						InputTokens:  ptr.Of(inputCount),
-						OutputTokens: ptr.Of(outputCount),
-						TokenCount:   ptr.Of(outputCount + inputCount),
-					},
 				}
+
+				if msg.StateMessage.Usage != nil {
+					chatDoneEvent.Usage = &vo.Usage{
+						InputTokens:  &msg.StateMessage.Usage.InputTokens,
+						OutputTokens: &msg.StateMessage.Usage.OutputTokens,
+						TokenCount:   ptr.Of(msg.StateMessage.Usage.OutputTokens + msg.StateMessage.Usage.OutputTokens),
+					}
+				}
+
 				data, err := sonic.MarshalString(chatDoneEvent)
 				if err != nil {
 					return nil, err
 				}
 
 				doneData, err := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
+					"debug_url": debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID),
 				})
 				if err != nil {
 					return nil, err
@@ -975,7 +1034,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				})
 
 				doneData, _ := sonic.MarshalString(map[string]interface{}{
-					"debug_url": fmt.Sprintf(workflowModel.DebugURLTpl, executeID, spaceID, workflowID),
+					"debug_url": debugutil.GetWorkflowDebugURL(ctx, workflowID, spaceID, executeID),
 				})
 
 				responses = append(responses, &workflow.ChatFlowRunResponse{
@@ -1216,11 +1275,24 @@ func (w *ApplicationService) OpenAPICreateConversation(ctx context.Context, req 
 		userID     = apiKeyInfo.UserID
 		env        = ternary.IFElse(req.GetDraftMode(), vo.Draft, vo.Online)
 		cID        int64
-		//spaceID = mustParseInt64(req.GetSpaceID())
-		//_       = spaceID
 	)
 
-	// todo  check permission
+	checkResult, err := permission.DefaultSVC().CheckAuthz(ctx, &permission.CheckAuthzData{
+		OperatorID: userID,
+		ResourceIdentifier: []*permission.ResourceIdentifier{
+			{
+				Type:   permission.ResourceTypeApp,
+				ID:     []int64{mustParseInt64(req.GetAppID())},
+				Action: permission.ActionRead,
+			},
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if checkResult.Decision != permission.Allow {
+		return nil, errorx.New(errno.ErrMemoryPermissionCode, errorx.KV("msg", "no permission"))
+	}
 
 	if !req.GetGetOrCreate() {
 		cID, err = GetWorkflowDomainSVC().UpdateConversation(ctx, env, appID, req.GetConnectorId(), userID, req.GetConversationMame())
@@ -1310,6 +1382,7 @@ func toConversationMessage(ctx context.Context, bizID, cid, userID, roundID, sec
 			UserID:         strconv.FormatInt(userID, 10),
 			RunID:          roundID,
 			ContentType:    message.ContentTypeMix,
+			DisplayContent: msg.Content,
 			MultiContent:   make([]*message.InputMetaData, 0, len(contents)),
 			SectionID:      sectionID,
 		}

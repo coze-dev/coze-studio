@@ -23,15 +23,16 @@ import (
 	"github.com/cloudwego/eino/components/prompt"
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	schema2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
 	"github.com/coze-dev/coze-studio/backend/pkg/ctxcache"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
+	"github.com/coze-dev/coze-studio/backend/pkg/urltobase64url"
 )
 
 type prompts struct {
@@ -43,6 +44,7 @@ type prompts struct {
 type promptsWithChatHistory struct {
 	prompts *prompts
 	cfg     *vo.ChatHistorySetting
+	mwi     ModelWithInfo
 }
 
 func withReservedKeys(keys []string) func(tpl *promptTpl) {
@@ -131,22 +133,30 @@ func newPrompts(sp, up *promptTpl, model ModelWithInfo) *prompts {
 	}
 }
 
-func newPromptsWithChatHistory(prompts *prompts, cfg *vo.ChatHistorySetting) *promptsWithChatHistory {
+func newPromptsWithChatHistory(prompts *prompts, cfg *vo.ChatHistorySetting, model ModelWithInfo) *promptsWithChatHistory {
 	return &promptsWithChatHistory{
 		prompts: prompts,
 		cfg:     cfg,
+		mwi:     model,
 	}
+}
+
+func getModelProcessingInfo(ctx context.Context, mwi ModelWithInfo) (*developer_api.ModelAbility, bool) {
+	mInfo := mwi.Info(ctx)
+
+	return mInfo.Capability, mInfo.EnableBase64URL
 }
 
 func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	sources map[string]*schema2.SourceInfo,
-	supportedModals map[modelmgr.Modal]bool,
+	supportedModals *developer_api.ModelAbility,
+	enableTransferBase64 bool,
 ) (*schema.Message, error) {
 	isChatFlow := execute.GetExeCtx(ctx).ExeCfg.WorkflowMode == workflow.WorkflowMode_ChatFlow
 	userMessage := execute.GetExeCtx(ctx).ExeCfg.UserMessage
 
 	if !isChatFlow {
-		if !pl.hasMultiModal || len(supportedModals) == 0 {
+		if !pl.hasMultiModal || !supportedModals.GetSupportMultiModal() {
 			var opts []nodes.RenderOption
 			if len(pl.reservedKeys) > 0 {
 				opts = append(opts, nodes.WithReservedKey(pl.reservedKeys...))
@@ -161,7 +171,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 			}, nil
 		}
 	} else {
-		if (!pl.hasMultiModal || len(supportedModals) == 0) &&
+		if (!pl.hasMultiModal || !supportedModals.GetSupportMultiModal()) &&
 			(len(pl.associateUserInputFields) == 0 ||
 				(len(pl.associateUserInputFields) > 0 && userMessage != nil && userMessage.MultiContent == nil)) {
 			var opts []nodes.RenderOption
@@ -197,7 +207,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 
 		if _, ok := pl.associateUserInputFields[part.part.Value]; ok && userMessage != nil && isChatFlow {
 			for _, p := range userMessage.MultiContent {
-				multiParts = append(multiParts, transformMessagePart(p, supportedModals))
+				multiParts = append(multiParts, transformMessagePart(p, supportedModals, enableTransferBase64))
 			}
 			continue
 		}
@@ -265,7 +275,7 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 				},
 			}
 		}
-		multiParts = append(multiParts, transformMessagePart(originalPart, supportedModals))
+		multiParts = append(multiParts, transformMessagePart(originalPart, supportedModals, enableTransferBase64))
 	}
 
 	return &schema.Message{
@@ -274,36 +284,70 @@ func (pl *promptTpl) render(ctx context.Context, vs map[string]any,
 	}, nil
 }
 
-func transformMessagePart(part schema.ChatMessagePart, supportedModals map[modelmgr.Modal]bool) schema.ChatMessagePart {
+func transformMessagePart(part schema.ChatMessagePart, supportedModals *developer_api.ModelAbility, enableTransferBase64 bool) schema.ChatMessagePart {
 	switch part.Type {
 	case schema.ChatMessagePartTypeImageURL:
-		if _, ok := supportedModals[modelmgr.ModalImage]; !ok {
+		if !supportedModals.GetImageUnderstanding() {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.ImageURL.URL,
 			}
 		}
+		if enableTransferBase64 {
+			if fileData, err := urltobase64url.URLToBase64(part.ImageURL.URL); err == nil {
+				part.ImageURL.MIMEType = fileData.MimeType
+				part.ImageURL.URL = fileData.Base64Url
+			} else {
+				logs.Errorf("transformMessagePart image url to base64 failed, url: %s, err: %v", part.ImageURL.URL, err)
+				return part
+			}
+		}
 	case schema.ChatMessagePartTypeAudioURL:
-		if _, ok := supportedModals[modelmgr.ModalAudio]; !ok {
+		if !supportedModals.GetAudioUnderstanding() {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.AudioURL.URL,
 			}
 		}
+		if enableTransferBase64 {
+			if fileData, err := urltobase64url.URLToBase64(part.AudioURL.URL); err == nil {
+				part.AudioURL.MIMEType = fileData.MimeType
+				part.AudioURL.URL = fileData.Base64Url
+			} else {
+				logs.Errorf("transformMessagePart audio url to base64 failed, url: %s, err: %v", part.AudioURL.URL, err)
+				return part
+			}
+		}
 	case schema.ChatMessagePartTypeVideoURL:
-		if _, ok := supportedModals[modelmgr.ModalVideo]; !ok {
+		if !supportedModals.GetVideoUnderstanding() {
 			return schema.ChatMessagePart{
 				Type: schema.ChatMessagePartTypeText,
 				Text: part.VideoURL.URL,
 			}
 		}
-	case schema.ChatMessagePartTypeFileURL:
-		if _, ok := supportedModals[modelmgr.ModalFile]; !ok {
-			return schema.ChatMessagePart{
-				Type: schema.ChatMessagePartTypeText,
-				Text: part.FileURL.URL,
+		if enableTransferBase64 {
+			if fileData, err := urltobase64url.URLToBase64(part.VideoURL.URL); err == nil {
+				part.VideoURL.MIMEType = fileData.MimeType
+				part.VideoURL.URL = fileData.Base64Url
+			} else {
+				logs.Errorf("transformMessagePart video url to base64 failed, url: %s, err: %v", part.VideoURL.URL, err)
+				return part
 			}
 		}
+	case schema.ChatMessagePartTypeFileURL:
+		return schema.ChatMessagePart{
+			Type: schema.ChatMessagePartTypeText,
+			Text: part.FileURL.URL,
+		}
+		// if enableTransferBase64 {
+		// 	if fileData, err := urltobase64url.URLToBase64(part.FileURL.URL); err == nil {
+		// 		part.FileURL.MIMEType = fileData.MimeType
+		// 		part.FileURL.URL = fileData.Base64Url
+		// 	} else {
+		// 		logs.Errorf("transformMessagePart file url to base64 failed, url: %s, err: %v", part.FileURL.URL, err)
+		// 		return part
+		// 	}
+		// }
 	}
 	return part
 }
@@ -323,24 +367,18 @@ func (p *prompts) Format(ctx context.Context, vs map[string]any, _ ...prompt.Opt
 		return nil, fmt.Errorf("resolved sources not found llm node, key: %s", sk)
 	}
 
-	supportedModal := map[modelmgr.Modal]bool{}
-	mInfo := p.mwi.Info(ctx)
-	if mInfo != nil {
-		for i := range mInfo.Meta.Capability.InputModal {
-			supportedModal[mInfo.Meta.Capability.InputModal[i]] = true
-		}
-	}
+	supportedModal, enableTransferBase64 := getModelProcessingInfo(ctx, p.mwi)
 
 	var systemMsg, userMsg *schema.Message
 	if p.sp != nil {
-		systemMsg, err = p.sp.render(ctx, vs, sources, supportedModal)
+		systemMsg, err = p.sp.render(ctx, vs, sources, supportedModal, enableTransferBase64)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	if p.up != nil {
-		userMsg, err = p.up.render(ctx, vs, sources, supportedModal)
+		userMsg, err = p.up.render(ctx, vs, sources, supportedModal, enableTransferBase64)
 		if err != nil {
 			return nil, err
 		}
@@ -388,6 +426,14 @@ func (p *promptsWithChatHistory) Format(ctx context.Context, vs map[string]any, 
 
 	if len(historyMessages) == 0 {
 		return baseMessages, nil
+	}
+
+	supportedModal, enableTransferBase64 := getModelProcessingInfo(ctx, p.mwi)
+
+	for _, msg := range historyMessages {
+		for i, part := range msg.MultiContent {
+			msg.MultiContent[i] = transformMessagePart(part, supportedModal, enableTransferBase64)
+		}
 	}
 
 	finalMessages := make([]*schema.Message, 0, len(baseMessages)+len(historyMessages))

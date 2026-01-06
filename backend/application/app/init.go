@@ -25,10 +25,9 @@ import (
 	variables "github.com/coze-dev/coze-studio/backend/domain/memory/variables/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/modelmgr"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
 type ServiceComponents struct {
@@ -38,7 +37,6 @@ type ServiceComponents struct {
 	CacheCli        cache.Cmdable
 	ProjectEventBus search.ProjectEventBus
 
-	ModelMgr     modelmgr.Manager
 	UserSVC      user.User
 	ConnectorSVC connector.Connector
 	VariablesSVC variables.Variables
@@ -64,7 +62,6 @@ func InitService(components *ServiceComponents) (*APPApplicationService, error) 
 
 	APPApplicationSVC.oss = components.OSS
 	APPApplicationSVC.projectEventBus = components.ProjectEventBus
-	APPApplicationSVC.modelMgr = components.ModelMgr
 
 	APPApplicationSVC.userSVC = components.UserSVC
 	APPApplicationSVC.connectorSVC = components.ConnectorSVC

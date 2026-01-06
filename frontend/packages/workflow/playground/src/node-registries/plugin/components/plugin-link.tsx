@@ -19,8 +19,9 @@ import React from 'react';
 
 import { type ApiNodeIdentifier } from '@coze-workflow/nodes';
 import { I18n } from '@coze-arch/i18n';
-import { PluginProductStatus } from '@coze-arch/bot-api/developer_api';
 import { IconCozLoading, IconCozExit } from '@coze-arch/coze-design/icons';
+import { PluginFrom } from '@coze-arch/bot-api/playground_api';
+import { PluginProductStatus } from '@coze-arch/bot-api/developer_api';
 
 import { useGlobalState } from '@/hooks';
 
@@ -49,6 +50,7 @@ export const PluginLink = ({
     pluginID: pluginId,
     projectID: projectId,
     pluginProductStatus,
+    plugin_from,
   } = apiNodeDetail || {};
 
   // In the same space, and the status is to be submitted plug-ins, jump directly /space/xxx/plugin/yyy
@@ -72,7 +74,10 @@ export const PluginLink = ({
 
   const handleClick = (e: React.MouseEvent<HTMLSpanElement, MouseEvent>) => {
     const ideNavigate = getProjectApi()?.navigate;
-    if (projectId && projectId !== '0' && ideNavigate) {
+    if (IS_OPEN_SOURCE && plugin_from === PluginFrom.FromSaas) {
+      const url = window.atob('aHR0cHM6Ly93d3cuY296ZS5jbg==');
+      window.open(`${url}/store/plugin/${pluginId}?plugin_id=true`, '_blank');
+    } else if (projectId && projectId !== '0' && ideNavigate) {
       ideNavigate(`/plugin/${pluginId}`);
     } else {
       const url =

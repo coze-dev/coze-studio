@@ -1,0 +1,117 @@
+.normalItemContaienr {
+  display: flex;
+  align-items: center;
+
+  height: 52px;
+  padding: 8px;
+  padding: auto 8px;
+
+  border-radius: 8px;
+
+  .avatar {
+    flex-shrink: 0;
+    border: 0.5px solid;
+    border-radius: 4px;
+
+    @apply coz-stroke-primary;
+  }
+
+  .dot {
+    width: 3px;
+    height: 3px;
+    background-color: var(--coz-fg-dim);
+    border-radius: 24px;
+  }
+
+  .title {
+    flex-shrink: 0;
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    text-align: left;
+    text-wrap: nowrap;
+
+    @apply coz-fg-primary;
+  }
+
+  .description {
+    flex: 1;
+
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+    text-align: left;
+
+    @apply coz-fg-dim;
+  }
+
+  .statie-elc {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+
+    @apply coz-fg-secondary;
+  }
+
+  &.isSelected {
+    cursor: pointer;
+
+    @apply coz-mg-primary;
+  }
+}
+
+.skeletonContiner {
+  width: 100%;
+  height: 52px;
+  padding: 0 8px;
+
+  .image {
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+  }
+
+  .textContainer {
+    align-items: flex-start;
+
+    .title {
+      width: 80px;
+      height: 10px;
+    }
+
+    .description {
+      width: 240px;
+      height: 10px;
+    }
+  }
+}
+
+.seeMore {
+  width: 100%;
+  padding: 8px 0;
+
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  text-align: center;
+
+  border-radius: 8px;
+
+  @apply coz-fg-secondary;
+
+  svg path {
+    fill: var(--coz-fg-secondary);
+    fill-opacity: 1;
+  }
+
+  &.isSelected {
+    @apply coz-mg-primary;
+    @apply coz-fg-hglt;
+
+    svg path {
+      fill: var(--coz-fg-hglt);
+      fill-opacity: 1;
+    }
+  }
+}

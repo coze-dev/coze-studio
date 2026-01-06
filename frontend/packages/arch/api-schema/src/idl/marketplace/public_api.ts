@@ -87,6 +87,136 @@ export const PublicDuplicateProduct = /*#__PURE__*/createAPI<DuplicateProductReq
   "schemaRoot": "api://schemas/idl_marketplace_public_api",
   "service": "explore"
 });
+export const PublicSearchProduct = /*#__PURE__*/createAPI<SearchProductRequest, SearchProductResponse>({
+  "url": "/api/marketplace/product/search",
+  "method": "GET",
+  "name": "PublicSearchProduct",
+  "reqType": "SearchProductRequest",
+  "reqMapping": {
+    "query": ["keyword", "page_num", "page_size", "entity_type", "sort_type", "publish_mode", "model_ids", "bot_mod_type", "components", "publish_platform_ids", "category_ids", "is_official", "is_recommend", "entity_types", "plugin_type", "product_paid_type"]
+  },
+  "resType": "SearchProductResponse",
+  "schemaRoot": "api://schemas/idl_marketplace_public_api",
+  "service": "explore"
+});
+export const PublicSearchSuggest = /*#__PURE__*/createAPI<SearchSuggestRequest, SearchSuggestResponse>({
+  "url": "/api/marketplace/product/search/suggest",
+  "method": "GET",
+  "name": "PublicSearchSuggest",
+  "reqType": "SearchSuggestRequest",
+  "reqMapping": {
+    "query": ["keyword", "entity_type", "page_num", "page_size", "entity_types"]
+  },
+  "resType": "SearchSuggestResponse",
+  "schemaRoot": "api://schemas/idl_marketplace_public_api",
+  "service": "explore"
+});
+export const PublicGetProductCategoryList = /*#__PURE__*/createAPI<GetProductCategoryListRequest, GetProductCategoryListResponse>({
+  "url": "/api/marketplace/product/category/list",
+  "method": "GET",
+  "name": "PublicGetProductCategoryList",
+  "reqType": "GetProductCategoryListRequest",
+  "reqMapping": {
+    "query": ["entity_type", "need_empty_category", "lang"]
+  },
+  "resType": "GetProductCategoryListResponse",
+  "schemaRoot": "api://schemas/idl_marketplace_public_api",
+  "service": "explore"
+});
+export const PublicGetProductCallInfo = /*#__PURE__*/createAPI<GetProductCallInfoRequest, GetProductCallInfoResponse>({
+  "url": "/api/marketplace/product/call_info",
+  "method": "GET",
+  "name": "PublicGetProductCallInfo",
+  "reqType": "GetProductCallInfoRequest",
+  "reqMapping": {
+    "query": ["entity_type", "entity_id", "enterprise_id"]
+  },
+  "resType": "GetProductCallInfoResponse",
+  "schemaRoot": "api://schemas/idl_marketplace_public_api",
+  "service": "explore"
+});
+export const PublicGetMarketPluginConfig = /*#__PURE__*/createAPI<GetMarketPluginConfigRequest, GetMarketPluginConfigResponse>({
+  "url": "/api/marketplace/product/config",
+  "method": "GET",
+  "name": "PublicGetMarketPluginConfig",
+  "reqType": "GetMarketPluginConfigRequest",
+  "reqMapping": {},
+  "resType": "GetMarketPluginConfigResponse",
+  "schemaRoot": "api://schemas/idl_marketplace_public_api",
+  "service": "explore"
+});
+export interface GetMarketPluginConfigRequest {}
+export interface GetMarketPluginConfigResponse {
+  code: number,
+  message: string,
+  data?: Configuration,
+}
+export interface Configuration {
+  enable_saas_plugin?: boolean
+}
+export interface SearchProductRequest {
+  keyword: string,
+  page_num: number,
+  page_size: number,
+  entity_type?: product_common.ProductEntityType,
+  sort_type?: product_common.SortType,
+  /** Open/closed source */
+  publish_mode?: product_common.ProductPublishMode,
+  /** Models used */
+  model_ids?: string[],
+  /** Multimodal type */
+  bot_mod_type?: product_common.BotModType,
+  /** Sub-attributes */
+  components?: product_common.Component[],
+  /** Publish platform IDs */
+  publish_platform_ids?: string[],
+  /** Product category IDs */
+  category_ids?: string[],
+  /** Is official */
+  is_official?: boolean,
+  /** Is recommended */
+  is_recommend?: boolean,
+  /** Product type list, use this parameter first, then EntityType */
+  entity_types?: string,
+  /** Plugin type */
+  plugin_type?: product_common.PluginType,
+  /** Product paid type */
+  product_paid_type?: product_common.ProductPaidType,
+}
+export interface SearchProductResponse {
+  code: number,
+  message: string,
+  data?: SearchProductResponseData,
+}
+export interface SearchProductResponseData {
+  products?: ProductInfo[],
+  total?: number,
+  has_more?: boolean,
+  /** Entity count */
+  entity_total?: {
+    [key: string | number]: number
+  },
+}
+export interface SearchSuggestResponse {
+  code: number,
+  message: string,
+  data?: SearchSuggestResponseData,
+}
+export interface SearchSuggestResponseData {
+  /** Deprecated */
+  suggestions?: ProductMetaInfo[],
+  has_more?: boolean,
+  suggestion_v2?: ProductInfo[],
+}
+export interface SearchSuggestRequest {
+  keyword?: string,
+  /** Optional, defaults to bot recommendation if not provided */
+  entity_type?: product_common.ProductEntityType,
+  page_num?: number,
+  page_size?: number,
+  /** Product type list, use this parameter first, then EntityType */
+  entity_types?: string,
+}
 export interface FavoriteProductResponse {
   code: number,
   message: string,
@@ -234,6 +364,8 @@ export enum PluginAuthMode {
   Configured = 2,
   /** Authorization is required, but the authorization configuration may be user-level and can be configured by the user himself */
   Supported = 3,
+  /** the third-party of coze saas plugin needs to be installed in the saas before it can be used. */
+  NeedInstalled = 9,
 }
 export interface PluginExtraInfo {
   tools?: PluginToolInfo[],
@@ -259,6 +391,7 @@ export interface PluginExtraInfo {
   plugin_type?: product_common.PluginType,
   /** for opencoze */
   auth_mode?: PluginAuthMode,
+  jump_saas_url?: string,
 }
 export interface ToolParameter {
   name: string,
@@ -726,4 +859,96 @@ export interface DuplicateProductData {
   new_entity_id: string,
   /** Plugin ID for workflow */
   new_plugin_id?: string,
+}
+export interface GetProductCategoryListRequest {
+  entity_type: product_common.ProductEntityType,
+  /** When listing, need to get the full category list to distinguish between listing and homepage scenarios */
+  need_empty_category?: boolean,
+  lang?: string,
+}
+export interface GetProductCategoryListData {
+  entity_type: product_common.ProductEntityType,
+  categories?: ProductCategory[],
+}
+export interface GetProductCategoryListResponse {
+  code: number,
+  message: string,
+  data: GetProductCategoryListData,
+}
+export interface GetProductCallInfoRequest {
+  entity_type: product_common.ProductEntityType,
+  entity_id?: string,
+  enterprise_id?: string,
+}
+export enum UserLevel {
+  /** Free version */
+  Free = 0,
+  /**
+   * Overseas
+   * PremiumLite
+  */
+  PremiumLite = 10,
+  /** Premium */
+  Premium = 15,
+  PremiumPlus = 20,
+  /**
+   * Domestic
+   * V1 Volcano Professional Edition
+  */
+  V1ProInstance = 100,
+  /** Personal flagship edition */
+  ProPersonal = 110,
+  /** Team edition */
+  Team = 120,
+  /** Enterprise edition */
+  Enterprise = 130,
+}
+export interface ProductCallCountLimit {
+  /** Whether plugin tool calls are unlimited */
+  is_unlimited: boolean,
+  /** Plugin tool calls used */
+  used_count: number,
+  /** Plugin total tool calls */
+  total_count: number,
+  /** Plugin tool call count reset time */
+  reset_datetime: number,
+  /** Plugin tool call count limit by user level */
+  call_count_limit_by_user_level: {
+    [key: string | number]: ProductCallCountLimit
+  },
+}
+export interface ProductCallRateLimit {
+  /** qps */
+  qps: number,
+  /** Plugin tool call rate limit by user level */
+  call_rate_limit_by_user_level: {
+    [key: string | number]: ProductCallRateLimit
+  },
+}
+export interface UserInfo {
+  /** User name */
+  user_name?: string,
+  /** User nickname */
+  nick_name?: string,
+  /** User avatar url */
+  avatar_url?: string,
+}
+export interface GetProductCallInfoData {
+  /** mcp configuration json string */
+  mcp_json: string,
+  /** Payment level */
+  user_level: UserLevel,
+  /** Plugin tool call count limit */
+  call_count_limit: ProductCallCountLimit,
+  /** Plugin tool call rate limit */
+  call_rate_limit: ProductCallRateLimit,
+  /** User info */
+  user_info: UserInfo,
+  /** Enterprise revert time */
+  revert_time?: string,
+}
+export interface GetProductCallInfoResponse {
+  code: number,
+  message: string,
+  data?: GetProductCallInfoData,
 }

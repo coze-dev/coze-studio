@@ -21,10 +21,10 @@ import (
 
 	"gorm.io/gorm"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 func NewMessageRepo(db *gorm.DB, idGen idgen.IDGenerator) MessageRepo {
@@ -34,6 +34,7 @@ func NewMessageRepo(db *gorm.DB, idGen idgen.IDGenerator) MessageRepo {
 type MessageRepo interface {
 	PreCreate(ctx context.Context, msg *entity.Message) (*entity.Message, error)
 	Create(ctx context.Context, msg *entity.Message) (*entity.Message, error)
+	BatchCreate(ctx context.Context, msg []*entity.Message) ([]*entity.Message, error)
 	List(ctx context.Context, listMeta *entity.ListMeta) ([]*entity.Message, bool, error)
 	GetByRunIDs(ctx context.Context, runIDs []int64, orderBy string) ([]*entity.Message, error)
 	Edit(ctx context.Context, msgID int64, message *message.Message) (int64, error)

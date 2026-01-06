@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import { type ShortCutStruct } from '@coze-agent-ide/tool-config/src/shortcut-config/type';
 import {
   type PluginStatus,
   type PluginType,
@@ -28,6 +27,7 @@ import {
   type DisablePromptCalling,
   type RecallStrategy,
   type DefaultUserInputType,
+  type PluginFrom,
 } from '@coze-arch/bot-api/playground_api';
 import { type BotTableRWMode, type FieldItem } from '@coze-arch/bot-api/memory';
 import { type Dataset } from '@coze-arch/bot-api/knowledge';
@@ -39,6 +39,7 @@ import type {
   TaskInfo,
   SuggestReplyMode,
 } from '@coze-arch/bot-api/developer_api';
+import { type ShortCutStruct } from '@coze-agent-ide/tool-config/src/shortcut-config/type';
 
 interface DefaultPluginApi extends PluginApi {
   isAuto?: boolean;
@@ -47,6 +48,7 @@ interface DefaultPluginApi extends PluginApi {
   plugin_type?: PluginType;
   is_official?: boolean;
   plugin_icon?: string;
+  plugin_from?: PluginFrom;
   status?: PluginStatus;
   // #endregion
 }

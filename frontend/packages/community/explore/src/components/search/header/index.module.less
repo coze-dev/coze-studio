@@ -1,0 +1,139 @@
+/* stylelint-disable selector-class-pattern */
+div.header {
+  position: relative;
+  height: 88px;
+  padding: 24px;
+
+  &:not(.isResponsive) {
+    .input {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+  }
+
+
+  .headerBottom {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .arrowContainer {
+    cursor: pointer;
+
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    margin-right: 4px;
+
+    &.hidden {
+      display: none;
+    }
+
+    svg {
+      @apply coz-fg-secondary;
+    }
+
+    .arrow {
+      rotate: 90deg;
+      width: 100%;
+
+      &>svg {
+        width: 16px;
+        height: 16px;
+
+
+      }
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+
+      @apply hover:coz-mg-secondary-hovered;
+
+      &:hover {
+        svg {
+          path {
+            fill: var(--coz-fg-secondary)
+          }
+        }
+      }
+    }
+  }
+
+  .login-btn {
+    width: 108px;
+    padding: 5px 16px;
+
+
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+    color: #FFF;
+    text-align: center;
+
+    background-color: #4D53E8;
+    border: none;
+    border-radius: 24px;
+
+    &:hover {
+      color: #FFF;
+      background-color: #4D53E8;
+    }
+  }
+
+  &.isResponsive {
+    display: flex;
+    flex-direction: column;
+
+    height: auto;
+    padding: 0;
+    padding-right: 24px;
+    padding-left: 24px;
+
+    .input {
+      flex-grow: 1;
+    }
+
+    .headerTop {
+      display: flex;
+      justify-content: space-between;
+      width: 100%;
+      padding: 16px 0;
+
+
+      .logoContainer {
+        display: flex;
+        align-items: center;
+
+        .coze-logo {
+          width: 28px;
+          height: 28px;
+        }
+
+        .logo-text-container {
+          display: flex;
+          align-items: center;
+
+          .logo-txt {
+            svg path {
+              fill: rgba(0, 0, 75, 100%);
+            }
+          }
+        }
+      }
+    }
+
+    .headerBottom {
+      width: 100%;
+      padding: 8px 0;
+    }
+  }
+}

@@ -19,7 +19,7 @@ package service
 import (
 	"context"
 
-	connectorModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
+	connectorModel "github.com/coze-dev/coze-studio/backend/crossdomain/connector/model"
 	"github.com/coze-dev/coze-studio/backend/domain/app/entity"
 )
 

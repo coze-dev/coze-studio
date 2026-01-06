@@ -28,20 +28,19 @@ import (
 	"github.com/cloudwego/eino/components/document/parser"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/knowledge"
+	knowledge "github.com/coze-dev/coze-studio/backend/crossdomain/knowledge/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/consts"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/knowledge/internal/events"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document"
-	progressbarContract "github.com/coze-dev/coze-studio/backend/infra/contract/document/progressbar"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/document/searchstore"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/eventbus"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/rdb"
-	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/contract/rdb/entity"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/document/progressbar"
+	"github.com/coze-dev/coze-studio/backend/infra/document"
+	"github.com/coze-dev/coze-studio/backend/infra/document/progressbar"
+	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
+	"github.com/coze-dev/coze-studio/backend/infra/eventbus"
+	"github.com/coze-dev/coze-studio/backend/infra/rdb"
+	rdbEntity "github.com/coze-dev/coze-studio/backend/infra/rdb/entity"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
@@ -380,7 +379,7 @@ func (k *knowledgeSVC) processDocumentChunks(ctx context.Context,
 	doc *entity.Document, parseResult []*schema.Document, cacheRecord *indexDocCacheRecord) error {
 
 	batchSize := 100
-	progressbar := progressbar.NewProgressBar(ctx, doc.ID,
+	progressbar := progressbar.New(ctx, doc.ID,
 		int64(len(parseResult)*len(k.searchStoreManagers)), k.cacheCli, true)
 
 	if err := progressbar.AddN(int(cacheRecord.LastProcessedNumber) * len(k.searchStoreManagers)); err != nil {
@@ -416,7 +415,7 @@ func (k *knowledgeSVC) finalizeDocumentIndexing(ctx context.Context, knowledgeID
 // batchProcessSlice processes a batch of document slices
 func (k *knowledgeSVC) batchProcessSlice(ctx context.Context, doc *entity.Document,
 	startIdx int, parseResult []*schema.Document, cacheRecord *indexDocCacheRecord,
-	progressBar progressbarContract.ProgressBar) error {
+	progressBar progressbar.ProgressBar) error {
 
 	collectionName := getCollectionName(doc.KnowledgeID)
 	length := len(parseResult)
@@ -639,7 +638,7 @@ func (k *knowledgeSVC) storeSlicesInDB(ctx context.Context, doc *entity.Document
 // indexSlicesInSearchStores indexes slices in appropriate search stores
 func (k *knowledgeSVC) indexSlicesInSearchStores(ctx context.Context, doc *entity.Document,
 	collectionName string, sliceEntities []*entity.Slice, cacheRecord *indexDocCacheRecord,
-	progressBar progressbarContract.ProgressBar) error {
+	progressBar progressbar.ProgressBar) error {
 
 	fields, err := k.mapSearchFields(doc)
 	if err != nil {

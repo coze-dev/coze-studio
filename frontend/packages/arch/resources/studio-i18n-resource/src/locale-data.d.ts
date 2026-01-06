@@ -20,1559 +20,942 @@ import { type ReactNode } from 'react';
 // #region I18nOptionsMap
 export interface I18nOptionsMap {
   '10k_point_resource_coze_token': { num: ReactNode /* string */ };
-  AddSuccessToast: { name: ReactNode /* string */ };
-  Coze_model_cost_coze_token: { count: ReactNode /* string */ };
-  Coze_model_cost_input_token: { count: ReactNode /* string */ };
-  Coze_model_cost_input_token_m: { count: ReactNode /* string */ };
-  Coze_model_cost_output_token: { count: ReactNode /* string */ };
-  Coze_model_cost_output_token_m: { count: ReactNode /* string */ };
-  Coze_model_cost_token: { count: ReactNode /* string */ };
-  Coze_model_cost_token_m: {
-    count: ReactNode /* string */;
-    dollar_count: ReactNode /* string */;
-  };
-  Coze_token_body: { num: ReactNode /* number */ };
-  Coze_token_history_action_04: { bot_name: ReactNode /* string */ };
-  Coze_token_history_action_05: { workflow_name: ReactNode /* string */ };
-  Coze_token_history_action_06: {
-    bot_name: ReactNode /* string */;
-    publishing_platform_name: ReactNode /* string */;
-  };
-  Coze_token_history_action_09: { bot_name: ReactNode /* string */ };
-  Coze_token_history_action_10: { bot_name: ReactNode /* string */ };
-  Coze_token_history_action_12: {
-    used_count: ReactNode /* string */;
-    total_count: ReactNode /* string */;
-  };
-  Coze_token_history_action_13: {
-    used_count: ReactNode /* string */;
-    total_count: ReactNode /* string */;
-  };
-  Coze_token_history_action_14: {
-    plugin_name: ReactNode /* string */;
-    workflow_name: ReactNode /* string */;
-    bot_name: ReactNode /* string */;
-  };
-  Coze_token_history_action_15: {
-    plugin_name: ReactNode /* string */;
-    workflow_name: ReactNode /* string */;
-    bot_name: ReactNode /* string */;
-  };
-  Coze_token_history_action_16: { workflow_name: ReactNode /* string */ };
-  Coze_token_history_action_app_1: {
-    plugin_name: ReactNode /* string */;
-    workflow_name: ReactNode /* string */;
-    app_name: ReactNode /* string */;
-  };
-  Coze_token_history_action_app_3: { app_name: ReactNode /* string */ };
-  Coze_token_history_action_app_4: { app_name: ReactNode /* string */ };
-  Coze_token_history_action_app_5: { app_name: ReactNode /* string */ };
-  Coze_token_history_action_app_6: {
-    app_name: ReactNode /* string */;
-    publishing_platform_name: ReactNode /* string */;
-  };
-  Coze_token_task_amount: { amount: ReactNode /* string */ };
-  Force_check_detail_open_tip: { time: ReactNode /* string */ };
-  Force_guide_open_detail: { time: ReactNode /* string */ };
-  Force_my_questionnaire_tip: { time: ReactNode /* string */ };
-  Force_my_tip_1: { name: ReactNode /* string */ };
-  Force_sign_in_tip_detail: { time: ReactNode /* string */ };
-  Imageflow_Store_case_popup2: {
-    entity_type: ReactNode /* string */;
-    entity_name: ReactNode /* string */;
-  };
-  Imageflow_Store_testrun_expire: {
-    entity_type: ReactNode /* string */;
-    entity_name: ReactNode /* string */;
-  };
-  Manual_crawling_017: { version: ReactNode /* string */ };
-  Plugin_update_info_text: {
-    number: ReactNode /* string */;
-    array: ReactNode /* string */;
-  };
-  account_ban: { uid: ReactNode /* string */ };
-  account_merge_oauth_success2: { phone_number: ReactNode /* string */ };
-  agent_prompt_editor_insert_placeholder: { keymap: ReactNode /* string */ };
-  agentflow_addbot_published_time: { time: ReactNode /* string */ };
-  analytic_query_detail_tips_for_outputmode: {
-    outputMode: ReactNode /* string */;
-  };
-  analytic_query_detail_topology_tooltip: {
-    errorCount: ReactNode /* string */;
-    callCount: ReactNode /* string */;
-  };
-  analytic_query_export_content: {
-    maxExportCount: ReactNode /* string */;
-    selectedExportCount: ReactNode /* string */;
-  };
-  analytic_query_security_verify_context: {
-    agreementName: ReactNode /* string */;
-  };
-  analytics_overview_total_count: { count: ReactNode /* string */ };
-  analytics_query_invoke: { name: ReactNode /* string */ };
-  analytics_timepicker_last_days: { count: ReactNode /* string */ };
-  analytics_timepicker_last_months: { count: ReactNode /* string */ };
-  analytics_timepicker_last_weeks: { count: ReactNode /* string */ };
-  api_analytics_err_code_dist_detail: { coze_err_code: ReactNode /* string */ };
-  api_analytics_previcus_x_days: { num: ReactNode /* string */ };
-  api_analytics_x_days: { num: ReactNode /* string */ };
-  api_playground_add_params: { param: ReactNode /* string */ };
-  api_playground_notification: { doc_link: ReactNode /* string */ };
-  api_sdk_published: { coze_token: ReactNode /* string */ };
-  app_auth_error_tips: { coze_docs: ReactNode /* string */ };
-  app_publish_sdk_step_1: { doc_link: ReactNode /* string */ };
-  apps_auth_app_name: { app_name: ReactNode /* string */ };
-  apps_config_pp_tips: { coze_docs: ReactNode /* string */ };
-  audit_unsuccess_general_type: { link: ReactNode /* string */ };
-  auth_apps_notice: { auth_docs: ReactNode /* string */ };
-  auth_service_token_1: { date: ReactNode /* string */ };
-  binding_array_data_label: { key: ReactNode /* string */ };
-  binding_array_item_placeholder: { key: ReactNode /* string */ };
-  binding_array_item_verify: { key: ReactNode /* string */ };
+  'AddSuccessToast': { name: ReactNode /* string */ };
+  'Coze_model_cost_coze_token': { count: ReactNode /* string */ };
+  'Coze_model_cost_input_token': { count: ReactNode /* string */ };
+  'Coze_model_cost_input_token_m': { count: ReactNode /* string */ };
+  'Coze_model_cost_output_token': { count: ReactNode /* string */ };
+  'Coze_model_cost_output_token_m': { count: ReactNode /* string */ };
+  'Coze_model_cost_token': { count: ReactNode /* string */ };
+  'Coze_model_cost_token_m': { count: ReactNode /* string */, dollar_count: ReactNode /* string */ };
+  'Coze_token_body': { num: ReactNode /* number */ };
+  'Coze_token_history_action_04': { bot_name: ReactNode /* string */ };
+  'Coze_token_history_action_05': { workflow_name: ReactNode /* string */ };
+  'Coze_token_history_action_06': { bot_name: ReactNode /* string */, publishing_platform_name: ReactNode /* string */ };
+  'Coze_token_history_action_09': { bot_name: ReactNode /* string */ };
+  'Coze_token_history_action_10': { bot_name: ReactNode /* string */ };
+  'Coze_token_history_action_12': { used_count: ReactNode /* string */, total_count: ReactNode /* string */ };
+  'Coze_token_history_action_13': { used_count: ReactNode /* string */, total_count: ReactNode /* string */ };
+  'Coze_token_history_action_14': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, bot_name: ReactNode /* string */ };
+  'Coze_token_history_action_15': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, bot_name: ReactNode /* string */ };
+  'Coze_token_history_action_16': { workflow_name: ReactNode /* string */ };
+  'Coze_token_history_action_app_1': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, app_name: ReactNode /* string */ };
+  'Coze_token_history_action_app_2': { plugin_name: ReactNode /* string */, workflow_name: ReactNode /* string */, app_name: ReactNode /* string */ };
+  'Coze_token_history_action_app_3': { app_name: ReactNode /* string */ };
+  'Coze_token_history_action_app_4': { app_name: ReactNode /* string */ };
+  'Coze_token_history_action_app_5': { app_name: ReactNode /* string */ };
+  'Coze_token_history_action_app_6': { app_name: ReactNode /* string */, publishing_platform_name: ReactNode /* string */ };
+  'Coze_token_task_amount': { amount: ReactNode /* string */ };
+  'Exceed_Len': { max: ReactNode /* string */ };
+  'Force_check_detail_open_tip': { time: ReactNode /* string */ };
+  'Force_guide_open_detail': { time: ReactNode /* string */ };
+  'Force_my_questionnaire_tip': { time: ReactNode /* string */ };
+  'Force_my_tip_1': { name: ReactNode /* string */ };
+  'Force_sign_in_tip_detail': { time: ReactNode /* string */ };
+  'Imageflow_Store_case_popup2': { entity_type: ReactNode /* string */, entity_name: ReactNode /* string */ };
+  'Imageflow_Store_testrun_expire': { entity_type: ReactNode /* string */, entity_name: ReactNode /* string */ };
+  'Manual_crawling_017': { version: ReactNode /* string */ };
+  'Min_Len': { min: ReactNode /* string */ };
+  'Plugin_update_info_text': { number: ReactNode /* string */, array: ReactNode /* string */ };
+  'Req_Field_DropdownSel': { 字段名称: ReactNode /* string */ };
+  'Req_Field_InputBox': { 字段名称: ReactNode /* string */ };
+  'account_ban': { uid: ReactNode /* string */ };
+  'account_merge_oauth_success2': { phone_number: ReactNode /* string */ };
+  'admin_set_limit': { limit: ReactNode /* string */, current: ReactNode /* string */ };
+  'admin_set_limit_month': { limit: ReactNode /* string */, current: ReactNode /* string */ };
+  'agent_prompt_editor_insert_placeholder': { keymap: ReactNode /* string */ };
+  'agentflow_addbot_published_time': { time: ReactNode /* string */ };
+  'all_staff_count': { userCount: ReactNode /* string */ };
+  'analytic_query_detail_tips_for_outputmode': { outputMode: ReactNode /* string */ };
+  'analytic_query_detail_topology_tooltip': { errorCount: ReactNode /* string */, callCount: ReactNode /* string */ };
+  'analytic_query_export_content': { maxExportCount: ReactNode /* string */, selectedExportCount: ReactNode /* string */ };
+  'analytic_query_security_verify_context': { agreementName: ReactNode /* string */ };
+  'analytics_overview_total_count': { count: ReactNode /* string */ };
+  'analytics_query_invoke': { name: ReactNode /* string */ };
+  'analytics_timepicker_last_days': { count: ReactNode /* string */ };
+  'analytics_timepicker_last_months': { count: ReactNode /* string */ };
+  'analytics_timepicker_last_weeks': { count: ReactNode /* string */ };
+  'api_analytics_err_code_dist_detail': { coze_err_code: ReactNode /* string */ };
+  'api_analytics_previcus_x_days': { num: ReactNode /* string */ };
+  'api_analytics_x_days': { num: ReactNode /* string */ };
+  'api_playground_add_params': { param: ReactNode /* string */ };
+  'api_playground_notification': { doc_link: ReactNode /* string */ };
+  'api_sdk_published': { coze_token: ReactNode /* string */ };
+  'app_auth_error_tips': { coze_docs: ReactNode /* string */ };
+  'app_chux_list_3': { userLevel: ReactNode /* string */, used: ReactNode /* string */, max: ReactNode /* string */ };
+  'app_chux_list_4': { used: ReactNode /* string */ };
+  'app_chux_list_5': { quota: ReactNode /* string */ };
+  'app_chux_publish_33': { field: ReactNode /* string */ };
+  'app_chux_publish_34': { field: ReactNode /* string */, minLength: ReactNode /* string */ };
+  'app_chux_publish_36': { field: ReactNode /* string */, maxLength: ReactNode /* string */ };
+  'app_chux_publish_37': { field: ReactNode /* string */ };
+  'app_chux_upgrade_2': { max: ReactNode /* string */ };
+  'app_chux_upgrade_5': { used: ReactNode /* string */, max: ReactNode /* string */ };
+  'app_chux_upgrade_6': { userLevel: ReactNode /* string */ };
+  'app_chux_upgrade_7': { used: ReactNode /* string */ };
+  'app_chux_upgrade_8': { quota: ReactNode /* string */ };
+  'app_chux_upgrade_9': { userLevelName: ReactNode /* string */, max: ReactNode /* string */ };
+  'app_publish_sdk_step_1': { doc_link: ReactNode /* string */ };
+  'apps_auth_app_name': { app_name: ReactNode /* string */ };
+  'apps_config_pp_tips': { coze_docs: ReactNode /* string */ };
+  'audit_unsuccess_general_type': { link: ReactNode /* string */ };
+  'auth_apps_notice': { auth_docs: ReactNode /* string */ };
+  'auth_content_close_countdown': { countdown: ReactNode /* string */ };
+  'auth_service_token_1': { date: ReactNode /* string */ };
+  'binding_array_data_label': { key: ReactNode /* string */ };
+  'binding_array_item_placeholder': { key: ReactNode /* string */ };
+  'binding_array_item_verify': { key: ReactNode /* string */ };
   'bmv_a_total_of_{num}_whitelisted_users': { num: ReactNode /* string */ };
-  bmv_gray_publish_help_tooltip: { link: ReactNode /* string */ };
+  'bmv_gray_publish_help_tooltip': { link: ReactNode /* string */ };
   'bmv_lane_{placeholder1}': { placeholder1: ReactNode /* string */ };
-  bmv_published_cnt_channels: { cnt: ReactNode /* string */ };
-  bmv_total_count_of_black_list: { num: ReactNode /* string */ };
-  'bmv_{placeholder0}_there_are_more_than_8_lane_versions__please_modify_the_lane_name_': {
-    placeholder0: ReactNode /* string */;
-  };
-  bot_autosave_saved: { time: ReactNode /* string */ };
-  bot_database_add_field: { number: ReactNode /* string */ };
-  bot_detail_tips_private_knowledge: { num: ReactNode /* string */ };
-  bot_detail_tips_private_plugin: { num: ReactNode /* string */ };
-  bot_detail_tips_private_workflow: { num: ReactNode /* string */ };
-  bot_dev_privacy_setting_privacy_template_2: {
-    privacy_template: ReactNode /* string */;
-  };
-  bot_edit_available_for_cici: { platform: ReactNode /* string */ };
-  bot_edit_dataset_added_toast: { dataset_name: ReactNode /* string */ };
-  bot_edit_dataset_process_error: { file_names: ReactNode /* string */ };
-  bot_edit_dataset_removed_toast: { dataset_name: ReactNode /* string */ };
-  bot_edit_page_plugin_list_plugin_has_n_tools: { n: ReactNode /* string */ };
-  bot_edit_page_plugin_list_plugin_n_bots_using: { n: ReactNode /* string */ };
-  bot_edit_tool_added_toast: { api_name: ReactNode /* string */ };
-  bot_edit_tool_added_toast_error: { api_name: ReactNode /* string */ };
-  bot_edit_tool_removed_toast: { api_name: ReactNode /* string */ };
-  bot_edit_voices_modal_description: { platform: ReactNode /* string */ };
-  bot_edit_voices_title_description: { platform: ReactNode /* string */ };
-  bot_preview_attach: { placeholder: ReactNode /* string */ };
-  bot_preview_attach_0319: { placeholder: ReactNode /* string */ };
-  bot_publish_bind_error: {
-    key_name: ReactNode /* string */;
-    bot_name: ReactNode /* string */;
-  };
-  bot_publish_disconnect: { platform: ReactNode /* string */ };
-  bot_publish_disconnect_desc: { platform: ReactNode /* string */ };
-  bot_publish_disconnect_title: { platform: ReactNode /* string */ };
-  bot_publish_feishu_success_flow: { platform: ReactNode /* string */ };
-  bot_publish_field_placeholder: { field: ReactNode /* string */ };
-  bot_publish_flow: { platform: ReactNode /* string */ };
-  bot_publish_flow_explain: { platform: ReactNode /* string */ };
-  bot_publish_offline_notice: { platform: ReactNode /* string */ };
-  bot_publish_offline_notice_no_certain_time: {
-    platform: ReactNode /* string */;
-  };
-  bot_publish_result_fail_text: { num: ReactNode /* number */ };
-  bot_publish_result_success_text: { num: ReactNode /* number */ };
-  bot_publish_select_desc_compliance_new: {
-    publish_terms_title: ReactNode /* string */;
-  };
-  bot_publish_token_expired_notice: { platform: ReactNode /* string */ };
-  bot_pulish_offline_modal_title1: { platform: ReactNode /* string */ };
-  bot_pulish_offline_modal_title2: { platform_number: ReactNode /* string */ };
-  bot_task_preset_day_of_month: { day: ReactNode /* number */ };
-  bot_task_preset_day_of_week: { day: ReactNode /* number */ };
-  bot_task_preset_everyday_task: { time: ReactNode /* string */ };
-  bot_task_preset_everyweek_task: {
-    time: ReactNode /* string */;
-    day: ReactNode /* string */;
-  };
-  bot_task_preset_interval_task: {
-    time: ReactNode /* string */;
-    day: ReactNode /* string */;
-  };
-  bot_task_preset_monthly_task: {
-    time: ReactNode /* string */;
-    day: ReactNode /* number */;
-  };
-  bot_to_doubao_popup_modle_plugin_unableshare_desc2: {
-    apply_link: ReactNode /* string */;
-  };
-  bot_to_doubao_popup_plugin_unableshare_desc2: {
-    apply_link: ReactNode /* string */;
-  };
+  'bmv_published_cnt_channels': { cnt: ReactNode /* string */ };
+  'bmv_total_count_of_black_list': { num: ReactNode /* string */ };
+  'bmv_{placeholder0}_there_are_more_than_8_lane_versions__please_modify_the_lane_name_': { placeholder0: ReactNode /* string */ };
+  'bot_autosave_saved': { time: ReactNode /* string */ };
+  'bot_database_add_field': { number: ReactNode /* string */ };
+  'bot_detail_tips_private_knowledge': { num: ReactNode /* string */ };
+  'bot_detail_tips_private_plugin': { num: ReactNode /* string */ };
+  'bot_detail_tips_private_workflow': { num: ReactNode /* string */ };
+  'bot_dev_privacy_setting_privacy_template_2': { privacy_template: ReactNode /* string */ };
+  'bot_edit_available_for_cici': { platform: ReactNode /* string */ };
+  'bot_edit_dataset_added_toast': { dataset_name: ReactNode /* string */ };
+  'bot_edit_dataset_process_error': { file_names: ReactNode /* string */ };
+  'bot_edit_dataset_removed_toast': { dataset_name: ReactNode /* string */ };
+  'bot_edit_page_plugin_list_plugin_has_n_tools': { n: ReactNode /* string */ };
+  'bot_edit_page_plugin_list_plugin_n_bots_using': { n: ReactNode /* string */ };
+  'bot_edit_tool_added_toast': { api_name: ReactNode /* string */ };
+  'bot_edit_tool_added_toast_error': { api_name: ReactNode /* string */ };
+  'bot_edit_tool_removed_toast': { api_name: ReactNode /* string */ };
+  'bot_edit_voices_modal_description': { platform: ReactNode /* string */ };
+  'bot_edit_voices_title_description': { platform: ReactNode /* string */ };
+  'bot_preview_attach': { placeholder: ReactNode /* string */ };
+  'bot_preview_attach_0319': { placeholder: ReactNode /* string */ };
+  'bot_publish_bind_error': { key_name: ReactNode /* string */, bot_name: ReactNode /* string */ };
+  'bot_publish_cost_owner_tip': { platform: ReactNode /* string */ };
+  'bot_publish_disconnect': { platform: ReactNode /* string */ };
+  'bot_publish_disconnect_desc': { platform: ReactNode /* string */ };
+  'bot_publish_disconnect_title': { platform: ReactNode /* string */ };
+  'bot_publish_feishu_success_flow': { platform: ReactNode /* string */ };
+  'bot_publish_field_placeholder': { field: ReactNode /* string */ };
+  'bot_publish_flow': { platform: ReactNode /* string */ };
+  'bot_publish_flow_explain': { platform: ReactNode /* string */ };
+  'bot_publish_offline_notice': { platform: ReactNode /* string */ };
+  'bot_publish_offline_notice_no_certain_time': { platform: ReactNode /* string */ };
+  'bot_publish_result_fail_text': { num: ReactNode /* number */ };
+  'bot_publish_result_success_text': { num: ReactNode /* number */ };
+  'bot_publish_select_desc_compliance_new': { publish_terms_title: ReactNode /* string */ };
+  'bot_publish_token_expired_notice': { platform: ReactNode /* string */ };
+  'bot_pulish_offline_modal_title1': { platform: ReactNode /* string */ };
+  'bot_pulish_offline_modal_title2': { platform_number: ReactNode /* string */ };
+  'bot_task_preset_day_of_month': { day: ReactNode /* number */ };
+  'bot_task_preset_day_of_week': { day: ReactNode /* number */ };
+  'bot_task_preset_everyday_task': { time: ReactNode /* string */ };
+  'bot_task_preset_everyweek_task': { time: ReactNode /* string */, day: ReactNode /* string */ };
+  'bot_task_preset_interval_task': { time: ReactNode /* string */, day: ReactNode /* string */ };
+  'bot_task_preset_monthly_task': { time: ReactNode /* string */, day: ReactNode /* number */ };
+  'bot_to_doubao_popup_modle_plugin_unableshare_desc2': { apply_link: ReactNode /* string */ };
+  'bot_to_doubao_popup_plugin_unableshare_desc2': { apply_link: ReactNode /* string */ };
   'bound_{page}': { page: ReactNode /* string */ };
-  builder_preview_channel: { channel: ReactNode /* string */ };
-  builder_preview_doubao: { channel: ReactNode /* string */ };
-  builder_preview_no_component: { channel: ReactNode /* string */ };
-  bz_add_coop_failed: { max_coop: ReactNode /* string */ };
-  bz_batch_add_limit_20: { limit_cnt: ReactNode /* string */ };
-  bz_coop_limit_reached_upgrade_for_more: { type_name: ReactNode /* string */ };
-  bz_coop_upgrade_for_more: { max_coop: ReactNode /* string */ };
-  bz_max_cnt_bots_or_workflows: { max_cnt: ReactNode /* string */ };
-  bz_max_coop_collaborators: { max_coop: ReactNode /* string */ };
-  bz_reache_max: {
-    max_cnt: ReactNode /* string */;
-    type_name: ReactNode /* string */;
-  };
-  bz_reache_max2: {
-    enable_cnt: ReactNode /* string */;
-    type_name: ReactNode /* string */;
-    max_cnt: ReactNode /* string */;
-  };
-  card_builder_api_add_apiCategory: { name: ReactNode /* string */ };
-  card_builder_api_add_config: {
-    type: ReactNode /* string */;
-    name: ReactNode /* string */;
-  };
-  card_builder_api_add_request: { name: ReactNode /* string */ };
-  card_builder_api_copy_config: {
-    type: ReactNode /* string */;
-    name: ReactNode /* string */;
-  };
-  card_builder_api_copy_request: { name: ReactNode /* string */ };
-  card_builder_api_delete_apiCategory: { name: ReactNode /* string */ };
-  card_builder_api_delete_config: { name: ReactNode /* string */ };
-  card_builder_api_delete_request: { name: ReactNode /* string */ };
-  card_builder_api_httpConfig_save_error: { name: ReactNode /* string */ };
-  card_builder_api_httpConfig_save_success: { name: ReactNode /* string */ };
-  card_builder_api_http_var_name: { name: ReactNode /* string */ };
-  card_builder_api_list_item_delete_content: { name: ReactNode /* string */ };
-  card_builder_api_rpcConfig_save_error: { name: ReactNode /* string */ };
-  card_builder_api_rpcConfig_save_success: { name: ReactNode /* string */ };
-  card_builder_api_rpc_delete_success: { name: ReactNode /* string */ };
-  card_builder_api_rpc_response_columns_data: { name: ReactNode /* string */ };
-  card_builder_api_rpc_save_error: { name: ReactNode /* string */ };
-  card_builder_api_rpc_save_success: { name: ReactNode /* string */ };
-  card_builder_api_update_apiCategory: {
-    name: ReactNode /* string */;
-    rename: ReactNode /* string */;
-  };
-  card_builder_api_update_config: { name: ReactNode /* string */ };
-  card_builder_api_update_request: { name: ReactNode /* string */ };
-  card_builder_atomAction_add_slotBlock_title: { name: ReactNode /* string */ };
-  card_builder_atomAction_destroy_block: { name: ReactNode /* string */ };
-  card_builder_atomAction_redo_action: { text: ReactNode /* string */ };
-  card_builder_atomAction_undo_action: { text: ReactNode /* string */ };
-  card_builder_atomAction_update_blockAdvancedValue: {
-    fieldName: ReactNode /* string */;
-    name: ReactNode /* string */;
-  };
-  card_builder_atomAction_update_blockLogicValue: {
-    fieldName: ReactNode /* string */;
-    name: ReactNode /* string */;
-  };
-  card_builder_atomAction_update_blockPosition: {
-    name: ReactNode /* string */;
-  };
-  card_builder_atomAction_update_blockPropsValue: {
-    fieldName: ReactNode /* string */;
-    name: ReactNode /* string */;
-  };
-  card_builder_atomAction_update_blockTitleValue: {
-    name: ReactNode /* string */;
-    title: ReactNode /* string */;
-  };
-  card_builder_atomAction_update_blockWorkspacePropsValue: {
-    desc: ReactNode /* string */;
-  };
-  card_builder_atomAction_update_slotPropsValue: {
-    fieldName: ReactNode /* string */;
-    slotName: ReactNode /* string */;
-    blockName: ReactNode /* string */;
-  };
-  card_builder_audit_banner_pending_text: { version: ReactNode /* string */ };
-  card_builder_audit_banner_rejected_text: { version: ReactNode /* string */ };
-  card_builder_builder_preview_channel: { channel: ReactNode /* string */ };
-  card_builder_builder_preview_doubao: { channel: ReactNode /* string */ };
-  card_builder_builder_preview_no_component: {
-    channel: ReactNode /* string */;
-  };
-  card_builder_builder_publish_version_verify_compare: {
-    lastVersion: ReactNode /* string */;
-  };
-  card_builder_builtinLogic_editor_tip: { pageTitle: ReactNode /* string */ };
-  card_builder_codeIn_update_blocksInfo: {
-    elementType: ReactNode /* string */;
-  };
-  card_builder_codeIn_update_blocksVersion: {
-    pkgName: ReactNode /* string */;
-    version: ReactNode /* string */;
-  };
-  card_builder_compList_panel_block_number: { count: ReactNode /* string */ };
-  card_builder_compList_panel_block_number_selected: {
-    count: ReactNode /* string */;
-  };
-  card_builder_compList_panel_block_selected_block_number: {
-    count: ReactNode /* string */;
-  };
-  card_builder_compList_panel_block_selected_package_number: {
-    count: ReactNode /* string */;
-  };
-  card_builder_compList_panel_category_hidden: {
-    count: ReactNode /* string */;
-  };
-  card_builder_copilot_create_snapshot_desc: { text: ReactNode /* string */ };
-  card_builder_coworkInfo_user_editing: { user: ReactNode /* string */ };
-  card_builder_coworkInfo_user_viewing: { user: ReactNode /* string */ };
-  card_builder_depsManager_atomAction_deleteBlock: {
-    pkgName: ReactNode /* string */;
-  };
-  card_builder_depsManager_atomAction_updateBlock: {
-    pkgName: ReactNode /* string */;
-    version: ReactNode /* string */;
-    targetVersion: ReactNode /* string */;
-  };
-  card_builder_depsManager_panel_block_number: {
-    count: ReactNode /* string */;
-  };
-  card_builder_depsManager_panel_block_update_content: {
-    updateVersion: ReactNode /* string */;
-  };
-  card_builder_envs_add_env: { name: ReactNode /* string */ };
-  card_builder_envs_add_var: {
-    var: ReactNode /* string */;
-    env: ReactNode /* string */;
-  };
-  card_builder_envs_copy_env: { name: ReactNode /* string */ };
-  card_builder_envs_delete_env: { name: ReactNode /* string */ };
-  card_builder_envs_delete_var: {
-    var: ReactNode /* string */;
-    env: ReactNode /* string */;
-  };
-  card_builder_envs_import_var: { name: ReactNode /* string */ };
-  card_builder_envs_list_delete_content: { name: ReactNode /* string */ };
-  card_builder_envs_update_env: { name: ReactNode /* string */ };
-  card_builder_envs_update_var: {
-    var: ReactNode /* string */;
-    env: ReactNode /* string */;
-  };
-  card_builder_envs_var_list_delete_content: { name: ReactNode /* string */ };
-  card_builder_envs_var_panel_delete_content: { name: ReactNode /* string */ };
-  card_builder_history_create_snapshot_desc: { text: ReactNode /* string */ };
-  card_builder_history_snapshot_create_desc: { text: ReactNode /* string */ };
-  card_builder_history_snapshot_restore: { text: ReactNode /* string */ };
-  card_builder_history_userAction_list_page: { label: ReactNode /* string */ };
-  card_builder_history_userAction_restore: { text: ReactNode /* string */ };
-  card_builder_logicFlow_list_delete_content: { name: ReactNode /* string */ };
-  card_builder_logicFlow_userAction_addLogic: { name: ReactNode /* string */ };
-  card_builder_logicFlow_userAction_copyLogic: {
-    oldName: ReactNode /* string */;
-    newName: ReactNode /* string */;
-  };
-  card_builder_logicFlow_userAction_deleteGroup: {
-    title: ReactNode /* string */;
-  };
-  card_builder_logicFlow_userAction_deleteLogic: {
-    name: ReactNode /* string */;
-  };
-  card_builder_logicFlow_userAction_updateGroup: {
-    title: ReactNode /* string */;
-  };
-  card_builder_logicFlow_userAction_updateLogic: {
-    name: ReactNode /* string */;
-  };
-  card_builder_pageManager_add_dir: { name: ReactNode /* string */ };
-  card_builder_pageManager_add_page: { name: ReactNode /* string */ };
-  card_builder_pageManager_copy_page: { name: ReactNode /* string */ };
-  card_builder_pageManager_create_name_label: { name: ReactNode /* string */ };
-  card_builder_pageManager_create_path_label: { name: ReactNode /* string */ };
-  card_builder_pageManager_delete_content: { name: ReactNode /* string */ };
-  card_builder_pageManager_delete_dir: { name: ReactNode /* string */ };
-  card_builder_pageManager_delete_page: { name: ReactNode /* string */ };
-  card_builder_pageManager_move_dir: { srcName: ReactNode /* string */ };
-  card_builder_pageManager_move_page: { srcName: ReactNode /* string */ };
-  card_builder_pageManager_update_dir: { name: ReactNode /* string */ };
-  card_builder_pageManager_update_page: { name: ReactNode /* string */ };
-  card_builder_plural: { num: ReactNode /* number */ };
-  card_builder_redoUndo_error: { type: ReactNode /* string */ };
-  card_builder_releaseBtn_releaseApp_error: { message: ReactNode /* string */ };
-  card_builder_releaseBtn_releaseApp_pkgMode_rec: {
-    name: ReactNode /* string */;
-  };
-  card_builder_sandbox_cowork_restore_content: {
-    operator: ReactNode /* string */;
-  };
-  card_builder_slot_formula_block_title: {
-    slotTitle: ReactNode /* string */;
-    blockTitle: ReactNode /* string */;
-  };
-  card_builder_template_create_snapshot_desc: { text: ReactNode /* string */ };
-  card_builder_userFunc_list_item_delete_content: {
-    name: ReactNode /* string */;
-  };
-  card_builder_userFunc_userAction_addFunc: { name: ReactNode /* string */ };
-  card_builder_userFunc_userAction_copyFunc: {
-    oldName: ReactNode /* string */;
-    newName: ReactNode /* string */;
-  };
-  card_builder_userFunc_userAction_deleteFunc: { name: ReactNode /* string */ };
-  card_builder_userFunc_userAction_editFunc: { name: ReactNode /* string */ };
-  card_builder_userFunc_userAction_updateFunc: { name: ReactNode /* string */ };
-  card_builder_userVar_delete_content: { name: ReactNode /* string */ };
-  card_builder_userVar_formula_app: { name: ReactNode /* string */ };
-  card_builder_userVar_formula_page: { name: ReactNode /* string */ };
-  card_builder_userVar_userAction_addVar: { name: ReactNode /* string */ };
-  card_builder_userVar_userAction_copyVar: {
-    oldName: ReactNode /* string */;
-    newName: ReactNode /* string */;
-  };
-  card_builder_userVar_userAction_deleteVar: { name: ReactNode /* string */ };
-  card_builder_userVar_userAction_editVar: { name: ReactNode /* string */ };
-  card_builder_userVar_userAction_updateVar: { name: ReactNode /* string */ };
-  card_custom_bind_data_to_element: { data_element: ReactNode /* string */ };
-  card_custom_bind_data_to_list: { card_list_name: ReactNode /* string */ };
-  card_custom_code_caution: { cici_or_doubao: ReactNode /* string */ };
-  card_custom_tips_content_b: { bot_studio_name: ReactNode /* string */ };
-  card_list_bind_placeholder: { key: ReactNode /* string */ };
-  card_not_support_max_list: { num: ReactNode /* string */ };
-  card_select_path_placeholder: { path: ReactNode /* string */ };
-  card_update_step_title: { name: ReactNode /* string */ };
-  chatInitRetry: { retry: ReactNode /* string */ };
-  chat_geolocation_auth_allow_tip: { plugin: ReactNode /* string */ };
-  chat_geolocation_auth_decline_tip: { plugin: ReactNode /* string */ };
-  chat_geolocation_auth_request_message: {
-    plugin_name: ReactNode /* string */;
-  };
-  chatflow_agent_input_placeholder: { text: ReactNode /* string */ };
-  chatflow_agent_toast_feedback_fail: { feedback: ReactNode /* string */ };
-  chatflow_agent_toast_feedback_success: { feedback: ReactNode /* string */ };
-  chatflow_preview_take_over: { agentName: ReactNode /* string */ };
-  coding_ability_leaderboard_top_n: { n: ReactNode /* string */ };
-  coding_ability_leaderboard_top_n_explain: { n: ReactNode /* string */ };
-  collaborate_collaborater_added_partial_toast: {
-    users: ReactNode /* string */;
-  };
-  collaborate_collaborater_count: {
-    number_of_collaborators: ReactNode /* string */;
-  };
-  collaborate_collaborater_count_1: {
-    number_of_collaborators: ReactNode /* string */;
-  };
-  collaborate_collaborater_owner_tooltip: { username: ReactNode /* string */ };
-  community_Button_view_all_comments: { comment_num: ReactNode /* string */ };
-  community_Image_uploading: {
-    upload_num: ReactNode /* string */;
-    total_num: ReactNode /* string */;
-  };
-  community_Please_enter_add_a_comment: { user_name: ReactNode /* string */ };
-  community_Please_enter_please_enter_your_comment: {
-    user_name: ReactNode /* string */;
-  };
-  community_Subtitle_comments: { num: ReactNode /* number */ };
-  community_notification_app_msg_plural: {
-    count: ReactNode /* string */;
-    project_name: ReactNode /* string */;
-  };
-  community_notification_bot_msg: {
-    bot_name: ReactNode /* string */;
-    num: ReactNode /* string */;
-  };
-  community_notification_bot_msg_plural: { num: ReactNode /* number */ };
-  community_notification_comment_msg: {
-    num: ReactNode /* string */;
-    post_title: ReactNode /* string */;
-  };
-  community_notification_comment_msg_plural: { num: ReactNode /* number */ };
-  community_notification_post_msg: {
-    post_title: ReactNode /* string */;
-    num: ReactNode /* string */;
-  };
-  community_notification_post_msg_plural: { num: ReactNode /* number */ };
-  community_notification_template_msg_plural: {
-    count: ReactNode /* string */;
-    entity_name: ReactNode /* string */;
-  };
-  community_num_comment: { comment_num: ReactNode /* string */ };
-  community_num_comments: { comment_num: ReactNode /* string */ };
-  community_share_conver_title: { bot_name: ReactNode /* string */ };
-  community_time_date: {
-    mm: ReactNode /* string */;
-    dd: ReactNode /* string */;
-    yyyy: ReactNode /* string */;
-  };
-  community_time_day: { n: ReactNode /* string */ };
-  community_time_hour: { n: ReactNode /* string */ };
-  community_time_min: { n: ReactNode /* string */ };
+  'builder_preview_channel': { channel: ReactNode /* string */ };
+  'builder_preview_doubao': { channel: ReactNode /* string */ };
+  'builder_preview_no_component': { channel: ReactNode /* string */ };
+  'bz_add_coop_failed': { max_coop: ReactNode /* string */ };
+  'bz_batch_add_limit_20': { limit_cnt: ReactNode /* string */ };
+  'bz_coop_limit_reached_upgrade_for_more': { type_name: ReactNode /* string */ };
+  'bz_coop_upgrade_for_more': { max_coop: ReactNode /* string */ };
+  'bz_max_cnt_bots_or_workflows': { max_cnt: ReactNode /* string */ };
+  'bz_max_coop_collaborators': { max_coop: ReactNode /* string */ };
+  'bz_reache_max': { max_cnt: ReactNode /* string */, type_name: ReactNode /* string */ };
+  'bz_reache_max2': { enable_cnt: ReactNode /* string */, type_name: ReactNode /* string */, max_cnt: ReactNode /* string */ };
+  'card_builder_api_add_apiCategory': { name: ReactNode /* string */ };
+  'card_builder_api_add_config': { type: ReactNode /* string */, name: ReactNode /* string */ };
+  'card_builder_api_add_request': { name: ReactNode /* string */ };
+  'card_builder_api_copy_config': { type: ReactNode /* string */, name: ReactNode /* string */ };
+  'card_builder_api_copy_request': { name: ReactNode /* string */ };
+  'card_builder_api_delete_apiCategory': { name: ReactNode /* string */ };
+  'card_builder_api_delete_config': { name: ReactNode /* string */ };
+  'card_builder_api_delete_request': { name: ReactNode /* string */ };
+  'card_builder_api_httpConfig_save_error': { name: ReactNode /* string */ };
+  'card_builder_api_httpConfig_save_success': { name: ReactNode /* string */ };
+  'card_builder_api_http_var_name': { name: ReactNode /* string */ };
+  'card_builder_api_list_item_delete_content': { name: ReactNode /* string */ };
+  'card_builder_api_rpcConfig_save_error': { name: ReactNode /* string */ };
+  'card_builder_api_rpcConfig_save_success': { name: ReactNode /* string */ };
+  'card_builder_api_rpc_delete_success': { name: ReactNode /* string */ };
+  'card_builder_api_rpc_response_columns_data': { name: ReactNode /* string */ };
+  'card_builder_api_rpc_save_error': { name: ReactNode /* string */ };
+  'card_builder_api_rpc_save_success': { name: ReactNode /* string */ };
+  'card_builder_api_update_apiCategory': { name: ReactNode /* string */, rename: ReactNode /* string */ };
+  'card_builder_api_update_config': { name: ReactNode /* string */ };
+  'card_builder_api_update_request': { name: ReactNode /* string */ };
+  'card_builder_atomAction_add_slotBlock_title': { name: ReactNode /* string */ };
+  'card_builder_atomAction_destroy_block': { name: ReactNode /* string */ };
+  'card_builder_atomAction_redo_action': { text: ReactNode /* string */ };
+  'card_builder_atomAction_undo_action': { text: ReactNode /* string */ };
+  'card_builder_atomAction_update_blockAdvancedValue': { fieldName: ReactNode /* string */, name: ReactNode /* string */ };
+  'card_builder_atomAction_update_blockLogicValue': { fieldName: ReactNode /* string */, name: ReactNode /* string */ };
+  'card_builder_atomAction_update_blockPosition': { name: ReactNode /* string */ };
+  'card_builder_atomAction_update_blockPropsValue': { fieldName: ReactNode /* string */, name: ReactNode /* string */ };
+  'card_builder_atomAction_update_blockTitleValue': { name: ReactNode /* string */, title: ReactNode /* string */ };
+  'card_builder_atomAction_update_blockWorkspacePropsValue': { desc: ReactNode /* string */ };
+  'card_builder_atomAction_update_slotPropsValue': { fieldName: ReactNode /* string */, slotName: ReactNode /* string */, blockName: ReactNode /* string */ };
+  'card_builder_audit_banner_pending_text': { version: ReactNode /* string */ };
+  'card_builder_audit_banner_rejected_text': { version: ReactNode /* string */ };
+  'card_builder_builder_preview_channel': { channel: ReactNode /* string */ };
+  'card_builder_builder_preview_doubao': { channel: ReactNode /* string */ };
+  'card_builder_builder_preview_no_component': { channel: ReactNode /* string */ };
+  'card_builder_builder_publish_version_verify_compare': { lastVersion: ReactNode /* string */ };
+  'card_builder_builtinLogic_editor_tip': { pageTitle: ReactNode /* string */ };
+  'card_builder_codeIn_update_blocksInfo': { elementType: ReactNode /* string */ };
+  'card_builder_codeIn_update_blocksVersion': { pkgName: ReactNode /* string */, version: ReactNode /* string */ };
+  'card_builder_compList_panel_block_number': { count: ReactNode /* string */ };
+  'card_builder_compList_panel_block_number_selected': { count: ReactNode /* string */ };
+  'card_builder_compList_panel_block_selected_block_number': { count: ReactNode /* string */ };
+  'card_builder_compList_panel_block_selected_package_number': { count: ReactNode /* string */ };
+  'card_builder_compList_panel_category_hidden': { count: ReactNode /* string */ };
+  'card_builder_copilot_create_snapshot_desc': { text: ReactNode /* string */ };
+  'card_builder_coworkInfo_user_editing': { user: ReactNode /* string */ };
+  'card_builder_coworkInfo_user_viewing': { user: ReactNode /* string */ };
+  'card_builder_depsManager_atomAction_deleteBlock': { pkgName: ReactNode /* string */ };
+  'card_builder_depsManager_atomAction_updateBlock': { pkgName: ReactNode /* string */, version: ReactNode /* string */, targetVersion: ReactNode /* string */ };
+  'card_builder_depsManager_panel_block_number': { count: ReactNode /* string */ };
+  'card_builder_depsManager_panel_block_update_content': { updateVersion: ReactNode /* string */ };
+  'card_builder_envs_add_env': { name: ReactNode /* string */ };
+  'card_builder_envs_add_var': { var: ReactNode /* string */, env: ReactNode /* string */ };
+  'card_builder_envs_copy_env': { name: ReactNode /* string */ };
+  'card_builder_envs_delete_env': { name: ReactNode /* string */ };
+  'card_builder_envs_delete_var': { var: ReactNode /* string */, env: ReactNode /* string */ };
+  'card_builder_envs_import_var': { name: ReactNode /* string */ };
+  'card_builder_envs_list_delete_content': { name: ReactNode /* string */ };
+  'card_builder_envs_update_env': { name: ReactNode /* string */ };
+  'card_builder_envs_update_var': { var: ReactNode /* string */, env: ReactNode /* string */ };
+  'card_builder_envs_var_list_delete_content': { name: ReactNode /* string */ };
+  'card_builder_envs_var_panel_delete_content': { name: ReactNode /* string */ };
+  'card_builder_history_create_snapshot_desc': { text: ReactNode /* string */ };
+  'card_builder_history_snapshot_create_desc': { text: ReactNode /* string */ };
+  'card_builder_history_snapshot_restore': { text: ReactNode /* string */ };
+  'card_builder_history_userAction_list_page': { label: ReactNode /* string */ };
+  'card_builder_history_userAction_restore': { text: ReactNode /* string */ };
+  'card_builder_logicFlow_list_delete_content': { name: ReactNode /* string */ };
+  'card_builder_logicFlow_userAction_addLogic': { name: ReactNode /* string */ };
+  'card_builder_logicFlow_userAction_copyLogic': { oldName: ReactNode /* string */, newName: ReactNode /* string */ };
+  'card_builder_logicFlow_userAction_deleteGroup': { title: ReactNode /* string */ };
+  'card_builder_logicFlow_userAction_deleteLogic': { name: ReactNode /* string */ };
+  'card_builder_logicFlow_userAction_updateGroup': { title: ReactNode /* string */ };
+  'card_builder_logicFlow_userAction_updateLogic': { name: ReactNode /* string */ };
+  'card_builder_pageManager_add_dir': { name: ReactNode /* string */ };
+  'card_builder_pageManager_add_page': { name: ReactNode /* string */ };
+  'card_builder_pageManager_copy_page': { name: ReactNode /* string */ };
+  'card_builder_pageManager_create_name_label': { name: ReactNode /* string */ };
+  'card_builder_pageManager_create_path_label': { name: ReactNode /* string */ };
+  'card_builder_pageManager_delete_content': { name: ReactNode /* string */ };
+  'card_builder_pageManager_delete_dir': { name: ReactNode /* string */ };
+  'card_builder_pageManager_delete_page': { name: ReactNode /* string */ };
+  'card_builder_pageManager_move_dir': { srcName: ReactNode /* string */ };
+  'card_builder_pageManager_move_page': { srcName: ReactNode /* string */ };
+  'card_builder_pageManager_update_dir': { name: ReactNode /* string */ };
+  'card_builder_pageManager_update_page': { name: ReactNode /* string */ };
+  'card_builder_plural': { num: ReactNode /* number */ };
+  'card_builder_redoUndo_error': { type: ReactNode /* string */ };
+  'card_builder_releaseBtn_releaseApp_error': { message: ReactNode /* string */ };
+  'card_builder_releaseBtn_releaseApp_pkgMode_rec': { name: ReactNode /* string */ };
+  'card_builder_sandbox_cowork_restore_content': { operator: ReactNode /* string */ };
+  'card_builder_slot_formula_block_title': { slotTitle: ReactNode /* string */, blockTitle: ReactNode /* string */ };
+  'card_builder_template_create_snapshot_desc': { text: ReactNode /* string */ };
+  'card_builder_userFunc_list_item_delete_content': { name: ReactNode /* string */ };
+  'card_builder_userFunc_userAction_addFunc': { name: ReactNode /* string */ };
+  'card_builder_userFunc_userAction_copyFunc': { oldName: ReactNode /* string */, newName: ReactNode /* string */ };
+  'card_builder_userFunc_userAction_deleteFunc': { name: ReactNode /* string */ };
+  'card_builder_userFunc_userAction_editFunc': { name: ReactNode /* string */ };
+  'card_builder_userFunc_userAction_updateFunc': { name: ReactNode /* string */ };
+  'card_builder_userVar_delete_content': { name: ReactNode /* string */ };
+  'card_builder_userVar_formula_app': { name: ReactNode /* string */ };
+  'card_builder_userVar_formula_page': { name: ReactNode /* string */ };
+  'card_builder_userVar_userAction_addVar': { name: ReactNode /* string */ };
+  'card_builder_userVar_userAction_copyVar': { oldName: ReactNode /* string */, newName: ReactNode /* string */ };
+  'card_builder_userVar_userAction_deleteVar': { name: ReactNode /* string */ };
+  'card_builder_userVar_userAction_editVar': { name: ReactNode /* string */ };
+  'card_builder_userVar_userAction_updateVar': { name: ReactNode /* string */ };
+  'card_custom_bind_data_to_element': { data_element: ReactNode /* string */ };
+  'card_custom_bind_data_to_list': { card_list_name: ReactNode /* string */ };
+  'card_custom_code_caution': { cici_or_doubao: ReactNode /* string */ };
+  'card_custom_tips_content_b': { bot_studio_name: ReactNode /* string */ };
+  'card_list_bind_placeholder': { key: ReactNode /* string */ };
+  'card_not_support_max_list': { num: ReactNode /* string */ };
+  'card_select_path_placeholder': { path: ReactNode /* string */ };
+  'card_update_step_title': { name: ReactNode /* string */ };
+  'chatInitRetry': { retry: ReactNode /* string */ };
+  'chat_geolocation_auth_allow_tip': { plugin: ReactNode /* string */ };
+  'chat_geolocation_auth_decline_tip': { plugin: ReactNode /* string */ };
+  'chat_geolocation_auth_request_message': { plugin_name: ReactNode /* string */ };
+  'chatflow_agent_input_placeholder': { text: ReactNode /* string */ };
+  'chatflow_agent_toast_feedback_fail': { feedback: ReactNode /* string */ };
+  'chatflow_agent_toast_feedback_success': { feedback: ReactNode /* string */ };
+  'chatflow_preview_take_over': { agentName: ReactNode /* string */ };
+  'coding_ability_leaderboard_top_n': { n: ReactNode /* string */ };
+  'coding_ability_leaderboard_top_n_explain': { n: ReactNode /* string */ };
+  'collaborate_collaborater_added_partial_toast': { users: ReactNode /* string */ };
+  'collaborate_collaborater_count': { number_of_collaborators: ReactNode /* string */ };
+  'collaborate_collaborater_count_1': { number_of_collaborators: ReactNode /* string */ };
+  'collaborate_collaborater_owner_tooltip': { username: ReactNode /* string */ };
+  'community_Button_view_all_comments': { comment_num: ReactNode /* string */ };
+  'community_Image_uploading': { upload_num: ReactNode /* string */, total_num: ReactNode /* string */ };
+  'community_Please_enter_add_a_comment': { user_name: ReactNode /* string */ };
+  'community_Please_enter_please_enter_your_comment': { user_name: ReactNode /* string */ };
+  'community_Subtitle_comments': { num: ReactNode /* number */ };
+  'community_notification_app_msg_plural': { count: ReactNode /* string */, project_name: ReactNode /* string */ };
+  'community_notification_bot_msg': { bot_name: ReactNode /* string */, num: ReactNode /* string */ };
+  'community_notification_bot_msg_plural': { num: ReactNode /* number */ };
+  'community_notification_comment_msg': { num: ReactNode /* string */, post_title: ReactNode /* string */ };
+  'community_notification_comment_msg_plural': { num: ReactNode /* number */ };
+  'community_notification_post_msg': { post_title: ReactNode /* string */, num: ReactNode /* string */ };
+  'community_notification_post_msg_plural': { num: ReactNode /* number */ };
+  'community_notification_template_msg_plural': { count: ReactNode /* string */, entity_name: ReactNode /* string */ };
+  'community_num_comment': { comment_num: ReactNode /* string */ };
+  'community_num_comments': { comment_num: ReactNode /* string */ };
+  'community_past month': { month: ReactNode /* string */ };
+  'community_past year': { year: ReactNode /* string */ };
+  'community_share_conver_title': { bot_name: ReactNode /* string */ };
+  'community_time_date': { mm: ReactNode /* string */, dd: ReactNode /* string */, yyyy: ReactNode /* string */ };
+  'community_time_day': { n: ReactNode /* string */ };
+  'community_time_hour': { n: ReactNode /* string */ };
+  'community_time_min': { n: ReactNode /* string */ };
+  'confirm_add_pluginName': { pluginName: ReactNode /* string */ };
   'confirm_binding_{label}?': { label: ReactNode /* string */ };
-  confirm_switch_to_on_demand_call: { call_method: ReactNode /* string */ };
-  content_creation_leaderboard_top_n: { n: ReactNode /* string */ };
-  content_creation_leaderboard_top_n_explain: { n: ReactNode /* string */ };
-  cookie_EU_1st_pop: { cookie_policy: ReactNode /* string */ };
-  cookie_EU_manage_page_content: { cookie_policy: ReactNode /* string */ };
-  cookie_non_EU_pop: { cookie_policy: ReactNode /* string */ };
-  coze_cn_redirect: { seconds: ReactNode /* string */ };
-  coze_collaborator_limit_reached: { url: ReactNode /* string */ };
-  coze_count_yuan_1: { count: ReactNode /* string */ };
-  coze_discount_rate: { discount: ReactNode /* string */ };
-  coze_effective_period: {
-    start: ReactNode /* string */;
-    end: ReactNode /* string */;
-  };
-  coze_exceed_plan_capacity: { storage: ReactNode /* string */ };
-  coze_expiration_date: { time: ReactNode /* string */ };
-  coze_fee_description: { type: ReactNode /* string */ };
-  coze_free_points_tips: { count: ReactNode /* string */ };
-  coze_model_tpm_rpm_violation_count: { count: ReactNode /* string */ };
-  coze_model_tpm_violation_count: { count: ReactNode /* string */ };
-  coze_original_price: { price: ReactNode /* string */ };
-  coze_plan_effetive_tips: { plan: ReactNode /* string */ };
-  coze_plan_more_benefits: { name: ReactNode /* string */ };
-  coze_plan_overdue: { username: ReactNode /* string */ };
-  coze_points: { points: ReactNode /* string */ };
-  coze_points_buy_1000: { buy: ReactNode /* string */ };
-  coze_points_buy_110000: { buy: ReactNode /* string */ };
-  coze_premium_credits_reset: { counts: ReactNode /* string */ };
-  coze_pro_4: { price: ReactNode /* string */ };
-  coze_pro_des: { link: ReactNode /* string */ };
-  coze_pro_migration_12: { username: ReactNode /* string */ };
-  coze_pro_resource_balance_count: { count: ReactNode /* string */ };
-  coze_quota_exemption_notice: { link: ReactNode /* string */ };
-  coze_recent_activation: { time: ReactNode /* string */ };
-  coze_remaining_points: { points: ReactNode /* string */ };
-  coze_resource_balance_count: { count: ReactNode /* string */ };
-  coze_resource_pack_discount: { discount: ReactNode /* string */ };
-  coze_save_amount: { price: ReactNode /* string */ };
-  coze_storage_over_limit: {
-    storage1: ReactNode /* string */;
-    storage2: ReactNode /* string */;
-    storage3: ReactNode /* string */;
-  };
-  coze_storage_usage: {
-    storage1: ReactNode /* string */;
-    storage2: ReactNode /* string */;
-  };
-  coze_subscribed: { plan: ReactNode /* string */ };
-  coze_team_creation_limit_reached: { url: ReactNode /* string */ };
-  coze_token_plugin_section_table_usage_unit: {
-    number: ReactNode /* string */;
-  };
-  coze_upgrade_to_any: { name: ReactNode /* string */ };
-  coze_value_count_yuan_1: { count: ReactNode /* string */ };
-  coze_voice_clone_expansion: { link: ReactNode /* string */ };
-  coze_voice_remaining_quota: { count: ReactNode /* string */ };
+  'confirm_switch_to_on_demand_call': { call_method: ReactNode /* string */ };
+  'content_creation_leaderboard_top_n': { n: ReactNode /* string */ };
+  'content_creation_leaderboard_top_n_explain': { n: ReactNode /* string */ };
+  'cookie_EU_1st_pop': { cookie_policy: ReactNode /* string */ };
+  'cookie_EU_manage_page_content': { cookie_policy: ReactNode /* string */ };
+  'cookie_non_EU_pop': { cookie_policy: ReactNode /* string */ };
+  'coze_cn_redirect': { seconds: ReactNode /* string */ };
+  'coze_collaborator_limit_reached': { url: ReactNode /* string */ };
+  'coze_count_yuan_1': { count: ReactNode /* string */ };
+  'coze_create_task_detected_num_tasks': { num: ReactNode /* string */ };
+  'coze_create_task_estimated_resource_consumption': { resource: ReactNode /* string */ };
+  'coze_create_task_exceeds_max_records': { num: ReactNode /* string */ };
+  'coze_create_task_row_col': { row: ReactNode /* string */, column: ReactNode /* string */ };
+  'coze_discount_rate': { discount: ReactNode /* string */ };
+  'coze_download_toast_fail_error_code': { code: ReactNode /* string */ };
+  'coze_effective_period': { start: ReactNode /* string */, end: ReactNode /* string */ };
+  'coze_exceed_plan_capacity': { storage: ReactNode /* string */ };
+  'coze_expiration_date': { time: ReactNode /* string */ };
+  'coze_fee_description': { type: ReactNode /* string */ };
+  'coze_free_points_tips': { count: ReactNode /* string */ };
+  'coze_kms_error_tips10': { link: ReactNode /* string */ };
+  'coze_model_tpm_rpm_violation_count': { count: ReactNode /* string */ };
+  'coze_model_tpm_violation_count': { count: ReactNode /* string */ };
+  'coze_original_price': { price: ReactNode /* string */ };
+  'coze_plan_effetive_tips': { plan: ReactNode /* string */ };
+  'coze_plan_more_benefits': { name: ReactNode /* string */ };
+  'coze_plan_overdue': { username: ReactNode /* string */ };
+  'coze_points': { points: ReactNode /* string */ };
+  'coze_points_buy_1000': { buy: ReactNode /* string */ };
+  'coze_points_buy_110000': { buy: ReactNode /* string */ };
+  'coze_premium_credits_reset': { counts: ReactNode /* string */ };
+  'coze_pro_4': { price: ReactNode /* string */ };
+  'coze_pro_des': { link: ReactNode /* string */ };
+  'coze_pro_migration_12': { username: ReactNode /* string */ };
+  'coze_pro_resource_balance_count': { count: ReactNode /* string */ };
+  'coze_quota_exemption_notice': { link: ReactNode /* string */ };
+  'coze_recent_activation': { time: ReactNode /* string */ };
+  'coze_remaining_points': { points: ReactNode /* string */ };
+  'coze_resource_balance_count': { count: ReactNode /* string */ };
+  'coze_resource_pack_discount': { discount: ReactNode /* string */ };
+  'coze_save_amount': { price: ReactNode /* string */ };
+  'coze_storage_over_limit': { storage1: ReactNode /* string */, storage2: ReactNode /* string */, storage3: ReactNode /* string */ };
+  'coze_storage_usage': { storage1: ReactNode /* string */, storage2: ReactNode /* string */ };
+  'coze_subscribed': { plan: ReactNode /* string */ };
+  'coze_task_detail_cancel_only_not_exec_num': { num: ReactNode /* string */ };
+  'coze_task_detail_retry_only_exec_failed_num': { num: ReactNode /* string */ };
+  'coze_task_detail_selected_num_tasks': { num: ReactNode /* string */ };
+  'coze_task_detail_total_records': { total: ReactNode /* string */ };
+  'coze_task_list_failed_num': { num: ReactNode /* string */ };
+  'coze_team_creation_limit_reached': { url: ReactNode /* string */ };
+  'coze_token_plugin_section_table_usage_unit': { number: ReactNode /* string */ };
+  'coze_upgrade_to_any': { name: ReactNode /* string */ };
+  'coze_value_count_yuan_1': { count: ReactNode /* string */ };
+  'coze_voice_clone_expansion': { link: ReactNode /* string */ };
+  'coze_voice_remaining_quota': { count: ReactNode /* string */ };
   'create_up_to_{maxpagelen}_pages': { maxPageLen: ReactNode /* string */ };
-  'create_{placeholder1}_and_bind_the_{id}_page': {
-    placeholder1: ReactNode /* string */;
-    id: ReactNode /* string */;
-  };
-  cross_workspace_copy_task_pop_title: { name: ReactNode /* string */ };
-  cross_workspace_copy_task_status_all: {
-    success: ReactNode /* string */;
-    running: ReactNode /* string */;
-    fail: ReactNode /* string */;
-  };
-  'current_page_{currentpageid}_binding_tag_{placeholder3}': {
-    currentPageId: ReactNode /* string */;
-    placeholder3: ReactNode /* string */;
-  };
-  data_error_title: { module: ReactNode /* string */ };
-  database_240304_01: { TableNumber: ReactNode /* string */ };
-  dataset_bot_count_tag: { num: ReactNode /* string */ };
-  dataset_bot_create_time_knowledge: { time: ReactNode /* string */ };
-  dataset_bot_referring_tag: {
-    bot_num: ReactNode /* string */;
-    add_s: ReactNode /* string */;
-  };
-  dataset_bot_time_knowledge: { time: ReactNode /* string */ };
-  dataset_bot_update_time_knowledge: { time: ReactNode /* string */ };
-  dataset_data_processing_tag: { num: ReactNode /* string */ };
-  dataset_deal_failed: { num: ReactNode /* string */ };
-  dataset_deal_processing: { num: ReactNode /* string */ };
-  datasets_botRefer_list_description: { num: ReactNode /* number */ };
-  datasets_createFileModel_step2_UploadDoc_description: {
-    maxDocNum: ReactNode /* string */;
-    fileFormat: ReactNode /* string */;
-    filesize: ReactNode /* string */;
-    pdfPageNum: ReactNode /* string */;
-  };
-  datasets_createFileModel_tab_dataStarRow_value: {
-    LineNumber: ReactNode /* string */;
-  };
-  datasets_createFileModel_tab_header_value: {
-    LineNumber: ReactNode /* string */;
-  };
-  datasets_detail_tag_botReferencing: { count: ReactNode /* number */ };
-  datasets_detail_tag_byte: { number: ReactNode /* string */ };
-  datasets_detail_tag_file: { num: ReactNode /* number */ };
-  datasets_frequencyModal_frequency_day: { num: ReactNode /* number */ };
-  datasets_frequencyModal_frequency_day01: { num: ReactNode /* number */ };
-  datasets_segment_card_bit: { num: ReactNode /* number */ };
-  datasets_segment_card_hit: { num: ReactNode /* number */ };
-  datasets_segment_detailModel_title: { num: ReactNode /* number */ };
-  datasets_segment_tableStructure_field_delConfirm_title: {
-    FieldName: ReactNode /* string */;
-  };
-  datasets_segment_tag_segments: { num: ReactNode /* string */ };
-  datasets_segment_tag_updateFrequency: { num: ReactNode /* number */ };
-  datasets_table_title_size_byte: { num: ReactNode /* number */ };
-  datasets_unit_tableformat_tips1: {
-    TotalRows: ReactNode /* string */;
-    ShowRows: ReactNode /* string */;
-  };
-  datasets_upload_url_subpages: { num: ReactNode /* number */ };
-  datasets_url_retry_error: { reason: ReactNode /* string */ };
-  db_optimize_031: { n: ReactNode /* string */ };
-  db_optimize_032: { n: ReactNode /* string */ };
-  db_table_0126_024: { LineNumber: ReactNode /* string */ };
-  db_table_0126_026: { LineNumber: ReactNode /* string */ };
-  db_table_0126_027: { ColumNum: ReactNode /* string */ };
-  db_table_0126_028: {
-    TotalRows: ReactNode /* string */;
-    ShowRows: ReactNode /* string */;
-  };
-  delete_account_delete_aweme_logined_label: {
-    platform: ReactNode /* string */;
-  };
-  delete_account_delete_aweme_not_login_label: {
-    platform: ReactNode /* string */;
-  };
-  delete_account_phone_tip: { mobile: ReactNode /* string */ };
-  detected_address: {
-    original_location: ReactNode /* string */;
-    location: ReactNode /* string */;
-  };
-  device_code_flow_auth_tips_1: { location: ReactNode /* string */ };
-  devops_publish_multibranch_PubishByUser: {
-    name: ReactNode /* string */;
-    time: ReactNode /* string */;
-  };
-  devops_publish_multibranch_SubmitByUser: {
-    name: ReactNode /* string */;
-    time: ReactNode /* string */;
-  };
-  devops_publish_multibranch_auto_saved: { time: ReactNode /* string */ };
-  devops_publish_multibranch_diffwithin: {
-    connectorName: ReactNode /* string */;
-  };
-  devops_publish_multibranch_new_version: { name: ReactNode /* string */ };
-  devops_publish_multibranch_published: { time: ReactNode /* string */ };
-  devops_publish_multibranch_submitted: { time: ReactNode /* string */ };
-  display_time_for_rankings: { date: ReactNode /* string */ };
-  dy_avatar_link_title: { bot_name: ReactNode /* string */ };
-  dy_avatar_qr_code_operate_tip: { app_name: ReactNode /* string */ };
-  dy_avatar_qr_code_time_tip: { time: ReactNode /* string */ };
-  enterprise_add_member_secondary_confirm: { doc: ReactNode /* string */ };
-  enterprise_feature_logo: { upgrade_plan: ReactNode /* string */ };
-  enterprise_management_leave_button: { enterprise: ReactNode /* string */ };
-  enterprise_management_leave_transfer_button: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_control_desc1: {
-    enterprise_version_name: ReactNode /* string */;
-  };
-  enterprise_management_permission_control_desc2: {
-    enterprise_version_name: ReactNode /* string */;
-  };
-  enterprise_management_permission_control_share_link: {
-    enterprise_version_name: ReactNode /* string */;
-  };
-  enterprise_management_permission_control_title: {
-    enterprise_version_name: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_disable_be_guest_leave_desc: {
-    number: ReactNode /* string */;
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_other_enter_guest_list_desc1: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_other_enter_guest_list_desc2: {
-    number: ReactNode /* string */;
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_other_enter_guest_list_name_tag: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_pop_disable_desc1_guest: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_pop_disable_desc2_be_guest: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_pop_enable_desc1_allow_guest: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_management_permission_settings_pop_enable_desc2_allow_be_guest: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_member_apply_opt_operate_button2_reject_desc: {
-    amount: ReactNode /* string */;
-  };
-  enterprise_member_apply_opt_operate_button3_pass_desc: {
-    amount: ReactNode /* string */;
-    doc: ReactNode /* string */;
-  };
-  enterprise_member_identity_tag_internal_meber: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_member_list_add_new_member_tips: { doc: ReactNode /* string */ };
-  enterprise_member_management_settings_basic_user_control_desc: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_member_management_settings_basic_user_control_title: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_member_management_settings_guest_control_desc: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_member_management_settings_guest_control_title: {
-    enterprise: ReactNode /* string */;
-  };
-  enterprise_share_link_page_expire_info: { date: ReactNode /* string */ };
-  enterprise_share_link_pop_desc1: {
-    enterprise_version_name: ReactNode /* string */;
-    member_permission: ReactNode /* string */;
-  };
-  enterprise_share_link_pop_desc2_expire_info: {
-    enterprise_version_name: ReactNode /* string */;
-    enterprise_name: ReactNode /* string */;
-    expire_date: ReactNode /* string */;
-  };
-  enterprise_share_link_pop_desc2_no_expire_info: {
-    enterprise_version_name: ReactNode /* string */;
-    enterprise_name: ReactNode /* string */;
-  };
-  enterprise_share_link_pop_title: {
-    enterprise_version_name: ReactNode /* string */;
-  };
-  errorpage_action: { name: ReactNode /* string */ };
-  eval_error_cell_char_limit: {
-    row_number: ReactNode /* string */;
-    column_name: ReactNode /* string */;
-    max_chars: ReactNode /* string */;
-  };
-  eval_error_column_limit: {
-    max_columns: ReactNode /* string */;
-    current_columns: ReactNode /* string */;
-  };
-  eval_error_duplicate_column: { column_name: ReactNode /* string */ };
-  eval_error_message: { evaluation_name: ReactNode /* string */ };
-  eval_error_missing_column: { column_name: ReactNode /* string */ };
-  eval_error_missing_field: {
-    row_number: ReactNode /* string */;
-    field_name: ReactNode /* string */;
-  };
-  eval_error_query_limit: {
-    session_id: ReactNode /* string */;
-    max_queries: ReactNode /* string */;
-  };
-  eval_error_session_limit: {
-    max_sessions: ReactNode /* string */;
-    current_sessions: ReactNode /* string */;
-  };
-  eval_max_agents_limit: { num: ReactNode /* string */ };
-  evaluation1_balance: {
-    caseCount: ReactNode /* string */;
-    tokenCount: ReactNode /* string */;
-  };
-  evaluation1_cases_count: { evaluation_case_num: ReactNode /* string */ };
-  evaluation1_error_count: {
-    errorCount: ReactNode /* string */;
-    total: ReactNode /* string */;
-  };
-  evaluation1_estimated_token_consumption: {
-    Estimated_token_consumption: ReactNode /* string */;
-  };
-  evaluation1_free_quota_exhausted_new: { freeCount: ReactNode /* string */ };
-  evaluation1_progress: {
-    progress: ReactNode /* string */;
-    total: ReactNode /* string */;
-  };
-  evaluation1_progress_tips: {
-    current: ReactNode /* string */;
-    total: ReactNode /* string */;
-  };
-  evaluation1_task_quota: { remaining_count: ReactNode /* string */ };
-  evaluation1_task_quota_new: {
-    freeCount: ReactNode /* string */;
-    remaining_count: ReactNode /* string */;
-  };
-  evaluation1_test_description: {
-    testrun_consumption_token: ReactNode /* string */;
-  };
-  evaluation1_warning_message_eval_prompt: { field: ReactNode /* string */ };
-  evaluation_autosaved: { savedtime: ReactNode /* string */ };
-  evaluation_dataset_columnLimit: { columnCount: ReactNode /* string */ };
-  evaluation_dataset_columnNameLength: {
-    columnNameMaxLength: ReactNode /* string */;
-  };
-  evaluation_dataset_columnNumber: {
-    columnNumberLimit: ReactNode /* string */;
-  };
-  evaluation_dataset_csv_contentLength_error: {
-    maxLength: ReactNode /* string */;
-  };
-  evaluation_dataset_csv_groupConversation_error: {
-    gourpName: ReactNode /* string */;
-    rowLimit: ReactNode /* string */;
-  };
-  evaluation_dataset_dialogueNumber: {
-    dialogueNumberLimit: ReactNode /* string */;
-  };
-  evaluation_dataset_exceeds_maximum_column: {
-    MAX_COLUMN_LENGTH: ReactNode /* string */;
-  };
-  evaluation_page_consumption_prediction_tips1: {
-    Estimated_token_consumption: ReactNode /* string */;
-  };
-  evaluation_page_consumption_prediction_tips2: {
-    testrun_consumption_token: ReactNode /* string */;
-  };
-  evaluation_page_consumption_upload_file_limitation_tip: {
-    row_limit: ReactNode /* string */;
-  };
-  evaluation_page_free_amount_tips1_no_remaining: {
-    freeCount: ReactNode /* string */;
-  };
-  evaluation_page_free_amount_tips1_remaining: {
-    freeCount: ReactNode /* string */;
-    remaining_count: ReactNode /* string */;
-  };
-  evaluation_rule_defaultAdded: { ruleCount: ReactNode /* string */ };
-  evaluation_rule_has_number: { rulesNumber: ReactNode /* string */ };
-  evaluation_rule_reachLimit: { rulesLimit: ReactNode /* string */ };
-  evaluation_rule_reachLimit_error: { maxRuleNumber: ReactNode /* string */ };
-  evaluation_sample_conciseness: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_controversiality: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_correctness: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_creativity: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_criminality: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_depth: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_detail: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_harmfulness: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_helpfulness: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_insensitivity: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_maliciousness: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_misogyny: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_sample_relevance: {
-    input: ReactNode /* string */;
-    output: ReactNode /* string */;
-  };
-  evaluation_success_count_total: {
-    successCount: ReactNode /* string */;
-    total: ReactNode /* string */;
-  };
-  event_panel_run_workflow_failed_default_value: {
-    name: ReactNode /* string */;
-    error: ReactNode /* string */;
-  };
-  event_panel_run_workflow_success_default_value: {
-    workflow: ReactNode /* string */;
-  };
-  expired_time_days_1: { num: ReactNode /* number */ };
-  exterprise_share_link_page_description: {
-    enterprise_name: ReactNode /* string */;
-  };
-  failed_to_import_tool: { num: ReactNode /* number */ };
-  'file_size_exceeds_limit__maximum_support_{maxsize}_kb': {
-    maxSize: ReactNode /* string */;
-  };
-  file_too_large: { max_size: ReactNode /* string */ };
-  folder_selection_num_of_selected: { n: ReactNode /* string */ };
-  home_at_bot_status: { bot_name: ReactNode /* string */ };
-  home_mention_searchbotstore_result_not_found_content: {
-    search_text: ReactNode /* string */;
-  };
-  home_mention_searchbotstore_result_title: {
-    search_text: ReactNode /* string */;
-  };
-  imageflow_canvas_reference_image: { variable: ReactNode /* string */ };
-  imageflow_canvas_reference_text: { variable: ReactNode /* string */ };
-  imageflow_canvas_var_reference: { n: ReactNode /* string */ };
-  imageflow_tab_title: { name: ReactNode /* string */ };
-  imageflow_upload_error2: { value: ReactNode /* string */ };
-  imageflow_upload_error3: { value: ReactNode /* string */ };
-  imageflow_upload_error4: { value: ReactNode /* string */ };
-  imageflow_upload_error5: { value: ReactNode /* string */ };
-  imageflow_upload_error_type: { type: ReactNode /* string */ };
-  imageflow_upload_exceed: { size: ReactNode /* string */ };
-  imageflow_upload_type: { type: ReactNode /* string */ };
-  imageflowstore_expire_content: {
-    entity_type: ReactNode /* string */;
-    entity_name: ReactNode /* string */;
-  };
-  intent_queyr_jumping_hint: { link: ReactNode /* string */ };
-  kl2_009: { num: ReactNode /* number */ };
-  kl_write_041: { index: ReactNode /* string */ };
-  'knowledge-3rd-party-add-units-google-drive-pages-selected': {
-    number: ReactNode /* string */;
-  };
-  'knowledge-3rd-party-add-units-notion-pages-selected': {
-    number: ReactNode /* string */;
-  };
-  knowledge_1218_001: { MaxDocs: ReactNode /* string */ };
-  knowledge_1226_002: { FieldName: ReactNode /* string */ };
-  knowledge_application_leaderboard_top_n: { n: ReactNode /* string */ };
-  knowledge_application_leaderboard_top_n_explain: {
-    n: ReactNode /* string */;
-  };
-  knowledge_feishu_search_placeholder: { name: ReactNode /* string */ };
-  knowledge_insert_img_003: { url: ReactNode /* string */ };
-  knowledge_level_006: { filenames: ReactNode /* string */ };
-  knowledge_only_type: { docType: ReactNode /* string */ };
-  knowledge_optimize_019: { n: ReactNode /* string */ };
-  knowledge_photo_015: { num: ReactNode /* string */ };
-  knowledge_slice_content_length_error: { number: ReactNode /* string */ };
-  knowledge_table_content_limt: { number: ReactNode /* string */ };
-  knowledge_upload_remaining_time_text: {
-    minutes: ReactNode /* string */;
-    seconds: ReactNode /* string */;
-  };
-  knowledge_weixin_011: { num: ReactNode /* string */ };
-  knowledge_weixin_012: { num: ReactNode /* string */ };
-  language_understanding_leaderboard_top_n: { n: ReactNode /* string */ };
-  language_understanding_leaderboard_top_n_explain: {
-    n: ReactNode /* string */;
-  };
-  last_modified_time: { time: ReactNode /* string */ };
-  limits_dataset_files: { number_of_files: ReactNode /* string */ };
-  location_not_parsed: { location: ReactNode /* string */ };
-  log_pay_wall_date_filter_tips1: { upgrade: ReactNode /* string */ };
-  login_verification_code_sent: { phone_number: ReactNode /* string */ };
-  markdown_bold_syntax: {
-    text: ReactNode /* string */;
-    space: ReactNode /* string */;
-  };
-  markdown_bulletedlist_syntax: { space: ReactNode /* string */ };
-  markdown_code_syntax: {
-    code: ReactNode /* string */;
-    space: ReactNode /* string */;
-  };
-  markdown_codeblock_syntax: { space: ReactNode /* string */ };
-  markdown_heading1_syntax: { space: ReactNode /* string */ };
-  markdown_heading2_syntax: { space: ReactNode /* string */ };
-  markdown_heading3_syntax: { space: ReactNode /* string */ };
-  markdown_italic_syntax: {
-    text: ReactNode /* string */;
-    space: ReactNode /* string */;
-  };
-  markdown_numberedlist_syntax: { space: ReactNode /* string */ };
-  markdown_quote_syntax: { space: ReactNode /* string */ };
-  markdown_strickthrough_syntax: {
-    text: ReactNode /* string */;
-    space: ReactNode /* string */;
-  };
-  markdown_underline_syntax: {
-    text: ReactNode /* string */;
-    space: ReactNode /* string */;
-  };
-  messageListRetry: { retry: ReactNode /* string */ };
-  message_credits_18: { count: ReactNode /* string */ };
-  message_credits_6: { count: ReactNode /* string */ };
-  message_credits_9: { price: ReactNode /* string */ };
-  miniapp_url_action_7: { num: ReactNode /* string */ };
-  missing_parameter: { field_names: ReactNode /* string */ };
-  mkpl_maximum_chatacter_limit: { maxCount: ReactNode /* string */ };
-  mkpl_report_bot_desc: { emailAddress: ReactNode /* string */ };
-  mkpl_report_community_desc: { emailAddress: ReactNode /* string */ };
-  mkpl_report_desc: { emailAddress: ReactNode /* string */ };
-  mockdata_field_empty: { fieldName: ReactNode /* string */ };
-  mockset_during_using: { MockSetName: ReactNode /* string */ };
-  mockset_field_is_required: { field: ReactNode /* string */ };
-  mockset_invaild_tip: { MockSetName: ReactNode /* string */ };
-  mockset_label_tip: { MockSetName: ReactNode /* string */ };
-  mockset_of_toolname: { toolName: ReactNode /* string */ };
-  model_arena_by_company: { company: ReactNode /* string */ };
-  model_list_december_update_notice: { date: ReactNode /* string */ };
-  model_list_model_company: { company: ReactNode /* string */ };
-  model_list_model_default_parameters_tips: { doc: ReactNode /* string */ };
-  model_list_model_deprecation_date: { date: ReactNode /* string */ };
-  model_list_model_setting: { model: ReactNode /* string */ };
-  model_list_model_switch_announcement: {
-    model_deprecated: ReactNode /* string */;
-    date: ReactNode /* string */;
-    model_up: ReactNode /* string */;
-  };
-  model_list_remove_from_list: {
-    model_deprecated: ReactNode /* string */;
-    date: ReactNode /* string */;
-  };
-  model_management_context: { context: ReactNode /* string */ };
-  model_management_file_size_limit: { size: ReactNode /* string */ };
-  model_management_results_count: { count: ReactNode /* string */ };
-  model_ranking_agent_battle_top_n: { n: ReactNode /* string */ };
-  model_ranking_pure_model_battle_top_n: { n: ReactNode /* string */ };
-  model_sp_input_cached_support_tips: { 变量: ReactNode /* string */ };
-  model_support_poor_warning: { modelName: ReactNode /* string */ };
-  models_arena_question_bank_hover_current_selection_bankname: {
-    bank_name: ReactNode /* string */;
-  };
-  models_arena_question_bank_hover_remove_bankname: {
-    bank_name: ReactNode /* string */;
-  };
-  models_arena_resultpage_has_received_n_votes: { n: ReactNode /* string */ };
-  move_space_task_loading_timer: { time: ReactNode /* string */ };
-  move_workspace_failed_pop_desc: { error_msg: ReactNode /* string */ };
-  move_workspace_pop_up_choose_user_team_paywall_tips: {
-    amount: ReactNode /* string */;
-  };
-  move_workspace_pop_up_choose_workspace_desc: { doc: ReactNode /* string */ };
-  move_workspace_pop_up_resource_list_type2_API_desc: {
-    doc: ReactNode /* string */;
-  };
-  multiagent_bot_update_auto_time: { time: ReactNode /* string */ };
-  new_landing_title_customer_detail: { case_title: ReactNode /* string */ };
-  nl2prompt_insert_placeholder: { slash: ReactNode /* string */ };
-  'no_binding_relationship__add_tab_{newtitle}_to_the_bottom_navigation_bar_and_bin': {
-    newTitle: ReactNode /* string */;
-    currentPageId: ReactNode /* string */;
-  };
-  not_supported_explain: { modelName: ReactNode /* string */ };
-  not_supported_explain_toolName: {
-    modelName: ReactNode /* string */;
-    toolName: ReactNode /* string */;
-  };
-  oauth_ask_for_auth_message: {
-    pluginName: ReactNode /* string */;
-    url: ReactNode /* string */;
-  };
-  obo_auth_link_notification: { user_name: ReactNode /* string */ };
-  obo_install_failed_notification: { err_msg: ReactNode /* string */ };
-  obo_install_popup_title: { app_name: ReactNode /* string */ };
-  open_source_terms: { aggrement: ReactNode /* string */ };
-  openapi_auth_app_auth_org: { org_type: ReactNode /* string */ };
-  openapi_auth_app_auth_tos: {
-    org_type: ReactNode /* string */;
-    org_name: ReactNode /* string */;
-  };
-  openapi_rtc_coze_pro_tips: { coze_pro: ReactNode /* string */ };
-  openapi_rtc_waitlist_tips: { application_link: ReactNode /* string */ };
-  opening_markdown_support_tag: { markdown_editor_btn: ReactNode /* string */ };
-  operation_overview_category_ranking: { category: ReactNode /* string */ };
-  operation_overview_category_ranking_hint: {
-    category: ReactNode /* string */;
-  };
-  operations_comparison_period: {
-    ratio: ReactNode /* string */;
-    date1: ReactNode /* string */;
-    date2: ReactNode /* string */;
-  };
+  'create_{placeholder1}_and_bind_the_{id}_page': { placeholder1: ReactNode /* string */, id: ReactNode /* string */ };
+  'cross_workspace_copy_task_pop_title': { name: ReactNode /* string */ };
+  'cross_workspace_copy_task_status_all': { success: ReactNode /* string */, running: ReactNode /* string */, fail: ReactNode /* string */ };
+  'current_page_{currentpageid}_binding_tag_{placeholder3}': { currentPageId: ReactNode /* string */, placeholder3: ReactNode /* string */ };
+  'data_encryption_page_desc': { doc: ReactNode /* string */ };
+  'data_encryption_page_encrypt_key_status_invalid_tips': { doc: ReactNode /* string */ };
+  'data_encryption_page_key_TRN_desc': { doc: ReactNode /* string */ };
+  'data_error_title': { module: ReactNode /* string */ };
+  'database_240304_01': { TableNumber: ReactNode /* string */ };
+  'dataset_bot_count_tag': { num: ReactNode /* string */ };
+  'dataset_bot_create_time_knowledge': { time: ReactNode /* string */ };
+  'dataset_bot_referring_tag': { bot_num: ReactNode /* string */, add_s: ReactNode /* string */ };
+  'dataset_bot_time_knowledge': { time: ReactNode /* string */ };
+  'dataset_bot_update_time_knowledge': { time: ReactNode /* string */ };
+  'dataset_data_processing_tag': { num: ReactNode /* string */ };
+  'dataset_deal_failed': { num: ReactNode /* string */ };
+  'dataset_deal_processing': { num: ReactNode /* string */ };
+  'datasets_botRefer_list_description': { num: ReactNode /* number */ };
+  'datasets_createFileModel_step2_UploadDoc_description': { maxDocNum: ReactNode /* string */, fileFormat: ReactNode /* string */, filesize: ReactNode /* string */, pdfPageNum: ReactNode /* string */ };
+  'datasets_createFileModel_tab_dataStarRow_value': { LineNumber: ReactNode /* string */ };
+  'datasets_createFileModel_tab_header_value': { LineNumber: ReactNode /* string */ };
+  'datasets_detail_tag_botReferencing': { count: ReactNode /* number */ };
+  'datasets_detail_tag_byte': { number: ReactNode /* string */ };
+  'datasets_detail_tag_file': { num: ReactNode /* number */ };
+  'datasets_frequencyModal_frequency_day': { num: ReactNode /* number */ };
+  'datasets_frequencyModal_frequency_day01': { num: ReactNode /* number */ };
+  'datasets_segment_card_bit': { num: ReactNode /* number */ };
+  'datasets_segment_card_hit': { num: ReactNode /* number */ };
+  'datasets_segment_detailModel_title': { num: ReactNode /* number */ };
+  'datasets_segment_tableStructure_field_delConfirm_title': { FieldName: ReactNode /* string */ };
+  'datasets_segment_tag_segments': { num: ReactNode /* string */ };
+  'datasets_segment_tag_updateFrequency': { num: ReactNode /* number */ };
+  'datasets_table_title_size_byte': { num: ReactNode /* number */ };
+  'datasets_unit_tableformat_tips1': { TotalRows: ReactNode /* string */, ShowRows: ReactNode /* string */ };
+  'datasets_upload_url_subpages': { num: ReactNode /* number */ };
+  'datasets_url_retry_error': { reason: ReactNode /* string */ };
+  'db_optimize_031': { n: ReactNode /* string */ };
+  'db_optimize_032': { n: ReactNode /* string */ };
+  'db_table_0126_024': { LineNumber: ReactNode /* string */ };
+  'db_table_0126_026': { LineNumber: ReactNode /* string */ };
+  'db_table_0126_027': { ColumNum: ReactNode /* string */ };
+  'db_table_0126_028': { TotalRows: ReactNode /* string */, ShowRows: ReactNode /* string */ };
+  'delete_account_delete_aweme_logined_label': { platform: ReactNode /* string */ };
+  'delete_account_delete_aweme_not_login_label': { platform: ReactNode /* string */ };
+  'delete_account_phone_tip': { mobile: ReactNode /* string */ };
+  'detected_address': { original_location: ReactNode /* string */, location: ReactNode /* string */ };
+  'device_code_flow_auth_tips_1': { location: ReactNode /* string */ };
+  'devops_publish_multibranch_PubishByUser': { name: ReactNode /* string */, time: ReactNode /* string */ };
+  'devops_publish_multibranch_SubmitByUser': { name: ReactNode /* string */, time: ReactNode /* string */ };
+  'devops_publish_multibranch_auto_saved': { time: ReactNode /* string */ };
+  'devops_publish_multibranch_diffwithin': { connectorName: ReactNode /* string */ };
+  'devops_publish_multibranch_new_version': { name: ReactNode /* string */ };
+  'devops_publish_multibranch_published': { time: ReactNode /* string */ };
+  'devops_publish_multibranch_submitted': { time: ReactNode /* string */ };
+  'display_time_for_rankings': { date: ReactNode /* string */ };
+  'dy_avatar_link_title': { bot_name: ReactNode /* string */ };
+  'dy_avatar_qr_code_operate_tip': { app_name: ReactNode /* string */ };
+  'dy_avatar_qr_code_time_tip': { time: ReactNode /* string */ };
+  'enterprise_add_member_secondary_confirm': { doc: ReactNode /* string */ };
+  'enterprise_feature_logo': { upgrade_plan: ReactNode /* string */ };
+  'enterprise_manage_content_safety_page_config_edit_pop_desc': { doc: ReactNode /* string */ };
+  'enterprise_manage_content_safety_page_config_edit_pop_policy': { doc: ReactNode /* string */ };
+  'enterprise_management_leave_button': { enterprise: ReactNode /* string */ };
+  'enterprise_management_leave_transfer_button': { enterprise: ReactNode /* string */ };
+  'enterprise_management_menubar_private_management_analyze_desc': { doc: ReactNode /* string */ };
+  'enterprise_management_menubar_private_management_authorization_desc': { doc: ReactNode /* string */ };
+  'enterprise_management_permission_control_desc1': { enterprise_version_name: ReactNode /* string */ };
+  'enterprise_management_permission_control_desc2': { enterprise_version_name: ReactNode /* string */ };
+  'enterprise_management_permission_control_share_link': { enterprise_version_name: ReactNode /* string */ };
+  'enterprise_management_permission_control_title': { enterprise_version_name: ReactNode /* string */ };
+  'enterprise_management_permission_settings_disable_be_guest_leave_desc': { number: ReactNode /* string */, enterprise: ReactNode /* string */ };
+  'enterprise_management_permission_settings_other_enter_guest_list_desc1': { enterprise: ReactNode /* string */ };
+  'enterprise_management_permission_settings_other_enter_guest_list_desc2': { number: ReactNode /* string */, enterprise: ReactNode /* string */ };
+  'enterprise_management_permission_settings_other_enter_guest_list_name_tag': { enterprise: ReactNode /* string */ };
+  'enterprise_management_permission_settings_pop_disable_desc1_guest': { enterprise: ReactNode /* string */ };
+  'enterprise_management_permission_settings_pop_disable_desc2_be_guest': { enterprise: ReactNode /* string */ };
+  'enterprise_management_permission_settings_pop_enable_desc1_allow_guest': { enterprise: ReactNode /* string */ };
+  'enterprise_management_permission_settings_pop_enable_desc2_allow_be_guest': { enterprise: ReactNode /* string */ };
+  'enterprise_member_add_internal_member_tips': { doc: ReactNode /* string */ };
+  'enterprise_member_apply_opt_operate_button2_reject_desc': { amount: ReactNode /* string */ };
+  'enterprise_member_apply_opt_operate_button3_pass_desc': { amount: ReactNode /* string */, doc: ReactNode /* string */ };
+  'enterprise_member_identity_tag_internal_meber': { enterprise: ReactNode /* string */ };
+  'enterprise_member_list_add_new_member_tips': { doc: ReactNode /* string */ };
+  'enterprise_member_management_settings_basic_user_control_desc': { enterprise: ReactNode /* string */ };
+  'enterprise_member_management_settings_basic_user_control_title': { enterprise: ReactNode /* string */ };
+  'enterprise_member_management_settings_guest_control_desc': { enterprise: ReactNode /* string */ };
+  'enterprise_member_management_settings_guest_control_title': { enterprise: ReactNode /* string */ };
+  'enterprise_share_link_page_expire_info': { date: ReactNode /* string */ };
+  'enterprise_share_link_pop_desc1': { enterprise_version_name: ReactNode /* string */, member_permission: ReactNode /* string */ };
+  'enterprise_share_link_pop_desc2_expire_info': { enterprise_version_name: ReactNode /* string */, enterprise_name: ReactNode /* string */, expire_date: ReactNode /* string */ };
+  'enterprise_share_link_pop_desc2_no_expire_info': { enterprise_version_name: ReactNode /* string */, enterprise_name: ReactNode /* string */ };
+  'enterprise_share_link_pop_title': { enterprise_version_name: ReactNode /* string */ };
+  'errorpage_action': { name: ReactNode /* string */ };
+  'eval_error_cell_char_limit': { row_number: ReactNode /* string */, column_name: ReactNode /* string */, max_chars: ReactNode /* string */ };
+  'eval_error_column_limit': { max_columns: ReactNode /* string */, current_columns: ReactNode /* string */ };
+  'eval_error_duplicate_column': { column_name: ReactNode /* string */ };
+  'eval_error_message': { evaluation_name: ReactNode /* string */ };
+  'eval_error_missing_column': { column_name: ReactNode /* string */ };
+  'eval_error_missing_field': { row_number: ReactNode /* string */, field_name: ReactNode /* string */ };
+  'eval_error_query_limit': { session_id: ReactNode /* string */, max_queries: ReactNode /* string */ };
+  'eval_error_session_limit': { max_sessions: ReactNode /* string */, current_sessions: ReactNode /* string */ };
+  'eval_max_agents_limit': { num: ReactNode /* string */ };
+  'evaluation1_balance': { caseCount: ReactNode /* string */, tokenCount: ReactNode /* string */ };
+  'evaluation1_cases_count': { evaluation_case_num: ReactNode /* string */ };
+  'evaluation1_error_count': { errorCount: ReactNode /* string */, total: ReactNode /* string */ };
+  'evaluation1_estimated_token_consumption': { Estimated_token_consumption: ReactNode /* string */ };
+  'evaluation1_free_quota_exhausted_new': { freeCount: ReactNode /* string */ };
+  'evaluation1_progress': { progress: ReactNode /* string */, total: ReactNode /* string */ };
+  'evaluation1_progress_tips': { current: ReactNode /* string */, total: ReactNode /* string */ };
+  'evaluation1_task_quota': { remaining_count: ReactNode /* string */ };
+  'evaluation1_task_quota_new': { freeCount: ReactNode /* string */, remaining_count: ReactNode /* string */ };
+  'evaluation1_test_description': { testrun_consumption_token: ReactNode /* string */ };
+  'evaluation1_warning_message_eval_prompt': { field: ReactNode /* string */ };
+  'evaluation_autosaved': { savedtime: ReactNode /* string */ };
+  'evaluation_dataset_columnLimit': { columnCount: ReactNode /* string */ };
+  'evaluation_dataset_columnNameLength': { columnNameMaxLength: ReactNode /* string */ };
+  'evaluation_dataset_columnNumber': { columnNumberLimit: ReactNode /* string */ };
+  'evaluation_dataset_csv_contentLength_error': { maxLength: ReactNode /* string */ };
+  'evaluation_dataset_csv_groupConversation_error': { gourpName: ReactNode /* string */, rowLimit: ReactNode /* string */ };
+  'evaluation_dataset_dialogueNumber': { dialogueNumberLimit: ReactNode /* string */ };
+  'evaluation_dataset_exceeds_maximum_column': { MAX_COLUMN_LENGTH: ReactNode /* string */ };
+  'evaluation_page_consumption_prediction_tips1': { Estimated_token_consumption: ReactNode /* string */ };
+  'evaluation_page_consumption_prediction_tips2': { testrun_consumption_token: ReactNode /* string */ };
+  'evaluation_page_consumption_upload_file_limitation_tip': { row_limit: ReactNode /* string */ };
+  'evaluation_page_free_amount_tips1_no_remaining': { freeCount: ReactNode /* string */ };
+  'evaluation_page_free_amount_tips1_remaining': { freeCount: ReactNode /* string */, remaining_count: ReactNode /* string */ };
+  'evaluation_rule_defaultAdded': { ruleCount: ReactNode /* string */ };
+  'evaluation_rule_has_number': { rulesNumber: ReactNode /* string */ };
+  'evaluation_rule_reachLimit': { rulesLimit: ReactNode /* string */ };
+  'evaluation_rule_reachLimit_error': { maxRuleNumber: ReactNode /* string */ };
+  'evaluation_sample_conciseness': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_controversiality': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_correctness': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_creativity': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_criminality': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_depth': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_detail': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_harmfulness': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_helpfulness': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_insensitivity': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_maliciousness': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_misogyny': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_sample_relevance': { input: ReactNode /* string */, output: ReactNode /* string */ };
+  'evaluation_success_count_total': { successCount: ReactNode /* string */, total: ReactNode /* string */ };
+  'event_panel_run_workflow_failed_default_value': { name: ReactNode /* string */, error: ReactNode /* string */ };
+  'event_panel_run_workflow_success_default_value': { workflow: ReactNode /* string */ };
+  'expired_time_days_1': { num: ReactNode /* number */ };
+  'export_as_type': { type: ReactNode /* string */ };
+  'export_import_2_agent_flow_19': { num: ReactNode /* string */ };
+  'export_success_with_type': { type: ReactNode /* string */ };
+  'exterprise_share_link_page_description': { enterprise_name: ReactNode /* string */ };
+  'failed_to_import_tool': { num: ReactNode /* number */ };
+  'file_size_exceeds_limit__maximum_support_{maxsize}_kb': { maxSize: ReactNode /* string */ };
+  'file_too_large': { max_size: ReactNode /* string */ };
+  'folder_selection_num_of_selected': { n: ReactNode /* string */ };
+  'home_at_bot_status': { bot_name: ReactNode /* string */ };
+  'home_mention_searchbotstore_result_not_found_content': { search_text: ReactNode /* string */ };
+  'home_mention_searchbotstore_result_title': { search_text: ReactNode /* string */ };
+  'image_generation_node_reference_number': { refImageLength: ReactNode /* string */ };
+  'image_generation_node_size_explain': { sizeRage: ReactNode /* string */ };
+  'imageflow_canvas_reference_image': { variable: ReactNode /* string */ };
+  'imageflow_canvas_reference_text': { variable: ReactNode /* string */ };
+  'imageflow_canvas_var_reference': { n: ReactNode /* string */ };
+  'imageflow_tab_title': { name: ReactNode /* string */ };
+  'imageflow_upload_error2': { value: ReactNode /* string */ };
+  'imageflow_upload_error3': { value: ReactNode /* string */ };
+  'imageflow_upload_error4': { value: ReactNode /* string */ };
+  'imageflow_upload_error5': { value: ReactNode /* string */ };
+  'imageflow_upload_error_type': { type: ReactNode /* string */ };
+  'imageflow_upload_exceed': { size: ReactNode /* string */ };
+  'imageflow_upload_type': { type: ReactNode /* string */ };
+  'imageflowstore_expire_content': { entity_type: ReactNode /* string */, entity_name: ReactNode /* string */ };
+  'intent_queyr_jumping_hint': { link: ReactNode /* string */ };
+  'kl2_009': { num: ReactNode /* number */ };
+  'kl_write_041': { index: ReactNode /* string */ };
+  'knowledge-3rd-party-add-units-google-drive-pages-selected': { number: ReactNode /* string */ };
+  'knowledge-3rd-party-add-units-notion-pages-selected': { number: ReactNode /* string */ };
+  'knowledge_1218_001': { MaxDocs: ReactNode /* string */ };
+  'knowledge_1226_002': { FieldName: ReactNode /* string */ };
+  'knowledge_application_leaderboard_top_n': { n: ReactNode /* string */ };
+  'knowledge_application_leaderboard_top_n_explain': { n: ReactNode /* string */ };
+  'knowledge_feishu_search_placeholder': { name: ReactNode /* string */ };
+  'knowledge_insert_img_003': { url: ReactNode /* string */ };
+  'knowledge_level_006': { filenames: ReactNode /* string */ };
+  'knowledge_only_type': { docType: ReactNode /* string */ };
+  'knowledge_optimize_019': { n: ReactNode /* string */ };
+  'knowledge_photo_015': { num: ReactNode /* string */ };
+  'knowledge_slice_content_length_error': { number: ReactNode /* string */ };
+  'knowledge_table_content_limt': { number: ReactNode /* string */ };
+  'knowledge_upload_remaining_time_text': { minutes: ReactNode /* string */, seconds: ReactNode /* string */ };
+  'knowledge_weixin_011': { num: ReactNode /* string */ };
+  'knowledge_weixin_012': { num: ReactNode /* string */ };
+  'language_understanding_leaderboard_top_n': { n: ReactNode /* string */ };
+  'language_understanding_leaderboard_top_n_explain': { n: ReactNode /* string */ };
+  'last_modified_time': { time: ReactNode /* string */ };
+  'limits_dataset_files': { number_of_files: ReactNode /* string */ };
+  'lite_version_tips': { doclink: ReactNode /* string */ };
+  'location_not_parsed': { location: ReactNode /* string */ };
+  'log_pay_wall_date_filter_tips1': { upgrade: ReactNode /* string */ };
+  'login_verification_code_sent': { phone_number: ReactNode /* string */ };
+  'markdown_bold_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
+  'markdown_bulletedlist_syntax': { space: ReactNode /* string */ };
+  'markdown_code_syntax': { code: ReactNode /* string */, space: ReactNode /* string */ };
+  'markdown_codeblock_syntax': { space: ReactNode /* string */ };
+  'markdown_heading1_syntax': { space: ReactNode /* string */ };
+  'markdown_heading2_syntax': { space: ReactNode /* string */ };
+  'markdown_heading3_syntax': { space: ReactNode /* string */ };
+  'markdown_italic_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
+  'markdown_numberedlist_syntax': { space: ReactNode /* string */ };
+  'markdown_quote_syntax': { space: ReactNode /* string */ };
+  'markdown_strickthrough_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
+  'markdown_underline_syntax': { text: ReactNode /* string */, space: ReactNode /* string */ };
+  'member_usage_stats': { date: ReactNode /* string */ };
+  'memory_library_action_account_arrears_data_days': { recycleDays: ReactNode /* string */ };
+  'memory_library_action_data_will_be_days_after': { recycleDays: ReactNode /* string */ };
+  'memory_library_general_continue_write': { count: ReactNode /* string */ };
+  'memory_library_general_memory_lib_9': { count: ReactNode /* string */ };
+  'memory_library_general_memory_lib_description_cannot_e': { count: ReactNode /* string */ };
+  'memory_library_general_memory_lib_name_cannot_exceed': { count: ReactNode /* string */ };
+  'memory_library_general_text': { count: ReactNode /* string */ };
+  'messageListRetry': { retry: ReactNode /* string */ };
+  'message_credits_18': { count: ReactNode /* string */ };
+  'message_credits_6': { count: ReactNode /* string */ };
+  'message_credits_9': { price: ReactNode /* string */ };
+  'miniapp_url_action_7': { num: ReactNode /* string */ };
+  'missing_parameter': { field_names: ReactNode /* string */ };
+  'mkpl_maximum_chatacter_limit': { maxCount: ReactNode /* string */ };
+  'mkpl_report_bot_desc': { emailAddress: ReactNode /* string */ };
+  'mkpl_report_community_desc': { emailAddress: ReactNode /* string */ };
+  'mkpl_report_desc': { emailAddress: ReactNode /* string */ };
+  'mockdata_field_empty': { fieldName: ReactNode /* string */ };
+  'mockset_during_using': { MockSetName: ReactNode /* string */ };
+  'mockset_field_is_required': { field: ReactNode /* string */ };
+  'mockset_invaild_tip': { MockSetName: ReactNode /* string */ };
+  'mockset_label_tip': { MockSetName: ReactNode /* string */ };
+  'mockset_of_toolname': { toolName: ReactNode /* string */ };
+  'model_already_out_of_service_hover_tip': { modelName: ReactNode /* string */ };
+  'model_arena_by_company': { company: ReactNode /* string */ };
+  'model_deploy_model_edit_detailpage_custome_shcema_requirement': { doc: ReactNode /* string */ };
+  'model_deploy_page_vocl_ark_syc_account_id': { account_id: ReactNode /* string */ };
+  'model_gonna_out_of_service_hover_tip': { modelName: ReactNode /* string */, terminateTimeStr: ReactNode /* string */ };
+  'model_list_december_update_notice': { date: ReactNode /* string */ };
+  'model_list_model_company': { company: ReactNode /* string */ };
+  'model_list_model_default_parameters_tips': { doc: ReactNode /* string */ };
+  'model_list_model_deprecation_date': { date: ReactNode /* string */ };
+  'model_list_model_setting': { model: ReactNode /* string */ };
+  'model_list_model_switch_announcement': { model_deprecated: ReactNode /* string */, date: ReactNode /* string */, model_up: ReactNode /* string */ };
+  'model_list_remove_from_list': { model_deprecated: ReactNode /* string */, date: ReactNode /* string */ };
+  'model_management_context': { context: ReactNode /* string */ };
+  'model_management_file_size_limit': { size: ReactNode /* string */ };
+  'model_management_results_count': { count: ReactNode /* string */ };
+  'model_ranking_agent_battle_top_n': { n: ReactNode /* string */ };
+  'model_ranking_pure_model_battle_top_n': { n: ReactNode /* string */ };
+  'model_sp_input_cached_support_tips': { 变量: ReactNode /* string */ };
+  'model_support_poor_warning': { modelName: ReactNode /* string */ };
+  'models_arena_question_bank_hover_current_selection_bankname': { bank_name: ReactNode /* string */ };
+  'models_arena_question_bank_hover_remove_bankname': { bank_name: ReactNode /* string */ };
+  'models_arena_resultpage_has_received_n_votes': { n: ReactNode /* string */ };
+  'move_space_task_loading_timer': { time: ReactNode /* string */ };
+  'move_workspace_failed_pop_desc': { error_msg: ReactNode /* string */ };
+  'move_workspace_pop_up_choose_user_team_paywall_tips': { amount: ReactNode /* string */ };
+  'move_workspace_pop_up_choose_workspace_desc': { doc: ReactNode /* string */ };
+  'move_workspace_pop_up_resource_list_type2_API_desc': { doc: ReactNode /* string */ };
+  'multi_organization_app_auth_3': { organization_name: ReactNode /* string */ };
+  'multiagent_bot_update_auto_time': { time: ReactNode /* string */ };
+  'new_landing_title_customer_detail': { case_title: ReactNode /* string */ };
+  'nl2prompt_insert_placeholder': { slash: ReactNode /* string */ };
+  'no_binding_relationship__add_tab_{newtitle}_to_the_bottom_navigation_bar_and_bin': { newTitle: ReactNode /* string */, currentPageId: ReactNode /* string */ };
+  'not_supported_explain': { modelName: ReactNode /* string */ };
+  'not_supported_explain_toolName': { modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
+  'nott_offline_dot_tips': { date: ReactNode /* string */ };
+  'oauth_ask_for_auth_message': { pluginName: ReactNode /* string */, url: ReactNode /* string */ };
+  'obo_auth_link_notification': { user_name: ReactNode /* string */ };
+  'obo_install_failed_notification': { err_msg: ReactNode /* string */ };
+  'obo_install_popup_title': { app_name: ReactNode /* string */ };
+  'open_source_terms': { aggrement: ReactNode /* string */ };
+  'openapi_auth_app_auth_org': { org_type: ReactNode /* string */ };
+  'openapi_auth_app_auth_tos': { org_type: ReactNode /* string */, org_name: ReactNode /* string */ };
+  'openapi_rtc_coze_pro_tips': { coze_pro: ReactNode /* string */ };
+  'openapi_rtc_waitlist_tips': { application_link: ReactNode /* string */ };
+  'opening_markdown_support_tag': { markdown_editor_btn: ReactNode /* string */ };
+  'operation_overview_category_ranking': { category: ReactNode /* string */ };
+  'operation_overview_category_ranking_hint': { category: ReactNode /* string */ };
+  'operations_comparison_period': { ratio: ReactNode /* string */, date1: ReactNode /* string */, date2: ReactNode /* string */ };
   'option_{i}': { i: ReactNode /* string */ };
-  org_api: { org_type: ReactNode /* string */ };
-  org_api_app_type: { org_type: ReactNode /* string */ };
-  org_api_oauth_choose_1: { org_type: ReactNode /* string */ };
-  org_api_oauth_install_management_reminder: {
-    org_type: ReactNode /* string */;
-  };
-  org_api_oauth_num_limit: { org_type: ReactNode /* string */ };
-  org_api_oauth_space_all_desc: { org_type: ReactNode /* string */ };
-  org_api_oauth_space_choose_desc: { org_type: ReactNode /* string */ };
-  org_api_opat_space_all_desc: { org_type: ReactNode /* string */ };
-  org_api_opat_space_choose_desc: { org_type: ReactNode /* string */ };
-  org_app_auth_tips: { doc_link: ReactNode /* string */ };
-  org_oauth_app_install_apply_1: {
-    app_name: ReactNode /* string */;
-    org_type: ReactNode /* string */;
-    enterprise_name: ReactNode /* string */;
-  };
-  org_oauth_app_install_apply_13: { org_type: ReactNode /* string */ };
-  org_oauth_app_install_apply_14: { org_type: ReactNode /* string */ };
-  org_oauth_app_install_apply_4: { app_name: ReactNode /* string */ };
-  org_oauth_app_install_apply_5: { enterprise_name: ReactNode /* string */ };
-  org_oauth_user_not_exsit: { org_type: ReactNode /* string */ };
-  overview_bi_assistant_quarter: { quarter: ReactNode /* string */ };
-  overview_bi_assistant_week: { week: ReactNode /* string */ };
-  overview_bi_assistant_year: { year: ReactNode /* string */ };
-  'page_{currentpageid}_toggles_the_bottom_navigation_to_{target}': {
-    currentPageId: ReactNode /* string */;
-    target: ReactNode /* string */;
-  };
+  'org_api': { org_type: ReactNode /* string */ };
+  'org_api_app_type': { org_type: ReactNode /* string */ };
+  'org_api_oauth_choose_1': { org_type: ReactNode /* string */ };
+  'org_api_oauth_install_management_reminder': { org_type: ReactNode /* string */ };
+  'org_api_oauth_num_limit': { org_type: ReactNode /* string */ };
+  'org_api_oauth_space_all_desc': { org_type: ReactNode /* string */ };
+  'org_api_oauth_space_choose_desc': { org_type: ReactNode /* string */ };
+  'org_api_opat_space_all_desc': { org_type: ReactNode /* string */ };
+  'org_api_opat_space_choose_desc': { org_type: ReactNode /* string */ };
+  'org_app_auth_tips': { doc_link: ReactNode /* string */ };
+  'org_oauth_app_install_apply_1': { app_name: ReactNode /* string */, org_type: ReactNode /* string */, enterprise_name: ReactNode /* string */ };
+  'org_oauth_app_install_apply_13': { org_type: ReactNode /* string */ };
+  'org_oauth_app_install_apply_14': { org_type: ReactNode /* string */ };
+  'org_oauth_app_install_apply_4': { app_name: ReactNode /* string */ };
+  'org_oauth_app_install_apply_5': { enterprise_name: ReactNode /* string */ };
+  'org_oauth_user_not_exsit': { org_type: ReactNode /* string */ };
+  'overview_bi_assistant_quarter': { quarter: ReactNode /* string */ };
+  'overview_bi_assistant_week': { week: ReactNode /* string */ };
+  'overview_bi_assistant_year': { year: ReactNode /* string */ };
+  'page_{currentpageid}_toggles_the_bottom_navigation_to_{target}': { currentPageId: ReactNode /* string */, target: ReactNode /* string */ };
   'page_{len}': { len: ReactNode /* string */ };
-  path_has_duplicates: {
-    path: ReactNode /* string */;
-    num: ReactNode /* number */;
-  };
-  people_using_mockset_delete: { num: ReactNode /* number */ };
-  performance_every_hours: { count: ReactNode /* string */ };
-  performance_every_minutes: { count: ReactNode /* string */ };
-  personal_resource_authoorization_page_choose_multi_toast: {
-    number: ReactNode /* string */;
-  };
-  personal_resource_authoorization_page_chosen: {
-    number: ReactNode /* string */;
-  };
-  personal_resource_authoorization_page_desc: {
-    enterprise_name: ReactNode /* string */;
-    doc: ReactNode /* string */;
-  };
+  'path_has_duplicates': { path: ReactNode /* string */, num: ReactNode /* number */ };
+  'people_count': { number: ReactNode /* string */ };
+  'people_using_mockset_delete': { num: ReactNode /* number */ };
+  'performance_every_hours': { count: ReactNode /* string */ };
+  'performance_every_minutes': { count: ReactNode /* string */ };
+  'personal_resource_authoorization_page_choose_multi_toast': { number: ReactNode /* string */ };
+  'personal_resource_authoorization_page_chosen': { number: ReactNode /* string */ };
+  'personal_resource_authoorization_page_desc': { enterprise_name: ReactNode /* string */, doc: ReactNode /* string */ };
   'photo-size-limit': { fileName: ReactNode /* string */ };
-  playground_emotion_range_tips: { range: ReactNode /* string */ };
-  playground_emotion_tips: { docLink: ReactNode /* string */ };
-  plugin_config_modal_static_ip_desc_with_url: { url: ReactNode /* string */ };
-  plugin_tool_exists_tips: { num: ReactNode /* number */ };
-  plugin_tool_import_result_tips: {
-    succToolCount: ReactNode /* string */;
-    failToolCount: ReactNode /* string */;
-  };
-  poorly_supported_explain_toolName: {
-    modelName: ReactNode /* string */;
-    toolName: ReactNode /* string */;
-  };
-  premium_cancel_alert_des: { date: ReactNode /* string */ };
-  premium_canceled_des: { date: ReactNode /* string */ };
-  premium_connect_button_des: { count: ReactNode /* string */ };
-  premium_connect_platform: { platform: ReactNode /* string */ };
-  premium_connect_platform_des: { platform: ReactNode /* string */ };
-  premium_credits_per_message: { count: ReactNode /* string */ };
-  premium_free_trial_new: { count: ReactNode /* string */ };
-  premium_login_tips: { login: ReactNode /* string */ };
-  premium_message_credits: { count: ReactNode /* string */ };
-  premium_message_credits_des: { count: ReactNode /* string */ };
-  premium_message_exchange: { count: ReactNode /* string */ };
-  premium_messages_count: { count: ReactNode /* string */ };
-  premium_messages_per_day: { count: ReactNode /* string */ };
-  premium_plan_plugin_cost_credits_per_call: { number: ReactNode /* string */ };
-  premium_price_month: { price: ReactNode /* string */ };
-  professional_plan_n_paid_plugins_included_in_bot: {
-    count: ReactNode /* string */;
-  };
-  professional_plan_n_paid_plugins_included_in_workflow: {
-    count: ReactNode /* string */;
-  };
-  profile_interactive_update_bots: { num: ReactNode /* string */ };
-  profile_notify_follow_target_update: {
-    nick_name: ReactNode /* string */;
-    num: ReactNode /* string */;
-  };
-  profile_notify_follow_targets_update: { num: ReactNode /* string */ };
-  profile_notify_single_user_follow: { nick_name: ReactNode /* string */ };
-  profile_notify_some_users_follow: { num: ReactNode /* string */ };
-  project_conversation_list_batch_delete_btn: { len: ReactNode /* string */ };
-  project_conversation_list_batch_delete_tooltip_context: {
-    len: ReactNode /* string */;
-  };
-  project_ide_info_created_on: { time: ReactNode /* string */ };
-  project_ide_tab_title: { project_name: ReactNode /* string */ };
-  project_library_voice_add_finished_chances: {
-    leftChangce: ReactNode /* string */;
-    allChance: ReactNode /* string */;
-  };
-  project_library_voice_add_record_time: { time: ReactNode /* string */ };
-  project_plugin_delete_modal_title: { pluginName: ReactNode /* string */ };
-  project_publish_select_desc_compliance_new: {
-    publish_terms_title: ReactNode /* string */;
-  };
-  project_release_example1: { version: ReactNode /* string */ };
-  project_release_package_failed_reason: {
-    package_failed_reason: ReactNode /* string */;
-  };
-  project_release_reason_channel: { reason_channel: ReactNode /* string */ };
-  project_release_template_info_not: {
-    template_info_type: ReactNode /* string */;
-  };
-  project_resource_modal_library_resources: {
-    resource: ReactNode /* string */;
-  };
-  project_resource_modal_project_resources: {
-    resource: ReactNode /* string */;
-  };
-  project_resource_sidebar_confirm_batch_delete: {
-    count: ReactNode /* string */;
-  };
-  project_resource_sidebar_confirm_delete: {
-    resourceName: ReactNode /* string */;
-  };
-  project_resource_sidebar_create_new_resource: {
-    resource: ReactNode /* string */;
-  };
-  project_resource_sidebar_disable_resource: {
-    resource: ReactNode /* string */;
-  };
-  project_resource_sidebar_enable_resource: {
-    resource: ReactNode /* string */;
-  };
-  project_resource_sidebar_resource_not_added: {
-    resource: ReactNode /* string */;
-  };
-  project_resource_sidebar_warning_label_exists: {
-    label: ReactNode /* string */;
-  };
-  project_store_search_result: { amount: ReactNode /* string */ };
-  project_toast_copying_resource: { resourceName: ReactNode /* string */ };
-  publish_audit_pop2: { reason: ReactNode /* string */ };
-  publish_bot_allow_share: { platform: ReactNode /* string */ };
-  publish_bot_not_allow_share: { platform: ReactNode /* string */ };
-  publish_channel_control_page_channel_set_status_bar: {
-    open: ReactNode /* string */;
-    close: ReactNode /* string */;
-  };
-  publish_channel_control_page_chosen: { count: ReactNode /* string */ };
-  publish_permission_control_page_white_list_reach_limit: {
-    count: ReactNode /* string */;
-  };
-  query_latency: { duration: ReactNode /* string */ };
-  query_latency_hover: { duration: ReactNode /* string */ };
-  query_tokens_hover: { number: ReactNode /* string */ };
-  query_tokens_number: { number: ReactNode /* string */ };
-  realtime_sdk_playground_event_7: { event_name: ReactNode /* string */ };
-  realtime_sdk_playground_voice_9: { name: ReactNode /* string */ };
-  realtime_sdk_playground_welcome_1: { user_name: ReactNode /* string */ };
-  reasoning_leaderboard_top_n: { n: ReactNode /* string */ };
-  reasoning_leaderboard_top_n_explain: { n: ReactNode /* string */ };
-  release_analysis_days_compare: { days: ReactNode /* string */ };
-  release_analysis_time: { days: ReactNode /* string */ };
-  release_management_add_failed: { number: ReactNode /* string */ };
-  release_management_detail1: { button: ReactNode /* string */ };
-  release_management_link: { url: ReactNode /* string */ };
-  release_management_removed: { number: ReactNode /* string */ };
-  release_management_removed2: { count: ReactNode /* string */ };
-  release_management_unlist_confirm: { platform: ReactNode /* string */ };
-  resource_move_title: { bot_name: ReactNode /* string */ };
-  resource_process_modal_text_copying_resource_to_library: {
-    resourceName: ReactNode /* string */;
-  };
-  resource_process_modal_text_copying_resource_to_project: {
-    resourceName: ReactNode /* string */;
-  };
-  resource_process_modal_text_moving_resource_to_library: {
-    resourceName: ReactNode /* string */;
-  };
-  role_play_leaderboard_top_n: { n: ReactNode /* string */ };
-  role_play_leaderboard_top_n_explain: { n: ReactNode /* string */ };
-  scaling_base_plus_extra: {
-    basic: ReactNode /* string */;
-    extra: ReactNode /* string */;
-  };
-  scaling_cancel_tip: {
-    type: ReactNode /* string */;
-    num: ReactNode /* string */;
-  };
-  scaling_confirm_activate: { type: ReactNode /* string */ };
-  scaling_expand_type: { type: ReactNode /* string */ };
-  scaling_expand_type_desc: { type: ReactNode /* string */ };
-  scaling_integer_only: { num: ReactNode /* string */ };
-  scaling_max_tip: {
-    max: ReactNode /* string */;
-    link: ReactNode /* string */;
-  };
-  scene_chat_error_empty_seat_fix_content: { nickname: ReactNode /* string */ };
-  scene_edit_preview_init_added: { n: ReactNode /* string */ };
-  scene_edit_preview_init_added_4: { n: ReactNode /* string */ };
-  scene_edit_preview_init_need_to_add: { m: ReactNode /* string */ };
-  scene_edit_preview_input_box_allow_send_title: {
-    list: ReactNode /* string */;
-  };
-  scene_edit_preview_message_sendto: { list: ReactNode /* string */ };
-  scene_edit_preview_message_sequentially: { list: ReactNode /* string */ };
-  scene_edit_preview_message_simultaneously: { list: ReactNode /* string */ };
-  scene_edit_preview_next_speaker_text: { name: ReactNode /* string */ };
-  scene_edit_roles_reserve_add_member_subtitle: { n: ReactNode /* string */ };
-  scene_mkpl_bot_remove_subtitle2: { num: ReactNode /* number */ };
-  scene_mkpl_play_waiting: { n: ReactNode /* string */ };
-  scene_mkpl_search_tab_title2: { num: ReactNode /* number */ };
-  scene_roles_visibility_select_custom_all: {
-    role_name: ReactNode /* string */;
-  };
-  scene_workflow_chat_node_conversation_visibility_custom_roles_seat: {
-    n: ReactNode /* string */;
-  };
-  scene_workflow_delete_workflow_button: { source: ReactNode /* string */ };
-  scene_workflow_delete_workflow_popup_subtitle: {
-    source: ReactNode /* string */;
-  };
-  scene_workflow_delete_workflow_popup_title: {
-    source: ReactNode /* string */;
-  };
-  scene_workflow_testrun_nickname: {
-    role: ReactNode /* string */;
-    n: ReactNode /* string */;
-  };
-  share_card_title: { bot_name: ReactNode /* string */ };
-  shortcut_modal_components_hover_tip: {
-    var1: ReactNode /* string */;
-    var2: ReactNode /* string */;
-  };
-  shortcut_modal_max_component_tip: { maxCount: ReactNode /* string */ };
-  shortcut_modal_query_message_hover_tip_component_mode: {
-    var1: ReactNode /* string */;
-    var2: ReactNode /* string */;
-  };
-  shortcut_modal_save_shortcut_with_components_unused_modal_desc: {
-    unUsedComponentsNames: ReactNode /* string */;
-  };
-  shortcut_modal_selector_component_count_of_options: {
-    count: ReactNode /* string */;
-  };
-  sign_third_button: { platform: ReactNode /* string */ };
-  store_bot_privacy_container: { Terms: ReactNode /* string */ };
-  store_search_result1: { num: ReactNode /* number */ };
-  store_search_result2: { num: ReactNode /* number */ };
-  store_search_result3: { num: ReactNode /* number */ };
-  store_search_result5: { amount: ReactNode /* string */ };
-  store_search_result6: { num: ReactNode /* number */ };
-  store_search_result_mobile: { query: ReactNode /* string */ };
-  store_search_suggest_page: { query: ReactNode /* string */ };
-  store_search_suggest_result: { query: ReactNode /* string */ };
-  store_search_suggest_result_amout: { query: ReactNode /* string */ };
-  store_service_plugin_connector_only: {
-    connector_names: ReactNode /* string */;
-  };
-  subscribe_message_credit: { count: ReactNode /* string */ };
-  support_poor_explain: { modelName: ReactNode /* string */ };
-  switch_to_on_demand_call_warning_notsupported: {
-    call_method: ReactNode /* string */;
-    modelName: ReactNode /* string */;
-    toolName: ReactNode /* string */;
-  };
-  switch_to_on_demand_call_warning_supportpoor: {
-    callMethod: ReactNode /* string */;
-    modelName: ReactNode /* string */;
-    toolName: ReactNode /* string */;
-  };
-  tab_bot_detail: { bot_name: ReactNode /* string */ };
-  tab_dataset_detail: { dataset_name: ReactNode /* string */ };
-  tab_explore_bot_detail: { bot_name: ReactNode /* string */ };
-  tab_plugin_detail: { plugin_name: ReactNode /* string */ };
-  tab_workflow_detail: { workflow_name: ReactNode /* string */ };
-  'tab_{placeholder1}_bind_page_{bametpageid}': {
-    placeholder1: ReactNode /* string */;
-    targetPageId: ReactNode /* string */;
-  };
-  'tab_{placeholder1}_binds_the_page_{bametpageid}__and_unbinds_the_page_from_the_o': {
-    placeholder1: ReactNode /* string */;
-    targetPageId: ReactNode /* string */;
-    placeholder5: ReactNode /* string */;
-  };
-  'tab_{tabtitle}__has_been_bound_to__{label}___after_confirmation__the_original_bi': {
-    tabTitle: ReactNode /* string */;
-    label: ReactNode /* string */;
-  };
-  table_view_002: { n: ReactNode /* string */ };
+  'playground_emotion_range_tips': { range: ReactNode /* string */ };
+  'playground_emotion_tips': { docLink: ReactNode /* string */ };
+  'plugin_agreement_store_tips': { UserLevel: ReactNode /* string */ };
+  'plugin_billing_not_configured': { config: ReactNode /* string */ };
+  'plugin_config_modal_static_ip_desc_with_url': { url: ReactNode /* string */ };
+  'plugin_oauth_info_confirm_page_title': { plugin_name: ReactNode /* string */ };
+  'plugin_price_tip': { num: ReactNode /* string */ };
+  'plugin_tool_exists_tips': { num: ReactNode /* number */ };
+  'plugin_tool_import_result_tips': { succToolCount: ReactNode /* string */, failToolCount: ReactNode /* string */ };
+  'plugin_unsupported_connector_tip': { viewMore: ReactNode /* string */ };
+  'poorly_supported_explain_toolName': { modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
+  'premium_cancel_alert_des': { date: ReactNode /* string */ };
+  'premium_canceled_des': { date: ReactNode /* string */ };
+  'premium_connect_button_des': { count: ReactNode /* string */ };
+  'premium_connect_platform': { platform: ReactNode /* string */ };
+  'premium_connect_platform_des': { platform: ReactNode /* string */ };
+  'premium_credits_per_message': { count: ReactNode /* string */ };
+  'premium_free_trial_new': { count: ReactNode /* string */ };
+  'premium_login_tips': { login: ReactNode /* string */ };
+  'premium_message_credits': { count: ReactNode /* string */ };
+  'premium_message_credits_des': { count: ReactNode /* string */ };
+  'premium_message_exchange': { count: ReactNode /* string */ };
+  'premium_messages_count': { count: ReactNode /* string */ };
+  'premium_messages_per_day': { count: ReactNode /* string */ };
+  'premium_plan_plugin_cost_credits_per_call': { number: ReactNode /* string */ };
+  'premium_price_month': { price: ReactNode /* string */ };
+  'product_not_created': { create: ReactNode /* string */ };
+  'professional_plan_n_paid_plugins_included_in_bot': { count: ReactNode /* string */ };
+  'professional_plan_n_paid_plugins_included_in_workflow': { count: ReactNode /* string */ };
+  'profile_interactive_update_bots': { num: ReactNode /* string */ };
+  'profile_notify_follow_target_update': { nick_name: ReactNode /* string */, num: ReactNode /* string */ };
+  'profile_notify_follow_targets_update': { num: ReactNode /* string */ };
+  'profile_notify_single_user_follow': { nick_name: ReactNode /* string */ };
+  'profile_notify_some_users_follow': { num: ReactNode /* string */ };
+  'project_conversation_list_batch_delete_btn': { len: ReactNode /* string */ };
+  'project_conversation_list_batch_delete_tooltip_context': { len: ReactNode /* string */ };
+  'project_ide_info_created_on': { time: ReactNode /* string */ };
+  'project_ide_tab_title': { project_name: ReactNode /* string */ };
+  'project_library_voice_add_finished_chances': { leftChangce: ReactNode /* string */, allChance: ReactNode /* string */ };
+  'project_library_voice_add_record_time': { time: ReactNode /* string */ };
+  'project_plugin_delete_modal_title': { pluginName: ReactNode /* string */ };
+  'project_publish_select_desc_compliance_new': { publish_terms_title: ReactNode /* string */ };
+  'project_release_example1': { version: ReactNode /* string */ };
+  'project_release_pack_fail_wf_check': { name: ReactNode /* string */ };
+  'project_release_package_failed_reason': { package_failed_reason: ReactNode /* string */ };
+  'project_release_reason_channel': { reason_channel: ReactNode /* string */ };
+  'project_release_template_info_not': { template_info_type: ReactNode /* string */ };
+  'project_resource_modal_library_resources': { resource: ReactNode /* string */ };
+  'project_resource_modal_project_resources': { resource: ReactNode /* string */ };
+  'project_resource_sidebar_confirm_batch_delete': { count: ReactNode /* string */ };
+  'project_resource_sidebar_confirm_delete': { resourceName: ReactNode /* string */ };
+  'project_resource_sidebar_create_new_resource': { resource: ReactNode /* string */ };
+  'project_resource_sidebar_disable_resource': { resource: ReactNode /* string */ };
+  'project_resource_sidebar_enable_resource': { resource: ReactNode /* string */ };
+  'project_resource_sidebar_resource_not_added': { resource: ReactNode /* string */ };
+  'project_resource_sidebar_warning_label_exists': { label: ReactNode /* string */ };
+  'project_store_search_result': { amount: ReactNode /* string */ };
+  'project_toast_copying_resource': { resourceName: ReactNode /* string */ };
+  'publish_audit_pop2': { reason: ReactNode /* string */ };
+  'publish_bot_allow_share': { platform: ReactNode /* string */ };
+  'publish_bot_not_allow_share': { platform: ReactNode /* string */ };
+  'publish_channel_control_page_channel_set_status_bar': { open: ReactNode /* string */, close: ReactNode /* string */ };
+  'publish_channel_control_page_chosen': { count: ReactNode /* string */ };
+  'publish_permission_control_page_white_list_reach_limit': { count: ReactNode /* string */ };
+  'query_latency': { duration: ReactNode /* string */ };
+  'query_latency_hover': { duration: ReactNode /* string */ };
+  'query_tokens_hover': { number: ReactNode /* string */ };
+  'query_tokens_number': { number: ReactNode /* string */ };
+  'realtime_sdk_playground_event_7': { event_name: ReactNode /* string */ };
+  'realtime_sdk_playground_voice_9': { name: ReactNode /* string */ };
+  'realtime_sdk_playground_welcome_1': { user_name: ReactNode /* string */ };
+  'reasoning_leaderboard_top_n': { n: ReactNode /* string */ };
+  'reasoning_leaderboard_top_n_explain': { n: ReactNode /* string */ };
+  'release_analysis_days_compare': { days: ReactNode /* string */ };
+  'release_analysis_time': { days: ReactNode /* string */ };
+  'release_management_add_failed': { number: ReactNode /* string */ };
+  'release_management_detail1': { button: ReactNode /* string */ };
+  'release_management_link': { url: ReactNode /* string */ };
+  'release_management_removed': { number: ReactNode /* string */ };
+  'release_management_removed2': { count: ReactNode /* string */ };
+  'release_management_unlist_confirm': { platform: ReactNode /* string */ };
+  'resource_move_title': { bot_name: ReactNode /* string */ };
+  'resource_point_limit': { count: ReactNode /* string */ };
+  'resource_process_modal_text_copying_resource_to_library': { resourceName: ReactNode /* string */ };
+  'resource_process_modal_text_copying_resource_to_project': { resourceName: ReactNode /* string */ };
+  'resource_process_modal_text_moving_resource_to_library': { resourceName: ReactNode /* string */ };
+  'rmb_resource_deduction': { cost: ReactNode /* string */, resource_cost: ReactNode /* string */ };
+  'role_play_leaderboard_top_n': { n: ReactNode /* string */ };
+  'role_play_leaderboard_top_n_explain': { n: ReactNode /* string */ };
+  'scaling_base_plus_extra': { basic: ReactNode /* string */, extra: ReactNode /* string */ };
+  'scaling_cancel_tip': { type: ReactNode /* string */, num: ReactNode /* string */ };
+  'scaling_confirm_activate': { type: ReactNode /* string */ };
+  'scaling_expand_type': { type: ReactNode /* string */ };
+  'scaling_expand_type_desc': { type: ReactNode /* string */ };
+  'scaling_integer_only': { num: ReactNode /* string */ };
+  'scaling_max_tip': { max: ReactNode /* string */, link: ReactNode /* string */ };
+  'scene_chat_error_empty_seat_fix_content': { nickname: ReactNode /* string */ };
+  'scene_edit_preview_init_added': { n: ReactNode /* string */ };
+  'scene_edit_preview_init_added_4': { n: ReactNode /* string */ };
+  'scene_edit_preview_init_need_to_add': { m: ReactNode /* string */ };
+  'scene_edit_preview_input_box_allow_send_title': { list: ReactNode /* string */ };
+  'scene_edit_preview_message_sendto': { list: ReactNode /* string */ };
+  'scene_edit_preview_message_sequentially': { list: ReactNode /* string */ };
+  'scene_edit_preview_message_simultaneously': { list: ReactNode /* string */ };
+  'scene_edit_preview_next_speaker_text': { name: ReactNode /* string */ };
+  'scene_edit_roles_reserve_add_member_subtitle': { n: ReactNode /* string */ };
+  'scene_mkpl_bot_remove_subtitle2': { num: ReactNode /* number */ };
+  'scene_mkpl_play_waiting': { n: ReactNode /* string */ };
+  'scene_mkpl_search_tab_title2': { num: ReactNode /* number */ };
+  'scene_roles_visibility_select_custom_all': { role_name: ReactNode /* string */ };
+  'scene_workflow_chat_node_conversation_visibility_custom_roles_seat': { n: ReactNode /* string */ };
+  'scene_workflow_delete_workflow_button': { source: ReactNode /* string */ };
+  'scene_workflow_delete_workflow_popup_subtitle': { source: ReactNode /* string */ };
+  'scene_workflow_delete_workflow_popup_title': { source: ReactNode /* string */ };
+  'scene_workflow_testrun_nickname': { role: ReactNode /* string */, n: ReactNode /* string */ };
+  'selected_items': { cnt: ReactNode /* string */ };
+  'share_card_title': { bot_name: ReactNode /* string */ };
+  'shortcut_modal_components_hover_tip': { var1: ReactNode /* string */, var2: ReactNode /* string */ };
+  'shortcut_modal_max_component_tip': { maxCount: ReactNode /* string */ };
+  'shortcut_modal_query_message_hover_tip_component_mode': { var1: ReactNode /* string */, var2: ReactNode /* string */ };
+  'shortcut_modal_save_shortcut_with_components_unused_modal_desc': { unUsedComponentsNames: ReactNode /* string */ };
+  'shortcut_modal_selector_component_count_of_options': { count: ReactNode /* string */ };
+  'sign_third_button': { platform: ReactNode /* string */ };
+  'store_bot_privacy_container': { Terms: ReactNode /* string */ };
+  'store_search_result1': { num: ReactNode /* number */ };
+  'store_search_result2': { num: ReactNode /* number */ };
+  'store_search_result3': { num: ReactNode /* number */ };
+  'store_search_result5': { amount: ReactNode /* string */ };
+  'store_search_result6': { num: ReactNode /* number */ };
+  'store_search_result_mobile': { query: ReactNode /* string */ };
+  'store_search_suggest_page': { query: ReactNode /* string */ };
+  'store_search_suggest_result': { query: ReactNode /* string */ };
+  'store_search_suggest_result_amout': { query: ReactNode /* string */ };
+  'store_service_plugin_connector_only': { connector_names: ReactNode /* string */ };
+  'store_template_details_resource_tips_1': { entityType: ReactNode /* string */, resourcePointConsumed: ReactNode /* string */ };
+  'store_template_details_resource_tips_2': { entityType: ReactNode /* string */, resourcePointConsumed: ReactNode /* string */ };
+  'store_template_details_resource_tips_hover': { entityType: ReactNode /* string */ };
+  'subscribe_message_credit': { count: ReactNode /* string */ };
+  'support_poor_explain': { modelName: ReactNode /* string */ };
+  'switch_to_on_demand_call_warning_notsupported': { call_method: ReactNode /* string */, modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
+  'switch_to_on_demand_call_warning_supportpoor': { callMethod: ReactNode /* string */, modelName: ReactNode /* string */, toolName: ReactNode /* string */ };
+  'tab_bot_detail': { bot_name: ReactNode /* string */ };
+  'tab_dataset_detail': { dataset_name: ReactNode /* string */ };
+  'tab_explore_bot_detail': { bot_name: ReactNode /* string */ };
+  'tab_plugin_detail': { plugin_name: ReactNode /* string */ };
+  'tab_workflow_detail': { workflow_name: ReactNode /* string */ };
+  'tab_{placeholder1}_bind_page_{bametpageid}': { placeholder1: ReactNode /* string */, targetPageId: ReactNode /* string */ };
+  'tab_{placeholder1}_binds_the_page_{bametpageid}__and_unbinds_the_page_from_the_o': { placeholder1: ReactNode /* string */, targetPageId: ReactNode /* string */, placeholder5: ReactNode /* string */ };
+  'tab_{tabtitle}__has_been_bound_to__{label}___after_confirmation__the_original_bi': { tabTitle: ReactNode /* string */, label: ReactNode /* string */ };
+  'table_view_002': { n: ReactNode /* string */ };
   'tag_{placeholder1}': { placeholder1: ReactNode /* string */ };
-  team_add_member_number_tip: { selectedMemberlength: ReactNode /* string */ };
-  team_invitation_link_prefix: { spaceName: ReactNode /* string */ };
-  team_management_add_member_success_toast: { number: ReactNode /* string */ };
-  team_max_admin_tip: { maximumAdmins: ReactNode /* string */ };
-  team_max_number_tip: { max_team_number: ReactNode /* string */ };
-  team_share_link_page_expire_info: { date: ReactNode /* string */ };
-  template_duplicate_count: { count: ReactNode /* string */ };
-  terms_service_privacy_policy: {
-    terms_of_service: ReactNode /* string */;
-    privacy_policy: ReactNode /* string */;
-  };
-  'the_file_size_exceeds_the_limit__the_maximum_support_is_{placeholder1}_mb': {
-    placeholder1: ReactNode /* string */;
-  };
-  timecapsule_0123_001: {
-    weekDay: ReactNode /* string */;
-    date: ReactNode /* string */;
-  };
-  token_auto_recharge_specification: {
-    count_1: ReactNode /* string */;
-    count_2: ReactNode /* string */;
-    count_3: ReactNode /* string */;
-    count_4: ReactNode /* string */;
-  };
-  token_auto_recharge_specification1: { count: ReactNode /* string */ };
-  token_auto_recharge_specification2: { count: ReactNode /* string */ };
-  token_auto_recharge_specification3: { count: ReactNode /* string */ };
-  token_auto_recharge_specification4: { count_limit: ReactNode /* string */ };
-  tool_usage_leaderboard_top_n: { n: ReactNode /* string */ };
-  tool_usage_leaderboard_top_n_explain: { n: ReactNode /* string */ };
-  toolname_used_mockset_mocksetname: {
-    toolName: ReactNode /* string */;
-    mockSetName: ReactNode /* string */;
-  };
-  tools_imported_successfully: { num: ReactNode /* number */ };
-  ui_js_expression_setter_trigger_when: { when: ReactNode /* string */ };
-  uibuilder_eventpanel_runworkflow_success_defaultvalue: {
-    workflowName: ReactNode /* string */;
-  };
-  'unbind_the_original_binding_relationship_{placeholder1}_add_tab_{newtitle}_to_th': {
-    placeholder1: ReactNode /* string */;
-    newTitle: ReactNode /* string */;
-    currentPageId: ReactNode /* string */;
-  };
+  'team_add_member_number_tip': { selectedMemberlength: ReactNode /* string */ };
+  'team_invitation_link_prefix': { spaceName: ReactNode /* string */ };
+  'team_management_add_member_success_toast': { number: ReactNode /* string */ };
+  'team_max_admin_tip': { maximumAdmins: ReactNode /* string */ };
+  'team_max_number_tip': { max_team_number: ReactNode /* string */ };
+  'team_share_link_page_expire_info': { date: ReactNode /* string */ };
+  'template_duplicate_count': { count: ReactNode /* string */ };
+  'terms_service_privacy_policy': { terms_of_service: ReactNode /* string */, privacy_policy: ReactNode /* string */ };
+  'the_file_size_exceeds_the_limit__the_maximum_support_is_{placeholder1}_mb': { placeholder1: ReactNode /* string */ };
+  'timecapsule_0123_001': { weekDay: ReactNode /* string */, date: ReactNode /* string */ };
+  'token_auto_recharge_specification': { count_1: ReactNode /* string */, count_2: ReactNode /* string */, count_3: ReactNode /* string */, count_4: ReactNode /* string */ };
+  'token_auto_recharge_specification1': { count: ReactNode /* string */ };
+  'token_auto_recharge_specification2': { count: ReactNode /* string */ };
+  'token_auto_recharge_specification3': { count: ReactNode /* string */ };
+  'token_auto_recharge_specification4': { count_limit: ReactNode /* string */ };
+  'tool_usage_leaderboard_top_n': { n: ReactNode /* string */ };
+  'tool_usage_leaderboard_top_n_explain': { n: ReactNode /* string */ };
+  'toolname_used_mockset_mocksetname': { toolName: ReactNode /* string */, mockSetName: ReactNode /* string */ };
+  'tools_imported_successfully': { num: ReactNode /* number */ };
+  'ui_js_expression_setter_trigger_when': { when: ReactNode /* string */ };
+  'uibuilder_eventpanel_runworkflow_success_defaultvalue': { workflowName: ReactNode /* string */ };
+  'unbind_the_original_binding_relationship_{placeholder1}_add_tab_{newtitle}_to_th': { placeholder1: ReactNode /* string */, newTitle: ReactNode /* string */, currentPageId: ReactNode /* string */ };
   'update_the_page_title_to_{title}': { title: ReactNode /* string */ };
-  upload_image_size_limit: { max_size: ReactNode /* string */ };
-  upload_success_failed_count: {
-    successNum: ReactNode /* string */;
-    failedNum: ReactNode /* string */;
-  };
-  uploading_filename: { filename: ReactNode /* string */ };
-  url_add_007: { count: ReactNode /* string */ };
-  url_add_013: { limit: ReactNode /* string */ };
-  url_add_014: {
-    limit: ReactNode /* string */;
-    exceeds: ReactNode /* string */;
-  };
-  video_agent_response_image: { name: ReactNode /* string */ };
-  voice_clone_create_name: { name: ReactNode /* string */ };
-  voice_clone_delete_content_chance: { chance: ReactNode /* string */ };
-  web_sdk_free_quota: {
-    used_count: ReactNode /* string */;
-    total_count: ReactNode /* string */;
-  };
-  web_sdk_official_banner: { docs_link: ReactNode /* string */ };
-  wf_chatflow_121: { flowMode: ReactNode /* string */ };
-  wf_chatflow_123: { Chatflow: ReactNode /* string */ };
-  wf_max_items: { maxCount: ReactNode /* string */ };
-  wf_node_add_wf_modal_toast_wf_added: { workflowName: ReactNode /* string */ };
-  wf_published_version_open_loop_experiments: {
-    workflowVersion: ReactNode /* string */;
-  };
-  wf_voice_emotion_listen_tooltip: { link: ReactNode /* string */ };
-  wf_voice_emotion_tooltip: { emotions: ReactNode /* string */ };
-  workflow_0224_02: { source: ReactNode /* string */ };
-  workflow_250117_05: { maxCount: ReactNode /* string */ };
-  workflow_250416_02: {
-    min: ReactNode /* string */;
-    max: ReactNode /* string */;
-  };
-  workflow_250417_01: {
-    min: ReactNode /* string */;
-    max: ReactNode /* string */;
-  };
-  workflow_add_imageflow_toast_fail: { name: ReactNode /* string */ };
-  workflow_add_imageflow_toast_success: { name: ReactNode /* string */ };
-  workflow_debug_testonenode_group: { nodeTitle: ReactNode /* string */ };
-  workflow_debug_testonenode_title: { node_name: ReactNode /* string */ };
-  workflow_derail_node_detail_title_max: { max: ReactNode /* string */ };
-  workflow_detail_batch_item_tooltip: { name: ReactNode /* string */ };
-  workflow_detail_error_message: { msg: ReactNode /* string */ };
-  workflow_detail_node_error_name_duplicated: { name: ReactNode /* string */ };
-  workflow_detail_node_workflows_max: { number: ReactNode /* string */ };
-  workflow_detail_node_workflows_referencing: {
-    number: ReactNode /* string */;
-  };
-  workflow_detail_node_workflows_referencing_tip: {
-    number: ReactNode /* string */;
-  };
-  workflow_detail_testrun_panel_batch_naviagte_stop: {
-    variable: ReactNode /* string */;
-    len: ReactNode /* string */;
-  };
-  workflow_detail_testrun_warning_variable_get_empty: {
-    key: ReactNode /* string */;
-  };
-  workflow_detail_testrun_warning_variable_get_failed: {
-    key: ReactNode /* string */;
-  };
-  workflow_detail_testrun_warning_variable_set_failed: {
-    key: ReactNode /* string */;
-  };
-  workflow_detail_title_saved_2: { time: ReactNode /* string */ };
-  workflow_detail_title_testrun_boolean_select: { a: ReactNode /* string */ };
-  workflow_detail_title_testrun_error_input: { a: ReactNode /* string */ };
-  workflow_encapsulate_selecet: { length: ReactNode /* string */ };
-  workflow_knowledeg_unexit_error: { id: ReactNode /* string */ };
-  workflow_node_lose_efficacy: { name: ReactNode /* string */ };
-  workflow_node_lose_efficacy_if: { name: ReactNode /* string */ };
-  workflow_node_lose_efficacy_wf: { name: ReactNode /* string */ };
-  workflow_publish_multibranch_auto_saved: { time: ReactNode /* string */ };
-  workflow_publish_multibranch_published: {
-    name: ReactNode /* string */;
-    time: ReactNode /* string */;
-  };
-  workflow_publish_multibranch_submitted: {
-    name: ReactNode /* string */;
-    time: ReactNode /* string */;
-  };
-  workflow_refer_var_type_same: { type: ReactNode /* string */ };
-  workflow_stringprocess_max_length_item: { maxLength: ReactNode /* string */ };
-  workflow_subcanvas_pull_out: { ctrl: ReactNode /* string */ };
-  workflow_tab_title: { name: ReactNode /* string */ };
-  workflow_testset_creation_time: { xxx: ReactNode /* string */ };
-  workflow_testset_invaild_tip: { testset_name: ReactNode /* string */ };
-  workflow_testset_invalid_tip: { testsetName: ReactNode /* string */ };
-  workflow_testset_required_tip: { param_name: ReactNode /* string */ };
-  workflow_testset_upload_content: { xx: ReactNode /* string */ };
-  workflow_trigger_param_must_point: { var: ReactNode /* string */ };
-  workflow_var_type_same: { type: ReactNode /* string */ };
-  workflow_variable_edit_time: { time: ReactNode /* string */ };
-  workflow_version_add_model_content: {
-    oldVersion: ReactNode /* string */;
-    newVersion: ReactNode /* string */;
-  };
-  workflow_version_update_model_content: {
-    myVersion: ReactNode /* string */;
-    latestVersion: ReactNode /* string */;
-  };
-  workflowstore_edit_time: { time: ReactNode /* string */ };
-  workflowstore_submit_wait: { time: ReactNode /* string */ };
-  workspace_apply_confirm_pop: { amount: ReactNode /* string */ };
-  workspace_invitation_msg_sent: { number: ReactNode /* string */ };
-  workspace_invites_page_expire: { date: ReactNode /* string */ };
-  workspace_move_member_list_tips_added_enterprise: {
-    enterprise: ReactNode /* string */;
-  };
-  workspace_move_member_list_tips_unable_invite_tips: {
-    enterprise: ReactNode /* string */;
-  };
-  workspace_share_url_page_expire: { date: ReactNode /* string */ };
-  workspace_share_url_page_title: {
-    spaceName: ReactNode /* string */;
-    expireDate: ReactNode /* string */;
-  };
-  '{desc};_unbind_the_current_page_{currentpageid}_with_the_current_tag_{placeholde': {
-    desc: ReactNode /* string */;
-    currentPageId: ReactNode /* string */;
-    placeholder4: ReactNode /* string */;
-  };
-  '{desc}_unbind_the_original_tab_{placeholder2}_and_{placeholder4}_pages__and_bind': {
-    desc: ReactNode /* string */;
-    placeholder2: ReactNode /* string */;
-    placeholder4: ReactNode /* string */;
-    currentPageId: ReactNode /* string */;
-  };
-  '{newdesc}_and_unbind_tab_{placeholder2}': {
-    newDesc: ReactNode /* string */;
-    placeholder2: ReactNode /* string */;
-  };
-  '{newdesc}_there_is_a_tab_with_the_same_name__and_bound_to_the_tab_{placeholder2}': {
-    newDesc: ReactNode /* string */;
-    placeholder2: ReactNode /* string */;
-  };
+  'upload_image_size_limit': { max_size: ReactNode /* string */ };
+  'upload_success_failed_count': { successNum: ReactNode /* string */, failedNum: ReactNode /* string */ };
+  'uploading_filename': { filename: ReactNode /* string */ };
+  'url_add_007': { count: ReactNode /* string */ };
+  'url_add_013': { limit: ReactNode /* string */ };
+  'url_add_014': { limit: ReactNode /* string */, exceeds: ReactNode /* string */ };
+  'usage_exceeds_limit': { current: ReactNode /* string */ };
+  'usage_within_limit': { current: ReactNode /* string */ };
+  'video_agent_response_image': { name: ReactNode /* string */ };
+  'voice_clone_create_name': { name: ReactNode /* string */ };
+  'voice_clone_delete_content_chance': { chance: ReactNode /* string */ };
+  'web_sdk_free_quota': { used_count: ReactNode /* string */, total_count: ReactNode /* string */ };
+  'web_sdk_official_banner': { docs_link: ReactNode /* string */ };
+  'wf_chatflow_121': { flowMode: ReactNode /* string */ };
+  'wf_chatflow_123': { Chatflow: ReactNode /* string */ };
+  'wf_max_items': { maxCount: ReactNode /* string */ };
+  'wf_node_add_wf_modal_toast_wf_added': { workflowName: ReactNode /* string */ };
+  'wf_published_version_open_loop_experiments': { workflowVersion: ReactNode /* string */ };
+  'wf_voice_emotion_listen_tooltip': { link: ReactNode /* string */ };
+  'wf_voice_emotion_tooltip': { emotions: ReactNode /* string */ };
+  'workflow_0224_02': { source: ReactNode /* string */ };
+  'workflow_250117_05': { maxCount: ReactNode /* string */ };
+  'workflow_250416_02': { min: ReactNode /* string */, max: ReactNode /* string */ };
+  'workflow_250417_01': { min: ReactNode /* string */, max: ReactNode /* string */ };
+  'workflow_add_imageflow_toast_fail': { name: ReactNode /* string */ };
+  'workflow_add_imageflow_toast_success': { name: ReactNode /* string */ };
+  'workflow_debug_testonenode_group': { nodeTitle: ReactNode /* string */ };
+  'workflow_debug_testonenode_title': { node_name: ReactNode /* string */ };
+  'workflow_derail_node_detail_title_max': { max: ReactNode /* string */ };
+  'workflow_detail_batch_item_tooltip': { name: ReactNode /* string */ };
+  'workflow_detail_error_message': { msg: ReactNode /* string */ };
+  'workflow_detail_node_error_name_duplicated': { name: ReactNode /* string */ };
+  'workflow_detail_node_workflows_max': { number: ReactNode /* string */ };
+  'workflow_detail_node_workflows_referencing': { number: ReactNode /* string */ };
+  'workflow_detail_node_workflows_referencing_tip': { number: ReactNode /* string */ };
+  'workflow_detail_testrun_panel_batch_naviagte_stop': { variable: ReactNode /* string */, len: ReactNode /* string */ };
+  'workflow_detail_testrun_warning_variable_get_empty': { key: ReactNode /* string */ };
+  'workflow_detail_testrun_warning_variable_get_failed': { key: ReactNode /* string */ };
+  'workflow_detail_testrun_warning_variable_set_failed': { key: ReactNode /* string */ };
+  'workflow_detail_title_saved_2': { time: ReactNode /* string */ };
+  'workflow_detail_title_testrun_boolean_select': { a: ReactNode /* string */ };
+  'workflow_detail_title_testrun_error_input': { a: ReactNode /* string */ };
+  'workflow_encapsulate_selecet': { length: ReactNode /* string */ };
+  'workflow_knowledeg_unexit_error': { id: ReactNode /* string */ };
+  'workflow_node_lose_efficacy': { name: ReactNode /* string */ };
+  'workflow_node_lose_efficacy_if': { name: ReactNode /* string */ };
+  'workflow_node_lose_efficacy_wf': { name: ReactNode /* string */ };
+  'workflow_prompt_loop_link_history_tips': { version: ReactNode /* string */ };
+  'workflow_prompt_loop_unlink_hint': { name: ReactNode /* string */, version: ReactNode /* string */ };
+  'workflow_publish_multibranch_auto_saved': { time: ReactNode /* string */ };
+  'workflow_publish_multibranch_published': { name: ReactNode /* string */, time: ReactNode /* string */ };
+  'workflow_publish_multibranch_submitted': { name: ReactNode /* string */, time: ReactNode /* string */ };
+  'workflow_refer_var_type_same': { type: ReactNode /* string */ };
+  'workflow_stringprocess_max_length_item': { maxLength: ReactNode /* string */ };
+  'workflow_subcanvas_pull_out': { ctrl: ReactNode /* string */ };
+  'workflow_tab_title': { name: ReactNode /* string */ };
+  'workflow_testset_creation_time': { xxx: ReactNode /* string */ };
+  'workflow_testset_invaild_tip': { testset_name: ReactNode /* string */ };
+  'workflow_testset_invalid_tip': { testsetName: ReactNode /* string */ };
+  'workflow_testset_required_tip': { param_name: ReactNode /* string */ };
+  'workflow_testset_upload_content': { xx: ReactNode /* string */ };
+  'workflow_trigger_param_must_point': { var: ReactNode /* string */ };
+  'workflow_var_type_same': { type: ReactNode /* string */ };
+  'workflow_variable_edit_time': { time: ReactNode /* string */ };
+  'workflow_vefaas_remind': { name: ReactNode /* string */ };
+  'workflow_version_add_model_content': { oldVersion: ReactNode /* string */, newVersion: ReactNode /* string */ };
+  'workflow_version_update_model_content': { myVersion: ReactNode /* string */, latestVersion: ReactNode /* string */ };
+  'workflowstore_edit_time': { time: ReactNode /* string */ };
+  'workflowstore_submit_wait': { time: ReactNode /* string */ };
+  'workspace_apply_confirm_pop': { amount: ReactNode /* string */ };
+  'workspace_invitation_msg_sent': { number: ReactNode /* string */ };
+  'workspace_invites_page_expire': { date: ReactNode /* string */ };
+  'workspace_move_member_list_tips_added_enterprise': { enterprise: ReactNode /* string */ };
+  'workspace_move_member_list_tips_unable_invite_tips': { enterprise: ReactNode /* string */ };
+  'workspace_permission_manage_page_create_resource_popup': { resource: ReactNode /* string */ };
+  'workspace_permission_manage_page_create_resource_popup1': { resource: ReactNode /* string */ };
+  'workspace_permission_manage_page_create_resource_popup1_desc': { resource: ReactNode /* string */ };
+  'workspace_permission_manage_page_create_resource_popup_desc': { resource: ReactNode /* string */ };
+  'workspace_share_url_page_expire': { date: ReactNode /* string */ };
+  'workspace_share_url_page_title': { spaceName: ReactNode /* string */, expireDate: ReactNode /* string */ };
+  '{desc};_unbind_the_current_page_{currentpageid}_with_the_current_tag_{placeholde': { desc: ReactNode /* string */, currentPageId: ReactNode /* string */, placeholder4: ReactNode /* string */ };
+  '{desc}_unbind_the_original_tab_{placeholder2}_and_{placeholder4}_pages__and_bind': { desc: ReactNode /* string */, placeholder2: ReactNode /* string */, placeholder4: ReactNode /* string */, currentPageId: ReactNode /* string */ };
+  '{newdesc}_and_unbind_tab_{placeholder2}': { newDesc: ReactNode /* string */, placeholder2: ReactNode /* string */ };
+  '{newdesc}_there_is_a_tab_with_the_same_name__and_bound_to_the_tab_{placeholder2}': { newDesc: ReactNode /* string */, placeholder2: ReactNode /* string */ };
   '{placeholder0}_plugin': { placeholder0: ReactNode /* string */ };
   '{placeholder0}_success': { placeholder0: ReactNode /* string */ };
-  '{placeholder1}_unconfigured_imported_parameters': {
-    placeholder1: ReactNode /* string */;
-  };
-  Coze_token_history_action_app_2: {
-    plugin_name: ReactNode /* string */;
-    workflow_name: ReactNode /* string */;
-    app_name: ReactNode /* string */;
-  };
-  Data_request_download_data_records: { date: ReactNode /* string */ };
-  datasets_botRefer_list_description_after: { num: ReactNode /* number */ };
+  '{placeholder1}_unconfigured_imported_parameters': { placeholder1: ReactNode /* string */ };
+  'Data_request_download_data_records': { date: ReactNode /* string */ };
+  'datasets_botRefer_list_description_after': { num: ReactNode /* number */ };
 }
 // #endregion
 
@@ -1635,9 +1018,11 @@ export type I18nKeysNoOptionsType =
   | 'CUserLimitationMonth'
   | 'CUserLimitationSecondIndex'
   | 'Cancel'
+  | 'Collection_Service_Channel'
   | 'Complete'
   | 'Confirm'
   | 'Content'
+  | 'Continue_Activation'
   | 'Cookies_Policy'
   | 'Copy'
   | 'Copy_link'
@@ -1751,6 +1136,7 @@ export type I18nKeysNoOptionsType =
   | 'Create_tool_s1_method_patch_tooltip_title'
   | 'Create_tool_s1_method_patch_tooltip_url'
   | 'Creator'
+  | 'CustomReqSubmitSucc'
   | 'Datasets'
   | 'Delete'
   | 'Delete_failed'
@@ -1766,6 +1152,7 @@ export type I18nKeysNoOptionsType =
   | 'Edit_time'
   | 'Edit_time_1'
   | 'Edit_time_2'
+  | 'EnterVerifyCode'
   | 'Example'
   | 'Explore_load_fail'
   | 'Explore_retry'
@@ -1926,6 +1313,7 @@ export type I18nKeysNoOptionsType =
   | 'GenerationDiversity_customize_description'
   | 'GenerationDiversity_precise'
   | 'GenerationDiversity_precise_description'
+  | 'GetVerifyCode'
   | 'Imageflow_Store_about'
   | 'Imageflow_Store_before'
   | 'Imageflow_Store_case'
@@ -1956,6 +1344,9 @@ export type I18nKeysNoOptionsType =
   | 'Imageflow_create_template'
   | 'Imageflow_generate_desc'
   | 'Imageflow_generate_name'
+  | 'Imageflow_generate_node_model_seedream3'
+  | 'Imageflow_generate_node_scale'
+  | 'Imageflow_generate_node_scale_tips'
   | 'Imageflow_generate_standard'
   | 'Imageflow_input'
   | 'Imageflow_input_info1'
@@ -1964,6 +1355,7 @@ export type I18nKeysNoOptionsType =
   | 'Imageflow_mode_choose'
   | 'Imageflow_model'
   | 'Imageflow_model1'
+  | 'Imageflow_model10'
   | 'Imageflow_model2'
   | 'Imageflow_model3'
   | 'Imageflow_model4'
@@ -1971,6 +1363,7 @@ export type I18nKeysNoOptionsType =
   | 'Imageflow_model6'
   | 'Imageflow_model7'
   | 'Imageflow_model8'
+  | 'Imageflow_model9'
   | 'Imageflow_model_deploy'
   | 'Imageflow_name'
   | 'Imageflow_name_display_store'
@@ -1980,6 +1373,7 @@ export type I18nKeysNoOptionsType =
   | 'Imageflow_not_support'
   | 'Imageflow_positive'
   | 'Imageflow_positive_placeholder'
+  | 'Imageflow_positive_placeholder_sd4'
   | 'Imageflow_prompt'
   | 'Imageflow_ratio'
   | 'Imageflow_reference1'
@@ -2122,6 +1516,27 @@ export type I18nKeysNoOptionsType =
   | 'Manual_crawling_059'
   | 'Maximum'
   | 'Me'
+  | 'Merchant_Amount'
+  | 'Merchant_Balance'
+  | 'Merchant_Bulk_Export'
+  | 'Merchant_Channel_Management'
+  | 'Merchant_Creation_Time'
+  | 'Merchant_Management'
+  | 'Merchant_Management_douyin'
+  | 'Merchant_Management_weixin'
+  | 'Merchant_Management_zfb'
+  | 'Merchant_More_Channel'
+  | 'Merchant_No resources'
+  | 'Merchant_Order_Description'
+  | 'Merchant_Payment_Type'
+  | 'Merchant_Status'
+  | 'Merchant_Unit'
+  | 'Merchant_Withdrawal'
+  | 'Merchant_Withdrawal_order'
+  | 'Merchant_all_order'
+  | 'Merchant_operate'
+  | 'Merchant_order_detail'
+  | 'Merchant_uid'
   | 'Mine'
   | 'More'
   | 'Network_error'
@@ -2136,6 +1551,8 @@ export type I18nKeysNoOptionsType =
   | 'No_recall_006'
   | 'No_recall_007'
   | 'Output'
+  | 'Personal_Center_Business Cooperation'
+  | 'Personal_Center_Consult Now'
   | 'Platform'
   | 'Plugin_Create_lightweight_functions'
   | 'Plugin_button_code_tooltip'
@@ -2157,6 +1574,7 @@ export type I18nKeysNoOptionsType =
   | 'Popular'
   | 'Post_Details_be_the_first_to'
   | 'Post_Details_lets_swap_ideas'
+  | 'PreAgreement_Confirm'
   | 'Previous_1'
   | 'Previous_2'
   | 'Publish'
@@ -2169,6 +1587,7 @@ export type I18nKeysNoOptionsType =
   | 'Published_1'
   | 'Recent'
   | 'Remove'
+  | 'Requirement _Description'
   | 'Reset'
   | 'Resource_not_found'
   | 'Responding'
@@ -2244,6 +1663,7 @@ export type I18nKeysNoOptionsType =
   | 'Submit_tips_lack_of_example'
   | 'Submit_workflow_list'
   | 'Success'
+  | 'Supports_3Channel_Activations'
   | 'Tools'
   | 'Try_it_now'
   | 'Type'
@@ -2259,6 +1679,8 @@ export type I18nKeysNoOptionsType =
   | 'Use_template'
   | 'Used'
   | 'Using'
+  | 'VerifyCodeErr'
+  | 'VerifyCodeExpired'
   | 'View'
   | 'Visited'
   | 'Visiting'
@@ -2268,6 +1690,7 @@ export type I18nKeysNoOptionsType =
   | 'about_privacy_policy'
   | 'about_use_agreement'
   | 'absolute_positioning'
+  | 'account_consumption_details'
   | 'account_merge_oauth_button'
   | 'account_merge_oauth_desc1'
   | 'account_merge_oauth_desc2'
@@ -2281,6 +1704,7 @@ export type I18nKeysNoOptionsType =
   | 'account_merge_oauth_timer4'
   | 'account_merge_oauth_title'
   | 'account_update_hint'
+  | 'accumulated_resource_consumption'
   | 'acknowledge'
   | 'action_workflow_error_modal_button_text'
   | 'actions'
@@ -2290,6 +1714,7 @@ export type I18nKeysNoOptionsType =
   | 'adapt_to_content_'
   | 'add'
   | 'add_api_token_1'
+  | 'add_filter_condition'
   | 'add_image'
   | 'add_link'
   | 'add_mock_data'
@@ -2529,9 +1954,17 @@ export type I18nKeysNoOptionsType =
   | 'agentflow_transfer_ conversation_settings_mode_title'
   | 'agentflow_transfer_ conversation_settings_title'
   | 'agree'
+  | 'agree_plugin_agreements'
   | 'ai_component'
   | 'ai_generate_limit'
   | 'ai_plugin_(fill_in_json)_*'
+  | 'aicc_tag_compontent'
+  | 'aicc_tag_compontent_download'
+  | 'aicc_tag_compontent_encrypt_service'
+  | 'aicc_tag_compontent_model'
+  | 'aicc_tag_compontent_safe'
+  | 'aicc_tag_report'
+  | 'aicc_tag_result'
   | 'all_workspace_1'
   | 'allow_location_permission'
   | 'analytic_Trace_title'
@@ -2911,6 +2344,8 @@ export type I18nKeysNoOptionsType =
   | 'api_web_sdk_icon_tips'
   | 'api_web_sdk_preview'
   | 'api_workspace'
+  | 'apikey'
+  | 'apikey_cannot_be_empty'
   | 'app_auth_description'
   | 'app_auth_error'
   | 'app_auth_info'
@@ -2919,6 +2354,51 @@ export type I18nKeysNoOptionsType =
   | 'app_builder_ai_creator_modal_update_bot_failed'
   | 'app_builder_data_editor_builtin_setter_enum_placeholder'
   | 'app_builder_loop_render_setter_placeholder'
+  | 'app_chux_list_1'
+  | 'app_chux_list_2'
+  | 'app_chux_list_6'
+  | 'app_chux_list_7'
+  | 'app_chux_publish_1'
+  | 'app_chux_publish_10'
+  | 'app_chux_publish_11'
+  | 'app_chux_publish_12'
+  | 'app_chux_publish_13'
+  | 'app_chux_publish_14'
+  | 'app_chux_publish_15'
+  | 'app_chux_publish_16'
+  | 'app_chux_publish_17'
+  | 'app_chux_publish_18'
+  | 'app_chux_publish_19'
+  | 'app_chux_publish_2'
+  | 'app_chux_publish_20'
+  | 'app_chux_publish_21'
+  | 'app_chux_publish_22'
+  | 'app_chux_publish_23'
+  | 'app_chux_publish_24'
+  | 'app_chux_publish_25'
+  | 'app_chux_publish_26'
+  | 'app_chux_publish_27'
+  | 'app_chux_publish_28'
+  | 'app_chux_publish_29'
+  | 'app_chux_publish_3'
+  | 'app_chux_publish_30'
+  | 'app_chux_publish_31'
+  | 'app_chux_publish_32'
+  | 'app_chux_publish_35'
+  | 'app_chux_publish_38'
+  | 'app_chux_publish_39'
+  | 'app_chux_publish_4'
+  | 'app_chux_publish_40'
+  | 'app_chux_publish_5'
+  | 'app_chux_publish_6'
+  | 'app_chux_publish_7'
+  | 'app_chux_publish_8'
+  | 'app_chux_publish_9'
+  | 'app_chux_upgrade_1'
+  | 'app_chux_upgrade_10'
+  | 'app_chux_upgrade_11'
+  | 'app_chux_upgrade_3'
+  | 'app_chux_upgrade_4'
   | 'app_client_key_button'
   | 'app_create_maximum_notice'
   | 'app_ide_archive_modal_archive_desc'
@@ -3066,6 +2546,8 @@ export type I18nKeysNoOptionsType =
   | 'auth_apps_table_type_obo_auth'
   | 'auth_canceled_description'
   | 'auth_canceled_title'
+  | 'auth_completed'
+  | 'auth_content_close_tip'
   | 'auth_official_app_tips'
   | 'auth_service_token_2'
   | 'auth_service_token_3'
@@ -3086,6 +2568,7 @@ export type I18nKeysNoOptionsType =
   | 'auth_tab_auth'
   | 'auth_tab_myauth'
   | 'auth_tab_pat'
+  | 'auth_title_success'
   | 'authorization_cancelled'
   | 'authorization_display_time'
   | 'authorize_location'
@@ -3122,9 +2605,11 @@ export type I18nKeysNoOptionsType =
   | 'background_upload'
   | 'background_upload_gif'
   | 'banner_template'
+  | 'bar_chart'
   | 'basic_info.description'
   | 'basic_info.name'
   | 'basic_info.prompt'
+  | 'basic_info_config'
   | 'basic_log_out'
   | 'basic_model'
   | 'basic_my_profile'
@@ -3132,6 +2617,8 @@ export type I18nKeysNoOptionsType =
   | 'basic_setting'
   | 'basic_sign_out'
   | 'basics_down'
+  | 'batch_config'
+  | 'batch_select_all'
   | 'bgi_adjust_tooltip_content'
   | 'bgi_adjust_tooltip_title'
   | 'bgi_ai_placeholder_main'
@@ -3146,6 +2633,18 @@ export type I18nKeysNoOptionsType =
   | 'bgi_title'
   | 'bgi_upload_image_format_requirement'
   | 'bgi_upload_image_format_requirement_title'
+  | 'billing_amount_config'
+  | 'billing_amount_tip'
+  | 'billing_config'
+  | 'billing_example'
+  | 'billing_item'
+  | 'billing_parameter_header_name'
+  | 'billing_parameter_header_tip'
+  | 'billing_parameter_position'
+  | 'billing_prameter_response_name'
+  | 'billing_prameter_response_tip'
+  | 'billing_prameter_value'
+  | 'billing_prameter_value_tip'
   | 'binding_add_card'
   | 'binding_array_data_placeholder'
   | 'binding_array_data_verify'
@@ -3489,6 +2988,10 @@ export type I18nKeysNoOptionsType =
   | 'bot_publish_columns_status_unauthorized'
   | 'bot_publish_columns_time'
   | 'bot_publish_configure_doc'
+  | 'bot_publish_cost_owner_dialog_checkbox'
+  | 'bot_publish_cost_owner_dialog_content'
+  | 'bot_publish_cost_owner_dialog_link'
+  | 'bot_publish_cost_owner_dialog_title'
   | 'bot_publish_disable_check_tip'
   | 'bot_publish_disconnect_success'
   | 'bot_publish_discord_connect'
@@ -3641,6 +3144,7 @@ export type I18nKeysNoOptionsType =
   | 'builder_var_value_verify_array'
   | 'builder_var_value_verify_empty'
   | 'builder_var_value_verify_invalid'
+  | 'business_type'
   | 'button'
   | 'button_selection'
   | 'bwc_basic_workflow'
@@ -5631,10 +5135,13 @@ export type I18nKeysNoOptionsType =
   | 'chatflow_switch_mode_single'
   | 'chatflow_switch_mode_single_desc'
   | 'chatflow_switch_mode_title'
+  | 'check usage'
   | 'check_inconsistent_domain_names_in_collection'
+  | 'check_overlimit'
   | 'chooseCamera'
   | 'chooseImage'
   | 'chooseImageError'
+  | 'clear_filters'
   | 'clear_result'
   | 'clear_the_page'
   | 'click_button_to_create_mockset'
@@ -5850,6 +5357,13 @@ export type I18nKeysNoOptionsType =
   | 'community_notification_type_bot'
   | 'community_notification_type_post'
   | 'community_notification_type_template'
+  | 'community_paid_plugin_scaling_tip'
+  | 'community_past 2 month'
+  | 'community_past 3 month'
+  | 'community_past 6 month'
+  | 'community_plugin'
+  | 'community_plugin_dependency'
+  | 'community_plugin_scaling_tip'
   | 'community_post_not_available'
   | 'community_post_try_later'
   | 'community_time_just_now'
@@ -5896,17 +5410,20 @@ export type I18nKeysNoOptionsType =
   | 'complete_service_authorization_link'
   | 'component_approach'
   | 'concurrent_routes_have_intersections'
+  | 'configuration_goal'
   | 'confirm'
   | 'confirm_cancel_location_permission'
   | 'confirm_no'
   | 'confirm_plugin_information'
   | 'confirm_switch_model'
   | 'confirm_yes'
+  | 'consumption_details'
   | 'contact_developer_for_authorization'
   | 'contact_us_contact_us'
   | 'contact_us_follow_us_on_social'
   | 'contact_us_join_our_communities'
   | 'container_style'
+  | 'contains_multiple_paid_plugins'
   | 'content_view_001'
   | 'content_view_002'
   | 'content_view_003'
@@ -6037,6 +5554,73 @@ export type I18nKeysNoOptionsType =
   | 'coze_copy_to_tips_3'
   | 'coze_copy_to_tips_4'
   | 'coze_cost_sharing'
+  | 'coze_cost_sharing_developer'
+  | 'coze_cost_sharing_developer_desc'
+  | 'coze_cost_sharing_owner'
+  | 'coze_cost_sharing_owner_desc'
+  | 'coze_create_task_app_not_released'
+  | 'coze_create_task_application'
+  | 'coze_create_task_associate_agent_app'
+  | 'coze_create_task_cannot_get_avg_consumption'
+  | 'coze_create_task_check_upload_data'
+  | 'coze_create_task_click_to_upload'
+  | 'coze_create_task_confirm'
+  | 'coze_create_task_confirm2'
+  | 'coze_create_task_create_app_or_switch_space'
+  | 'coze_create_task_create_app_or_switch_space2'
+  | 'coze_create_task_create_batch_task'
+  | 'coze_create_task_create_task'
+  | 'coze_create_task_data_validation_failed'
+  | 'coze_create_task_download_template'
+  | 'coze_create_task_draft_official_version'
+  | 'coze_create_task_drag_or_upload'
+  | 'coze_create_task_enter_batch_task_name'
+  | 'coze_create_task_icon_hover_text'
+  | 'coze_create_task_icon_hover_text2'
+  | 'coze_create_task_icon_hover_text3'
+  | 'coze_create_task_import_param_config'
+  | 'coze_create_task_input_empty_tips'
+  | 'coze_create_task_input_params'
+  | 'coze_create_task_next_step'
+  | 'coze_create_task_no_app_in_space'
+  | 'coze_create_task_no_workflow_in_lib'
+  | 'coze_create_task_only_excel_csv'
+  | 'coze_create_task_output_empty_tips'
+  | 'coze_create_task_output_params'
+  | 'coze_create_task_position'
+  | 'coze_create_task_prepare_task_data'
+  | 'coze_create_task_previous_step'
+  | 'coze_create_task_pro_mode'
+  | 'coze_create_task_pro_mode_ent_only'
+  | 'coze_create_task_project_creation_time'
+  | 'coze_create_task_project_latest_version'
+  | 'coze_create_task_project_recently_released'
+  | 'coze_create_task_project_recently_wf_released'
+  | 'coze_create_task_reason'
+  | 'coze_create_task_regular_mode'
+  | 'coze_create_task_release_or_select_workflow'
+  | 'coze_create_task_resource_lib'
+  | 'coze_create_task_select_application'
+  | 'coze_create_task_select_task_app_no_permissions'
+  | 'coze_create_task_select_task_object'
+  | 'coze_create_task_select_task_workflow_no_permissions'
+  | 'coze_create_task_select_workflow'
+  | 'coze_create_task_support_excel_csv'
+  | 'coze_create_task_task_mode'
+  | 'coze_create_task_task_name'
+  | 'coze_create_task_task_object'
+  | 'coze_create_task_upgrade_ent_edition'
+  | 'coze_create_task_upload_exceeds_limit'
+  | 'coze_create_task_upload_file_issues'
+  | 'coze_create_task_upload_limit'
+  | 'coze_create_task_validating_upload_data'
+  | 'coze_create_task_version'
+  | 'coze_create_task_view_validation_result'
+  | 'coze_create_task_wf_creation_time'
+  | 'coze_create_task_wf_latest_version'
+  | 'coze_create_task_wf_recently_released'
+  | 'coze_create_task_workflow_not_released'
+  | 'coze_create_task_workflow_params'
   | 'coze_credits_history_sum'
   | 'coze_cumulative_quota'
   | 'coze_cumulative_quota_note'
@@ -6114,6 +5698,7 @@ export type I18nKeysNoOptionsType =
   | 'coze_daily_free_points_exhausted'
   | 'coze_daily_reset'
   | 'coze_days'
+  | 'coze_detail_page_model_list'
   | 'coze_device_action'
   | 'coze_device_amount'
   | 'coze_device_clear_search'
@@ -6129,7 +5714,15 @@ export type I18nKeysNoOptionsType =
   | 'coze_device_transaction_detail'
   | 'coze_device_transaction_log'
   | 'coze_device_usage'
+  | 'coze_doc_site_dir'
+  | 'coze_doc_site_fix'
+  | 'coze_doc_site_unfix'
   | 'coze_douyin_register'
+  | 'coze_download_toast_fail_file_missing'
+  | 'coze_download_toast_fail_no_permission'
+  | 'coze_download_toast_fail_server_error'
+  | 'coze_download_toast_fail_unknown_error'
+  | 'coze_download_toast_success'
   | 'coze_enter_team_size'
   | 'coze_enterprise_team'
   | 'coze_estimated_cost_notice'
@@ -6173,6 +5766,25 @@ export type I18nKeysNoOptionsType =
   | 'coze_if_purchased'
   | 'coze_image_stream_price'
   | 'coze_input_tpm'
+  | 'coze_job_detail_cancel_task'
+  | 'coze_job_detail_cancelled'
+  | 'coze_job_detail_download_report_after_complete'
+  | 'coze_job_detail_executed'
+  | 'coze_job_detail_export_file'
+  | 'coze_job_detail_failed'
+  | 'coze_job_detail_in_execution'
+  | 'coze_job_detail_not_executed'
+  | 'coze_job_detail_only_queued_cancel'
+  | 'coze_kms_error_tips10_oncall'
+  | 'coze_kms_error_tips1_format'
+  | 'coze_kms_error_tips2'
+  | 'coze_kms_error_tips3'
+  | 'coze_kms_error_tips4'
+  | 'coze_kms_error_tips5'
+  | 'coze_kms_error_tips6'
+  | 'coze_kms_error_tips7'
+  | 'coze_kms_error_tips8'
+  | 'coze_kms_error_tips9'
   | 'coze_knowledge_base_exhausted'
   | 'coze_knowledge_base_price'
   | 'coze_last_1_day'
@@ -6244,8 +5856,10 @@ export type I18nKeysNoOptionsType =
   | 'coze_points_device'
   | 'coze_points_exhausted'
   | 'coze_points_history_load_more'
+  | 'coze_points_history_long_term_memory'
   | 'coze_points_history_loop'
   | 'coze_points_history_model'
+  | 'coze_points_history_prompt_pilot'
   | 'coze_points_history_rtc_others'
   | 'coze_points_history_voice'
   | 'coze_points_history_voice_others'
@@ -6360,6 +5974,18 @@ export type I18nKeysNoOptionsType =
   | 'coze_sdk_none_free_quota'
   | 'coze_search_custom_id'
   | 'coze_search_device_id'
+  | 'coze_sidebar_adv_ver'
+  | 'coze_sidebar_api_mgmt'
+  | 'coze_sidebar_coze_resource'
+  | 'coze_sidebar_doc_center'
+  | 'coze_sidebar_ent_ver'
+  | 'coze_sidebar_free_ver'
+  | 'coze_sidebar_org_mgmt'
+  | 'coze_sidebar_space_cfg'
+  | 'coze_sidebar_task_center'
+  | 'coze_sidebar_team_ver'
+  | 'coze_sidebar_template_store'
+  | 'coze_sidebar_work_comm'
   | 'coze_smart_voice_filter'
   | 'coze_smart_voice_price'
   | 'coze_subscribe_now'
@@ -6388,11 +6014,102 @@ export type I18nKeysNoOptionsType =
   | 'coze_subscription_faq_q_7'
   | 'coze_subscription_faq_q_8'
   | 'coze_subscription_faq_q_9'
+  | 'coze_task_detail_all_status'
+  | 'coze_task_detail_cancel'
+  | 'coze_task_detail_cancel2'
+  | 'coze_task_detail_cancel3'
+  | 'coze_task_detail_cancel4'
+  | 'coze_task_detail_cancel5'
+  | 'coze_task_detail_cancel6'
+  | 'coze_task_detail_cancel_irrecoverable'
+  | 'coze_task_detail_cancel_no_retry'
+  | 'coze_task_detail_cancel_task'
+  | 'coze_task_detail_cancel_task2'
+  | 'coze_task_detail_cancel_task_confirm'
+  | 'coze_task_detail_cancel_task_confirm2'
+  | 'coze_task_detail_cancel_task_tips'
+  | 'coze_task_detail_cancelled'
+  | 'coze_task_detail_cannot_cancel_only_not_exec'
+  | 'coze_task_detail_cannot_retry_only_exec_failed'
+  | 'coze_task_detail_confirm'
+  | 'coze_task_detail_confirm2'
+  | 'coze_task_detail_confirm3'
+  | 'coze_task_detail_confirm4'
+  | 'coze_task_detail_confirm5'
+  | 'coze_task_detail_copy'
+  | 'coze_task_detail_copy_tips'
+  | 'coze_task_detail_creation_time'
+  | 'coze_task_detail_executed'
+  | 'coze_task_detail_execution_details'
+  | 'coze_task_detail_failed'
+  | 'coze_task_detail_in_execution'
+  | 'coze_task_detail_input_params'
+  | 'coze_task_detail_not_executed'
+  | 'coze_task_detail_operation'
+  | 'coze_task_detail_output_params'
+  | 'coze_task_detail_resource_consumption'
+  | 'coze_task_detail_retry'
+  | 'coze_task_detail_retry2'
+  | 'coze_task_detail_retry_may_fail'
+  | 'coze_task_detail_retry_task_confirm'
+  | 'coze_task_detail_retry_task_confirm2'
+  | 'coze_task_detail_status'
+  | 'coze_task_detail_subtask_id'
+  | 'coze_task_detail_task_data'
+  | 'coze_task_detail_workflow'
+  | 'coze_task_list_all_creators'
+  | 'coze_task_list_all_status'
+  | 'coze_task_list_batch_task_config_workflow'
+  | 'coze_task_list_batch_task_execution'
+  | 'coze_task_list_batch_task_read_execute'
+  | 'coze_task_list_cancelled'
+  | 'coze_task_list_coze_batch_task_start'
+  | 'coze_task_list_coze_empty_button'
+  | 'coze_task_list_coze_empty_tips'
+  | 'coze_task_list_create_batch_task'
+  | 'coze_task_list_created_by_me'
+  | 'coze_task_list_creation_time'
+  | 'coze_task_list_creator'
+  | 'coze_task_list_details'
+  | 'coze_task_list_executed'
+  | 'coze_task_list_failed'
+  | 'coze_task_list_in_execution'
+  | 'coze_task_list_newbie_must_read'
+  | 'coze_task_list_not_executed'
+  | 'coze_task_list_operation'
+  | 'coze_task_list_resource_consumption'
+  | 'coze_task_list_select_task_object'
+  | 'coze_task_list_select_task_object_unavailable'
+  | 'coze_task_list_select_workflow_from_lib_app'
+  | 'coze_task_list_status'
+  | 'coze_task_list_task_center'
+  | 'coze_task_list_task_data'
+  | 'coze_task_list_task_mode'
+  | 'coze_task_list_task_mode_exclusive'
+  | 'coze_task_list_task_mode_share'
+  | 'coze_task_list_task_name'
+  | 'coze_task_list_task_object'
+  | 'coze_task_list_upload_excel_csv_drive_batch'
+  | 'coze_task_list_upload_task_data'
+  | 'coze_task_list_view_final_result_after_exec'
+  | 'coze_task_list_view_task_result'
   | 'coze_team_benefits'
   | 'coze_team_expired'
   | 'coze_team_limit_reached'
   | 'coze_team_model_limitation'
   | 'coze_team_payment_overdue'
+  | 'coze_template_store_smart_button'
+  | 'coze_template_store_smart_cs'
+  | 'coze_template_store_smart_cs_intro'
+  | 'coze_template_store_smart_cs_intro_long'
+  | 'coze_template_store_smart_hw'
+  | 'coze_template_store_smart_hw_intro'
+  | 'coze_template_store_smart_hw_intro_long'
+  | 'coze_template_store_smart_vd'
+  | 'coze_template_store_smart_vd_intro'
+  | 'coze_template_store_smart_vd_intro_long'
+  | 'coze_template_store_tmpl_cat'
+  | 'coze_template_store_tmpl_topic'
   | 'coze_theme_dark'
   | 'coze_theme_light'
   | 'coze_then_continue'
@@ -6430,6 +6147,7 @@ export type I18nKeysNoOptionsType =
   | 'coze_view_full_benefits'
   | 'coze_view_plan_differences'
   | 'coze_voice_balance_insufficient'
+  | 'coze_voice_balance_insufficient_new'
   | 'coze_voice_cat'
   | 'coze_voice_clone_1'
   | 'coze_voice_clone_failed'
@@ -6653,8 +6371,17 @@ export type I18nKeysNoOptionsType =
   | 'cross_workspace_copy_task_status_quit_tips1'
   | 'cross_workspace_copy_task_status_quit_tips2'
   | 'cross_workspace_copy_task_status_resource_copy'
+  | 'cumulative consumption'
+  | 'cumulative limit'
+  | 'cumulative limit reached'
+  | 'cumulative_consumption'
+  | 'cumulative_limit'
+  | 'cumulative_limit_max'
+  | 'cumulative_quota_limit'
+  | 'cumulative_quota_limit_each_person'
   | 'curl'
   | 'currently_selected'
+  | 'custom_requirement'
   | 'customer_service_solutions'
   | 'customer_service_solutions_advantages'
   | 'customer_service_solutions_advantages_1'
@@ -6703,6 +6430,40 @@ export type I18nKeysNoOptionsType =
   | 'data_base_doubao_channel_tips'
   | 'data_can_be_uploaded_locally_or_bound_through_workflow_'
   | 'data_cutoff_date'
+  | 'data_encryption_page_desc_docs'
+  | 'data_encryption_page_encrypt_algorithm'
+  | 'data_encryption_page_encrypt_algorithm1'
+  | 'data_encryption_page_encrypt_key'
+  | 'data_encryption_page_encrypt_key_details'
+  | 'data_encryption_page_encrypt_key_status'
+  | 'data_encryption_page_encrypt_key_status_invalid'
+  | 'data_encryption_page_encrypt_key_status_invalid_tips_link'
+  | 'data_encryption_page_encrypt_key_status_valid'
+  | 'data_encryption_page_encrypt_key_type'
+  | 'data_encryption_page_encrypt_key_type_default'
+  | 'data_encryption_page_encrypt_key_type_vocl'
+  | 'data_encryption_page_encrypt_method'
+  | 'data_encryption_page_encrypt_method1'
+  | 'data_encryption_page_key_TRN'
+  | 'data_encryption_page_key_TRN_button1'
+  | 'data_encryption_page_key_TRN_button2'
+  | 'data_encryption_page_key_TRN_desc1'
+  | 'data_encryption_page_key_TRN_desc_doc'
+  | 'data_encryption_page_key_change_key_button1'
+  | 'data_encryption_page_key_change_key_button2'
+  | 'data_encryption_page_key_change_key_desc'
+  | 'data_encryption_page_key_change_key_pop_title'
+  | 'data_encryption_page_key_configure_succeed'
+  | 'data_encryption_page_key_paywall'
+  | 'data_encryption_page_key_paywall_pop_desc'
+  | 'data_encryption_page_key_paywall_pop_title'
+  | 'data_encryption_page_opt'
+  | 'data_encryption_page_opt_change_key'
+  | 'data_encryption_page_opt_change_key_tips'
+  | 'data_encryption_page_resource_type'
+  | 'data_encryption_page_resource_type_conversation'
+  | 'data_encryption_page_resource_type_conversation_tips'
+  | 'data_encryption_page_title'
   | 'data_error_msg'
   | 'data_filter_values'
   | 'database_240227_01'
@@ -7675,7 +7436,9 @@ export type I18nKeysNoOptionsType =
   | 'docs_6_copied'
   | 'docs_search_tab_tooltip'
   | 'docs_tooltip_documents'
+  | 'dosage_screening'
   | 'douyin_mini_program_supports_setting_whether_to_apply_to_the_user_to_obtain_a_ni'
+  | 'downgraded_to_team'
   | 'drag_and_drop_components_to_this_container'
   | 'drag_the_canvas_with_the_mouse__scroll_wheel_to_play'
   | 'drill_down_dim_feedback'
@@ -7851,7 +7614,9 @@ export type I18nKeysNoOptionsType =
   | 'enter_the_opening_line_to_guide_the_question'
   | 'enterprise_add_member_pop_unable_invite_reason1'
   | 'enterprise_add_member_pop_unable_invite_reason2_disable_guest_access'
+  | 'enterprise_amount'
   | 'enterprise_apply_management_apply_info'
+  | 'enterprise_auto_create_success_toast'
   | 'enterprise_basic_user_not_in_apply_page_admin_tag'
   | 'enterprise_basic_user_not_in_apply_page_applied_button'
   | 'enterprise_basic_user_not_in_apply_page_applied_toast'
@@ -7916,10 +7681,56 @@ export type I18nKeysNoOptionsType =
   | 'enterprise_link_outside_guest_access_deny_tips2'
   | 'enterprise_link_outside_guest_access_deny_tips3_team'
   | 'enterprise_link_outside_guest_access_deny_tips4_team'
+  | 'enterprise_manage_content_safety_page_config'
+  | 'enterprise_manage_content_safety_page_config_edit'
+  | 'enterprise_manage_content_safety_page_config_edit_pop'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_appid'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_appid2'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_biztype'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_cancel'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_doc'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_placeholder1'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_placeholder2'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_policy_agree'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_policy_detail'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_policy_detail1'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_policy_detail2'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_policy_detail3'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_policy_detail4'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_save'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_sencename'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_strategy'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_tips1'
+  | 'enterprise_manage_content_safety_page_config_edit_pop_tips2'
+  | 'enterprise_manage_content_safety_page_config_log'
+  | 'enterprise_manage_content_safety_page_desc'
+  | 'enterprise_manage_content_safety_page_tag_sence'
+  | 'enterprise_manage_content_safety_page_tag_sence_query_input'
+  | 'enterprise_manage_content_safety_page_tag_sence_response'
+  | 'enterprise_manage_content_safety_page_tag_strategy'
+  | 'enterprise_manage_content_safety_page_tag_strategy_coze'
+  | 'enterprise_manage_content_safety_page_tag_strategy_vocl'
+  | 'enterprise_manage_content_safety_page_tag_type'
+  | 'enterprise_manage_content_safety_page_tag_type_img'
+  | 'enterprise_manage_content_safety_page_tag_type_text'
+  | 'enterprise_manage_content_safety_page_title'
   | 'enterprise_management_leave_transfer_desc'
   | 'enterprise_management_leave_transfer_to'
   | 'enterprise_management_menubar_channel_management'
   | 'enterprise_management_menubar_member_management'
+  | 'enterprise_management_menubar_private_management_analyze_doc_desc'
+  | 'enterprise_management_menubar_private_management_authorization_doc_desc'
+  | 'enterprise_management_menubar_private_management_create_analyze_desc'
+  | 'enterprise_management_menubar_private_management_create_analyze_doc_desc'
+  | 'enterprise_management_menubar_private_management_create_authorization_desc'
+  | 'enterprise_management_menubar_private_management_create_authorization_doc_desc'
+  | 'enterprise_management_menubar_private_management_create_authorization_no_permission'
+  | 'enterprise_management_menubar_private_management_create_authorization_placeholder'
+  | 'enterprise_management_menubar_private_management_create_name1_authorization'
+  | 'enterprise_management_menubar_private_management_create_name2_analyze'
+  | 'enterprise_management_menubar_private_management_list_terminalID'
+  | 'enterprise_management_menubar_private_management_name1_authorization'
+  | 'enterprise_management_menubar_private_management_name2_analyze'
   | 'enterprise_management_menubar_settings1'
   | 'enterprise_management_menubar_settings2'
   | 'enterprise_management_menubar_workspace_management'
@@ -7938,6 +7749,9 @@ export type I18nKeysNoOptionsType =
   | 'enterprise_management_permission_settings_pop_enable_button1_enable'
   | 'enterprise_management_permission_settings_pop_enable_button2_cacel'
   | 'enterprise_management_permission_settings_pop_enable_title'
+  | 'enterprise_member_add_guest_tips'
+  | 'enterprise_member_add_guest_tips1'
+  | 'enterprise_member_addon_desc'
   | 'enterprise_member_apply_opt_filter_all_status'
   | 'enterprise_member_apply_opt_filter_confirming'
   | 'enterprise_member_apply_opt_filter_passed'
@@ -8012,6 +7826,8 @@ export type I18nKeysNoOptionsType =
   | 'enterprise_member_management_page_title'
   | 'enterprise_move_sapce_info_button_tips1'
   | 'enterprise_move_sapce_info_button_tips2'
+  | 'enterprise_org_workspace_sharelink_notmember_tips'
+  | 'enterprise_qps'
   | 'enterprise_role_admin'
   | 'enterprise_role_normal_member'
   | 'enterprise_role_super_admin1'
@@ -8075,6 +7891,29 @@ export type I18nKeysNoOptionsType =
   | 'enterprise_workspace_management_page_title'
   | 'enterprise_workspace_no_space_desc'
   | 'enterprise_workspace_no_space_title'
+  | 'equipment_management'
+  | 'equipment_management_effective_time'
+  | 'equipment_management_global_quota_default'
+  | 'equipment_management_join_button'
+  | 'equipment_management_join_content'
+  | 'equipment_management_join_title'
+  | 'equipment_management_limit_resource_quota'
+  | 'equipment_management_model_doubao_text'
+  | 'equipment_management_model_llm_text'
+  | 'equipment_management_page_all_time'
+  | 'equipment_management_page_button_bill'
+  | 'equipment_management_page_button_buy_time'
+  | 'equipment_management_page_setting'
+  | 'equipment_management_page_today_time'
+  | 'equipment_management_quota_setting'
+  | 'equipment_management_resource_cycle_quota'
+  | 'equipment_management_resource_quota_config'
+  | 'equipment_management_resource_total_quota'
+  | 'equipment_management_single_device_quota'
+  | 'equipment_management_single_device_quota_priority'
+  | 'equipment_management_status'
+  | 'equipment_management_status_disabled'
+  | 'equipment_management_status_enabled'
   | 'error'
   | 'error_clear_cache'
   | 'error_evaluation_volcano_quota_insufficient'
@@ -8620,12 +8459,17 @@ export type I18nKeysNoOptionsType =
   | 'eventprefix_session.created'
   | 'eventprefix_session.update'
   | 'eventprefix_session.updated'
+  | 'every_monthly_consumption'
   | 'example_enter_in_this_text_box'
+  | 'excess_staff_config'
   | 'execute_action'
   | 'executing_please_wait'
   | 'exit'
+  | 'exit_config'
   | 'expand'
   | 'expand_button'
+  | 'expansion_config'
+  | 'expansion_limit_qps'
   | 'expansion_radius'
   | 'expire_time_1'
   | 'expired_time_forbidden_1'
@@ -8645,6 +8489,69 @@ export type I18nKeysNoOptionsType =
   | 'explore_bot_category_test'
   | 'explore_featured'
   | 'explore_tools'
+  | 'export_as_image'
+  | 'export_import_2_agent_flow_1'
+  | 'export_import_2_agent_flow_10'
+  | 'export_import_2_agent_flow_11'
+  | 'export_import_2_agent_flow_12'
+  | 'export_import_2_agent_flow_13'
+  | 'export_import_2_agent_flow_14'
+  | 'export_import_2_agent_flow_15'
+  | 'export_import_2_agent_flow_16'
+  | 'export_import_2_agent_flow_17'
+  | 'export_import_2_agent_flow_18'
+  | 'export_import_2_agent_flow_2'
+  | 'export_import_2_agent_flow_20'
+  | 'export_import_2_agent_flow_21'
+  | 'export_import_2_agent_flow_22'
+  | 'export_import_2_agent_flow_23'
+  | 'export_import_2_agent_flow_3'
+  | 'export_import_2_agent_flow_4'
+  | 'export_import_2_agent_flow_5'
+  | 'export_import_2_agent_flow_6'
+  | 'export_import_2_agent_flow_7'
+  | 'export_import_2_agent_flow_8'
+  | 'export_import_2_agent_flow_9'
+  | 'export_import_agent_flow_1'
+  | 'export_import_agent_flow_10'
+  | 'export_import_agent_flow_11'
+  | 'export_import_agent_flow_12'
+  | 'export_import_agent_flow_13'
+  | 'export_import_agent_flow_14'
+  | 'export_import_agent_flow_15'
+  | 'export_import_agent_flow_16'
+  | 'export_import_agent_flow_17'
+  | 'export_import_agent_flow_18'
+  | 'export_import_agent_flow_19'
+  | 'export_import_agent_flow_2'
+  | 'export_import_agent_flow_20'
+  | 'export_import_agent_flow_21'
+  | 'export_import_agent_flow_22'
+  | 'export_import_agent_flow_23'
+  | 'export_import_agent_flow_24'
+  | 'export_import_agent_flow_25'
+  | 'export_import_agent_flow_26'
+  | 'export_import_agent_flow_27'
+  | 'export_import_agent_flow_28'
+  | 'export_import_agent_flow_29'
+  | 'export_import_agent_flow_3'
+  | 'export_import_agent_flow_30'
+  | 'export_import_agent_flow_31'
+  | 'export_import_agent_flow_32'
+  | 'export_import_agent_flow_33'
+  | 'export_import_agent_flow_34'
+  | 'export_import_agent_flow_35'
+  | 'export_import_agent_flow_36'
+  | 'export_import_agent_flow_37'
+  | 'export_import_agent_flow_38'
+  | 'export_import_agent_flow_39'
+  | 'export_import_agent_flow_4'
+  | 'export_import_agent_flow_5'
+  | 'export_import_agent_flow_6'
+  | 'export_import_agent_flow_7'
+  | 'export_import_agent_flow_8'
+  | 'export_import_agent_flow_9'
+  | 'export_picture_limit'
   | 'failed'
   | 'failed_to_establish_connection'
   | 'failed_to_get_channel_list'
@@ -8719,6 +8626,7 @@ export type I18nKeysNoOptionsType =
   | 'filling_container_'
   | 'filling_method'
   | 'filter_all'
+  | 'filter_conditions'
   | 'filter_develop_agent'
   | 'filter_develop_all_creators'
   | 'filter_develop_all_status'
@@ -8779,6 +8687,8 @@ export type I18nKeysNoOptionsType =
   | 'free_chat_allowance'
   | 'free_chat_allowance_tips'
   | 'free_no_message_quota'
+  | 'free_plugin'
+  | 'free_version_upgrade_guide'
   | 'generate'
   | 'generate_bot_icon_content_filter'
   | 'generate_failed'
@@ -8798,12 +8708,18 @@ export type I18nKeysNoOptionsType =
   | 'goolgle_login'
   | 'got_it'
   | 'got_it_do_not_remind_today'
+  | 'goto_plugin_edit'
+  | 'goto_volcano_auth'
+  | 'goto_volcano_create'
   | 'grab_humanize_image'
   | 'grab_humanize_link'
   | 'grid_list'
   | 'guidance_got_it'
   | 'guidance_never_show_box'
+  | 'guide_open_3rd_pay_plugin'
+  | 'has_activated'
   | 'hide_hide_content_beyond_the_container_'
+  | 'historical_resource_consumption'
   | 'history_recover_prompt'
   | 'home_at_guide_popup'
   | 'home_at_sug_no_bots_found'
@@ -8856,6 +8772,11 @@ export type I18nKeysNoOptionsType =
   | 'home_view_more_button'
   | 'home_welcome_subtitle'
   | 'home_welcome_title'
+  | 'homepage_partner'
+  | 'homepage_partner_details'
+  | 'homepage_partner_disclaimer'
+  | 'homepage_to_space'
+  | 'homepage_to_template'
   | 'horizontal'
   | 'horizontal_list'
   | 'host_info.name'
@@ -8864,7 +8785,14 @@ export type I18nKeysNoOptionsType =
   | 'icon_list'
   | 'ide_plugin_delete_tip_delete_code_in_ide_also'
   | 'ide_plugin_publish'
+  | 'ideo_generation_node_image_url_explain'
   | 'image_download_not_supported'
+  | 'image_generation_node_max_images'
+  | 'image_generation_node_max_images_explain'
+  | 'image_generation_node_prompt_tips'
+  | 'image_generation_node_ratio'
+  | 'image_generation_node_resolution'
+  | 'image_generation_node_watermark'
   | 'image_list'
   | 'image_settings'
   | 'imageflow_add'
@@ -8966,6 +8894,7 @@ export type I18nKeysNoOptionsType =
   | 'imageflow_message_input_desc'
   | 'imageflow_message_output_desc'
   | 'imageflow_message_placeholder_desc'
+  | 'imageflow_model9'
   | 'imageflow_output_display'
   | 'imageflow_output_display_desc1'
   | 'imageflow_output_display_desc2'
@@ -9030,9 +8959,11 @@ export type I18nKeysNoOptionsType =
   | 'imported_parameter'
   | 'in_a_stacked_layout__elements_are_automatically_arranged_downward_or_to_the_righ'
   | 'inappropriate_contents'
+  | 'index_landing_eino_desc'
   | 'index_landing_eino_name'
   | 'index_landing_eino_slogan'
   | 'index_landing_eino_tag'
+  | 'index_landing_loop_desc'
   | 'index_landing_loop_name'
   | 'index_landing_loop_slogan'
   | 'index_landing_loop_tag'
@@ -9045,6 +8976,7 @@ export type I18nKeysNoOptionsType =
   | 'index_landing_space_slogan'
   | 'index_landing_space_tag'
   | 'index_landing_space_user_case'
+  | 'index_landing_studio_desc'
   | 'index_landing_studio_name'
   | 'index_landing_studio_point1'
   | 'index_landing_studio_point1_des'
@@ -9067,6 +8999,7 @@ export type I18nKeysNoOptionsType =
   | 'insert'
   | 'insufficient_resource'
   | 'insufficient_resource_desc'
+  | 'insufficient_resource_desc_month'
   | 'intelligently_generated_by_large_language_model'
   | 'intent_OCR'
   | 'intent_airticket_book'
@@ -9358,9 +9291,12 @@ export type I18nKeysNoOptionsType =
   | 'invite_enterprise_page_button_unable_join1'
   | 'invite_enterprise_page_button_unable_join2'
   | 'invoke_workflow'
+  | 'involved_tools'
   | 'is_it_hidden?'
+  | 'item details'
   | 'jinja_invalid'
   | 'json_file_content_must_be_text'
+  | 'jump_to_ark_to_get_apikey'
   | 'keep'
   | 'keep_at_least_one_file_type'
   | 'keep_at_least_one_page'
@@ -9874,11 +9810,17 @@ export type I18nKeysNoOptionsType =
   | 'library_workflow_header_reference_graph_entry_hover_no_reference'
   | 'library_workflow_header_reference_graph_entry_hover_view_graph'
   | 'like'
+  | 'limit_card_copy'
+  | 'limit_exceeded'
+  | 'limit_usage_on'
   | 'limits_dataset'
   | 'limits_message'
   | 'limits_workflow_test_run'
+  | 'line chart'
   | 'link_learn_more'
+  | 'linked_partner_account'
   | 'list_template'
+  | 'lite_version_tips_link'
   | 'llm'
   | 'llm_mode'
   | 'loaded'
@@ -9957,7 +9899,70 @@ export type I18nKeysNoOptionsType =
   | 'marketplace_TTS_voice_speaking'
   | 'maximum_height'
   | 'maximum_width/height_'
+  | 'member_consumption_stats'
+  | 'member_expansion_package'
   | 'members'
+  | 'members_filtered'
+  | 'memory_library_action_confirm_delete_memory_lib'
+  | 'memory_library_action_confirm_upgrade'
+  | 'memory_library_action_data_will_be_delete'
+  | 'memory_library_action_delete_after_rollback'
+  | 'memory_library_action_delete_after_user_memory_data'
+  | 'memory_library_action_delete_date'
+  | 'memory_library_action_delete_user_long_term_memory_dat'
+  | 'memory_library_action_memory_lib_delete_success'
+  | 'memory_library_action_please_upgrade_delete_existing'
+  | 'memory_library_form_memory_lib_setting'
+  | 'memory_library_form_please_input_memory_lib_descriptio'
+  | 'memory_library_form_please_input_memory_lib_name'
+  | 'memory_library_form_please_select_memory_lib'
+  | 'memory_library_form_select_channel'
+  | 'memory_library_form_select_long_term_memory'
+  | 'memory_library_form_select_memory_lib'
+  | 'memory_library_form_setting'
+  | 'memory_library_general_add'
+  | 'memory_library_general_billing_detail_reference'
+  | 'memory_library_general_count'
+  | 'memory_library_general_count_quota'
+  | 'memory_library_general_coze_long_term_memory_document'
+  | 'memory_library_general_create'
+  | 'memory_library_general_create_1'
+  | 'memory_library_general_create_memory_lib'
+  | 'memory_library_general_edit_memory_lib'
+  | 'memory_library_general_empty_memory'
+  | 'memory_library_general_empty_memory_lib'
+  | 'memory_library_general_empty_search_result'
+  | 'memory_library_general_enable_after_summarize_chat'
+  | 'memory_library_general_everyone'
+  | 'memory_library_general_immediately_renew'
+  | 'memory_library_general_load'
+  | 'memory_library_general_load_all_memory_lib'
+  | 'memory_library_general_long_term_memory_data_descripti'
+  | 'memory_library_general_long_term_memory_quota_descript'
+  | 'memory_library_general_memory_lib'
+  | 'memory_library_general_memory_lib_8'
+  | 'memory_library_general_memory_lib_description'
+  | 'memory_library_general_memory_lib_name'
+  | 'memory_library_general_memory_lib_name_limit'
+  | 'memory_library_general_memory_storage'
+  | 'memory_library_general_more_description_see_details'
+  | 'memory_library_general_note_upgrade_after_user'
+  | 'memory_library_general_only_self'
+  | 'memory_library_general_please'
+  | 'memory_library_general_search'
+  | 'memory_library_general_search_user'
+  | 'memory_library_general_support_add_unit_knowledge_base'
+  | 'memory_library_general_unnamed_memory_lib'
+  | 'memory_library_general_upgrade'
+  | 'memory_library_general_upgrade_after_use_volcengine'
+  | 'memory_library_general_upgrade_get_more_memory'
+  | 'memory_library_general_upgrade_long_term_memory'
+  | 'memory_library_general_upgrade_memory_lib'
+  | 'memory_library_validate_get_memory_lib_list_failed'
+  | 'memory_library_validate_memory_lib_create_success'
+  | 'memory_library_validate_memory_lib_update_success'
+  | 'memory_library_validate_upgrade_failed_please_after'
+  | 'memory_library_validate_upgrade_success'
   | 'mention_this_bot'
   | 'menu_bots'
   | 'menu_community'
@@ -10382,6 +10387,89 @@ export type I18nKeysNoOptionsType =
   | 'model_context_cache_optmize_prompt_tips'
   | 'model_context_cache_submit_prompt_tips'
   | 'model_context_cache_verify_variables_tips'
+  | 'model_deploy_capability_tooltip'
+  | 'model_deploy_content_moderation_tooltip'
+  | 'model_deploy_model_edit_detailpage_API_type'
+  | 'model_deploy_model_edit_detailpage_API_type_1'
+  | 'model_deploy_model_edit_detailpage_API_type_2'
+  | 'model_deploy_model_edit_detailpage_capability'
+  | 'model_deploy_model_edit_detailpage_capability_audio_understand'
+  | 'model_deploy_model_edit_detailpage_capability_continue'
+  | 'model_deploy_model_edit_detailpage_capability_cot'
+  | 'model_deploy_model_edit_detailpage_capability_fc'
+  | 'model_deploy_model_edit_detailpage_capability_img_understand'
+  | 'model_deploy_model_edit_detailpage_capability_video_understand'
+  | 'model_deploy_model_edit_detailpage_content_moderation'
+  | 'model_deploy_model_edit_detailpage_content_moderation_default'
+  | 'model_deploy_model_edit_detailpage_content_moderation_enterprise'
+  | 'model_deploy_model_edit_detailpage_context_length'
+  | 'model_deploy_model_edit_detailpage_custome_shcema'
+  | 'model_deploy_model_edit_detailpage_custome_shcema_preview'
+  | 'model_deploy_model_edit_detailpage_custome_shcema_requirement_doc'
+  | 'model_deploy_model_edit_detailpage_doc'
+  | 'model_deploy_model_edit_detailpage_icon'
+  | 'model_deploy_model_edit_detailpage_icon_requirement'
+  | 'model_deploy_model_edit_detailpage_model_id'
+  | 'model_deploy_model_edit_detailpage_model_name'
+  | 'model_deploy_model_edit_detailpage_model_name_requirement'
+  | 'model_deploy_model_edit_detailpage_placeholder'
+  | 'model_deploy_model_edit_detailpage_secret_name'
+  | 'model_deploy_model_edit_detailpage_secret_name_placeholder'
+  | 'model_deploy_model_edit_detailpage_secret_name_tooltip'
+  | 'model_deploy_model_id'
+  | 'model_deploy_model_list_page_model_create_time'
+  | 'model_deploy_model_list_page_model_creator'
+  | 'model_deploy_model_list_page_model_creator_placeholder_1'
+  | 'model_deploy_model_list_page_model_creator_placeholder_2'
+  | 'model_deploy_model_list_page_model_deploy_default'
+  | 'model_deploy_model_list_page_model_deploy_new_model'
+  | 'model_deploy_model_list_page_model_deploy_shut_down_pop_button1'
+  | 'model_deploy_model_list_page_model_deploy_shut_down_pop_desc'
+  | 'model_deploy_model_list_page_model_deploy_shut_down_pop_title'
+  | 'model_deploy_model_list_page_model_id'
+  | 'model_deploy_model_list_page_model_name'
+  | 'model_deploy_model_list_page_model_operate'
+  | 'model_deploy_model_list_page_model_operate_config_workspace'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_batch'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_batch_close'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_batch_close_failed'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_batch_close_succeed'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_batch_open'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_batch_open_failed'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_batch_open_succeed'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_cancel'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_cancel_pop'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_cancel_pop_desc'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_choose_all'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_choosen'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_desc'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_name'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_status'
+  | 'model_deploy_model_list_page_model_operate_config_workspace_title'
+  | 'model_deploy_model_list_page_model_operate_edit'
+  | 'model_deploy_model_list_page_model_operate_shut_down'
+  | 'model_deploy_model_list_page_model_search'
+  | 'model_deploy_model_list_page_model_status'
+  | 'model_deploy_model_list_page_model_status_shut_down'
+  | 'model_deploy_model_list_page_model_status_working'
+  | 'model_deploy_model_list_page_model_update_time'
+  | 'model_deploy_model_list_page_model_workspace'
+  | 'model_deploy_model_list_title'
+  | 'model_deploy_page'
+  | 'model_deploy_page_custome_url'
+  | 'model_deploy_page_edit_model'
+  | 'model_deploy_page_model_desc'
+  | 'model_deploy_page_model_desc_tips'
+  | 'model_deploy_page_title'
+  | 'model_deploy_page_vocl_ark_syc'
+  | 'model_deploy_page_vocl_ark_syc_button_go'
+  | 'model_deploy_page_vocl_ark_syc_desc'
+  | 'model_deploy_permission_token'
+  | 'model_deploy_tips_failed'
+  | 'model_deploy_tips_succeed'
+  | 'model_deploy_tips_update_failed'
+  | 'model_deploy_tips_updated'
+  | 'model_deploy_workspace_scope_tooltip'
   | 'model_description'
   | 'model_details_bot_competition_score'
   | 'model_details_coding_ability_score'
@@ -10419,6 +10507,7 @@ export type I18nKeysNoOptionsType =
   | 'model_list_model_default_parameters_voice'
   | 'model_list_model_deprecation_notice'
   | 'model_list_new_model'
+  | 'model_list_page_model_type_vocl_ark_syc'
   | 'model_list_source_tips'
   | 'model_list_thinking_enable_tips'
   | 'model_list_thinking_length'
@@ -10440,6 +10529,10 @@ export type I18nKeysNoOptionsType =
   | 'model_manage_page_enable_model_tip2'
   | 'model_manage_page_enable_succeed_tip'
   | 'model_manage_page_enable_succeed_toast'
+  | 'model_manage_page_model_deploy_custome'
+  | 'model_manage_page_status'
+  | 'model_manage_page_status_out_of_service'
+  | 'model_manage_page_status_out_of_service_already'
   | 'model_management'
   | 'model_management_accuracy_rate'
   | 'model_management_accuracy_rate_description'
@@ -10500,6 +10593,12 @@ export type I18nKeysNoOptionsType =
   | 'model_management_no_results_found'
   | 'model_management_output_speed'
   | 'model_management_output_speed_description'
+  | 'model_management_page_filter'
+  | 'model_management_page_filter_model_source'
+  | 'model_management_page_filter_model_source_different_account'
+  | 'model_management_page_filter_model_source_official'
+  | 'model_management_page_filter_model_source_self_deploy'
+  | 'model_management_page_filter_model_source_vocl_ark_syc'
   | 'model_management_performance_monitoring'
   | 'model_management_please_upload_training_set'
   | 'model_management_price_unit'
@@ -10543,6 +10642,11 @@ export type I18nKeysNoOptionsType =
   | 'model_max_token_alert'
   | 'model_name'
   | 'model_not_supported'
+  | 'model_out_of_service_model_manage_page_banner'
+  | 'model_out_of_service_model_manage_page_filter'
+  | 'model_out_of_service_popup_button_confirm'
+  | 'model_out_of_service_popup_desc'
+  | 'model_out_of_service_popup_title'
   | 'model_owner'
   | 'model_ranking'
   | 'model_ranking_agent_battle_explain'
@@ -10700,8 +10804,17 @@ export type I18nKeysNoOptionsType =
   | 'monetization_support'
   | 'monetization_support_tips'
   | 'month_or_year'
+  | 'monthly_consumption'
+  | 'monthly_limit_consumption'
+  | 'monthly_limit_reached'
+  | 'monthly_quota'
+  | 'monthly_quota_limit'
+  | 'monthly_quota_limit_each_persion'
+  | 'monthly_quota_min'
+  | 'monthly_resource_consumption'
   | 'more'
   | 'more_operations'
+  | 'most_popular'
   | 'mouse_hover'
   | 'move_desc1'
   | 'move_down'
@@ -10808,6 +10921,10 @@ export type I18nKeysNoOptionsType =
   | 'moved_up'
   | 'mp_open_type_setter_card_setting'
   | 'mp_open_type_setter_card_title'
+  | 'multi_organization_app_1'
+  | 'multi_organization_app_2'
+  | 'multi_organization_app_auth_1'
+  | 'multi_organization_app_auth_2'
   | 'multiagent_bot_update_setting_auto_subtitle'
   | 'multiagent_bot_update_setting_auto_title'
   | 'multiagent_bot_update_setting_manual_subtitle'
@@ -10969,6 +11086,9 @@ export type I18nKeysNoOptionsType =
   | 'new_landing_loop'
   | 'new_landing_loop_tips_description'
   | 'new_landing_loop_tips_title'
+  | 'new_landing_opensource'
+  | 'new_landing_opensource_slogan_1'
+  | 'new_landing_opensource_slogan_2'
   | 'new_landing_return_customers'
   | 'new_landing_selling_point1_description'
   | 'new_landing_selling_point1_img_description1'
@@ -11008,6 +11128,7 @@ export type I18nKeysNoOptionsType =
   | 'new_landing_title_studio'
   | 'new_pat_1'
   | 'new_pat_reminder_1'
+  | 'new_published'
   | 'next'
   | 'next_day_new_user_retention'
   | 'next_day_new_user_retention_tooltip'
@@ -11022,9 +11143,13 @@ export type I18nKeysNoOptionsType =
   | 'nl2prompt_shortcut_preview_describe_unsatisfied_placeholder'
   | 'noAnswer'
   | 'no_api_token_1'
+  | 'no_config'
+  | 'no_content'
   | 'no_mock_yet'
   | 'no_mockset_yet'
   | 'no_parameter_configuration'
+  | 'no_product_code'
+  | 'no_reach_limit'
   | 'no_subtype'
   | 'no_workflow'
   | 'node_http_api'
@@ -11066,16 +11191,24 @@ export type I18nKeysNoOptionsType =
   | 'node_http_url_required'
   | 'node_http_var_infer_delete'
   | 'node_js'
+  | 'non_enterprise_amount'
+  | 'non_enterprise_qps'
   | 'non_neutral_agegate_confirm'
   | 'non_neutral_agegate_deny'
   | 'non_neutral_agegate_desc'
   | 'non_neutral_agegate_title'
+  | 'not limited'
   | 'not_acess_tip'
+  | 'not_activated'
   | 'not_show_again'
+  | 'not_support'
   | 'not_support_edit_1'
   | 'not_supported'
   | 'not_supported_toolName'
   | 'notice_web_sdk_token'
+  | 'nott_offline_dot_tips_detail'
+  | 'nott_offline_multiagent_button'
+  | 'nott_offline_multiagent_tips'
   | 'oauth_app_client_typ_tips'
   | 'oauth_app_client_type'
   | 'oauth_app_jwt_account'
@@ -11150,11 +11283,14 @@ export type I18nKeysNoOptionsType =
   | 'ocean_list_create'
   | 'ocean_list_empty_content'
   | 'ocean_project_create'
+  | 'official'
+  | 'official_payment'
   | 'on_boarding_tooltips_selected'
   | 'on_boarding_tooltips_skip'
   | 'only_combinations_of_letters__numbers__and_underscores_are_supported!'
   | 'only_letters__numbers__underscores_are_supported_and_cannot_start_with_numbers'
   | 'only_select_workspace_1'
+  | 'only_show_paid_plugins'
   | 'open_api'
   | 'open_cloudservice_management'
   | 'open_cloudservice_management_link'
@@ -11188,6 +11324,9 @@ export type I18nKeysNoOptionsType =
   | 'opening_showall_explain'
   | 'opening_showall_explain_demo_off'
   | 'opening_showall_explain_demo_on'
+  | 'opensource_landing_title_eino'
+  | 'opensource_landing_title_loop'
+  | 'opensource_landing_title_studio'
   | 'operation_analytics_active_user_count'
   | 'operation_analytics_active_users'
   | 'operation_analytics_average_interaction_count'
@@ -11338,9 +11477,20 @@ export type I18nKeysNoOptionsType =
   | 'page_setup'
   | 'page_title'
   | 'page_type'
+  | 'paid_plugin'
+  | 'paid_plugin_activate_tip'
+  | 'paid_plugin_activate_title'
+  | 'paid_plugin_batch_activate_tip'
+  | 'paid_plugin_name_changed'
+  | 'paid_plugin_name_changed_tip'
+  | 'paid_plugin_not_allowed'
+  | 'paid_plugin_payment_tip'
   | 'paid_plugin_tag'
   | 'paid_plugin_tag_hover_tip'
   | 'paid_plugin_tag_hover_tip_refer_to_doc'
+  | 'paid_plugin_tip'
+  | 'paid_plugin_upgrade_guide_title'
+  | 'paid_plugin_used'
   | 'panel_metrics_click_exclude'
   | 'panel_metrics_click_exclude_others'
   | 'panel_metrics_click_show_all'
@@ -11395,6 +11545,15 @@ export type I18nKeysNoOptionsType =
   | 'pat_transferspace_notification'
   | 'pat_transferspace_title'
   | 'pat_workspace_notification'
+  | 'pay_manage_ spec'
+  | 'pay_manage_add_purchase'
+  | 'pay_manage_auto_renew_status'
+  | 'pay_manage_config_name'
+  | 'pay_manage_config_upgrade'
+  | 'pay_manage_is_expired'
+  | 'pay_manage_renew'
+  | 'pay_manage_spec'
+  | 'payment_config'
   | 'pdf_encrypted'
   | 'percentage'
   | 'percentage_'
@@ -11489,6 +11648,7 @@ export type I18nKeysNoOptionsType =
   | 'permission_manage_modal_table_name'
   | 'permission_manage_modal_title'
   | 'permission_manage_modal_title_hover_tip'
+  | 'personal_expense_detail'
   | 'personal_info_settings_nickname'
   | 'personal_info_settings_phone_number_edit'
   | 'personal_info_settings_username'
@@ -11606,6 +11766,8 @@ export type I18nKeysNoOptionsType =
   | 'playground_history_rerun'
   | 'playground_non_stream_1'
   | 'playground_non_stream_2'
+  | 'playground_uibuilder_websdk'
+  | 'playground_uibuilder_websdk_tips'
   | 'playground_workflow_choose_1'
   | 'playground_workflow_choose_2'
   | 'playground_workflow_choose_3'
@@ -11617,6 +11779,7 @@ export type I18nKeysNoOptionsType =
   | 'please_click_to_try_again_'
   | 'please_close_the_bottom_navigation_in_the_page_properties_panel_after_selecting_'
   | 'please_complete_the_domain_name_configuration_first_'
+  | 'please_enter_ark_apikey'
   | 'please_enter_mockset_name'
   | 'please_fill_in_the_required_imported_parameters'
   | 'please_select_a_jump_page'
@@ -11628,6 +11791,17 @@ export type I18nKeysNoOptionsType =
   | 'plugin_Parameter_name_error'
   | 'plugin_Parameter_type'
   | 'plugin_Update'
+  | 'plugin_activate'
+  | 'plugin_activate_fail'
+  | 'plugin_activate_now'
+  | 'plugin_activate_success'
+  | 'plugin_agreement_popup_agree'
+  | 'plugin_agreement_popup_confirm'
+  | 'plugin_agreement_popup_content'
+  | 'plugin_agreement_popup_copy_link'
+  | 'plugin_agreement_popup_link'
+  | 'plugin_agreement_popup_title'
+  | 'plugin_agreement_store_button'
   | 'plugin_api_list_codebutton_tooltip1'
   | 'plugin_api_list_codebutton_tooltip2'
   | 'plugin_api_list_publish_button_hover'
@@ -11657,12 +11831,25 @@ export type I18nKeysNoOptionsType =
   | 'plugin_auth_method_service_api_key'
   | 'plugin_auth_method_service_oidc'
   | 'plugin_auth_method_service_zti'
+  | 'plugin_billing'
+  | 'plugin_billing_amount_fail'
+  | 'plugin_billing_amount_success'
+  | 'plugin_billing_config'
+  | 'plugin_billing_config_default'
+  | 'plugin_billing_config_is_enabled'
+  | 'plugin_billing_config_tip'
+  | 'plugin_billing_goto_config'
+  | 'plugin_billing_not_enabled'
+  | 'plugin_billing_settings'
+  | 'plugin_billing_strandard'
+  | 'plugin_billing_third_party_tip'
   | 'plugin_bot_ide_output_param_enable_tip'
   | 'plugin_bot_ide_plugin_setting_icon_tip'
   | 'plugin_bot_ide_plugin_setting_modal_input_param_title'
   | 'plugin_bot_ide_plugin_setting_modal_item_enable_tip'
   | 'plugin_bot_ide_plugin_setting_modal_output_param_title'
   | 'plugin_bot_ide_plugin_setting_modal_title'
+  | 'plugin_business_type_tip'
   | 'plugin_category_01'
   | 'plugin_category_02'
   | 'plugin_category_03'
@@ -11682,13 +11869,18 @@ export type I18nKeysNoOptionsType =
   | 'plugin_config_modal_static_ip_desc'
   | 'plugin_config_modal_static_ip_desc_with_text'
   | 'plugin_config_modal_static_ip_title'
+  | 'plugin_consumption'
   | 'plugin_create'
+  | 'plugin_create_DNS_desc_floatingwindow'
+  | 'plugin_create_DNS_doc_desc_floatingwindow'
+  | 'plugin_create_DNS_placeholder'
   | 'plugin_create_action_btn'
   | 'plugin_create_desc'
   | 'plugin_create_draft_desc'
   | 'plugin_create_guide_link'
   | 'plugin_create_header_list_title'
   | 'plugin_create_modal_safe_error'
+  | 'plugin_create_name_DNS'
   | 'plugin_create_new'
   | 'plugin_create_tool_title'
   | 'plugin_creation_create_tool_in_ide'
@@ -11709,6 +11901,7 @@ export type I18nKeysNoOptionsType =
   | 'plugin_detail_edit_button'
   | 'plugin_detail_edit_modal_title'
   | 'plugin_detail_view_modal_title'
+  | 'plugin_disable_billing'
   | 'plugin_edit_tool_default_value_array_edit_button'
   | 'plugin_edit_tool_default_value_array_edit_modal_title'
   | 'plugin_edit_tool_default_value_config_item_default_value'
@@ -11732,6 +11925,7 @@ export type I18nKeysNoOptionsType =
   | 'plugin_empty'
   | 'plugin_empty_desc'
   | 'plugin_empty_description'
+  | 'plugin_enable_billing'
   | 'plugin_exception'
   | 'plugin_execution_result'
   | 'plugin_exists'
@@ -11762,10 +11956,17 @@ export type I18nKeysNoOptionsType =
   | 'plugin_filter_type_local_plugin'
   | 'plugin_form_add_child_tooltip'
   | 'plugin_form_no_result_desc'
+  | 'plugin_free_quota'
+  | 'plugin_free_quota_tip'
+  | 'plugin_free_quota_total'
+  | 'plugin_free_quota_unit'
   | 'plugin_gallery_title'
   | 'plugin_imported_successfully'
+  | 'plugin_info'
   | 'plugin_install_fail'
   | 'plugin_install_success'
+  | 'plugin_learn_more'
+  | 'plugin_listed'
   | 'plugin_location_header'
   | 'plugin_location_header1'
   | 'plugin_location_header2'
@@ -11773,6 +11974,9 @@ export type I18nKeysNoOptionsType =
   | 'plugin_location_info_query'
   | 'plugin_location_info_query1'
   | 'plugin_location_info_query2'
+  | 'plugin_manage'
+  | 'plugin_manage_select_space'
+  | 'plugin_manage_update'
   | 'plugin_mark_created_by_existing_services'
   | 'plugin_mark_created_by_ide'
   | 'plugin_metric_average_time'
@@ -11782,9 +11986,20 @@ export type I18nKeysNoOptionsType =
   | 'plugin_moderation_switch_last_version'
   | 'plugin_name_conflict_error'
   | 'plugin_not_exists'
+  | 'plugin_not_support_scaling'
+  | 'plugin_oauth_info_confirm_page'
+  | 'plugin_oauth_info_confirm_page_cancel'
+  | 'plugin_oauth_info_confirm_page_channel'
+  | 'plugin_oauth_info_confirm_page_confirm'
+  | 'plugin_oauth_info_confirm_page_plugin_url'
+  | 'plugin_oauth_info_confirm_page_tips'
+  | 'plugin_oauth_info_confirm_page_to_acct'
   | 'plugin_oauth_message'
+  | 'plugin_original_agreements'
   | 'plugin_parameter'
   | 'plugin_parameter_create_modal_safe_error'
+  | 'plugin_price'
+  | 'plugin_price_unit'
   | 'plugin_privacy_popup1'
   | 'plugin_privacy_popup1_button1'
   | 'plugin_privacy_popup1_button2'
@@ -11813,6 +12028,7 @@ export type I18nKeysNoOptionsType =
   | 'plugin_privacy_popup2_question5_option1'
   | 'plugin_privacy_popup2_question5_option2'
   | 'plugin_privacy_popup2_toast'
+  | 'plugin_product_info'
   | 'plugin_psm_err_msg_content_is_not_valid'
   | 'plugin_psm_err_msg_duplicated_plugin_wf'
   | 'plugin_psm_err_msg_failed_to_call_downstream_server'
@@ -11831,6 +12047,7 @@ export type I18nKeysNoOptionsType =
   | 'plugin_quote_tip_1'
   | 'plugin_quote_tip_2'
   | 'plugin_quote_tip_3'
+  | 'plugin_rejected'
   | 'plugin_s3_Parse'
   | 'plugin_s3_Parsing'
   | 'plugin_s3_failed'
@@ -11840,11 +12057,24 @@ export type I18nKeysNoOptionsType =
   | 'plugin_s4_debug_empty'
   | 'plugin_s4_debug_failed'
   | 'plugin_s4_debug_pass'
+  | 'plugin_scaling_30d_usage'
+  | 'plugin_scaling_amount'
+  | 'plugin_scaling_applicant'
+  | 'plugin_scaling_info'
+  | 'plugin_scaling_status'
+  | 'plugin_scaling_status_pending'
+  | 'plugin_scaling_status_rejected'
+  | 'plugin_scaling_status_success'
+  | 'plugin_scaling_time'
+  | 'plugin_scaling_tip'
   | 'plugin_search_empty'
   | 'plugin_service_status'
   | 'plugin_service_status_offline'
   | 'plugin_service_status_online'
+  | 'plugin_service_tree'
+  | 'plugin_service_tree_tip'
   | 'plugin_show'
+  | 'plugin_single_account_amount'
   | 'plugin_store_authorized'
   | 'plugin_store_contact_deployer'
   | 'plugin_store_detailpage_privacy_desc1'
@@ -11882,13 +12112,29 @@ export type I18nKeysNoOptionsType =
   | 'plugin_type_func'
   | 'plugin_type_plugin'
   | 'plugin_type_workflow'
+  | 'plugin_unlist_contact_coze'
+  | 'plugin_unlist_tip'
+  | 'plugin_unlist_title'
+  | 'plugin_unlisted'
   | 'plugin_update_tip'
+  | 'plugin_usage_active_users'
+  | 'plugin_usage_data'
+  | 'plugin_usage_data_axis'
+  | 'plugin_usage_data_stats'
+  | 'plugin_usage_execute_time'
+  | 'plugin_usage_invoke_times'
   | 'plugin_usage_limits_modal_got_it_button'
   | 'plugin_usage_limits_modal_table_header_plugin'
   | 'plugin_usage_limits_modal_table_header_price'
   | 'plugin_usage_limits_modal_title'
   | 'plugin_usage_limits_modal_view_details'
+  | 'plugin_usage_monitor'
+  | 'plugin_usage_per_plugin'
+  | 'plugin_usage_per_tool'
+  | 'plugin_usage_stats_prev_day'
+  | 'plugin_usage_success_rate'
   | 'plugin_view_config_tag'
+  | 'plugin_volcano_auth_tip'
   | 'plugin_wf_llm_plugin_setting_modal_item_enable'
   | 'plugin_wf_llm_plugin_setting_modal_item_enable_tips'
   | 'plugin_wf_llm_plugin_setting_modal_item_enable_tips_1'
@@ -11898,6 +12144,7 @@ export type I18nKeysNoOptionsType =
   | 'plugin_wf_llm_plugin_setting_modal_item_parameter_tips'
   | 'plugin_with_same_name_api_url_exists'
   | 'plugins_with_limited_calls_added_tip'
+  | 'point_consumption'
   | 'pop_edit_save_confirm'
   | 'pop_up_button_refresh'
   | 'pop_up_description_data_conflict'
@@ -11954,6 +12201,8 @@ export type I18nKeysNoOptionsType =
   | 'privacy_policy'
   | 'privacy_policy_coze'
   | 'privacy_policy_huoshan'
+  | 'product_code'
+  | 'product_create_completed'
   | 'product_matrix_guidance'
   | 'product_matrix_title'
   | 'profile_bot'
@@ -12260,6 +12509,8 @@ export type I18nKeysNoOptionsType =
   | 'project_release_illegal24'
   | 'project_release_illegal25'
   | 'project_release_illegal26'
+  | 'project_release_illegal27'
+  | 'project_release_illegal28'
   | 'project_release_illegal3'
   | 'project_release_illegal4'
   | 'project_release_illegal5'
@@ -12282,6 +12533,7 @@ export type I18nKeysNoOptionsType =
   | 'project_release_oauth_desc'
   | 'project_release_open_in_store'
   | 'project_release_pack_fail_reason'
+  | 'project_release_pack_fail_wf_check_detail'
   | 'project_release_package'
   | 'project_release_package_failed'
   | 'project_release_package_wrong'
@@ -12357,6 +12609,24 @@ export type I18nKeysNoOptionsType =
   | 'prompt_generate_statement_validate'
   | 'prompt_generate_stop'
   | 'prompt_generate_stop_responding'
+  | 'prompt_lib_loop'
+  | 'prompt_lib_loop_create_key'
+  | 'prompt_lib_loop_create_key_error'
+  | 'prompt_lib_loop_create_placeholder'
+  | 'prompt_lib_loop_create_sync'
+  | 'prompt_lib_loop_create_sync_cover'
+  | 'prompt_lib_loop_create_sync_cover_cancel'
+  | 'prompt_lib_loop_create_sync_cover_confirm'
+  | 'prompt_lib_loop_create_sync_cover_detail'
+  | 'prompt_lib_loop_create_sync_cover_result'
+  | 'prompt_lib_loop_create_sync_nochange'
+  | 'prompt_lib_loop_create_sync_null'
+  | 'prompt_lib_loop_create_sync_tips'
+  | 'prompt_lib_loop_empty_content'
+  | 'prompt_lib_loop_loading'
+  | 'prompt_lib_loop_null'
+  | 'prompt_lib_loop_null_hint'
+  | 'prompt_lib_loop_system_prompt_empty'
   | 'prompt_library_button_comparison'
   | 'prompt_library_cancel'
   | 'prompt_library_delete'
@@ -12423,6 +12693,7 @@ export type I18nKeysNoOptionsType =
   | 'publish_base_configFields_status_completed'
   | 'publish_base_configFields_title'
   | 'publish_base_configFields_title_placeholder'
+  | 'publish_base_configFields_title_tooltip'
   | 'publish_base_configStruct_dataType'
   | 'publish_base_configStruct_id'
   | 'publish_base_configStruct_key'
@@ -12440,10 +12711,26 @@ export type I18nKeysNoOptionsType =
   | 'publish_base_inputFieldConfig_multiSelect'
   | 'publish_base_inputFieldConfig_options'
   | 'publish_base_inputFieldConfig_options_placeholder'
+  | 'publish_base_inputFieldConfig_preview'
   | 'publish_base_inputFieldConfig_singleSelect'
   | 'publish_base_inputFieldConfig_supports'
   | 'publish_base_inputFieldConfig_supports_placeholder'
   | 'publish_base_inputFieldConfig_textInput'
+  | 'publish_base_plugin_form_description_label'
+  | 'publish_base_plugin_form_description_placeholder'
+  | 'publish_base_plugin_form_instruction_label'
+  | 'publish_base_plugin_form_instruction_placeholder'
+  | 'publish_base_plugin_form_name_label'
+  | 'publish_base_plugin_form_name_placeholder'
+  | 'publish_base_plugin_form_privacy_link'
+  | 'publish_base_plugin_form_privacy_text'
+  | 'publish_base_plugin_form_scope_label'
+  | 'publish_base_plugin_form_scrope_self'
+  | 'publish_base_plugin_form_scrope_self_text'
+  | 'publish_base_plugin_form_scrope_tenant'
+  | 'publish_base_plugin_form_scrope_tenant_text'
+  | 'publish_base_plugin_form_terms_link'
+  | 'publish_base_plugin_form_terms_text'
   | 'publish_bot_check_error_continue'
   | 'publish_bot_check_error_des_1'
   | 'publish_bot_check_error_des_2'
@@ -12650,6 +12937,15 @@ export type I18nKeysNoOptionsType =
   | 'query_type_value_workflow'
   | 'query_type_value_workflowend'
   | 'query_type_value_workflowstart'
+  | 'quota limit'
+  | 'quota status'
+  | 'quota_config'
+  | 'quota_copy'
+  | 'quota_custom_config'
+  | 'quota_flow_user'
+  | 'quota_strategy'
+  | 'quota_unlimited'
+  | 'quota_user_strategy_ verify_error'
   | 'quote_ask_in_chat'
   | 'radar_chart_details_bot_competition'
   | 'radar_chart_details_coding_ability'
@@ -12739,6 +13035,8 @@ export type I18nKeysNoOptionsType =
   | 'recall_knowledge_no_related_slices'
   | 'recommendation_component'
   | 'recommended_failed'
+  | 'recommended_free_plugins'
+  | 'recommended_paid_plugins'
   | 'redirect_success_page_close_page_count_down'
   | 'reference_graph_entry_button'
   | 'reference_graph_modal_subtitle_view_relationship_given_workflow'
@@ -12752,7 +13050,9 @@ export type I18nKeysNoOptionsType =
   | 'reference_graph_tip_current_workflow_has_no_reference'
   | 'reference_graph_tip_fail_to_load'
   | 'reference_graph_tip_fail_to_load_retry_needed'
+  | 'refresh'
   | 'refresh_project_tags'
+  | 'refresh_to_continue'
   | 'regenerate'
   | 'region_ranking_Bot_not_released'
   | 'region_ranking_Bot_not_released.'
@@ -12840,6 +13140,7 @@ export type I18nKeysNoOptionsType =
   | 'release_management_connector_released'
   | 'release_management_create_button'
   | 'release_management_create_desc'
+  | 'release_management_custom'
   | 'release_management_detail'
   | 'release_management_failed'
   | 'release_management_finished'
@@ -12854,9 +13155,11 @@ export type I18nKeysNoOptionsType =
   | 'release_management_no_permision'
   | 'release_management_no_project'
   | 'release_management_not_support_trigger'
+  | 'release_management_official'
   | 'release_management_only_owner'
   | 'release_management_openin'
   | 'release_management_operate'
+  | 'release_management_others'
   | 'release_management_platform_removed'
   | 'release_management_platform_team'
   | 'release_management_platform_team_desc'
@@ -12865,6 +13168,7 @@ export type I18nKeysNoOptionsType =
   | 'release_management_recent'
   | 'release_management_recent_result'
   | 'release_management_removed1'
+  | 'release_management_removed_failed'
   | 'release_management_removed_sucess'
   | 'release_management_removed_sucess1'
   | 'release_management_removed_sucess2'
@@ -12932,6 +13236,7 @@ export type I18nKeysNoOptionsType =
   | 'report_content_1'
   | 'report_content_10'
   | 'report_content_11'
+  | 'report_content_12'
   | 'report_content_2'
   | 'report_content_3'
   | 'report_content_4'
@@ -12953,6 +13258,7 @@ export type I18nKeysNoOptionsType =
   | 'resource_alert'
   | 'resource_alert_close'
   | 'resource_alert_disabled'
+  | 'resource_consumption'
   | 'resource_copy_move_notify'
   | 'resource_move'
   | 'resource_move_bot_success_toast'
@@ -12967,6 +13273,7 @@ export type I18nKeysNoOptionsType =
   | 'resource_move_target_team'
   | 'resource_move_together'
   | 'resource_move_together_desc'
+  | 'resource_point_usage'
   | 'resource_process_modal_cancel_button'
   | 'resource_process_modal_retry_button'
   | 'resource_process_modal_text_copying_process_interrupt_warning'
@@ -13032,6 +13339,8 @@ export type I18nKeysNoOptionsType =
   | 'role_info.description'
   | 'role_info.name'
   | 'role_info.nickname'
+  | 'role_quota'
+  | 'role_quota_config'
   | 'rounded_corners'
   | 'runtime_parameter_tips_chain_task'
   | 'runtime_parameter_tips_cici_crawl'
@@ -13039,6 +13348,7 @@ export type I18nKeysNoOptionsType =
   | 'runtime_parameter_tips_custom'
   | 'runtime_parameter_tips_fornax_agent'
   | 'runtime_parameter_tips_fornax_app'
+  | 'save_overlimit_disable'
   | 'scaling_activate'
   | 'scaling_activate_failed'
   | 'scaling_activated'
@@ -13403,6 +13713,7 @@ export type I18nKeysNoOptionsType =
   | 'select_workspace_reminder_1_new'
   | 'select_workspace_reminder_2'
   | 'select_workspace_reminder_2_new'
+  | 'self_operated_plugin'
   | 'sendFailed'
   | 'sequential_growth_vs'
   | 'service_token_description_1'
@@ -13535,7 +13846,9 @@ export type I18nKeysNoOptionsType =
   | 'shortcut_modal_use_tool_parameter_default_value_placeholder'
   | 'shortcut_modal_use_tool_select_button'
   | 'show_function_execution_result'
+  | 'show_history_users'
   | 'show_time'
+  | 'show_users_with_history'
   | 'sign-force-check-modal-title'
   | 'sign_welcome_title'
   | 'single_conversation_duration'
@@ -13640,6 +13953,10 @@ export type I18nKeysNoOptionsType =
   | 'space_job_7'
   | 'space_job_8'
   | 'space_job_9'
+  | 'space_preview_slogan_01'
+  | 'space_preview_slogan_02'
+  | 'space_preview_subtitle_01'
+  | 'space_preview_subtitle_02'
   | 'special_collect'
   | 'special_collect_bot'
   | 'special_share'
@@ -13715,7 +14032,14 @@ export type I18nKeysNoOptionsType =
   | 'store_service_plugin_connector'
   | 'store_show_service_plugin'
   | 'store_start_new_chat'
+  | 'store_template_details_resource_entitytype_agent'
+  | 'store_template_details_resource_entitytype_project'
+  | 'store_template_details_resource_entitytype_workflow'
+  | 'store_template_details_resource_tips_3'
+  | 'store_template_details_resource_tips_4'
+  | 'store_template_details_resource_tips_5'
   | 'studio_audio_and_video'
+  | 'studio_logs_analysis_loop_button'
   | 'submit_data_to_a_specified_resource__often_used_to_submit_forms_or_upload_files_'
   | 'submit_plugin_before_submitting_your_plugin'
   | 'submit_plugin_no_example'
@@ -13724,8 +14048,11 @@ export type I18nKeysNoOptionsType =
   | 'subscribe_pro_ activated'
   | 'subscribe_pro_not_purchased'
   | 'subscribe_upgrade_to_coze_premium'
+  | 'super_admin_no_limit'
   | 'support_poor'
   | 'support_up_to_5m_exceeding_part_will_be_truncated'
+  | 'supports'
+  | 'supports_scaling'
   | 'supports_setting_to_hide_components_under_certain_conditions_'
   | 'supports_uploading_json_or_yaml_files'
   | 'switch'
@@ -13958,6 +14285,8 @@ export type I18nKeysNoOptionsType =
   | 'the_width_of_an_element_is_a_fixed_pixel_value_and_does_not_vary_with_the_size_o'
   | 'the_width_of_the_element_is_automatically_adjusted_according_to_the_size_of_the_'
   | 'there_is_a_component_bound_to_jump_to_this_page__please_unbind_and_delete_the_pa'
+  | 'third_party'
+  | 'third_party_payment'
   | 'this_component_has_been_temporarily_displayed'
   | 'this_component_is_currently_set_to_hidden'
   | 'this_page_contains_other_components__and_it_is_not_supported_to_put_in_the_chat_'
@@ -14001,7 +14330,9 @@ export type I18nKeysNoOptionsType =
   | 'top_left'
   | 'top_right'
   | 'topped'
+  | 'total_consumption_after_limit'
   | 'total_participating_models'
+  | 'total_usage_this_month'
   | 'total_vote_count'
   | 'touchpad_friendly_mode'
   | 'trace_tab_name'
@@ -14074,6 +14405,7 @@ export type I18nKeysNoOptionsType =
   | 'update_page_size'
   | 'update_required'
   | 'update_route'
+  | 'upgrade_enterprise_now'
   | 'upgrade_guide_develop'
   | 'upgrade_guide_develop_describe'
   | 'upgrade_guide_got_it'
@@ -14106,6 +14438,12 @@ export type I18nKeysNoOptionsType =
   | 'url_add_012'
   | 'url_add_015'
   | 'url_raw_data'
+  | 'usage_after_quota'
+  | 'usage_config_desc'
+  | 'usage_limit_contact_admin'
+  | 'usage_management'
+  | 'usage_query'
+  | 'usage_stats_limit'
   | 'use_'
   | 'use_in_bot'
   | 'use_in_workflow'
@@ -14113,6 +14451,7 @@ export type I18nKeysNoOptionsType =
   | 'use_template_confirm_info'
   | 'use_template_confirm_ok_text'
   | 'use_template_confirm_title'
+  | 'use_with_agreement'
   | 'use_{{_}}_reference_data'
   | 'use_{{}}_to_refer_to_data'
   | 'used_to_delete_the_user_with_id_123_'
@@ -14121,6 +14460,7 @@ export type I18nKeysNoOptionsType =
   | 'user_activity_retention'
   | 'user_activity_retention_explain'
   | 'user_authorization_pop_up'
+  | 'user_balance_recharge'
   | 'user_cancelled_displayname'
   | 'user_connections_desc'
   | 'user_connections_title'
@@ -14133,12 +14473,15 @@ export type I18nKeysNoOptionsType =
   | 'user_info_username'
   | 'user_interaction_depth_explain'
   | 'user_interaction_depth_satisfaction'
+  | 'user_package_arrears_remind'
   | 'user_profile'
   | 'user_profile_explain'
   | 'user_profile_intro'
   | 'user_profile_sample1'
   | 'user_profile_sample2'
   | 'user_profile_title'
+  | 'user_quota'
+  | 'user_quota_config'
   | 'user_retention'
   | 'user_revoke_authorization_title'
   | 'username_invalid_letter'
@@ -14247,9 +14590,16 @@ export type I18nKeysNoOptionsType =
   | 'video_content'
   | 'video_frame_extraction_desc'
   | 'video_frames_per_second_extraction'
+  | 'video_generation_cutstom_model_title'
+  | 'video_generation_mass_model_desc'
+  | 'video_generation_mass_model_title'
   | 'video_generation_node_description'
   | 'video_generation_node_i2v'
+  | 'video_generation_node_image_url'
+  | 'video_generation_node_image_url_explain'
   | 'video_generation_node_input_tip'
+  | 'video_generation_node_max_images'
+  | 'video_generation_node_max_images_explain'
   | 'video_generation_node_pay'
   | 'video_generation_node_pay_tips_1'
   | 'video_generation_node_pay_tips_2'
@@ -14259,36 +14609,163 @@ export type I18nKeysNoOptionsType =
   | 'video_generation_node_prompt_message'
   | 'video_generation_node_prompt_text'
   | 'video_generation_node_prompt_tip'
+  | 'video_generation_node_ratio'
   | 'video_generation_node_reference'
   | 'video_generation_node_reference_final'
   | 'video_generation_node_reference_first'
   | 'video_generation_node_reference_first_message'
+  | 'video_generation_node_reference_image_explain'
+  | 'video_generation_node_reference_image_tips'
+  | 'video_generation_node_resolution'
   | 'video_generation_node_setting'
   | 'video_generation_node_setting_duration'
   | 'video_generation_node_setting_model'
+  | 'video_generation_node_setting_model_tips'
   | 'video_generation_node_setting_proportion'
   | 'video_generation_node_setting_proportion_tips'
   | 'video_generation_node_setting_proportion_value'
+  | 'video_generation_node_setting_resolutio_tips'
   | 'video_generation_node_setting_resolution'
   | 'video_generation_node_setting_seed'
   | 'video_generation_node_setting_seed_tip'
   | 'video_generation_node_setting_shot'
   | 'video_generation_node_setting_shot_tip'
+  | 'video_generation_node_setting_watermark'
   | 'video_generation_node_t2v'
+  | 'video_generation_node_watermark'
+  | 'video_generation_panorama'
+  | 'video_generation_solutions'
+  | 'video_generation_solutions_access_workflow'
+  | 'video_generation_solutions_access_workflow_eight'
+  | 'video_generation_solutions_access_workflow_eleven'
+  | 'video_generation_solutions_access_workflow_four'
+  | 'video_generation_solutions_access_workflow_four_one'
+  | 'video_generation_solutions_access_workflow_four_two'
+  | 'video_generation_solutions_access_workflow_nine'
+  | 'video_generation_solutions_access_workflow_one'
+  | 'video_generation_solutions_access_workflow_seven'
+  | 'video_generation_solutions_access_workflow_six'
+  | 'video_generation_solutions_access_workflow_ten'
+  | 'video_generation_solutions_access_workflow_three'
+  | 'video_generation_solutions_access_workflow_three_one'
+  | 'video_generation_solutions_access_workflow_three_two'
+  | 'video_generation_solutions_access_workflow_two'
+  | 'video_generation_solutions_advantages'
+  | 'video_generation_solutions_advantages_description'
+  | 'video_generation_solutions_advantages_first_content'
+  | 'video_generation_solutions_advantages_first_title'
+  | 'video_generation_solutions_advantages_first_title_contrast'
+  | 'video_generation_solutions_advantages_first_title_contrast_one'
+  | 'video_generation_solutions_advantages_first_title_contrast_two'
+  | 'video_generation_solutions_advantages_second_content'
+  | 'video_generation_solutions_advantages_second_third_contrast'
+  | 'video_generation_solutions_advantages_second_third_contrast_one'
+  | 'video_generation_solutions_advantages_second_third_contrast_two'
+  | 'video_generation_solutions_advantages_second_title'
+  | 'video_generation_solutions_advantages_second_title_contrast'
+  | 'video_generation_solutions_advantages_second_title_contrast_one'
+  | 'video_generation_solutions_advantages_second_title_contrast_two'
+  | 'video_generation_solutions_advantages_third_content'
+  | 'video_generation_solutions_advantages_third_title'
+  | 'video_generation_solutions_billing_details'
+  | 'video_generation_solutions_coze_advantages'
+  | 'video_generation_solutions_coze_advantages_five'
+  | 'video_generation_solutions_coze_advantages_four'
+  | 'video_generation_solutions_coze_advantages_one'
+  | 'video_generation_solutions_coze_advantages_six'
+  | 'video_generation_solutions_coze_advantages_three'
+  | 'video_generation_solutions_coze_advantages_two'
+  | 'video_generation_solutions_discount_application'
+  | 'video_generation_solutions_login'
+  | 'video_generation_solutions_panorama'
+  | 'video_generation_solutions_panorama_ecosystem_applications'
+  | 'video_generation_solutions_panorama_ecosystem_applications_fifth'
+  | 'video_generation_solutions_panorama_ecosystem_applications_first'
+  | 'video_generation_solutions_panorama_ecosystem_applications_fourth'
+  | 'video_generation_solutions_panorama_ecosystem_applications_second'
+  | 'video_generation_solutions_panorama_ecosystem_applications_sixth'
+  | 'video_generation_solutions_panorama_ecosystem_applications_third'
+  | 'video_generation_solutions_panorama_target_customer_groups'
+  | 'video_generation_solutions_panorama_target_customer_groups_first'
+  | 'video_generation_solutions_panorama_target_customer_groups_fourth'
+  | 'video_generation_solutions_panorama_target_customer_groups_second'
+  | 'video_generation_solutions_panorama_target_customer_groups_third'
+  | 'video_generation_solutions_partnership_inquiry'
+  | 'video_generation_solutions_template_cases'
+  | 'video_generation_solutions_template_cases_description'
+  | 'video_generation_solutions_template_cases_fifth_name'
+  | 'video_generation_solutions_template_cases_fifth_title'
+  | 'video_generation_solutions_template_cases_first_name'
+  | 'video_generation_solutions_template_cases_first_title'
+  | 'video_generation_solutions_template_cases_fourth_name'
+  | 'video_generation_solutions_template_cases_fourth_name_one'
+  | 'video_generation_solutions_template_cases_fourth_title'
+  | 'video_generation_solutions_template_cases_fourth_title_two'
+  | 'video_generation_solutions_template_cases_second_name'
+  | 'video_generation_solutions_template_cases_second_title'
+  | 'video_generation_solutions_template_cases_sixth_name'
+  | 'video_generation_solutions_template_cases_sixth_title'
+  | 'video_generation_solutions_template_cases_third_name'
+  | 'video_generation_solutions_template_cases_third_title'
+  | 'video_generation_solutions_template_cases_use_now'
+  | 'video_generation_solutions_title'
   | 'video_model_require_image_understanding'
   | 'video_pre_speech_frame_extraction_desc'
   | 'video_screen_share'
   | 'video_seconds_extraction_before_speaking'
   | 'video_subtitle_off'
   | 'video_subtitle_on'
+  | 'view details'
   | 'view-all-chat-knowledge-source-header'
   | 'view_detailed_information'
   | 'view_history'
   | 'view_instructions'
+  | 'view_more'
   | 'view_workflow_details'
   | 'visible'
   | 'visible_displays_the_entire_content__even_beyond_the_container_'
   | 'visit_now'
+  | 'voice_call_license_buy_tips_clone'
+  | 'voice_call_license_buy_tips_system'
+  | 'voice_call_time_add_ai_license_cloned_voice'
+  | 'voice_call_time_add_ai_license_system_voice'
+  | 'voice_call_time_additional_purchase'
+  | 'voice_call_time_asr_large_model_streaming'
+  | 'voice_call_time_bill'
+  | 'voice_call_time_bulk_purchase_contact'
+  | 'voice_call_time_cloned_voice_details'
+  | 'voice_call_time_cloned_voice_price'
+  | 'voice_call_time_create_date'
+  | 'voice_call_time_cycle_duration_quota'
+  | 'voice_call_time_cycle_duration_upper_limit'
+  | 'voice_call_time_cycle_refresh_config'
+  | 'voice_call_time_cycle_upper_limit'
+  | 'voice_call_time_cycle_upper_limit_hour'
+  | 'voice_call_time_duration_quota_config'
+  | 'voice_call_time_duration_upper_limit'
+  | 'voice_call_time_duration_upper_limit_hour'
+  | 'voice_call_time_expire_date'
+  | 'voice_call_time_go_to_purchase'
+  | 'voice_call_time_input_at_least_one'
+  | 'voice_call_time_license_description'
+  | 'voice_call_time_limit_duration_quota'
+  | 'voice_call_time_price_per_hour'
+  | 'voice_call_time_purchase_duration'
+  | 'voice_call_time_purchase_license'
+  | 'voice_call_time_purchase_quantity'
+  | 'voice_call_time_quota_cloned_voice'
+  | 'voice_call_time_quota_system_voice'
+  | 'voice_call_time_required_fields_missing'
+  | 'voice_call_time_reset_cycle_days'
+  | 'voice_call_time_system_voice_details'
+  | 'voice_call_time_system_voice_price'
+  | 'voice_call_time_total_duration_quota'
+  | 'voice_call_time_total_limit_usage'
+  | 'voice_call_time_tts_cloned_voice_word_count'
+  | 'voice_call_time_unit_hour'
+  | 'voice_call_time_used_duration'
+  | 'voice_call_time_validity_period_1year'
+  | 'voice_clone_addon_desc'
   | 'voice_clone_create_loading'
   | 'voice_clone_delete_content'
   | 'voice_clone_delete_content_2'
@@ -14297,7 +14774,9 @@ export type I18nKeysNoOptionsType =
   | 'voice_clone_expand_tips_step2'
   | 'voice_clone_history_unpay'
   | 'voice_create_tips'
+  | 'voice_emo_audition_tips'
   | 'voice_emotion_value'
+  | 'voice_model_type'
   | 'voice_popup_language_1'
   | 'voice_popup_language_2'
   | 'voice_popup_language_store_1'
@@ -14834,12 +15313,14 @@ export type I18nKeysNoOptionsType =
   | 'wf_chatflow_97'
   | 'wf_chatflow_98'
   | 'wf_chatflow_99'
+  | 'wf_copy_node_include_system_node_toast'
   | 'wf_history_rounds'
   | 'wf_log_md_preview'
   | 'wf_node_add_wf_modal_tip_must_publish_to_add'
   | 'wf_node_choose_node'
   | 'wf_node_plugin_node_desc'
   | 'wf_node_wf_node_desc'
+  | 'wf_paste_node_include_system_node_toast'
   | 'wf_problem_my_tag'
   | 'wf_problem_other_tag'
   | 'wf_role_config_avatar_ai_tooltip'
@@ -14869,6 +15350,7 @@ export type I18nKeysNoOptionsType =
   | 'wf_testrun_log_md_llm_diff_tooltip'
   | 'wf_testrun_log_md_llm_diff_tooltip_a'
   | 'wf_testrun_problems_loading'
+  | 'wf_video_apikey'
   | 'wf_voice_emotion_label'
   | 'wf_voice_emotion_listen_tooltip_close'
   | 'wf_voice_emotion_listen_tooltip_link'
@@ -15178,6 +15660,8 @@ export type I18nKeysNoOptionsType =
   | 'workflow_code_py_illustrate_output_obj'
   | 'workflow_code_py_illustrate_output_param'
   | 'workflow_code_testrun_sync'
+  | 'workflow_code_vefaas1'
+  | 'workflow_code_vefaas2'
   | 'workflow_collaborate_collabration_explain'
   | 'workflow_collapse_all_nodes'
   | 'workflow_condition_empty'
@@ -15483,6 +15967,8 @@ export type I18nKeysNoOptionsType =
   | 'workflow_exception_ignore_tag'
   | 'workflow_exception_ignore_title'
   | 'workflow_exception_json_error'
+  | 'workflow_exception_retry_2'
+  | 'workflow_exception_retry_3'
   | 'workflow_expand_all_nodes'
   | 'workflow_image_model_disabled'
   | 'workflow_imported_from_the_repository'
@@ -15514,6 +16000,7 @@ export type I18nKeysNoOptionsType =
   | 'workflow_json_syntax_error'
   | 'workflow_json_windows_title'
   | 'workflow_json_windows_title_tips'
+  | 'workflow_jump_to_loop_prompt'
   | 'workflow_knowledeg_un_exit'
   | 'workflow_knowledge_add'
   | 'workflow_knowledge_node_empty'
@@ -15589,6 +16076,19 @@ export type I18nKeysNoOptionsType =
   | 'workflow_maximum_parallel_runs_tips'
   | 'workflow_maximum_run_count'
   | 'workflow_maximum_run_count_tips'
+  | 'workflow_memory_base_empty_placeholder'
+  | 'workflow_memory_base_invalid'
+  | 'workflow_memory_search_node'
+  | 'workflow_memory_search_node_input_tips'
+  | 'workflow_memory_search_node_limit_tips'
+  | 'workflow_memory_search_node_query_tips'
+  | 'workflow_memory_search_node_tips'
+  | 'workflow_memory_write_node'
+  | 'workflow_memory_write_node_input_tips'
+  | 'workflow_memory_write_node_libaray'
+  | 'workflow_memory_write_node_libaray_tips'
+  | 'workflow_memory_write_node_select'
+  | 'workflow_memory_write_node_tips'
   | 'workflow_message_anwser_tooltips'
   | 'workflow_message_streaming_name'
   | 'workflow_message_streaming_tooltips'
@@ -15644,6 +16144,50 @@ export type I18nKeysNoOptionsType =
   | 'workflow_prompt_editor_tooltips_readonly'
   | 'workflow_prompt_editor_variable'
   | 'workflow_prompt_editor_view_library'
+  | 'workflow_prompt_loop_cover_confirm'
+  | 'workflow_prompt_loop_diff_submit_hint'
+  | 'workflow_prompt_loop_help_doc'
+  | 'workflow_prompt_loop_link'
+  | 'workflow_prompt_loop_link_change'
+  | 'workflow_prompt_loop_link_confirm'
+  | 'workflow_prompt_loop_link_error'
+  | 'workflow_prompt_loop_link_error_hint1'
+  | 'workflow_prompt_loop_link_error_hint2'
+  | 'workflow_prompt_loop_link_error_hint3'
+  | 'workflow_prompt_loop_link_error_hint4'
+  | 'workflow_prompt_loop_link_error_hint5'
+  | 'workflow_prompt_loop_link_error_tips'
+  | 'workflow_prompt_loop_link_history'
+  | 'workflow_prompt_loop_link_jump'
+  | 'workflow_prompt_loop_link_latest'
+  | 'workflow_prompt_loop_link_latest_tips'
+  | 'workflow_prompt_loop_link_submit'
+  | 'workflow_prompt_loop_link_submit_action'
+  | 'workflow_prompt_loop_link_submit_back'
+  | 'workflow_prompt_loop_link_submit_cancel'
+  | 'workflow_prompt_loop_link_submit_confirm'
+  | 'workflow_prompt_loop_link_submit_continue'
+  | 'workflow_prompt_loop_link_submit_diff'
+  | 'workflow_prompt_loop_link_submit_diff_draft'
+  | 'workflow_prompt_loop_link_submit_fail'
+  | 'workflow_prompt_loop_link_submit_skill'
+  | 'workflow_prompt_loop_link_submit_success'
+  | 'workflow_prompt_loop_link_submit_title'
+  | 'workflow_prompt_loop_link_submit_version_less'
+  | 'workflow_prompt_loop_link_submit_version_null'
+  | 'workflow_prompt_loop_link_submit_version_wrong'
+  | 'workflow_prompt_loop_link_version_change'
+  | 'workflow_prompt_loop_link_version_change_cancel'
+  | 'workflow_prompt_loop_link_version_change_confirm'
+  | 'workflow_prompt_loop_link_version_change_hint'
+  | 'workflow_prompt_loop_submit_version'
+  | 'workflow_prompt_loop_submit_version_desc'
+  | 'workflow_prompt_loop_submit_version_desc_placeholder'
+  | 'workflow_prompt_loop_unlink'
+  | 'workflow_prompt_loop_unlink_cancel'
+  | 'workflow_prompt_loop_unlink_confirm'
+  | 'workflow_prompt_loop_unlink_title'
+  | 'workflow_prompt_loop_upgrade_skill'
   | 'workflow_publish_check'
   | 'workflow_publish_check_content'
   | 'workflow_publish_check_title'
@@ -16117,6 +16661,8 @@ export type I18nKeysNoOptionsType =
   | 'workspace_exit'
   | 'workspace_exit_button'
   | 'workspace_exit_desc'
+  | 'workspace_folder_permission_settings_desc'
+  | 'workspace_folder_permission_settings_title'
   | 'workspace_invitation_page_invite_operate'
   | 'workspace_invitation_page_invite_revoke'
   | 'workspace_invitation_page_invite_revoke_successed'
@@ -16152,6 +16698,14 @@ export type I18nKeysNoOptionsType =
   | 'workspace_no_permission_access'
   | 'workspace_ocean_project'
   | 'workspace_ocean_search'
+  | 'workspace_permission_manage_page'
+  | 'workspace_permission_manage_page_create_resource'
+  | 'workspace_permission_manage_page_create_resource_desc1'
+  | 'workspace_permission_manage_page_create_resource_desc2'
+  | 'workspace_permission_manage_page_create_resource_popup_button'
+  | 'workspace_permission_manage_page_create_resource_popup_button_cancel'
+  | 'workspace_permission_manage_page_create_resource_popup_button_close'
+  | 'workspace_permission_manage_page_publish_resource'
   | 'workspace_search_no_search_result'
   | 'workspace_search_placeholder'
   | 'workspace_search_recent'
@@ -16224,7 +16778,8 @@ export type I18nKeysNoOptionsType =
   | 'data_request_request_failed'
   | 'data_request_requesting'
   | 'other_knowledge'
-  | 'recall_knowledge_empty';
+  | 'recall_knowledge_empty'
+  | 'workflow_node_from_cn_store';
 // #endregion
 
 // #region LocaleData

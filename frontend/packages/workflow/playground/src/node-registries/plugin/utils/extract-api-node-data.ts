@@ -32,5 +32,6 @@ export const extractApiNodeData = (
     'inputs',
     'outputs',
     'updateTime',
+    'plugin_from',
   ]),
 });

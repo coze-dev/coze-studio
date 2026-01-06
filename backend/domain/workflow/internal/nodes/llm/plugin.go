@@ -21,7 +21,7 @@ import (
 	"github.com/cloudwego/eino/components/tool"
 	"github.com/cloudwego/eino/schema"
 
-	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/contract/plugin"
+	crossplugin "github.com/coze-dev/coze-studio/backend/crossdomain/plugin"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 )
 

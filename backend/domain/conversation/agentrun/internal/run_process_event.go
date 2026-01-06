@@ -22,7 +22,7 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"

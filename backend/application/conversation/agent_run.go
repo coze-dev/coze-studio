@@ -25,18 +25,18 @@ import (
 
 	"github.com/cloudwego/eino/schema"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/message"
-
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/run"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/agentrun"
-	crossDomainMessage "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
+	agentrun "github.com/coze-dev/coze-studio/backend/crossdomain/agentrun/model"
+	crossDomainMessage "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	saEntity "github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	convEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 	msgEntity "github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	cmdEntity "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/entity"
-	sseImpl "github.com/coze-dev/coze-studio/backend/infra/impl/sse"
+	sseImpl "github.com/coze-dev/coze-studio/backend/infra/sse/impl/sse"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -90,6 +90,9 @@ func (c *ConversationApplicationService) Run(ctx context.Context, sseSender *sse
 		cmdMeta, err := c.ShortcutDomainSVC.GetByCmdID(ctx, cmdID, 0)
 		if err != nil {
 			return err
+		}
+		if cmdMeta.ObjectID > 0 && cmdMeta.ObjectID != agentInfo.AgentID {
+			return errorx.New(errno.ErrConversationPermissionCode, errorx.KV("msg", "agent not match"))
 		}
 		shortcutCmd = cmdMeta
 	}
@@ -266,7 +269,7 @@ func (c *ConversationApplicationService) checkConversation(ctx context.Context, 
 
 		conData, err := c.ConversationDomainSVC.Create(ctx, &convEntity.CreateMeta{
 			AgentID:     ar.BotID,
-			UserID:      userID,
+			CreatorID:   userID,
 			Scene:       ptr.From(ar.Scene),
 			ConnectorID: consts.CozeConnectorID,
 		})
@@ -319,6 +322,7 @@ func (c *ConversationApplicationService) buildAgentRunRequest(ctx context.Contex
 		DisplayContent:   c.buildDisplayContent(ctx, ar),
 		SpaceID:          spaceID,
 		UserID:           conv.Int64ToStr(userID),
+		CozeUID:          conversationData.CreatorID,
 		SectionID:        conversationData.SectionID,
 		PreRetrieveTools: shortcutCMDData,
 		IsDraft:          ptr.From(ar.DraftMode),
@@ -363,11 +367,12 @@ func (c *ConversationApplicationService) buildTools(ctx context.Context, tools [
 			argBytes, err := json.Marshal(arguments)
 			if err == nil {
 				ts = append(ts, &entity.Tool{
-					PluginID:  shortcutCMD.PluginID,
-					Arguments: string(argBytes),
-					ToolName:  shortcutCMD.PluginToolName,
-					ToolID:    shortcutCMD.PluginToolID,
-					Type:      agentrun.ToolType(shortcutCMD.ToolType),
+					PluginID:   shortcutCMD.PluginID,
+					Arguments:  string(argBytes),
+					ToolName:   shortcutCMD.PluginToolName,
+					ToolID:     shortcutCMD.PluginToolID,
+					Type:       agentrun.ToolType(shortcutCMD.ToolType),
+					PluginFrom: bot_common.PluginFromPtr(bot_common.PluginFrom(shortcutCMD.Source)),
 				})
 			}
 

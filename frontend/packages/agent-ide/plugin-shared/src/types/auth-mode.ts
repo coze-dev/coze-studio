@@ -24,6 +24,8 @@ export enum PluginAuthMode {
   Configured = 2,
   /** Authorization is required, but the configuration can be empty */
   Supported = 3,
+  /** Authorization is required, but the configuration can be empty */
+  NeedInstalled = 9,
 }
 
 export interface AuthMode {

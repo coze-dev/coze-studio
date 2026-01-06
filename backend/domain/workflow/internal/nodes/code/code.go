@@ -25,12 +25,11 @@ import (
 
 	"golang.org/x/exp/maps"
 
-	code2 "github.com/coze-dev/coze-studio/backend/crossdomain/impl/code"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/canvas/convert"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/coderunner"
+	"github.com/coze-dev/coze-studio/backend/infra/coderunner"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 	"github.com/coze-dev/coze-studio/backend/pkg/sonic"
 
@@ -169,7 +168,7 @@ func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, _ ...schema.Bui
 		code:         c.Code,
 		language:     c.Language,
 		outputConfig: ns.OutputTypes,
-		runner:       code2.GetCodeRunner(),
+		runner:       coderunner.GetCodeRunner(),
 		importError:  importErr,
 	}, nil
 }

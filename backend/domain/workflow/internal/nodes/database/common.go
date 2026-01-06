@@ -25,8 +25,8 @@ import (
 
 	"github.com/cloudwego/eino/compose"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/execute"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
@@ -421,9 +421,10 @@ func getExecUserID(ctx context.Context) string {
 	if execCtx == nil {
 		panic(fmt.Errorf("unable to get exe context"))
 	}
-	if execCtx.RootCtx.ExeCfg.AgentID != nil {
+	if execCtx.RootCtx.ExeCfg.ConnectorUID != "" {
 		return execCtx.RootCtx.ExeCfg.ConnectorUID
 	}
+
 	uIDStr := strconv.FormatInt(execCtx.RootCtx.ExeCfg.Operator, 10)
 	return uIDStr
 }

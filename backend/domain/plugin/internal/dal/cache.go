@@ -21,7 +21,7 @@ import (
 	"errors"
 	"time"
 
-	"github.com/coze-dev/coze-studio/backend/infra/contract/cache"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
 

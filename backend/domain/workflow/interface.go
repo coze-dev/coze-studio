@@ -19,14 +19,14 @@ package workflow
 import (
 	"context"
 
-	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/compose"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/llm/modelbuilder"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
 //go:generate mockgen -destination ../../internal/mock/domain/workflow/interface.go --package mockWorkflow -source interface.go
@@ -116,7 +116,7 @@ type Repository interface {
 	compose.CheckPointStore
 	idgen.IDGenerator
 
-	GetKnowledgeRecallChatModel() model.BaseChatModel
+	GetKnowledgeRecallChatModel() modelbuilder.BaseChatModel
 	ConversationRepository
 	WorkflowConfig
 	Suggester

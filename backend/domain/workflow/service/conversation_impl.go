@@ -23,11 +23,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/conversation/common"
 	conventity "github.com/coze-dev/coze-studio/backend/domain/conversation/conversation/entity"
 
-	workflowModel "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/taskgroup"
 
 	workflow2 "github.com/coze-dev/coze-studio/backend/api/model/workflow"
-	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/contract/conversation"
+	crossconversation "github.com/coze-dev/coze-studio/backend/crossdomain/conversation"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -363,7 +363,7 @@ func (c *conversationImpl) GetOrCreateConversation(ctx context.Context, env vo.E
 	conversationIDGenerator := workflow.ConversationIDGenerator(func(ctx context.Context, bizID int64, userID, connectorID int64) (*conventity.Conversation, error) {
 		return crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
 			AgentID:     bizID,
-			UserID:      userID,
+			CreatorID:   userID,
 			ConnectorID: connectorID,
 			Scene:       common.Scene_SceneWorkflow,
 		})
@@ -408,7 +408,7 @@ func (c *conversationImpl) UpdateConversation(ctx context.Context, env vo.Env, a
 	if existed {
 		conv, err := crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
 			AgentID:     appID,
-			UserID:      userID,
+			CreatorID:   userID,
 			ConnectorID: connectorID,
 			Scene:       common.Scene_SceneWorkflow,
 		})
@@ -436,7 +436,7 @@ func (c *conversationImpl) UpdateConversation(ctx context.Context, env vo.Env, a
 
 	conv, err := crossconversation.DefaultSVC().CreateConversation(ctx, &conventity.CreateMeta{
 		AgentID:     appID,
-		UserID:      userID,
+		CreatorID:   userID,
 		ConnectorID: connectorID,
 		Scene:       common.Scene_SceneWorkflow,
 	})

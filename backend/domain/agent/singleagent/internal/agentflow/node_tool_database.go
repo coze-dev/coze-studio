@@ -31,11 +31,11 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/database"
 	"github.com/coze-dev/coze-studio/backend/api/model/data/database/table"
-	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/contract/database"
+	crossdatabase "github.com/coze-dev/coze-studio/backend/crossdomain/database"
+	database "github.com/coze-dev/coze-studio/backend/crossdomain/database/model"
 	"github.com/coze-dev/coze-studio/backend/domain/memory/database/service"
-	"github.com/coze-dev/coze-studio/backend/infra/impl/sqlparser"
+	"github.com/coze-dev/coze-studio/backend/infra/sqlparser"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -79,7 +79,7 @@ func (d *databaseTool) Invoke(ctx context.Context, req ExecuteSQLRequest) (strin
 		tableType = table.TableType_DraftTable
 	}
 
-	tableName, err := sqlparser.NewSQLParser().GetTableName(req.SQL)
+	tableName, err := sqlparser.New().GetTableName(req.SQL)
 	if err != nil {
 		return "", err
 	}

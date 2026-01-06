@@ -20,7 +20,7 @@ import (
 	"context"
 	"sort"
 
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/message"
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/message/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -122,6 +122,10 @@ func (m *messageImpl) Delete(ctx context.Context, req *entity.DeleteMeta) error 
 
 func (m *messageImpl) GetByID(ctx context.Context, id int64) (*entity.Message, error) {
 	return m.MessageRepo.GetByID(ctx, id)
+}
+
+func (m *messageImpl) BatchCreate(ctx context.Context, req []*entity.Message) ([]*entity.Message, error) {
+	return m.MessageRepo.BatchCreate(ctx, req)
 }
 
 func (m *messageImpl) Broken(ctx context.Context, req *entity.BrokenMeta) error {

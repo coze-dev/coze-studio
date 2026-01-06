@@ -29,9 +29,9 @@ import (
 	shortcutRepo "github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/repository"
 	"github.com/coze-dev/coze-studio/backend/domain/shortcutcmd/service"
 	uploadService "github.com/coze-dev/coze-studio/backend/domain/upload/service"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/imagex"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/storage"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/imagex"
+	"github.com/coze-dev/coze-studio/backend/infra/storage"
 )
 
 type ServiceComponents struct {

@@ -18,13 +18,13 @@ package entity
 
 import (
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/connector"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/connector/model"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 )
 
 // Use composition instead of aliasing for domain entities to enhance extensibility
 type Connector struct {
-	*connector.Connector
+	*model.Connector
 }
 
 func (c *Connector) ToVO() *developer_api.ConnectorInfo {

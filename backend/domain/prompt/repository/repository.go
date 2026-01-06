@@ -23,7 +23,7 @@ import (
 
 	"github.com/coze-dev/coze-studio/backend/domain/prompt/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/prompt/internal/dal"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 )
 
 func NewPromptRepo(db *gorm.DB, generator idgen.IDGenerator) PromptRepository {

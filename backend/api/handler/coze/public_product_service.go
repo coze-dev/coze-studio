@@ -20,7 +20,9 @@ package coze
 
 import (
 	"context"
+	"fmt"
 	"strconv"
+	"strings"
 
 	product_public_api "github.com/coze-dev/coze-studio/backend/api/model/marketplace/product_public_api"
 	"github.com/coze-dev/coze-studio/backend/api/model/workflow"
@@ -40,6 +42,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/search"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/template"
+	"github.com/coze-dev/coze-studio/backend/pkg/logs"
 )
 
 // PublicGetProductList .
@@ -64,6 +67,12 @@ func PublicGetProductList(ctx context.Context, c *app.RequestContext) {
 
 	case product_common.ProductEntityType_TemplateCommon:
 		resp, err = template.ApplicationSVC.PublicGetProductList(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+	case product_common.ProductEntityType_SaasPlugin:
+		resp, err = plugin.PluginApplicationSVC.GetCozeSaasPluginList(ctx, &req)
 		if err != nil {
 			internalServerErrorResponse(ctx, c, err)
 			return
@@ -211,7 +220,7 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 			return
 		}
 
-		modelInfo := botInfo.GetData().GetBotInfo().GetModelInfo()
+		modelInfo := botInfo.GetData().GetBotInfo().ModelInfo
 		if modelInfo == nil {
 			invalidParamRequestResponse(c, "no model info found in agent")
 			return
@@ -263,6 +272,148 @@ func PublicDuplicateProduct(ctx context.Context, c *app.RequestContext) {
 				return
 			}
 		}
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicSearchProduct .
+// @router /api/marketplace/product/search [GET]
+func PublicSearchProduct(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.SearchProductRequest
+
+	var categoryIDs []int64
+	if categoryIDsStr := string(c.Query("category_ids")); categoryIDsStr != "" {
+		categoryIDs, err = handlerCategoryIDs(c, &req)
+		if err != nil {
+			invalidParamRequestResponse(c, err.Error())
+			return
+		}
+		c.Request.URI().QueryArgs().Del("category_ids")
+	}
+
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if len(categoryIDs) > 0 {
+		req.CategoryIDs = categoryIDs
+	}
+	// Call plugin application service
+	resp, err := plugin.PluginApplicationSVC.PublicSearchProduct(ctx, &req)
+	if err != nil {
+		logs.CtxErrorf(ctx, "PublicSearchProduct failed: %v", err)
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+func handlerCategoryIDs(c *app.RequestContext, req *product_public_api.SearchProductRequest) ([]int64, error) {
+	var categoryIDs []int64
+	if categoryIDsStr := string(c.Query("category_ids")); categoryIDsStr != "" {
+		categoryIDStrs := strings.Split(categoryIDsStr, ",")
+		categoryIDs = make([]int64, 0, len(categoryIDStrs))
+		for _, idStr := range categoryIDStrs {
+			idStr = strings.TrimSpace(idStr)
+			if idStr != "" {
+				// Validate that it's a valid integer
+				if categoryID, parseErr := strconv.ParseInt(idStr, 10, 64); parseErr == nil {
+					categoryIDs = append(categoryIDs, categoryID)
+				} else {
+					return nil, fmt.Errorf("invalid category_id: %s", idStr)
+				}
+			}
+		}
+	}
+	return categoryIDs, nil
+}
+
+// PublicSearchSuggest .
+// @router /api/marketplace/product/search/suggest [GET]
+func PublicSearchSuggest(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.SearchSuggestRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	// Call plugin application service
+	resp, err := plugin.PluginApplicationSVC.PublicSearchSuggest(ctx, &req)
+	if err != nil {
+		logs.CtxErrorf(ctx, "PublicSearchSuggest failed: %v", err)
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicGetProductCategoryList .
+// @router /api/marketplace/product/category/list [GET]
+func PublicGetProductCategoryList(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetProductCategoryListRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	var resp *product_public_api.GetProductCategoryListResponse
+	req.EntityType = product_common.ProductEntityType_SaasPlugin
+	switch req.GetEntityType() {
+	case product_common.ProductEntityType_SaasPlugin:
+		resp, err = plugin.PluginApplicationSVC.GetSaasProductCategoryList(ctx, &req)
+		if err != nil {
+			internalServerErrorResponse(ctx, c, err)
+			return
+		}
+	}
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicGetProductCallInfo .
+// @router /api/marketplace/product/call_info [GET]
+func PublicGetProductCallInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetProductCallInfoRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetProductCallInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PublicGetMarketPluginConfig .
+// @router /api/marketplace/product/config [GET]
+func PublicGetMarketPluginConfig(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req product_public_api.GetMarketPluginConfigRequest
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.GetMarketPluginConfig(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
 	}
 
 	c.JSON(consts.StatusOK, resp)

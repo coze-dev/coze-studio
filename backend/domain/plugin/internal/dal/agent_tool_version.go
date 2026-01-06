@@ -24,10 +24,13 @@ import (
 	"gorm.io/gen"
 	"gorm.io/gorm"
 
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	pluginModel "github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/internal/dal/query"
-	"github.com/coze-dev/coze-studio/backend/infra/contract/idgen"
+	"github.com/coze-dev/coze-studio/backend/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/slices"
 )
 
@@ -53,6 +56,8 @@ func (a agentToolVersionPO) ToDO() *entity.ToolInfo {
 		Method:    &a.Method,
 		SubURL:    &a.SubURL,
 		Operation: a.Operation,
+		Source:    ptr.Of(bot_common.PluginFrom(a.Source)),
+		AgentID:   ptr.Of(a.AgentID),
 	}
 }
 
@@ -94,7 +99,7 @@ func (at *AgentToolVersionDAO) GetWithToolName(ctx context.Context, agentID int6
 	return tool, true, nil
 }
 
-func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentTool entity.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
+func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentTool pluginModel.VersionAgentTool) (tool *entity.ToolInfo, exist bool, err error) {
 	table := at.query.AgentToolVersion
 
 	conds := []gen.Condition{
@@ -131,12 +136,12 @@ func (at *AgentToolVersionDAO) Get(ctx context.Context, agentID int64, vAgentToo
 	return tool, true, nil
 }
 
-func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTools []entity.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
+func (at *AgentToolVersionDAO) MGet(ctx context.Context, agentID int64, vAgentTools []pluginModel.VersionAgentTool) (tools []*entity.ToolInfo, err error) {
 	tools = make([]*entity.ToolInfo, 0, len(vAgentTools))
 
 	table := at.query.AgentToolVersion
 	chunks := slices.Chunks(vAgentTools, 20)
-	noVersion := make([]entity.VersionAgentTool, 0, len(vAgentTools))
+	noVersion := make([]pluginModel.VersionAgentTool, 0, len(vAgentTools))
 
 	for _, chunk := range chunks {
 		var q query.IAgentToolVersionDo
@@ -198,9 +203,9 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64, a
 			return fmt.Errorf("invalid tool version")
 		}
 
-		id, err := at.idGen.GenID(ctx)
-		if err != nil {
-			return err
+		id, mErr := at.idGen.GenID(ctx)
+		if mErr != nil {
+			return mErr
 		}
 
 		tls = append(tls, &model.AgentToolVersion{
@@ -214,6 +219,7 @@ func (at *AgentToolVersionDAO) BatchCreate(ctx context.Context, agentID int64, a
 			Method:       tl.GetMethod(),
 			ToolName:     tl.GetName(),
 			Operation:    tl.Operation,
+			Source:       int32(ptr.From(tl.Source)),
 		})
 	}
 

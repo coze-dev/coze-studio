@@ -20,26 +20,31 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 	"strconv"
 
 	"github.com/getkin/kin-openapi/openapi3"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/plugin"
+	"github.com/coze-dev/coze-studio/backend/api/model/app/bot_common"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/consts"
+	"github.com/coze-dev/coze-studio/backend/crossdomain/plugin/model"
+	"github.com/coze-dev/coze-studio/backend/domain/plugin/dto"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/repository"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
+	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
 )
 
-func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, toolIDs []int64) (err error) {
-	return p.toolRepo.BindDraftAgentTools(ctx, agentID, toolIDs)
+func (p *pluginServiceImpl) BindAgentTools(ctx context.Context, agentID int64, bindTools []*model.BindToolInfo) (err error) {
+	return p.toolRepo.BindDraftAgentTools(ctx, agentID, bindTools)
 }
 
 func (p *pluginServiceImpl) DuplicateDraftAgentTools(ctx context.Context, fromAgentID, toAgentID int64) (err error) {
 	return p.toolRepo.DuplicateDraftAgentTools(ctx, fromAgentID, toAgentID)
 }
 
-func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID int64, toolName string) (tool *entity.ToolInfo, err error) {
+func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID int64, pluginID int64, toolName string) (tool *entity.ToolInfo, err error) {
 	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, agentID, toolName)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "GetDraftAgentToolWithToolName failed, agentID=%d, toolName=%s", agentID, toolName)
@@ -48,9 +53,36 @@ func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID
 		return nil, errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	tool, exist, err = p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
-	if err != nil {
-		return nil, errorx.Wrapf(err, "GetOnlineTool failed, id=%d", draftAgentTool.ID)
+	if draftAgentTool.GetPluginFrom() == bot_common.PluginFrom_FromSaas {
+		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{draftAgentTool.PluginID})
+		if err != nil {
+			return nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginIDs=%v", []int64{draftAgentTool.PluginID})
+		}
+		if len(tools) == 0 || len(tools[draftAgentTool.PluginID]) == 0 {
+			return nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		exist = false
+		for _, saasTool := range tools[draftAgentTool.PluginID] {
+			if saasTool.ID == draftAgentTool.ID {
+				tool = saasTool
+				exist = true
+				break
+			}
+		}
+
+	} else {
+		_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, pluginID, repository.WithPluginID())
+		if err != nil {
+			return nil, errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", pluginID)
+		}
+		if !exist {
+			return nil, errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		tool, exist, err = p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "GetOnlineTool failed, id=%d", draftAgentTool.ID)
+		}
+
 	}
 	if !exist {
 		return nil, errorx.New(errno.ErrPluginRecordNotFound)
@@ -64,15 +96,36 @@ func (p *pluginServiceImpl) GetDraftAgentToolByName(ctx context.Context, agentID
 	return draftAgentTool, nil
 }
 
-func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error) {
-	toolIDs := make([]int64, 0, len(req.VersionAgentTools))
+func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *model.MGetAgentToolsRequest) (tools []*entity.ToolInfo, err error) {
+	localToolIDs := make([]int64, 0, len(req.VersionAgentTools))
+	saasToolIDs := make([]int64, 0, len(req.VersionAgentTools))
+	saasToolPluginIDs := make([]int64, 0, len(req.VersionAgentTools))
 	for _, v := range req.VersionAgentTools {
-		toolIDs = append(toolIDs, v.ToolID)
+		if ptr.From(v.PluginFrom) == bot_common.PluginFrom_FromSaas {
+			saasToolIDs = append(saasToolIDs, v.ToolID)
+			saasToolPluginIDs = append(saasToolPluginIDs, v.PluginID)
+		} else {
+			localToolIDs = append(localToolIDs, v.ToolID)
+		}
 	}
 
-	existTools, err := p.toolRepo.MGetOnlineTools(ctx, toolIDs, repository.WithToolID())
+	existTools, err := p.toolRepo.MGetOnlineTools(ctx, localToolIDs, repository.WithToolID())
 	if err != nil {
-		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", toolIDs)
+		return nil, errorx.Wrapf(err, "MGetOnlineTools failed, toolIDs=%v", localToolIDs)
+	}
+
+	if len(saasToolIDs) > 0 {
+		saasToolPluginInfos, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, saasToolPluginIDs)
+		if err != nil {
+			return nil, errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginIDs=%v", saasToolPluginIDs)
+		}
+		for _, tools := range saasToolPluginInfos {
+			for _, saasTool := range tools {
+				if slices.Contains(saasToolIDs, saasTool.ID) {
+					existTools = append(existTools, saasTool)
+				}
+			}
+		}
 	}
 
 	if len(existTools) == 0 {
@@ -100,13 +153,14 @@ func (p *pluginServiceImpl) MGetAgentTools(ctx context.Context, req *MGetAgentTo
 		return tools, nil
 	}
 
-	vTools := make([]entity.VersionAgentTool, 0, len(existMap))
+	vTools := make([]model.VersionAgentTool, 0, len(existMap))
 	for _, v := range req.VersionAgentTools {
 		if existMap[v.ToolID] {
 			vTools = append(vTools, v)
 		}
 	}
 
+	//local plugin
 	tools, err = p.toolRepo.MGetVersionAgentTool(ctx, req.AgentID, vTools)
 	if err != nil {
 		return nil, errorx.Wrapf(err, "MGetVersionAgentTool failed, agentID=%d, vTools=%v", req.AgentID, vTools)
@@ -129,14 +183,7 @@ func (p *pluginServiceImpl) PublishAgentTools(ctx context.Context, agentID int64
 	return nil
 }
 
-func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *UpdateBotDefaultParamsRequest) (err error) {
-	_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
-	if err != nil {
-		return errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
-	}
-	if !exist {
-		return errorx.New(errno.ErrPluginRecordNotFound)
-	}
+func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *dto.UpdateBotDefaultParamsRequest) (err error) {
 
 	draftAgentTool, exist, err := p.toolRepo.GetDraftAgentToolWithToolName(ctx, req.AgentID, req.ToolName)
 	if err != nil {
@@ -146,9 +193,35 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		return errorx.New(errno.ErrPluginRecordNotFound)
 	}
 
-	onlineTool, exist, err := p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
-	if err != nil {
-		return errorx.Wrapf(err, "GetOnlineTool failed, id=%d", draftAgentTool.ID)
+	var onlineTool *entity.ToolInfo
+	if draftAgentTool.GetPluginFrom() == bot_common.PluginFrom_FromSaas {
+		tools, _, err := p.toolRepo.BatchGetSaasPluginToolsInfo(ctx, []int64{draftAgentTool.PluginID})
+		if err != nil {
+			return errorx.Wrapf(err, "BatchGetSaasPluginToolsInfo failed, pluginIDs=%v", []int64{draftAgentTool.PluginID})
+		}
+		if len(tools) == 0 || len(tools[draftAgentTool.PluginID]) == 0 {
+			return errorx.New(errno.ErrPluginRecordNotFound)
+		}
+		for _, saasTool := range tools[draftAgentTool.PluginID] {
+			if saasTool.ID == draftAgentTool.ID {
+				onlineTool = saasTool
+				exist = true
+				break
+			}
+		}
+	} else {
+		_, exist, err := p.pluginRepo.GetOnlinePlugin(ctx, req.PluginID, repository.WithPluginID())
+		if err != nil {
+			return errorx.Wrapf(err, "GetOnlinePlugin failed, pluginID=%d", req.PluginID)
+		}
+		if !exist {
+			return errorx.New(errno.ErrPluginRecordNotFound)
+		}
+
+		onlineTool, exist, err = p.toolRepo.GetOnlineTool(ctx, draftAgentTool.ID)
+		if err != nil {
+			return errorx.Wrapf(err, "GetOnlineTool failed, id=%d", draftAgentTool.ID)
+		}
 	}
 	if !exist {
 		return errorx.New(errno.ErrPluginRecordNotFound)
@@ -161,17 +234,17 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 	}
 
 	if req.RequestBody != nil {
-		mType, ok := req.RequestBody.Value.Content[model.MediaTypeJson]
+		mType, ok := req.RequestBody.Value.Content[consts.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in request body", model.MediaTypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in request body", consts.MediaTypeJson)
 		}
 		if op.RequestBody == nil || op.RequestBody.Value == nil {
-			op.RequestBody = entity.DefaultOpenapi3RequestBody()
+			op.RequestBody = model.DefaultOpenapi3RequestBody()
 		}
 		if op.RequestBody.Value.Content == nil {
 			op.RequestBody.Value.Content = map[string]*openapi3.MediaType{}
 		}
-		op.RequestBody.Value.Content[model.MediaTypeJson] = mType
+		op.RequestBody.Value.Content[consts.MediaTypeJson] = mType
 	}
 
 	if req.Responses != nil {
@@ -179,18 +252,18 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 		if !ok {
 			return fmt.Errorf("the '%d' status code is not defined in responses", http.StatusOK)
 		}
-		newMIMEType, ok := newRespRef.Value.Content[model.MediaTypeJson]
+		newMIMEType, ok := newRespRef.Value.Content[consts.MediaTypeJson]
 		if !ok {
-			return fmt.Errorf("the '%s' media type is not defined in responses", model.MediaTypeJson)
+			return fmt.Errorf("the '%s' media type is not defined in responses", consts.MediaTypeJson)
 		}
 
 		if op.Responses == nil {
-			op.Responses = entity.DefaultOpenapi3Responses()
+			op.Responses = model.DefaultOpenapi3Responses()
 		}
 
 		oldRespRef, ok := op.Responses[strconv.Itoa(http.StatusOK)]
 		if !ok {
-			oldRespRef = entity.DefaultOpenapi3Responses()[strconv.Itoa(http.StatusOK)]
+			oldRespRef = model.DefaultOpenapi3Responses()[strconv.Itoa(http.StatusOK)]
 			op.Responses[strconv.Itoa(http.StatusOK)] = oldRespRef
 		}
 
@@ -198,7 +271,7 @@ func (p *pluginServiceImpl) UpdateBotDefaultParams(ctx context.Context, req *Upd
 			oldRespRef.Value.Content = map[string]*openapi3.MediaType{}
 		}
 
-		oldRespRef.Value.Content[model.MediaTypeJson] = newMIMEType
+		oldRespRef.Value.Content[consts.MediaTypeJson] = newMIMEType
 	}
 
 	updatedTool := &entity.ToolInfo{
@@ -271,12 +344,12 @@ func mergeParameters(ctx context.Context, dest, src openapi3.Parameters) (openap
 			dv.Extensions = make(map[string]any)
 		}
 
-		if v, ok := sv.Extensions[model.APISchemaExtendLocalDisable]; ok {
-			dv.Extensions[model.APISchemaExtendLocalDisable] = v
+		if v, ok := sv.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+			dv.Extensions[consts.APISchemaExtendLocalDisable] = v
 		}
 
-		if v, ok := sv.Extensions[model.APISchemaExtendVariableRef]; ok {
-			dv.Extensions[model.APISchemaExtendVariableRef] = v
+		if v, ok := sv.Extensions[consts.APISchemaExtendVariableRef]; ok {
+			dv.Extensions[consts.APISchemaExtendVariableRef] = v
 		}
 
 		dv.Default = sv.Default
@@ -311,11 +384,11 @@ func mergeMediaSchema(ctx context.Context, dest, src *openapi3.Schema) (*openapi
 	if dest.Extensions == nil {
 		dest.Extensions = map[string]any{}
 	}
-	if v, ok := src.Extensions[model.APISchemaExtendLocalDisable]; ok {
-		dest.Extensions[model.APISchemaExtendLocalDisable] = v
+	if v, ok := src.Extensions[consts.APISchemaExtendLocalDisable]; ok {
+		dest.Extensions[consts.APISchemaExtendLocalDisable] = v
 	}
-	if v, ok := src.Extensions[model.APISchemaExtendVariableRef]; ok {
-		dest.Extensions[model.APISchemaExtendVariableRef] = v
+	if v, ok := src.Extensions[consts.APISchemaExtendVariableRef]; ok {
+		dest.Extensions[consts.APISchemaExtendVariableRef] = v
 	}
 
 	dest.Default = src.Default

@@ -26,7 +26,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
-	"github.com/coze-dev/coze-studio/backend/domain/plugin/conf"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 
 	"github.com/cloudwego/hertz/pkg/app"
 	"github.com/cloudwego/hertz/pkg/protocol/consts"
@@ -60,11 +60,15 @@ func OauthAuthorizationCode(ctx context.Context, c *app.RequestContext) {
 		return
 	}
 
-	redirectURL := fmt.Sprintf("%s/information/auth/success", conf.GetServerHost())
+	host, err := config.Base().GetServerHost(ctx)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	redirectURL := fmt.Sprintf("%s/information/auth/success", host)
 	c.Redirect(consts.StatusFound, []byte(redirectURL))
 	c.Abort()
-
-	return
 }
 
 // UploadFileOpen .

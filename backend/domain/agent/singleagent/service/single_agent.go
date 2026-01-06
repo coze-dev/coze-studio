@@ -25,6 +25,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/agent/singleagent/entity"
 )
 
+//go:generate mockgen -destination ../../../../internal/mock/domain/agent/singleagent/single_agent_mock.go --package singleagent -source single_agent.go
 type SingleAgent interface {
 	// draft agent
 	CreateSingleAgentDraft(ctx context.Context, creatorID int64, draft *entity.SingleAgent) (agentID int64, err error)

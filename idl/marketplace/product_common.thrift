@@ -2,6 +2,20 @@ include "marketplace_common.thrift"
 
 namespace go marketplace.product_common
 
+enum BotModType {
+    SingleAgent = 1,
+    MultiAgent  = 2,
+}
+
+enum Component {
+    UsePlugin        = 1,
+    UseWorkFlow      = 2,
+    UseKnowledge     = 3,
+    UseVoice         = 4,
+    UseCard          = 5,
+    UseImageWorkflow = 6,
+}
+
 enum ProductEntityType {
     Bot              = 1 ,
     Plugin           = 2 ,
@@ -20,6 +34,8 @@ enum ProductEntityType {
     SubsMsgCredit    = 60, // There is only one subscription product in theory
     Common           = 99,
     Topic = 101 // Special Topics (Compatible with previous designs)
+
+    SaasPlugin = 901 // Saas plugin,the plugins from coze saas
 }
 
 enum SortType {

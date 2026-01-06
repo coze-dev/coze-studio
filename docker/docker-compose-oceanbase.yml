@@ -38,7 +38,7 @@ services:
       - coze-network
 
   redis:
-    image: bitnami/redis:8.0
+    image: bitnamilegacy/redis:8.0
     container_name: coze-redis
     restart: always
     user: root
@@ -70,7 +70,7 @@ services:
     networks:
       - coze-network
   elasticsearch:
-    image: bitnami/elasticsearch:8.18.0
+    image: bitnamilegacy/elasticsearch:8.18.0
     container_name: coze-elasticsearch
     restart: always
     user: root
@@ -208,7 +208,7 @@ services:
       - coze-network
 
   etcd:
-    image: bitnami/etcd:3.5
+    image: bitnamilegacy/etcd:3.5
     container_name: coze-etcd
     user: root
     restart: always

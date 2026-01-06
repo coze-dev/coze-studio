@@ -16,8 +16,8 @@
 
 package entity
 
-import "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+import model "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
 
-type AgentEvent = singleagent.AgentEvent
+type AgentEvent = model.AgentEvent
 
-type InterruptEventType = singleagent.InterruptEventType
+type InterruptEventType = model.InterruptEventType

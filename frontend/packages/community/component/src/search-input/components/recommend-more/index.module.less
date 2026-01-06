@@ -1,0 +1,36 @@
+/* stylelint-disable-next-line selector-class-pattern -- 历史代码，为避免引入新BUG暂不修复 */
+.moreContainer {
+  cursor: pointer;
+
+  overflow: hidden;
+  display: flex;
+
+  width: 100%;
+  height: 40px;
+  padding: 10px 16px;
+
+  @apply coz-fg-primary;
+
+  .text {
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 20px;
+    text-align: left;
+
+    @apply coz-fg-primary;
+  }
+
+  /* stylelint-disable-next-line selector-class-pattern -- 历史代码，为避免引入新BUG暂不修复 */
+  &:hover {
+    @apply coz-fg-hglt;
+
+    .text {
+      @apply coz-fg-hglt;
+    }
+  }
+}
+
+.arrow {
+  position: relative;
+  top: 2px;
+}

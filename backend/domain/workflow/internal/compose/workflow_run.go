@@ -23,10 +23,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/coze-dev/coze-studio/backend/types/consts"
+
 	einoCompose "github.com/cloudwego/eino/compose"
 	"github.com/cloudwego/eino/schema"
 
-	model "github.com/coze-dev/coze-studio/backend/api/model/crossdomain/workflow"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	wf "github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
@@ -257,7 +259,7 @@ func (r *WorkflowRunner) Prepare(ctx context.Context) (
 
 	if interruptEvent == nil {
 		var logID string
-		logID, _ = ctx.Value("log-id").(string)
+		logID, _ = ctx.Value(consts.CtxLogIDKey).(string)
 
 		wfExec := &entity.WorkflowExecution{
 			ID:                     executeID,

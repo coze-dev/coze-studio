@@ -22,6 +22,8 @@ import (
 	"io"
 	"log"
 	"os"
+
+	"github.com/coze-dev/coze-studio/backend/types/consts"
 )
 
 var logger FullLogger = &defaultLogger{
@@ -192,7 +194,7 @@ func (ll *defaultLogger) logfCtx(ctx context.Context, lv Level, format *string, 
 		return
 	}
 	msg := lv.toString()
-	logID := ctx.Value("log-id")
+	logID := ctx.Value(consts.CtxLogIDKey)
 	if logID != nil {
 		msg += fmt.Sprintf("[log-id: %v] ", logID)
 	}

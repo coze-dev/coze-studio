@@ -25,7 +25,6 @@ const TableNameConversation = "conversation"
 // Conversation conversation info record
 type Conversation struct {
 	ID          int64  `gorm:"column:id;primaryKey;autoIncrement:true;comment:id" json:"id"`                                          // id
-	Name        string `gorm:"column:name;not null;comment:conversation name" json:"name"`                                            // conversation name
 	ConnectorID int64  `gorm:"column:connector_id;not null;comment:Publish Connector ID" json:"connector_id"`                         // Publish Connector ID
 	AgentID     int64  `gorm:"column:agent_id;not null;comment:agent_id" json:"agent_id"`                                             // agent_id
 	Scene       int32  `gorm:"column:scene;not null;comment:conversation scene" json:"scene"`                                         // conversation scene
@@ -35,6 +34,8 @@ type Conversation struct {
 	Status      int32  `gorm:"column:status;not null;default:1;comment:status: 1-normal 2-deleted" json:"status"`                     // status: 1-normal 2-deleted
 	CreatedAt   int64  `gorm:"column:created_at;not null;autoCreateTime:milli;comment:Create Time in Milliseconds" json:"created_at"` // Create Time in Milliseconds
 	UpdatedAt   int64  `gorm:"column:updated_at;not null;autoUpdateTime:milli;comment:Update Time in Milliseconds" json:"updated_at"` // Update Time in Milliseconds
+	Name        string `gorm:"column:name;not null;comment:conversation name" json:"name"`                                            // conversation name
+	UserID      string `gorm:"column:user_id;not null;comment:user id" json:"user_id"`                                                // user id
 }
 
 // TableName Conversation's table name

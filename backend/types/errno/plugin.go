@@ -40,6 +40,13 @@ const (
 	ErrPluginOAuthFailed                  = 109000013
 	ErrPluginIDExist                      = 109000014
 	ErrToolIDExist                        = 109000015
+
+	ErrPluginCallCozeAPIFailed                    = 109000016
+	ErrPluginParseCozeAPIResponseFailed           = 109000017
+	ErrPluginCallCozeSearchAPIFailed              = 109000018
+	ErrPluginParseCozeSearchAPIResponseFailed     = 109000019
+	ErrPluginCallCozeCategoriesAPIFailed          = 109000020
+	ErrPluginParseCozeCategoriesAPIResponseFailed = 109000021
 )
 
 const (
@@ -133,6 +140,42 @@ func init() {
 	code.Register(
 		ErrPluginOAuthFailed,
 		fmt.Sprintf("oauth failed : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginCallCozeAPIFailed,
+		fmt.Sprintf("failed to call coze.cn API : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginParseCozeAPIResponseFailed,
+		fmt.Sprintf("failed to parse coze.cn API response : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginCallCozeSearchAPIFailed,
+		fmt.Sprintf("failed to call coze.cn search API : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginParseCozeSearchAPIResponseFailed,
+		fmt.Sprintf("failed to parse coze.cn search API response : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginCallCozeCategoriesAPIFailed,
+		fmt.Sprintf("failed to call coze.cn categories API : {%s}", PluginMsgKey),
+		code.WithAffectStability(false),
+	)
+
+	code.Register(
+		ErrPluginParseCozeCategoriesAPIResponseFailed,
+		fmt.Sprintf("failed to parse coze.cn categories API response : {%s}", PluginMsgKey),
 		code.WithAffectStability(false),
 	)
 }

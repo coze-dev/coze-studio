@@ -17,17 +17,19 @@
 package entity
 
 import (
-	"github.com/coze-dev/coze-studio/backend/api/model/crossdomain/singleagent"
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/agent/model"
 )
 
 // Use composition instead of aliasing for domain entities to enhance extensibility
 type SingleAgent struct {
-	*singleagent.SingleAgent
+	*model.SingleAgent
 }
 
-type AgentIdentity = singleagent.AgentIdentity
+type AgentIdentity = model.AgentIdentity
 
-type ExecuteRequest = singleagent.ExecuteRequest
+type ExecuteRequest = model.ExecuteRequest
+
+type InterruptInfo = model.InterruptInfo
 
 type DuplicateInfo struct {
 	UserID     int64

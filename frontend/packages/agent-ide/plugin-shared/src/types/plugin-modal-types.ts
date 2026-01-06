@@ -22,6 +22,7 @@ import {
   type SortType,
 } from '@coze-arch/bot-api/product_api';
 import { type PluginInfoForPlayground } from '@coze-arch/bot-api/plugin_develop';
+import { type PluginFrom } from '@coze-arch/bot-api/playground_api';
 import { type OrderBy, type PluginApi } from '@coze-arch/bot-api/developer_api';
 
 import { type MineActiveEnum } from '../constants/plugin-modal-constants';
@@ -97,6 +98,7 @@ export interface PluginModalModeProps {
       project_id?: string;
       version_name?: string;
       version_ts?: string;
+      plugin_from?: PluginFrom;
     },
   ) => void;
   showButton?: boolean;

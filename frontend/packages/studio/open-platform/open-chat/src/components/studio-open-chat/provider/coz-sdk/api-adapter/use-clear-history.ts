@@ -20,6 +20,7 @@ import { type SceneConfig } from '@coze-common/chat-core';
 
 import { OpenApiSource } from '@/types/open';
 import { useChatAppProps } from '@/components/studio-open-chat/store';
+import { useUserInfo } from '@/components/studio-open-chat/hooks';
 
 import { type ChatProviderFunc } from '../type';
 export const useClearHistoryAdapter = ({
@@ -29,6 +30,7 @@ export const useClearHistoryAdapter = ({
 }): SceneConfig => {
   const { chatConfig } = useChatAppProps();
   const refConnectorId = useRef('');
+  const userInfo = useUserInfo();
   refConnectorId.current = chatConfig?.auth?.connectorId || '';
 
   return useMemo(() => {
@@ -60,7 +62,11 @@ export const useClearHistoryAdapter = ({
             const botId = requestConfig.data.bot_id;
             return {
               ...requestConfig,
-              data: { bot_id: botId, connector_id: refConnectorId.current },
+              data: {
+                bot_id: botId,
+                connector_id: refConnectorId.current,
+                user_id: IS_OPEN_SOURCE ? userInfo?.id : undefined,
+              },
             };
           },
         ],

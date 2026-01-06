@@ -29,6 +29,17 @@ func Transform[A, B any](src []A, fn func(A) B) []B {
 	return dst
 }
 
+func Contains[T comparable](src []T, item T) bool {
+	if src == nil {
+		return false
+	}
+	for _, s := range src {
+		if s == item {
+			return true
+		}
+	}
+	return false
+}
 func TransformWithErrorCheck[A, B any](src []A, fn func(A) (B, error)) ([]B, error) {
 	if src == nil {
 		return nil, nil

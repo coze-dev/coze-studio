@@ -27,8 +27,8 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/internal/dal/model"
 	"github.com/coze-dev/coze-studio/backend/domain/conversation/agentrun/repository"
-	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/idgen"
-	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/contract/orm"
+	mock "github.com/coze-dev/coze-studio/backend/internal/mock/infra/idgen"
+	"github.com/coze-dev/coze-studio/backend/internal/mock/infra/orm"
 )
 
 func TestAgentRun(t *testing.T) {

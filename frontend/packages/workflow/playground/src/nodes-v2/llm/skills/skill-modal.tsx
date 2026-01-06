@@ -102,6 +102,7 @@ export const SkillModal: FC<SkillModalProps> = props => {
           api_name: val.name as string,
           plugin_version: val.version_ts || '',
           is_draft: isDraftByProjectId(val.project_id),
+          plugin_from: val.plugin_from,
         },
       ]);
     },
