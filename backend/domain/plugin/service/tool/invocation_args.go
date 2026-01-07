@@ -199,16 +199,48 @@ func (i *InvocationArgs) groupedRequestArgs(ctx context.Context, args map[string
 	bodyArgs := map[string]any{}
 
 	for k, v := range args {
-		if _, ok := groupedKeySchema.HeaderKeys[k]; ok {
-			headerArgs[k] = v
-		} else if _, ok := groupedKeySchema.PathKeys[k]; ok {
-			pathArgs[k] = v
-		} else if _, ok := groupedKeySchema.QueryKeys[k]; ok {
-			queryArgs[k] = v
-		} else if _, ok := groupedKeySchema.CookieKeys[k]; ok {
-			cookieArgs[k] = v
-		} else if _, ok := groupedKeySchema.BodyKeys[k]; ok {
-			bodyArgs[k] = v
+		// Support location-name format (e.g., "query-id", "body-name")
+		// This allows same parameter names in different locations
+		var location, paramName string
+		if idx := strings.Index(k, "-"); idx > 0 {
+			location = k[:idx]
+			paramName = k[idx+1:]
+		} else {
+			paramName = k
+		}
+
+		// If location prefix exists, use it directly
+		if location != "" {
+			switch location {
+			case openapi3.ParameterInHeader:
+				headerArgs[paramName] = v
+				continue
+			case openapi3.ParameterInPath:
+				pathArgs[paramName] = v
+				continue
+			case openapi3.ParameterInQuery:
+				queryArgs[paramName] = v
+				continue
+			case openapi3.ParameterInCookie:
+				cookieArgs[paramName] = v
+				continue
+			case string(consts.ParamInBody):
+				bodyArgs[paramName] = v
+				continue
+			}
+		}
+
+		// Fallback: match by parameter name in schema (for backward compatibility)
+		if _, ok := groupedKeySchema.HeaderKeys[paramName]; ok {
+			headerArgs[paramName] = v
+		} else if _, ok := groupedKeySchema.PathKeys[paramName]; ok {
+			pathArgs[paramName] = v
+		} else if _, ok := groupedKeySchema.QueryKeys[paramName]; ok {
+			queryArgs[paramName] = v
+		} else if _, ok := groupedKeySchema.CookieKeys[paramName]; ok {
+			cookieArgs[paramName] = v
+		} else if _, ok := groupedKeySchema.BodyKeys[paramName]; ok {
+			bodyArgs[paramName] = v
 		} else {
 			logs.CtxWarnf(ctx, "[groupedRequestArgs] unsupported parameter key '%s' in api schema", k)
 		}

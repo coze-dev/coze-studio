@@ -229,7 +229,7 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 		}
 
 		if _, ok := result[paramVal.Name]; ok {
-			logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramVal.Name)
+			logs.CtxWarnf(ctx, "duplicate parameter name '%s' in location '%s', skipping (first occurrence kept)", paramVal.Name, paramVal.In)
 			continue
 		}
 
@@ -260,7 +260,7 @@ func (op *Openapi3Operation) ToEinoSchemaParameterInfo(ctx context.Context) (map
 			}
 
 			if _, ok := result[paramName]; ok {
-				logs.CtxWarnf(ctx, "duplicate parameter name '%s'", paramName)
+				logs.CtxWarnf(ctx, "duplicate parameter name '%s' in request body, skipping (first occurrence kept)", paramName)
 				continue
 			}
 

@@ -366,7 +366,7 @@ export const handleIsShowDelete = (
   return isShowDelete(data, targetKey);
 };
 
-// Check if the same name exists
+// Check if the same name exists in the same location
 export const checkSameName = (
   data: Array<APIParameter>,
   targetKey: string,
@@ -374,8 +374,10 @@ export const checkSameName = (
 ): boolean | undefined => {
   for (const item of data) {
     if (item[ROWKEY] === targetKey) {
+      // Filter by both name and location to allow same names in different locations
       const items = data.filter(
-        (dataItem: APIParameter) => dataItem.name === val,
+        (dataItem: APIParameter) =>
+          dataItem.name === val && dataItem.location === item.location,
       );
       return items.length > 1;
     } else if (
