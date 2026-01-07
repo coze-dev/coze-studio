@@ -126,6 +126,7 @@ func (o *ppocrImpl) makeRequest(reqBody map[string]interface{}) ([]string, error
 		return nil, errorx.WrapByCode(err, errno.ErrKnowledgeNonRetryableCode)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Client-Platform", "coze")
 
 	resp, err := o.config.Client.Do(req)
 	if err != nil {
