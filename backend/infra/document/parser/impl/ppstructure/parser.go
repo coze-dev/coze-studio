@@ -124,6 +124,7 @@ func (p *ppstructureParser) Parse(ctx context.Context, reader io.Reader, opts ..
 		return nil, fmt.Errorf("[Parse] failed to create a new request, %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Client-Platform", "coze")
 
 	resp, err := p.apiConfig.Client.Do(req)
 	if err != nil {
