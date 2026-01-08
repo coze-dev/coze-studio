@@ -88,7 +88,7 @@ func (t *TosTableParser) GetTableDataBySheetIDx(ctx context.Context, rMeta entit
 		return nil, nil, errorx.New(errno.ErrMemoryDatabaseSheetIndexExceed)
 	}
 
-	// get execl range: sheetIdx + headerIdx + startLineIdx
+	// get excel range: sheetIdx + headerIdx + startLineIdx
 	if rMeta.StartLineIdx > int64(meta.SheetsRowCount[rMeta.SheetId]) {
 		return nil, nil, errorx.New(errno.ErrMemoryDatabaseSheetIndexExceed)
 	}
