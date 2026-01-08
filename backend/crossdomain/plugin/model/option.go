@@ -70,7 +70,7 @@ func WithAutoGenRespSchema() ExecuteToolOpt {
 	}
 }
 
-func WithPluginHTTPHeader(conversationID int64) ExecuteToolOpt {
+func WithConversationID(conversationID int64) ExecuteToolOpt {
 	return func(o *ExecuteToolOption) {
 		o.ConversationID = conversationID
 	}
