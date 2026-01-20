@@ -137,6 +137,14 @@ func (u *UserApplicationService) PassportWebEmailLoginPost(ctx context.Context, 
 func (u *UserApplicationService) PassportWebEmailPasswordResetGet(ctx context.Context, req *passport.PassportWebEmailPasswordResetGetRequest) (
 	resp *passport.PassportWebEmailPasswordResetGetResponse, err error,
 ) {
+	session := ctxutil.GetUserSessionFromCtx(ctx)
+	if session == nil {
+		return nil, errorx.New(errno.ErrUserAuthenticationFailed, errorx.KV("reason", "session data is nil"))
+	}
+	if !strings.EqualFold(session.UserEmail, req.GetEmail()) {
+		return nil, errorx.New(errno.ErrUserPermissionCode, errorx.KV("msg", "email mismatch"))
+	}
+
 	err = u.DomainSVC.ResetPassword(ctx, req.GetEmail(), req.GetPassword())
 	if err != nil {
 		return nil, err
