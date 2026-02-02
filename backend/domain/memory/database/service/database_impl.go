@@ -1224,6 +1224,11 @@ func (d databaseService) executeSelectSQL(ctx context.Context, req *ExecuteSQLRe
 			physicalField := order.Field
 			if mapped, exists := fieldNameToPhysical[order.Field]; exists {
 				physicalField = mapped
+			} else {
+				// AlterID
+				if _, exists := fieldMap[order.Field]; exists {
+					physicalField = fieldMap[order.Field].PhysicalName
+				}
 			}
 
 			orderBy = append(orderBy, &rdb.OrderBy{
