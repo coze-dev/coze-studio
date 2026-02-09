@@ -2210,6 +2210,10 @@ func validateCustomSQL(sql string) error {
 		return fmt.Errorf("UNION queries are not allowed")
 	}
 
+	if strings.Contains(upperSQL, "JOIN") {
+		return fmt.Errorf("JOIN queries are not allowed")
+	}
+
 	dangerousTables := []string{"INFORMATION_SCHEMA", "MYSQL.", "PERFORMANCE_SCHEMA", "SYS."}
 	for _, t := range dangerousTables {
 		if strings.Contains(upperSQL, t) {
