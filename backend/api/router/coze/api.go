@@ -278,7 +278,7 @@ func Register(r *server.Hertz) {
 						_password := _email.Group("/password", _passwordMw()...)
 						{
 							_reset := _password.Group("/reset", _resetMw()...)
-							_reset.GET("/", append(_passportwebemailpasswordresetgetMw(), coze.PassportWebEmailPasswordResetGet)...)
+							_reset.POST("/", append(_passportwebemailpasswordresetgetMw(), coze.PassportWebEmailPasswordResetPost)...)
 						}
 					}
 					{
