@@ -21,6 +21,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -887,6 +888,8 @@ const (
 )
 
 func jsonParse(ctx context.Context, data string, schema_ map[string]*vo.TypeInfo) (map[string]any, error) {
+	re := regexp.MustCompile(`<(think)>(\W|\w)*</think>`)
+	data = re.ReplaceAllString(data, "")
 	data = nodes.ExtractJSONString(data)
 
 	var result map[string]any
