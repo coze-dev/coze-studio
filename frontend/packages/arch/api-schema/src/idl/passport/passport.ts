@@ -132,11 +132,11 @@ export const PassportWebEmailLoginPost = /*#__PURE__*/createAPI<PassportWebEmail
 /** Reset password via email */
 export const PassportWebEmailPasswordResetGet = /*#__PURE__*/createAPI<PassportWebEmailPasswordResetGetRequest, PassportWebEmailPasswordResetGetResponse>({
   "url": "/api/passport/web/email/password/reset/",
-  "method": "GET",
+  "method": "POST",
   "name": "PassportWebEmailPasswordResetGet",
   "reqType": "PassportWebEmailPasswordResetGetRequest",
   "reqMapping": {
-    "query": ["password", "code", "email"]
+    "body": ["password", "code", "email"]
   },
   "resType": "PassportWebEmailPasswordResetGetResponse",
   "schemaRoot": "api://schemas/idl_passport_passport",
