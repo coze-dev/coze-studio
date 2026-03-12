@@ -18,6 +18,7 @@ package middleware
 
 import (
 	"context"
+	"os"
 	"strings"
 
 	"github.com/cloudwego/hertz/pkg/app"
@@ -92,9 +93,11 @@ func AdminAuthMW() app.HandlerFunc {
 		}
 
 		if baseConf.AdminEmails == "" {
-			logs.CtxWarnf(c, "[AdminAuthMW] admin emails is empty")
-			ctx.Next(c)
-			return
+			baseConf.AdminEmails = os.Getenv(consts.AllowRegistrationEmail)
+		}
+
+		if baseConf.AdminEmails == "" {
+			logs.CtxWarnf(c, "[AdminAuthMW] admin emails is empty, you can set it by env %s", consts.AllowRegistrationEmail)
 		}
 
 		adminEmails := strings.Split(baseConf.AdminEmails, ",")
