@@ -722,6 +722,111 @@
                     }
                 ]
             }
+        },
+        "Avian": {
+            "default": {
+                "display_info": {
+                    "output_tokens": 65536,
+                    "max_tokens": 163840
+                },
+                "capability": {
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false
+                },
+                "parameters": [
+                    {
+                        "name": "temperature",
+                        "label": "Temperature",
+                        "desc": "**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "2",
+                        "precision": 2,
+                        "default_val": {
+                            "default_val": "0.7",
+                            "creative": "1.0",
+                            "balance": "0.7",
+                            "precise": "0.1"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "65536",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    },
+                    {
+                        "name": "top_p",
+                        "label": "Top P",
+                        "desc": "**Top p**:\n\n- Similar to temperature, but do not adjust both at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "1",
+                        "precision": 2,
+                        "default_val": {
+                            "default_val": "0.9"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "frequency_penalty",
+                        "label": "Frequency penalty",
+                        "desc": "**Frequency penalty**:\n\n- A positive value will penalize new tokens based on their existing frequency in the generated text so far, decreasing the model's likelihood to repeat the same line verbatim.",
+                        "type": 1,
+                        "min": "-2",
+                        "max": "2",
+                        "precision": 2,
+                        "default_val": {
+                            "default_val": "0"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "presence_penalty",
+                        "label": "Presence penalty",
+                        "desc": "**Presence penalty**:\n\n- A positive value will penalize new tokens based on whether they appear in the generated text so far, increasing the model's likelihood to talk about new topics.",
+                        "type": 1,
+                        "min": "-2",
+                        "max": "2",
+                        "precision": 2,
+                        "default_val": {
+                            "default_val": "0"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    }
+                ]
+            }
         }
     }
 }
