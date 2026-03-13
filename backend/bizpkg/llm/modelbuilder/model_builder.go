@@ -47,6 +47,7 @@ var modelClass2NewModelBuilder = map[developer_api.ModelClass]func(*config.Model
 	developer_api.ModelClass_Gemini:   newGeminiModelBuilder,
 	developer_api.ModelClass_Llama:    newOllamaModelBuilder,
 	developer_api.ModelClass_QWen:     newQwenModelBuilder,
+	developer_api.ModelClass_N1N:      newOpenaiModelBuilder,
 }
 
 func NewModelBuilder(modelClass developer_api.ModelClass, cfg *config.Model) (Service, error) {
