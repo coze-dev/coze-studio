@@ -2013,9 +2013,9 @@ func (p *PassportWebEmailLoginPostResponse) String() string {
 }
 
 type PassportWebEmailPasswordResetGetRequest struct {
-	Password string `thrift:"password,1" form:"password" json:"password" query:"password"`
-	Code     string `thrift:"code,2" form:"code" json:"code" query:"code"`
-	Email    string `thrift:"email,3" form:"email" json:"email" query:"email"`
+	Password string `thrift:"password,1" form:"password" json:"password"`
+	Code     string `thrift:"code,2" form:"code" json:"code"`
+	Email    string `thrift:"email,3" form:"email" json:"email"`
 }
 
 func NewPassportWebEmailPasswordResetGetRequest() *PassportWebEmailPasswordResetGetRequest {
