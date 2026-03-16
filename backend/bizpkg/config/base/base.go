@@ -66,7 +66,7 @@ func (c *BaseConfig) SaveBaseConfig(ctx context.Context, v *config.BasicConfigur
 func getBasicConfigurationFromOldConfig() *config.BasicConfiguration {
 	disableUserRegistration := ternary.IFElse(os.Getenv(consts.DisableUserRegistration) == "true", true, false)
 	runnerTypeStr := os.Getenv(consts.CodeRunnerType)
-	codeRunnerType := ternary.IFElse(runnerTypeStr == "sandbox", config.CodeRunnerType_Sandbox, config.CodeRunnerType_Local)
+	codeRunnerType := ternary.IFElse(runnerTypeStr == "sandbox" || runnerTypeStr == "", config.CodeRunnerType_Sandbox, config.CodeRunnerType_Local)
 	timeoutSecondsStr := os.Getenv(consts.CodeRunnerTimeoutSeconds)
 	timeoutSeconds := conv.StrToFloat64D(timeoutSecondsStr, 60)
 	memoryLimitMbStr := os.Getenv(consts.CodeRunnerMemoryLimitMB)
