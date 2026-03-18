@@ -1,10 +1,10 @@
 id: 64010
-name: MiniMax-M2.5
+name: MiniMax-M2.7
 icon_uri: default_icon/minimax.png
 icon_url: ""
 description:
-    zh: MiniMax M2.5 模型，拥有 204K 上下文窗口，支持复杂推理和多轮对话
-    en: MiniMax M2.5 model with 204K context window. Peak Performance. Ultimate Value. Master the Complex.
+    zh: MiniMax M2.7 模型，拥有 204K 上下文窗口，支持深度推理和多轮对话
+    en: MiniMax M2.7 model with 204K context window. Advanced reasoning with thinking capabilities.
 default_parameters:
     - name: temperature
       label:
@@ -122,7 +122,7 @@ meta:
         base_url: "https://api.minimax.io/v1"
         api_key: ""
         timeout: 0s
-        model: "MiniMax-M2.5"
+        model: "MiniMax-M2.7"
         temperature: 1.0
         frequency_penalty: 0
         presence_penalty: 0

@@ -5500,7 +5500,7 @@
     "MiniMax": {
       "default": {
         "display_info": {
-          "output_tokens": 4096,
+          "output_tokens": 16384,
           "max_tokens": 204800
         },
         "capability": {
@@ -5605,6 +5605,110 @@
       "MiniMax-M2.5-highspeed": {
         "display_info": {
           "output_tokens": 4096,
+          "max_tokens": 204800
+        },
+        "capability": {
+          "function_call": true,
+          "image_understanding": false,
+          "video_understanding": false,
+          "audio_understanding": false,
+          "support_multi_modal": false
+        },
+        "parameters": [
+          {
+            "name": "temperature",
+            "label": "生成随机性",
+            "desc": "- **temperature**: 调高温度会使得模型的输出更多样性和创新性，反之，降低温度会使输出内容更加遵循指令要求但减少多样性。建议不要与\"Top p\"同时调整。注意：MiniMax 不支持 temperature 为 0。",
+            "type": 1,
+            "min": "0.01",
+            "max": "1",
+            "precision": 2,
+            "default_val": {
+              "default_val": "1.0",
+              "creative": "1.0",
+              "balance": "0.8",
+              "precise": "0.3"
+            },
+            "options": [],
+            "param_class": {
+              "class_id": 1,
+              "label": "生成多样性"
+            }
+          },
+          {
+            "name": "max_tokens",
+            "label": "最大回复长度",
+            "desc": "控制模型输出的Tokens 长度上限。通常 100 Tokens 约等于 150 个中文汉字。",
+            "type": 2,
+            "min": "5",
+            "max": "4096",
+            "precision": 0,
+            "default_val": {
+              "default_val": "4096"
+            },
+            "options": [],
+            "param_class": {
+              "class_id": 2,
+              "label": "输入及输出设置"
+            }
+          }
+        ]
+      },
+      "MiniMax-M2.7": {
+        "display_info": {
+          "output_tokens": 16384,
+          "max_tokens": 204800
+        },
+        "capability": {
+          "function_call": true,
+          "image_understanding": false,
+          "video_understanding": false,
+          "audio_understanding": false,
+          "support_multi_modal": false
+        },
+        "parameters": [
+          {
+            "name": "temperature",
+            "label": "生成随机性",
+            "desc": "- **temperature**: 调高温度会使得模型的输出更多样性和创新性，反之，降低温度会使输出内容更加遵循指令要求但减少多样性。建议不要与\"Top p\"同时调整。注意：MiniMax 不支持 temperature 为 0。",
+            "type": 1,
+            "min": "0.01",
+            "max": "1",
+            "precision": 2,
+            "default_val": {
+              "default_val": "1.0",
+              "creative": "1.0",
+              "balance": "0.8",
+              "precise": "0.3"
+            },
+            "options": [],
+            "param_class": {
+              "class_id": 1,
+              "label": "生成多样性"
+            }
+          },
+          {
+            "name": "max_tokens",
+            "label": "最大回复长度",
+            "desc": "控制模型输出的Tokens 长度上限。通常 100 Tokens 约等于 150 个中文汉字。",
+            "type": 2,
+            "min": "5",
+            "max": "4096",
+            "precision": 0,
+            "default_val": {
+              "default_val": "4096"
+            },
+            "options": [],
+            "param_class": {
+              "class_id": 2,
+              "label": "输入及输出设置"
+            }
+          }
+        ]
+      },
+      "MiniMax-M2.7-highspeed": {
+        "display_info": {
+          "output_tokens": 16384,
           "max_tokens": 204800
         },
         "capability": {

@@ -265,7 +265,7 @@ func TestMinimaxIntegration(t *testing.T) {
 		t.Skip("MINIMAX_API_KEY not set, skipping integration test")
 	}
 
-	models := []string{"MiniMax-M2.5", "MiniMax-M2.5-highspeed"}
+	models := []string{"MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed"}
 	for _, modelName := range models {
 		t.Run(modelName, func(t *testing.T) {
 			cfg := &config.Model{
