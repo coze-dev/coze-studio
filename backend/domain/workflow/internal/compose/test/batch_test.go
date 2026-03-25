@@ -551,11 +551,11 @@ func TestBatch_Nested_Interrupt(t *testing.T) {
 				},
 			},
 			{
-				Path: compose.FieldPath{batch.ConcurrentSizeKey},
+				Path:   compose.FieldPath{batch.ConcurrentSizeKey},
 				Source: vo.FieldSource{Val: int64(2)},
 			},
 			{
-				Path: compose.FieldPath{batch.MaxBatchSizeKey},
+				Path:   compose.FieldPath{batch.MaxBatchSizeKey},
 				Source: vo.FieldSource{Val: int64(2)},
 			},
 		},
