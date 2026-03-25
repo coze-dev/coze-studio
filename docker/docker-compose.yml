@@ -26,6 +26,19 @@ services:
         /usr/local/bin/docker-entrypoint.sh mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci &
         MYSQL_PID=$$!
 
+        mkdir -p /var/run/mysqld 2>/dev/null || true
+        for i in $(seq 1 30); do
+          if [ -S /var/lib/mysql/mysql.sock ]; then
+            break
+          fi
+          sleep 1
+        done
+
+        if [ -S /var/lib/mysql/mysql.sock ] && [ ! -e /var/run/mysqld/mysqld.sock ]; then
+          ln -sf /var/lib/mysql/mysql.sock /var/run/mysqld/mysqld.sock 2>/dev/null || true
+          echo 'Socket symlink ensured'
+        fi
+
         echo 'Waiting for MySQL to start...'
         until mysqladmin ping -h localhost -u root -p$${MYSQL_ROOT_PASSWORD} --silent 2>/dev/null; do
           echo 'MySQL is starting...'
