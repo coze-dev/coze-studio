@@ -470,11 +470,12 @@ func TestBatch_Nested_Interrupt(t *testing.T) {
 		Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (map[string]any, error) {
 			mu.Lock()
 			callCount++
+			currentCount := callCount
 			mu.Unlock()
 
 			if in["resume_data"] == "a" || in["resume_data"] == "b" {
 				interruptEvent := &entity.InterruptEvent{
-					ID:            int64(callCount), // dummy ID
+					ID:            int64(currentCount),
 					NodeKey:       "lambda",
 					EventType:     entity.InterruptEventInput,
 					InterruptData: "{}",
