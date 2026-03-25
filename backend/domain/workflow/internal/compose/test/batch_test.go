@@ -361,6 +361,7 @@ func TestBatch(t *testing.T) {
 
 type mockRepo struct {
 	workflow.Repository
+	mu     sync.Mutex
 	events []*entity.InterruptEvent
 	cp     map[string][]byte
 }
@@ -370,10 +371,14 @@ func (m *mockRepo) GenID(ctx context.Context) (int64, error) {
 }
 
 func (m *mockRepo) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	return m.events, nil
 }
 
 func (m *mockRepo) SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	m.events = append(m.events, events...)
 	return nil
 }
@@ -399,6 +404,8 @@ func (m *mockRepo) UpdateNodeExecution(ctx context.Context, exe *entity.NodeExec
 }
 
 func (m *mockRepo) GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if len(m.events) > 0 {
 		return m.events[0], true, nil
 	}
@@ -406,6 +413,8 @@ func (m *mockRepo) GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*
 }
 
 func (m *mockRepo) PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if len(m.events) > 0 {
 		e := m.events[0]
 		m.events = m.events[1:]
@@ -415,6 +424,8 @@ func (m *mockRepo) PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*
 }
 
 func (m *mockRepo) UpdateFirstInterruptEvent(ctx context.Context, wfExeID int64, event *entity.InterruptEvent) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if len(m.events) > 0 {
 		m.events[0] = event
 	}
@@ -426,6 +437,8 @@ func (m *mockRepo) GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bo
 }
 
 func (m *mockRepo) Get(ctx context.Context, executeID string) ([]byte, bool, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if m.cp == nil {
 		return nil, false, nil
 	}
@@ -434,6 +447,8 @@ func (m *mockRepo) Get(ctx context.Context, executeID string) ([]byte, bool, err
 }
 
 func (m *mockRepo) Set(ctx context.Context, executeID string, cp []byte) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
 	if m.cp == nil {
 		m.cp = make(map[string][]byte)
 	}
