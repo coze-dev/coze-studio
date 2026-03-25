@@ -102,6 +102,18 @@ func (c *NodeOptions) GetOptsForIndexed(index int) []compose.Option {
 	return c.Nested.optsForIndexed[index]
 }
 
+func (c *NodeOptions) HasIndexedOpts() bool {
+	return c.Nested != nil && len(c.Nested.optsForIndexed) > 0
+}
+
+func (c *NodeOptions) HasOptsForIndex(index int) bool {
+	if c.Nested == nil || c.Nested.optsForIndexed == nil {
+		return false
+	}
+	_, ok := c.Nested.optsForIndexed[index]
+	return ok
+}
+
 // WrapImplSpecificOptFn is the option to wrap the implementation specific option function.
 func WrapImplSpecificOptFn[T any](optFn func(*T)) NodeOption {
 	return NodeOption{

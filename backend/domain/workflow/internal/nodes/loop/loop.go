@@ -341,13 +341,18 @@ func (l *Loop) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Node
 		}
 
 		if existingCState != nil {
-			if existingCState.Index2Done[i] == true {
+			if existingCState.Index2Done[i] {
 				continue
 			}
 
 			if existingCState.Index2InterruptInfo[i] != nil {
 				if len(options.GetResumeIndexes()) > 0 {
 					if _, ok := options.GetResumeIndexes()[i]; !ok {
+						// previously interrupted, but not resumed this time, should not happen
+						panic("impossible")
+					}
+				} else if options.HasIndexedOpts() {
+					if !options.HasOptsForIndex(i) {
 						// previously interrupted, but not resumed this time, should not happen
 						panic("impossible")
 					}

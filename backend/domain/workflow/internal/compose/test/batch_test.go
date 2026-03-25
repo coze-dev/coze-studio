@@ -19,19 +19,28 @@ package test
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 
+	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
+	model "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/batch"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/subworkflow"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/schema"
 )
+
+type interruptibleConfig struct{}
+
+func (c *interruptibleConfig) RequireCheckpoint() bool { return true }
 
 func TestBatch(t *testing.T) {
 	ctx := context.Background()
@@ -58,7 +67,7 @@ func TestBatch(t *testing.T) {
 	lambdaNode1 := &schema.NodeSchema{
 		Key:    "lambda",
 		Type:   entity.NodeTypeLambda,
-		Lambda: compose.InvokableLambda(lambda1),
+		Lambda: compose.InvokableLambda(lambda1, compose.WithLambdaType(string(entity.NodeTypeLambda))),
 		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"index"},
@@ -92,7 +101,7 @@ func TestBatch(t *testing.T) {
 	lambdaNode2 := &schema.NodeSchema{
 		Key:    "index",
 		Type:   entity.NodeTypeLambda,
-		Lambda: compose.InvokableLambda(lambda2),
+		Lambda: compose.InvokableLambda(lambda2, compose.WithLambdaType(string(entity.NodeTypeLambda))),
 		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"index"},
@@ -109,7 +118,7 @@ func TestBatch(t *testing.T) {
 	lambdaNode3 := &schema.NodeSchema{
 		Key:    "consumer",
 		Type:   entity.NodeTypeLambda,
-		Lambda: compose.InvokableLambda(lambda3),
+		Lambda: compose.InvokableLambda(lambda3, compose.WithLambdaType(string(entity.NodeTypeLambda))),
 		InputSources: []*vo.FieldInfo{
 			{
 				Path: compose.FieldPath{"consumer_1"},
@@ -251,7 +260,7 @@ func TestBatch(t *testing.T) {
 	parentLambdaNode := &schema.NodeSchema{
 		Key:    "parent_predecessor_1",
 		Type:   entity.NodeTypeLambda,
-		Lambda: compose.InvokableLambda(parentLambda),
+		Lambda: compose.InvokableLambda(parentLambda, compose.WithLambdaType(string(entity.NodeTypeLambda))),
 	}
 
 	ws := &schema.WorkflowSchema{
@@ -348,4 +357,303 @@ func TestBatch(t *testing.T) {
 		"array_2": []any{int64(1), int64(2), int64(3), int64(4), int64(5), int64(6), int64(7)},
 	})
 	assert.ErrorContains(t, err, "is too large")
+}
+
+type mockRepo struct {
+	workflow.Repository
+	events []*entity.InterruptEvent
+	cp     map[string][]byte
+}
+
+func (m *mockRepo) GenID(ctx context.Context) (int64, error) {
+	return 10001, nil
+}
+
+func (m *mockRepo) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
+	return m.events, nil
+}
+
+func (m *mockRepo) SaveInterruptEvents(ctx context.Context, wfExeID int64, events []*entity.InterruptEvent) error {
+	m.events = append(m.events, events...)
+	return nil
+}
+
+func (m *mockRepo) CreateWorkflowExecution(ctx context.Context, exe *entity.WorkflowExecution) error {
+	return nil
+}
+
+func (m *mockRepo) UpdateWorkflowExecution(ctx context.Context, exe *entity.WorkflowExecution, statuses []entity.WorkflowExecuteStatus) (int64, entity.WorkflowExecuteStatus, error) {
+	return 1, 0, nil
+}
+
+func (m *mockRepo) TryLockWorkflowExecution(ctx context.Context, executeID int64, eventID int64) (bool, entity.WorkflowExecuteStatus, error) {
+	return true, 0, nil
+}
+
+func (m *mockRepo) CreateNodeExecution(ctx context.Context, exe *entity.NodeExecution) error {
+	return nil
+}
+
+func (m *mockRepo) UpdateNodeExecution(ctx context.Context, exe *entity.NodeExecution) error {
+	return nil
+}
+
+func (m *mockRepo) GetFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
+	if len(m.events) > 0 {
+		return m.events[0], true, nil
+	}
+	return nil, false, nil
+}
+
+func (m *mockRepo) PopFirstInterruptEvent(ctx context.Context, wfExeID int64) (*entity.InterruptEvent, bool, error) {
+	if len(m.events) > 0 {
+		e := m.events[0]
+		m.events = m.events[1:]
+		return e, true, nil
+	}
+	return nil, false, nil
+}
+
+func (m *mockRepo) UpdateFirstInterruptEvent(ctx context.Context, wfExeID int64, event *entity.InterruptEvent) error {
+	if len(m.events) > 0 {
+		m.events[0] = event
+	}
+	return nil
+}
+
+func (m *mockRepo) GetWorkflowCancelFlag(ctx context.Context, wfExeID int64) (bool, error) {
+	return false, nil
+}
+
+func (m *mockRepo) Get(ctx context.Context, executeID string) ([]byte, bool, error) {
+	if m.cp == nil {
+		return nil, false, nil
+	}
+	cp, ok := m.cp[executeID]
+	return cp, ok, nil
+}
+
+func (m *mockRepo) Set(ctx context.Context, executeID string, cp []byte) error {
+	if m.cp == nil {
+		m.cp = make(map[string][]byte)
+	}
+	m.cp[executeID] = cp
+	return nil
+}
+
+func TestBatch_Nested_Interrupt(t *testing.T) {
+	ctx := context.Background()
+
+	var callCount int
+	var mu sync.Mutex
+
+	// The innermost node that will interrupt inside the SubWorkflow
+	lambdaNode := &schema.NodeSchema{
+		Key:     "lambda",
+		Type:    entity.NodeTypeLambda,
+		Configs: &interruptibleConfig{},
+		Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (map[string]any, error) {
+			mu.Lock()
+			callCount++
+			mu.Unlock()
+
+			if in["resume_data"] == "a" || in["resume_data"] == "b" {
+				interruptEvent := &entity.InterruptEvent{
+					ID:            int64(callCount), // dummy ID
+					NodeKey:       "lambda",
+					EventType:     entity.InterruptEventInput,
+					InterruptData: "{}",
+				}
+				return nil, compose.NewInterruptAndRerunErr(interruptEvent)
+			}
+			return map[string]any{"output": "ok"}, nil
+		}, compose.WithLambdaType(string(entity.NodeTypeLambda))),
+		InputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"resume_data"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: entity.EntryNodeKey,
+						FromPath:    compose.FieldPath{"resume_data"},
+					},
+				},
+			},
+		},
+	}
+
+	subWfSchema := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			{Key: entity.EntryNodeKey, Type: entity.NodeTypeEntry, Configs: &entry.Config{}},
+			lambdaNode,
+			{Key: entity.ExitNodeKey, Type: entity.NodeTypeExit, Configs: &exit.Config{TerminatePlan: vo.ReturnVariables},
+				InputSources: []*vo.FieldInfo{
+					{
+						Path: compose.FieldPath{"output"},
+						Source: vo.FieldSource{
+							Ref: &vo.Reference{
+								FromNodeKey: "lambda",
+								FromPath:    compose.FieldPath{"output"},
+							},
+						},
+					},
+				},
+			},
+		},
+		Connections: []*schema.Connection{
+			{FromNode: entity.EntryNodeKey, ToNode: "lambda"},
+			{FromNode: "lambda", ToNode: entity.ExitNodeKey},
+		},
+	}
+	subWfSchema.Init()
+
+	subWfNode := &schema.NodeSchema{
+		Key:               "sub_workflow",
+		Type:              entity.NodeTypeSubWorkflow,
+		Configs:           &subworkflow.Config{WorkflowID: 100},
+		SubWorkflowSchema: subWfSchema,
+		SubWorkflowBasic:  &entity.WorkflowBasic{ID: 100, Version: "1"},
+		InputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"resume_data"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: "outer_batch",
+						FromPath:    compose.FieldPath{"outer_array"},
+					},
+				},
+			},
+		},
+		OutputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"inner_output"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: entity.ExitNodeKey, // SubWorkflow's exit node
+						FromPath:    compose.FieldPath{"output"},
+					},
+				},
+			},
+		},
+	}
+
+	outerBatch := &schema.NodeSchema{
+		Key:     "outer_batch",
+		Type:    entity.NodeTypeBatch,
+		Configs: &batch.Config{},
+		InputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"outer_array"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: entity.EntryNodeKey,
+						FromPath:    compose.FieldPath{"outer_array"},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{batch.ConcurrentSizeKey},
+				Source: vo.FieldSource{Val: int64(2)},
+			},
+			{
+				Path: compose.FieldPath{batch.MaxBatchSizeKey},
+				Source: vo.FieldSource{Val: int64(2)},
+			},
+		},
+		InputTypes: map[string]*vo.TypeInfo{
+			"outer_array": {
+				Type:         vo.DataTypeArray,
+				ElemTypeInfo: &vo.TypeInfo{Type: vo.DataTypeString},
+			},
+		},
+		OutputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"final_output"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: "sub_workflow",
+						FromPath:    compose.FieldPath{"output"},
+					},
+				},
+			},
+		},
+	}
+
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			{Key: entity.EntryNodeKey, Type: entity.NodeTypeEntry, Configs: &entry.Config{}},
+			outerBatch,
+			subWfNode,
+			{Key: entity.ExitNodeKey, Type: entity.NodeTypeExit, Configs: &exit.Config{TerminatePlan: vo.ReturnVariables}},
+		},
+		Hierarchy: map[vo.NodeKey]vo.NodeKey{
+			"sub_workflow": "outer_batch",
+		},
+		Connections: []*schema.Connection{
+			{FromNode: entity.EntryNodeKey, ToNode: "outer_batch"},
+			{FromNode: "outer_batch", ToNode: "sub_workflow"},
+			{FromNode: "sub_workflow", ToNode: "outer_batch"},
+			{FromNode: "outer_batch", ToNode: entity.ExitNodeKey},
+		},
+	}
+
+	ws.Init()
+	basic := &entity.WorkflowBasic{ID: 1, Version: "1"}
+
+	// MOCK Repository globally
+	myRepo := &mockRepo{}
+	mockPatch := mockey.Mock(workflow.GetRepository).To(func() workflow.Repository {
+		return myRepo
+	}).Build()
+	defer mockPatch.UnPatch()
+
+	// 1. Initial run: 2 items in outer array, both should interrupt
+	initialRunner := compose2.NewWorkflowRunner(basic, ws, model.ExecuteConfig{})
+	initialCtx, executeID, opts, _, err := initialRunner.Prepare(ctx)
+	assert.NoError(t, err)
+
+	wf, err := compose2.NewWorkflow(initialCtx, ws, compose2.WithIDAsName(basic.ID))
+	assert.NoError(t, err)
+
+	_, err = wf.Runner.Invoke(initialCtx, map[string]any{
+		"outer_array": []any{"a", "b"},
+		"resume_data": nil,
+	}, opts...)
+
+	t.Logf("Initial run error: %v", err)
+	assert.Error(t, err)
+	if callCount != 2 {
+		t.Fatalf("Expected callCount 2, got %d. Error was: %v", callCount, err)
+	}
+
+	// 2. Resume the first event returned by GetFirstInterruptEvent
+	repo := workflow.GetRepository()
+	event0, _, _ := repo.GetFirstInterruptEvent(ctx, executeID)
+	assert.NotNil(t, event0, "Event 0 should not be nil")
+	if event0 == nil {
+		t.Fatal("Event0 is nil, cannot proceed")
+	}
+
+	// Create a new runner for resumption
+	resumeRunner := compose2.NewWorkflowRunner(basic, ws, model.ExecuteConfig{},
+		compose2.WithResumeReq(&entity.ResumeRequest{
+			ExecuteID:  executeID,
+			EventID:    event0.ID,
+			ResumeData: "resumed",
+		}))
+
+	resumeCtx, _, resumeOpts, _, err := resumeRunner.Prepare(ctx)
+	assert.NoError(t, err)
+
+	// Invoke resumption
+	_, err = wf.Runner.Invoke(resumeCtx, map[string]any{
+		"outer_array": []any{nil, nil},
+		"resume_data": "resumed",
+	}, resumeOpts...)
+
+	assert.Error(t, err) // Should still be interrupted at index 1
+
+	// CRITICAL ASSERTION:
+	// If the fix works, callCount should be 3 (2 from initial + 1 from resumed index 0).
+	// If index 1 was NOT skipped (the bug), callCount would be 4.
+	assert.Equal(t, 3, callCount, "Index 1 of the outer batch should have been skipped")
 }

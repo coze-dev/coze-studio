@@ -289,13 +289,18 @@ func (b *Batch) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Nod
 		defer wg.Done()
 
 		if existingCState != nil {
-			if existingCState.Index2Done[i] == true {
+			if existingCState.Index2Done[i] {
 				return
 			}
 
 			if existingCState.Index2InterruptInfo[i] != nil {
 				if len(options.GetResumeIndexes()) > 0 {
 					if _, ok := options.GetResumeIndexes()[i]; !ok {
+						// previously interrupted, but not resumed this time, skip
+						return
+					}
+				} else if options.HasIndexedOpts() {
+					if !options.HasOptsForIndex(i) {
 						// previously interrupted, but not resumed this time, skip
 						return
 					}

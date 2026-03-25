@@ -18,14 +18,17 @@ package test
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
+	"github.com/bytedance/mockey"
 	"github.com/cloudwego/eino/compose"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	compose2 "github.com/coze-dev/coze-studio/backend/domain/workflow/internal/compose"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/entry"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/exit"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/internal/nodes/loop"
@@ -45,7 +48,7 @@ func TestLoop(t *testing.T) {
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
-			}),
+			}, compose.WithLambdaType(string(entity.NodeTypeLambda))),
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"index"},
@@ -178,7 +181,7 @@ func TestLoop(t *testing.T) {
 			Lambda: compose.InvokableLambda(func(ctx context.Context, in map[string]any) (out map[string]any, err error) {
 				index := in["index"].(int64)
 				return map[string]any{"output": index}, nil
-			}),
+			}, compose.WithLambdaType(string(entity.NodeTypeLambda))),
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"index"},
@@ -301,7 +304,7 @@ func TestLoop(t *testing.T) {
 				item2 := in["item2"].(string)
 				count := in["count"].(int)
 				return map[string]any{"total": count + len(item1) + len(item2)}, nil
-			}),
+			}, compose.WithLambdaType(string(entity.NodeTypeLambda))),
 			InputSources: []*vo.FieldInfo{
 				{
 					Path: compose.FieldPath{"item1"},
@@ -496,4 +499,233 @@ func TestLoop(t *testing.T) {
 			"output": 6,
 		}, out)
 	})
+}
+
+type dummyNodeWOptLoop struct {
+	callCount *int
+}
+
+func (d *dummyNodeWOptLoop) Invoke(ctx context.Context, in map[string]any, opts ...nodes.NodeOption) (out map[string]any, err error) {
+	*d.callCount++
+	index := in["index"].(int64)
+	if in["resume_data"] == nil {
+		return nil, compose.NewInterruptAndRerunErr(fmt.Errorf("interrupt at %d", index))
+	}
+
+	out = make(map[string]any)
+	out["output_1"] = fmt.Sprintf("resumed_%d_%s", index, in["resume_data"])
+	return out, nil
+}
+
+type dummyConfigLoop struct {
+	callCount *int
+}
+
+func (c *dummyConfigLoop) Build(ctx context.Context, ns *schema.NodeSchema, opts ...schema.BuildOption) (any, error) {
+	return &dummyNodeWOptLoop{callCount: c.callCount}, nil
+}
+
+func (c *dummyConfigLoop) Adapt(ctx context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
+	return nil, nil
+}
+
+func (c *dummyConfigLoop) RequireCheckpoint() bool { return true }
+
+func TestLoop_Interrupt(t *testing.T) {
+	ctx := context.Background()
+
+	var callCount int
+
+	lambdaNode1 := &schema.NodeSchema{
+		Key:     "lambda",
+		Type:    entity.NodeTypePlugin, // use a node type that uses Configs.Build
+		Configs: &dummyConfigLoop{callCount: &callCount},
+		InputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"index"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: "loop_node_key",
+						FromPath:    compose.FieldPath{"index"},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"resume_data"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: entity.EntryNodeKey,
+						FromPath:    compose.FieldPath{"resume_data"},
+					},
+				},
+			},
+		},
+	}
+
+	entryN := &schema.NodeSchema{
+		Key:     entity.EntryNodeKey,
+		Type:    entity.NodeTypeEntry,
+		Configs: &entry.Config{},
+	}
+
+	ns := &schema.NodeSchema{
+		Key:  "loop_node_key",
+		Type: entity.NodeTypeLoop,
+		Configs: &loop.Config{
+			LoopType: loop.ByIteration,
+		},
+		InputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{loop.Count},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: entryN.Key,
+						FromPath:    compose.FieldPath{"count"},
+					},
+				},
+			},
+			{
+				Path: compose.FieldPath{"resume_data"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: entryN.Key,
+						FromPath:    compose.FieldPath{"resume_data"},
+					},
+				},
+			},
+		},
+		OutputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"assembled_output_1"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: "lambda",
+						FromPath:    compose.FieldPath{"output_1"},
+					},
+				},
+			},
+		},
+	}
+
+	continueNode := &schema.NodeSchema{
+		Key:     "continueNode",
+		Type:    entity.NodeTypeContinue,
+		Configs: &_continue.Config{},
+	}
+
+	exitN := &schema.NodeSchema{
+		Key:  entity.ExitNodeKey,
+		Type: entity.NodeTypeExit,
+		Configs: &exit.Config{
+			TerminatePlan: vo.ReturnVariables,
+		},
+		InputSources: []*vo.FieldInfo{
+			{
+				Path: compose.FieldPath{"assembled_output_1"},
+				Source: vo.FieldSource{
+					Ref: &vo.Reference{
+						FromNodeKey: "loop_node_key",
+						FromPath:    compose.FieldPath{"assembled_output_1"},
+					},
+				},
+			},
+		},
+	}
+
+	ws := &schema.WorkflowSchema{
+		Nodes: []*schema.NodeSchema{
+			entryN,
+			ns,
+			exitN,
+			lambdaNode1,
+			continueNode,
+		},
+		Hierarchy: map[vo.NodeKey]vo.NodeKey{
+			"lambda":       "loop_node_key",
+			"continueNode": "loop_node_key",
+		},
+		Connections: []*schema.Connection{
+			{
+				FromNode: entity.EntryNodeKey,
+				ToNode:   "loop_node_key",
+			},
+			{
+				FromNode: "loop_node_key",
+				ToNode:   "lambda",
+			},
+			{
+				FromNode: "lambda",
+				ToNode:   "continueNode",
+			},
+			{
+				FromNode: "continueNode",
+				ToNode:   "loop_node_key",
+			},
+			{
+				FromNode: "loop_node_key",
+				ToNode:   entity.ExitNodeKey,
+			},
+		},
+	}
+
+	ws.Init()
+
+	wf, err := compose2.NewWorkflow(ctx, ws)
+	assert.NoError(t, err)
+
+	// Initial run
+	_, err = wf.Runner.Invoke(ctx, map[string]any{
+		"count":       int64(2),
+		"resume_data": nil,
+	})
+
+	assert.Error(t, err)
+	info, existed := compose.ExtractInterruptInfo(err)
+	assert.True(t, existed)
+	assert.NotNil(t, info)
+	assert.Equal(t, 1, callCount) // Loop runs sequentially, so it interrupts at index 0 first.
+
+	// Resume index 0
+	stateModifier0 := func(ctx context.Context, path compose.NodePath, state any) error {
+		return nil
+	}
+
+	innerOpt := compose.WithLambdaOption(
+		nodes.WithResumeIndex(0, stateModifier0),
+	).DesignateNode("lambda")
+
+	stateOpt := compose2.WrapOptWithIndex(innerOpt, "loop_node_key", 0)
+
+	// Mock the state retrieval in Loop node to simulate existing interruption at index 0
+	mockPatch := mockey.Mock((*compose2.State).GetNestedWorkflowState).To(func(s *compose2.State, key vo.NodeKey) (*nodes.NestedWorkflowState, bool, error) {
+		if key == "loop_node_key" {
+			return &nodes.NestedWorkflowState{
+				Index2Done: make(map[int]bool),
+				Index2InterruptInfo: map[int]*compose.InterruptInfo{
+					0: {}, // Index 0 was interrupted
+				},
+				FullOutput: map[string]any{
+					"assembled_output_1": []any{},
+				},
+				IntermediateVars: make(map[string]any),
+			}, true, nil
+		}
+		return nil, false, nil
+	}).Build()
+	defer mockPatch.UnPatch()
+
+	// Resume with modified input for index 0
+	_, err = wf.Runner.Invoke(ctx, map[string]any{
+		"count":       int64(2),
+		"resume_data": "data_for_0",
+	}, stateOpt)
+
+	// Index 0 resumes and succeeds. Index 1 runs fresh and also succeeds (resume_data is non-nil).
+	assert.NoError(t, err)
+
+	// callCount should be 3:
+	// 1 from initial run (index 0 interrupted)
+	// 1 from resuming index 0
+	// 1 from running index 1 fresh
+	assert.Equal(t, 3, callCount)
 }
