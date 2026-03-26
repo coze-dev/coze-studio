@@ -136,7 +136,7 @@ func (p *pluginInvokableTool) InvokableRun(ctx context.Context, argumentsInJSON 
 		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
 		model.WithToolVersion(p.toolInfo.GetVersion()),
 		model.WithProjectInfo(p.projectInfo),
-		model.WithPluginHTTPHeader(p.conversationID),
+		model.WithConversationID(p.conversationID),
 	}
 
 	resp, err := crossplugin.DefaultSVC().ExecuteTool(ctx, req, opts...)
