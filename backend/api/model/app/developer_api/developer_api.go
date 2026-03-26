@@ -935,6 +935,7 @@ const (
 	// name: Llama
 	ModelClass_Llama   ModelClass = 20
 	ModelClass_StepFun ModelClass = 23
+	ModelClass_Avian   ModelClass = 24
 	ModelClass_Other   ModelClass = 999
 )
 
@@ -980,6 +981,8 @@ func (p ModelClass) String() string {
 		return "Llama"
 	case ModelClass_StepFun:
 		return "StepFun"
+	case ModelClass_Avian:
+		return "Avian"
 	case ModelClass_Other:
 		return "Other"
 	}
@@ -1028,6 +1031,8 @@ func ModelClassFromString(s string) (ModelClass, error) {
 		return ModelClass_Llama, nil
 	case "StepFun":
 		return ModelClass_StepFun, nil
+	case "Avian":
+		return ModelClass_Avian, nil
 	case "Other":
 		return ModelClass_Other, nil
 	}
