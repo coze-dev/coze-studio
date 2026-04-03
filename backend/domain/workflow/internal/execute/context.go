@@ -345,10 +345,10 @@ func PrepareNodeExeCtx(ctx context.Context, nodeKey vo.NodeKey, nodeName string,
 	if c.NodeCtx == nil { // node within top level workflow, also not under composite node
 		newC.NodeCtx.NodePath = []string{string(nodeKey)}
 	} else {
-		if c.BatchInfo == nil {
-			newC.NodeCtx.NodePath = append(c.NodeCtx.NodePath, string(nodeKey))
-		} else {
+		if c.BatchInfo != nil && c.BatchInfo.CompositeNodeKey == c.NodeCtx.NodeKey {
 			newC.NodeCtx.NodePath = append(c.NodeCtx.NodePath, InterruptEventIndexPrefix+strconv.Itoa(c.BatchInfo.Index), string(nodeKey))
+		} else {
+			newC.NodeCtx.NodePath = append(c.NodeCtx.NodePath, string(nodeKey))
 		}
 	}
 

@@ -362,12 +362,22 @@ func TestBatch(t *testing.T) {
 type mockRepo struct {
 	workflow.Repository
 	mu     sync.Mutex
+	nextID int64
 	events []*entity.InterruptEvent
 	cp     map[string][]byte
 }
 
 func (m *mockRepo) GenID(ctx context.Context) (int64, error) {
-	return 10001, nil
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.nextID++
+	return m.nextID, nil
+}
+
+func (m *mockRepo) getNextID() int64 {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.nextID
 }
 
 func (m *mockRepo) ListInterruptEvents(ctx context.Context, wfExeID int64) ([]*entity.InterruptEvent, error) {
