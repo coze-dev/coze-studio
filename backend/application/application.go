@@ -280,6 +280,7 @@ func (b *basicServices) toPluginServiceComponents() *plugin.ServiceComponents {
 		EventBus: b.eventbus.resourceEventBus,
 		OSS:      b.infra.OSS,
 		UserSVC:  b.userSVC.DomainSVC,
+		CacheCli: b.infra.CacheCli,
 	}
 }
 

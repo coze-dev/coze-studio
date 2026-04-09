@@ -54,3 +54,8 @@ func (o *OAuthCache) Set(ctx context.Context, key string, value string, expirati
 
 	return cmd.Err()
 }
+
+func (o *OAuthCache) Del(ctx context.Context, key string) error {
+	cmd := o.cacheCli.Del(ctx, key)
+	return cmd.Err()
+}

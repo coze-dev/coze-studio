@@ -126,7 +126,12 @@ func (p *pluginServiceImpl) acquireAccessTokenIfNeed(ctx context.Context, req *m
 			return "", "", err
 		}
 
-		authURL, err = genAuthURL(ctx, authorizationCode)
+		nonce, err := p.generateOAuthNonce(ctx, authorizationCode.Meta.UserID)
+		if err != nil {
+			return "", "", err
+		}
+
+		authURL, err = genAuthURL(ctx, authorizationCode, nonce)
 		if err != nil {
 			return "", "", err
 		}

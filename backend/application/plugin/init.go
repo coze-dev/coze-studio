@@ -28,6 +28,7 @@ import (
 	"github.com/coze-dev/coze-studio/backend/domain/plugin/service"
 	search "github.com/coze-dev/coze-studio/backend/domain/search/service"
 	user "github.com/coze-dev/coze-studio/backend/domain/user/service"
+	"github.com/coze-dev/coze-studio/backend/infra/cache"
 	"github.com/coze-dev/coze-studio/backend/infra/idgen"
 	"github.com/coze-dev/coze-studio/backend/infra/storage"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
@@ -39,6 +40,7 @@ type ServiceComponents struct {
 	IDGen    idgen.IDGenerator
 	DB       *gorm.DB
 	OSS      storage.Storage
+	CacheCli cache.Cmdable
 	EventBus search.ResourceEventBus
 	UserSVC  user.User
 }
@@ -68,6 +70,7 @@ func InitService(ctx context.Context, components *ServiceComponents) (*PluginApp
 		IDGen:      components.IDGen,
 		DB:         components.DB,
 		OSS:        components.OSS,
+		CacheCli:   components.CacheCli,
 		PluginRepo: pluginRepo,
 		ToolRepo:   toolRepo,
 		OAuthRepo:  oauthRepo,

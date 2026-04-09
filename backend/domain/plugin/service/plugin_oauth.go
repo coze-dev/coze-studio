@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"golang.org/x/oauth2"
 
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
@@ -46,6 +47,11 @@ var (
 	initOnce           = sync.Once{}
 	lastActiveInterval = 15 * 24 * time.Hour
 	failedCache        = sync.Map{}
+)
+
+const (
+	oauthNonceKeyPrefix = "oauth_state_nonce:"
+	oauthNonceTTL       = 10 * time.Minute
 )
 
 func (p *pluginServiceImpl) processOAuthAccessToken(ctx context.Context) {
@@ -275,6 +281,10 @@ func isValidAuthCodeConfig(o, n *model.OAuthAuthorizationCodeConfig, expireAt, l
 }
 
 func (p *pluginServiceImpl) OAuthCode(ctx context.Context, code string, state *dto.OAuthState) (err error) {
+	if err = p.validateOAuthNonce(ctx, state); err != nil {
+		return err
+	}
+
 	var plugin *entity.PluginInfo
 	if state.IsDraft {
 		plugin, err = p.GetDraftPlugin(ctx, state.PluginID)
@@ -430,7 +440,12 @@ func (p *pluginServiceImpl) getPluginOAuthStatus(ctx context.Context, userID int
 
 	needAuth = accessToken == ""
 
-	authURL, err = genAuthURL(ctx, authCode)
+	nonce, err := p.generateOAuthNonce(ctx, authCode.Meta.UserID)
+	if err != nil {
+		return false, "", err
+	}
+
+	authURL, err = genAuthURL(ctx, authCode, nonce)
 	if err != nil {
 		return false, "", err
 	}
@@ -438,7 +453,7 @@ func (p *pluginServiceImpl) getPluginOAuthStatus(ctx context.Context, userID int
 	return needAuth, authURL, nil
 }
 
-func genAuthURL(ctx context.Context, info *dto.AuthorizationCodeInfo) (string, error) {
+func genAuthURL(ctx context.Context, info *dto.AuthorizationCodeInfo, nonce string) (string, error) {
 	config, err := getStanderOAuthConfig(ctx, info.Config)
 	if err != nil {
 		return "", err
@@ -449,6 +464,7 @@ func genAuthURL(ctx context.Context, info *dto.AuthorizationCodeInfo) (string, e
 		UserID:     info.Meta.UserID,
 		PluginID:   info.Meta.PluginID,
 		IsDraft:    info.Meta.IsDraft,
+		Nonce:      nonce,
 	}
 	stateStr, err := json.Marshal(state)
 	if err != nil {
@@ -468,6 +484,38 @@ func genAuthURL(ctx context.Context, info *dto.AuthorizationCodeInfo) (string, e
 	authURL := config.AuthCodeURL(encryptState)
 
 	return authURL, nil
+}
+
+func (p *pluginServiceImpl) generateOAuthNonce(ctx context.Context, userID string) (string, error) {
+	nonce := uuid.New().String()
+	key := oauthNonceKeyPrefix + nonce
+	ttl := oauthNonceTTL
+	err := p.oauthCache.Set(ctx, key, userID, &ttl)
+	if err != nil {
+		return "", fmt.Errorf("save oauth nonce failed, err=%v", err)
+	}
+	return nonce, nil
+}
+
+func (p *pluginServiceImpl) validateOAuthNonce(ctx context.Context, state *dto.OAuthState) error {
+	if state.Nonce == "" {
+		return errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid or expired state"))
+	}
+
+	key := oauthNonceKeyPrefix + state.Nonce
+	storedUserID, exist, err := p.oauthCache.Get(ctx, key)
+	if err != nil {
+		return errorx.Wrapf(err, "get oauth nonce failed")
+	}
+	if !exist {
+		return errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid or expired state"))
+	}
+	if storedUserID != state.UserID {
+		return errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "invalid state"))
+	}
+
+	_ = p.oauthCache.Del(ctx, key)
+	return nil
 }
 
 func getStanderOAuthConfig(ctx context.Context, authConfig *model.OAuthAuthorizationCodeConfig) (*oauth2.Config, error) {

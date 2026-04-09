@@ -63,6 +63,7 @@ type OAuthState struct {
 	UserID     string        `json:"user_id"`
 	PluginID   int64         `json:"plugin_id"`
 	IsDraft    bool          `json:"is_draft"`
+	Nonce      string        `json:"nonce"`
 }
 
 type AuthorizationCodeMeta struct {
