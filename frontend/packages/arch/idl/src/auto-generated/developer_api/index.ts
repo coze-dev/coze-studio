@@ -4112,5 +4112,29 @@ export default class DeveloperApiService<T> {
     };
     return this.request({ url, method, data }, options);
   }
+
+  /** POST /api/plugin/oauth/confirm */
+  PluginOauthConfirm(
+    req?: developer_api.PluginOauthConfirmReq,
+    options?: T,
+  ): Promise<developer_api.PluginOauthConfirmResp> {
+    const _req = req || {};
+    const url = this.genBaseURL('/api/plugin/oauth/confirm');
+    const method = 'POST';
+    const data = { confirm_code: _req['confirm_code'] };
+    return this.request({ url, method, data }, options);
+  }
+
+  /** GET /api/plugin/oauth/get_oauth_info */
+  PluginOauthInfo(
+    req?: developer_api.PluginOauthInfoReq,
+    options?: T,
+  ): Promise<developer_api.PluginOauthInfoResp> {
+    const _req = req || {};
+    const url = this.genBaseURL('/api/plugin/oauth/get_oauth_info');
+    const method = 'GET';
+    const params = { confirm_code: _req['confirm_code'] };
+    return this.request({ url, method, params }, options);
+  }
 }
 /* eslint-enable */

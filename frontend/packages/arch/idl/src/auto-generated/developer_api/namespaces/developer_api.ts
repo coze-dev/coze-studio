@@ -6876,4 +6876,33 @@ export interface WorkInfo {
   /** workflow模式编排数据 */
   layout_info?: LayoutInfo;
 }
+
+export interface PluginOauthConfirmReq {
+  confirm_code?: string;
+}
+
+export interface PluginOauthConfirmResp {
+  code?: Int64;
+  msg?: string;
+}
+
+export interface PluginOauthInfo {
+  connector_id?: string;
+  plugin_id?: string;
+  plugin_name?: string;
+  plugin_icon?: string;
+  username?: string;
+  plugin_url?: string;
+  connector_name?: string;
+}
+
+export interface PluginOauthInfoReq {
+  confirm_code?: string;
+}
+
+export interface PluginOauthInfoResp {
+  code?: Int64;
+  msg?: string;
+  data?: PluginOauthInfo;
+}
 /* eslint-enable */
