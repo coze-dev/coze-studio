@@ -347,6 +347,11 @@ func Register(r *server.Hertz) {
 		{
 			_plugin := _api.Group("/plugin", _pluginMw()...)
 			_plugin.POST("/get_oauth_schema", append(_getoauthschemaMw(), coze.GetOAuthSchema)...)
+			{
+				_oauth0 := _plugin.Group("/oauth", _oauth0Mw()...)
+				_oauth0.POST("/confirm", append(_pluginoauthconfirmMw(), coze.PluginOauthConfirm)...)
+				_oauth0.GET("/get_oauth_info", append(_pluginoauthinfoMw(), coze.PluginOauthInfo)...)
+			}
 		}
 		{
 			_plugin_api := _api.Group("/plugin_api", _plugin_apiMw()...)
@@ -383,6 +388,13 @@ func Register(r *server.Hertz) {
 			_plugin_api.POST("/update_api", append(_updateapiMw(), coze.UpdateAPI)...)
 			_plugin_api.POST("/update_bot_default_params", append(_updatebotdefaultparamsMw(), coze.UpdateBotDefaultParams)...)
 			_plugin_api.POST("/update_plugin_meta", append(_updatepluginmetaMw(), coze.UpdatePluginMeta)...)
+		}
+		{
+			_plugin_oauth := _api.Group("/plugin_oauth", _plugin_oauthMw()...)
+			{
+				_plugin_id := _plugin_oauth.Group("/:plugin_id", _plugin_idMw()...)
+				_plugin_id.GET("/authorization_code", append(_pluginoauthauthorizationcodeMw(), coze.PluginOauthAuthorizationCode)...)
+			}
 		}
 		{
 			_user := _api.Group("/user", _userMw()...)
@@ -465,7 +477,6 @@ func Register(r *server.Hertz) {
 				_document0 := _knowledge1.Group("/document", _document0Mw()...)
 				_document0.POST("/create", append(_createdocumentopenapiMw(), coze.CreateDocumentOpenAPI)...)
 				_document0.POST("/list", append(_listdocumentopenapiMw(), coze.ListDocumentOpenAPI)...)
-				_document0.POST("/delete", append(_updatedocumentopenapiMw(), coze.DeleteDocumentOpenAPI)...)
 				_document0.POST("/update", append(_updatedocumentopenapiMw(), coze.UpdateDocumentOpenAPI)...)
 			}
 		}

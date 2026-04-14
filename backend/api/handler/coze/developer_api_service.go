@@ -33,10 +33,12 @@ import (
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
 	"github.com/coze-dev/coze-studio/backend/application/modelmgr"
+	"github.com/coze-dev/coze-studio/backend/application/plugin"
 	"github.com/coze-dev/coze-studio/backend/application/singleagent"
 	application "github.com/coze-dev/coze-studio/backend/application/singleagent"
 	"github.com/coze-dev/coze-studio/backend/application/upload"
 	"github.com/coze-dev/coze-studio/backend/application/user"
+	"github.com/coze-dev/coze-studio/backend/bizpkg/config"
 	"github.com/coze-dev/coze-studio/backend/pkg/errorx"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 	"github.com/coze-dev/coze-studio/backend/types/errno"
@@ -406,6 +408,83 @@ func GetTypeList(ctx context.Context, c *app.RequestContext) {
 	}
 
 	resp, err := modelmgr.ModelmgrApplicationSVC.GetModelList(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PluginOauthAuthorizationCode .
+// @router /api/plugin_oauth/:plugin_id/authorization_code [GET]
+func PluginOauthAuthorizationCode(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.PluginOauthAuthorizationCodeReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	if req.Code == "" {
+		invalidParamRequestResponse(c, "authorization failed, code is required")
+		return
+	}
+	if req.State == "" {
+		invalidParamRequestResponse(c, "state is required")
+		return
+	}
+
+	confirmCode, err := plugin.PluginApplicationSVC.PluginOauthAuthorizationCode(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	host, err := config.Base().GetServerHost(ctx)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	redirectURL := fmt.Sprintf("%s/oauth/confirm?confirm_code=%s", host, confirmCode)
+	c.Redirect(consts.StatusFound, []byte(redirectURL))
+	c.Abort()
+}
+
+// PluginOauthInfo .
+// @router /api/plugin/oauth/get_oauth_info [GET]
+func PluginOauthInfo(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.PluginOauthInfoReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.PluginOauthInfo(ctx, &req)
+	if err != nil {
+		internalServerErrorResponse(ctx, c, err)
+		return
+	}
+
+	c.JSON(consts.StatusOK, resp)
+}
+
+// PluginOauthConfirm .
+// @router /api/plugin/oauth/confirm [POST]
+func PluginOauthConfirm(ctx context.Context, c *app.RequestContext) {
+	var err error
+	var req developer_api.PluginOauthConfirmReq
+	err = c.BindAndValidate(&req)
+	if err != nil {
+		invalidParamRequestResponse(c, err.Error())
+		return
+	}
+
+	resp, err := plugin.PluginApplicationSVC.PluginOauthConfirm(ctx, &req)
 	if err != nil {
 		internalServerErrorResponse(ctx, c, err)
 		return
