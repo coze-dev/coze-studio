@@ -873,7 +873,50 @@ struct PublishConnectorListResponse {
     7: optional PublishTips                  publish_tips             // post alert
 }
 
+struct PluginOauthAuthorizationCodeReq {
+    1: string code  (api.query='code') ,
+    2: string state (api.query='state'),
+    3: string plugin_id (api.path='plugin_id'),
+}
+
+struct PluginOauthAuthorizationCodeResp {
+    1: i64    code
+    2: string msg
+}
+
+struct PluginOauthInfo {
+    1: string connector_id,
+    2: string plugin_id,
+    3: string plugin_name,
+    4: string plugin_icon,
+    5: string username,
+    6: string plugin_url,
+    7: string connector_name,
+}
+
+struct PluginOauthInfoReq {
+    1: string confirm_code (api.query='confirm_code')
+}
+
+struct PluginOauthInfoResp {
+    1: i64    code
+    2: string msg
+    3: PluginOauthInfo data
+}
+
+struct PluginOauthConfirmReq {
+    1: string confirm_code (api.post='confirm_code')
+}
+
+struct PluginOauthConfirmResp {
+    1: i64    code
+    2: string msg
+}
+
 service DeveloperApiService {
+    PluginOauthAuthorizationCodeResp PluginOauthAuthorizationCode(1: PluginOauthAuthorizationCodeReq request)(api.get='/api/plugin_oauth/:plugin_id/authorization_code', api.category="oauth", api.gen_path="oauth")
+    PluginOauthInfoResp PluginOauthInfo(1: PluginOauthInfoReq request)(api.get='/api/plugin/oauth/get_oauth_info', api.category="oauth", api.gen_path="oauth")
+    PluginOauthConfirmResp PluginOauthConfirm(1: PluginOauthConfirmReq request)(api.post='/api/plugin/oauth/confirm', api.category="oauth", api.gen_path="oauth")
 
     GetUploadAuthTokenResponse GetUploadAuthToken(1: GetUploadAuthTokenRequest request)(api.post = '/api/playground/upload/auth_token', api.category="playground", api.gen_path="playground")
 

@@ -1729,3 +1729,33 @@ func _createdatasetopenapiMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }
+
+func _oauth0Mw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _pluginoauthconfirmMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _pluginoauthinfoMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _plugin_oauthMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _plugin_idMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _pluginoauthauthorizationcodeMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}

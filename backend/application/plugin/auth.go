@@ -23,6 +23,7 @@ import (
 	"os"
 
 	botOpenAPI "github.com/coze-dev/coze-studio/backend/api/model/app/bot_open_api"
+	developerAPI "github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
 	pluginAPI "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop"
 	common "github.com/coze-dev/coze-studio/backend/api/model/plugin_develop/common"
 	"github.com/coze-dev/coze-studio/backend/application/base/ctxutil"
@@ -157,5 +158,74 @@ func (p *PluginApplicationService) GetUserAuthority(ctx context.Context, req *pl
 		},
 	}
 
+	return resp, nil
+}
+
+// PluginOauthAuthorizationCode handles the OAuth provider callback in the two-step confirmation flow.
+// It validates the state, stores a temporary confirm_code, and returns it for redirect.
+func (p *PluginApplicationService) PluginOauthAuthorizationCode(ctx context.Context, req *developerAPI.PluginOauthAuthorizationCodeReq) (confirmCode string, err error) {
+	if req.Code == "" {
+		return "", errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "code is required"))
+	}
+	if req.State == "" {
+		return "", errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "state is required"))
+	}
+	if req.PluginID == "" {
+		return "", errorx.New(errno.ErrPluginOAuthFailed, errorx.KV(errno.PluginMsgKey, "plugin_id is required"))
+	}
+
+	confirmCode, err = p.DomainSVC.PluginOauthCallback(ctx, req.Code, req.State, req.PluginID)
+	if err != nil {
+		return "", errorx.Wrapf(err, "PluginOauthCallback failed")
+	}
+
+	return confirmCode, nil
+}
+
+// PluginOauthInfo returns plugin information for the OAuth confirmation page.
+func (p *PluginApplicationService) PluginOauthInfo(ctx context.Context, req *developerAPI.PluginOauthInfoReq) (resp *developerAPI.PluginOauthInfoResp, err error) {
+	info, err := p.DomainSVC.GetPluginOauthInfo(ctx, req.ConfirmCode)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "GetPluginOauthInfo failed")
+	}
+
+	// Look up username from the state's userID via user service
+	username := ""
+	if info.StateUserID > 0 {
+		userProfile, profileErr := p.userSVC.GetUserProfiles(ctx, info.StateUserID)
+		if profileErr == nil && userProfile != nil {
+			username = userProfile.Name
+			if username == "" {
+				username = userProfile.UniqueName
+			}
+		}
+	}
+
+	resp = &developerAPI.PluginOauthInfoResp{
+		Data: &developerAPI.PluginOauthInfo{
+			PluginID:   info.PluginID,
+			PluginName: info.PluginName,
+			PluginIcon: info.PluginIcon,
+			Username:   username,
+		},
+	}
+
+	return resp, nil
+}
+
+// PluginOauthConfirm handles the user's confirmation of OAuth authorization.
+// It uses the current session user ID to prevent phishing attacks.
+func (p *PluginApplicationService) PluginOauthConfirm(ctx context.Context, req *developerAPI.PluginOauthConfirmReq) (resp *developerAPI.PluginOauthConfirmResp, err error) {
+	userID := ctxutil.GetUIDFromCtx(ctx)
+	if userID == nil {
+		return nil, errorx.New(errno.ErrPluginPermissionCode, errorx.KV(errno.PluginMsgKey, "session is required"))
+	}
+
+	err = p.DomainSVC.ConfirmPluginOauth(ctx, req.ConfirmCode, *userID)
+	if err != nil {
+		return nil, errorx.Wrapf(err, "ConfirmPluginOauth failed")
+	}
+
+	resp = &developerAPI.PluginOauthConfirmResp{}
 	return resp, nil
 }

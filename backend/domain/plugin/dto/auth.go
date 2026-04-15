@@ -83,6 +83,21 @@ type AuthorizationCodeInfo struct {
 	LastActiveAtMS       int64
 }
 
+// PluginOauthConfirmData is stored in Redis during the two-step OAuth confirmation flow.
+// It holds the OAuth state and authorization code between the callback and the user's confirmation.
+type PluginOauthConfirmData struct {
+	State    *OAuthState `json:"state"`
+	AuthCode string      `json:"auth_code"`
+}
+
+// PluginOauthConfirmInfo contains plugin information displayed to the user on the confirmation page.
+type PluginOauthConfirmInfo struct {
+	PluginID    string
+	PluginName  string
+	PluginIcon  string
+	StateUserID int64 // original userID from state, used by application layer
+}
+
 func (a *AuthorizationCodeInfo) GetNextTokenRefreshAtMS() int64 {
 	if a == nil {
 		return 0

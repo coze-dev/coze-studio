@@ -88,4 +88,8 @@ type PluginService interface {
 	OAuthCode(ctx context.Context, code string, state *dto.OAuthState) (err error)
 	GetAccessToken(ctx context.Context, oa *dto.OAuthInfo) (accessToken string, err error)
 	RevokeAccessToken(ctx context.Context, meta *dto.AuthorizationCodeMeta) (err error)
+
+	PluginOauthCallback(ctx context.Context, code, state, pluginID string) (confirmCode string, err error)
+	GetPluginOauthInfo(ctx context.Context, confirmCode string) (info *dto.PluginOauthConfirmInfo, err error)
+	ConfirmPluginOauth(ctx context.Context, confirmCode string, currentUserID int64) error
 }
