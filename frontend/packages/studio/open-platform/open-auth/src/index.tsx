@@ -37,3 +37,4 @@ export {
   type PermissionModalProps,
   type PermissionModalRef,
 } from './components/pat/permission-modal';
+export { ConsentConfirmPage } from './components/oauth-consent/confirm';

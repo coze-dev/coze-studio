@@ -23,14 +23,15 @@ import { ConfirmCard } from './confirm-card';
 
 export const ConsentConfirmPage = () => {
   const {
-    value: { code },
-  } = useUrlParams<{ code: string }>();
+    value: { confirm_code },
+  } = useUrlParams<{ confirm_code: string }>();
+
   return (
     <UILayout
       title={renderHtmlTitle(I18n.t('plugin_oauth_info_confirm_page'))}
       className="coz-bg-max flex justify-center items-center"
     >
-      <ConfirmCard confirmCode={code} />
+      <ConfirmCard confirmCode={confirm_code} />
     </UILayout>
   );
 };

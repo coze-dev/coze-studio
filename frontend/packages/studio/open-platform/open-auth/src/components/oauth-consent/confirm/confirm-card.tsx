@@ -35,15 +35,6 @@ const PluginOauthInfoContent = ({
   confirmCode: string;
 }) => {
   const [confirmLoading, setConfirmLoading] = useState(false);
-  const getPluginUrl = () => {
-    if (!pluginOauthInfo?.plugin_url) {
-      return '';
-    }
-    if (pluginOauthInfo?.plugin_url?.startsWith('http')) {
-      return pluginOauthInfo?.plugin_url;
-    }
-    return `https://${pluginOauthInfo?.plugin_url}`;
-  };
 
   const handleCancel = () => {
     window.close();
@@ -77,34 +68,22 @@ const PluginOauthInfoContent = ({
               rows: 1,
             }}
           >
-            {I18n.t(
-              'plugin_oauth_info_confirm_page_title' as I18nKeysNoOptionsType,
-              {
-                plugin_name: pluginOauthInfo?.plugin_name,
-              },
-            )}
+            {I18n.t('plugin_oauth_info_confirm_page_title', {
+              plugin_name: pluginOauthInfo?.plugin_name,
+            })}
           </Typography.Text>
           <div className="w-full flex flex-col gap-[8px] items-center">
             <div className="w-full flex items-center justify-center">
-              <Typography.Text className="flex-shrink-0 text-[14px] leading-[20px] text-center font-normal coz-fg-secondary">
-                {I18n.t(
-                  'plugin_oauth_info_confirm_page_plugin_url' as I18nKeysNoOptionsType,
-                )}
-              </Typography.Text>
               <Typography.Text
                 className="text-[14px] leading-[20px] text-center font-normal coz-fg-secondary "
                 ellipsis={{
                   showTooltip: true,
                   rows: 1,
                 }}
-                link={{
-                  target: '_blank',
-                  href: getPluginUrl(),
-                  className: '!coz-fg-secondary !underline',
-                }}
-                underline={true}
               >
-                {pluginOauthInfo?.plugin_url}
+                {I18n.t('devops_publish_multibranch_PluginInfo.PluginId')}
+                :&nbsp;
+                {pluginOauthInfo?.plugin_id}
               </Typography.Text>
             </div>
             <Typography.Text
@@ -114,22 +93,8 @@ const PluginOauthInfoContent = ({
                 rows: 1,
               }}
             >
-              {I18n.t(
-                'plugin_oauth_info_confirm_page_to_acct' as I18nKeysNoOptionsType,
-              )}
+              {I18n.t('plugin_oauth_info_confirm_page_to_acct')}
               {pluginOauthInfo?.username}
-            </Typography.Text>
-            <Typography.Text
-              className="text-[14px] leading-[20px] text-center font-normal coz-fg-secondary"
-              ellipsis={{
-                showTooltip: true,
-                rows: 1,
-              }}
-            >
-              {I18n.t(
-                'plugin_oauth_info_confirm_page_channel' as I18nKeysNoOptionsType,
-              )}
-              {pluginOauthInfo?.connector_name}
             </Typography.Text>
           </div>
         </div>
@@ -142,9 +107,7 @@ const PluginOauthInfoContent = ({
             color="var(--coz-fg-hglt-yellow)"
           />
           <span className="text-[14px] leading-[20px] text-center coz-fg-secondary">
-            {I18n.t(
-              'plugin_oauth_info_confirm_page_tips' as I18nKeysNoOptionsType,
-            )}
+            {I18n.t('plugin_oauth_info_confirm_page_tips')}
           </span>
         </p>
         <div className="flex justify-between items-center">

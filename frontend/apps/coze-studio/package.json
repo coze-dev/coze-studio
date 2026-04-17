@@ -65,6 +65,7 @@
     "@coze-arch/vitest-config": "workspace:*",
     "@coze-community/explore": "workspace:*",
     "@coze-studio/bot-plugin-store": "workspace:*",
+    "@coze-studio/open-auth": "workspace:*",
     "@rsbuild/core": "~1.1.0",
     "@rsdoctor/rspack-plugin": "1.0.0-rc.0",
     "@rspack/core": ">=0.7",

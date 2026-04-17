@@ -6887,13 +6887,10 @@ export interface PluginOauthConfirmResp {
 }
 
 export interface PluginOauthInfo {
-  connector_id?: string;
   plugin_id?: string;
   plugin_name?: string;
   plugin_icon?: string;
   username?: string;
-  plugin_url?: string;
-  connector_name?: string;
 }
 
 export interface PluginOauthInfoReq {

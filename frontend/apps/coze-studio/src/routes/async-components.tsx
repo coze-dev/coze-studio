@@ -150,3 +150,10 @@ export const ExplorePluginPage = lazy(() =>
     default: exps.PluginPage,
   })),
 );
+
+// OAuth consent confirm page
+export const OAuthConsentConfirmPage = lazy(() =>
+  import('@coze-studio/open-auth').then(exps => ({
+    default: exps.ConsentConfirmPage,
+  })),
+);

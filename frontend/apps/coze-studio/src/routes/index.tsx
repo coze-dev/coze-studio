@@ -45,6 +45,7 @@ import {
   DatabaseDetail,
   ExplorePluginPage,
   ExploreTemplatePage,
+  OAuthConsentConfirmPage,
 } from './async-components';
 
 export const router: ReturnType<typeof createBrowserRouter> =
@@ -88,6 +89,17 @@ export const router: ReturnType<typeof createBrowserRouter> =
         {
           path: 'sign',
           Component: LoginPage,
+          errorElement: <GlobalError />,
+          loader: () => ({
+            hasSider: false,
+            requireAuth: false,
+          }),
+        },
+
+        // OAuth consent confirm page
+        {
+          path: 'oauth/confirm',
+          Component: OAuthConsentConfirmPage,
           errorElement: <GlobalError />,
           loader: () => ({
             hasSider: false,

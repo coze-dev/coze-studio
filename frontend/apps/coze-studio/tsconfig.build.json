@@ -115,6 +115,9 @@
       "path": "../../packages/project-ide/main/tsconfig.build.json"
     },
     {
+      "path": "../../packages/studio/open-platform/open-auth/tsconfig.build.json"
+    },
+    {
       "path": "../../packages/studio/stores/bot-plugin/tsconfig.build.json"
     },
     {
