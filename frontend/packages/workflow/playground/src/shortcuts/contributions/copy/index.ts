@@ -71,8 +71,10 @@ export class WorkflowCopyShortcutsContribution
       execute: safeFn(this.handle.bind(this)),
     });
   }
-  public async toData(): Promise<WorkflowClipboardData> {
-    const validNodes = getValidNodes(this.selectedNodes);
+  public async toData(
+    nodes?: WorkflowNodeEntity[],
+  ): Promise<WorkflowClipboardData> {
+    const validNodes = getValidNodes(nodes ?? this.selectedNodes);
     const source = this.toSource();
     const json = await this.toJSON(validNodes);
     const bounds = this.getEntireBounds(validNodes);
