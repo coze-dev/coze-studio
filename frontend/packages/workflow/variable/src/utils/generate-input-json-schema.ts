@@ -34,6 +34,9 @@ const VariableType2JsonSchemaProps = {
   [VariableTypeDTO.float]: {
     type: 'number',
   },
+  [VariableTypeDTO.number]: {
+    type: 'number',
+  },
   [VariableTypeDTO.integer]: {
     type: 'integer',
   },

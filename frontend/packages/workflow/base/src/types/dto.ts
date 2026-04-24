@@ -197,6 +197,7 @@ export enum VariableTypeDTO {
   string = 'string',
   integer = 'integer',
   float = 'float',
+  number = 'number',
   boolean = 'boolean',
   image = 'image',
   time = 'time',
