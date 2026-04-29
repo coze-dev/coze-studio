@@ -233,7 +233,7 @@ docker exec -it coze-pulsar bin/pulsar-admin clusters list
 
 对于需要图形化界面管理 Pulsar 集群的用户，可以考虑使用 ASP 社区版。ASP 社区版是一个专为 Apache Pulsar 设计的现代化管理平台，提供了直观的 Web 界面来管理集群、租户、命名空间、主题等资源。该平台支持实时监控、性能指标展示、配置管理等功能，大大简化了 Pulsar 集群的日常运维工作。
 
-更多信息请参考：[ASP 社区版文档](https://ascentstream.com/docs/asp/asp-community/overview)
+更多信息请参考：[ASP 社区版文档](https://ascentstream.com/products/asp)
 
 ### C. 适配特点
 
@@ -289,7 +289,7 @@ safego.Go(context.Background(), func() {
 })
 ```
 
-### C. 故障排查
+### D. 故障排查
 
 #### 1. 常见问题
 
@@ -351,7 +351,7 @@ curl http://localhost:8080/admin/v2/persistent/public/default/your-topic/stats
 docker exec -it coze-pulsar bin/pulsar-admin topics subscriptions persistent://public/default/your-topic
 ```
 
-### D. 最佳实践
+### E. 最佳实践
 
 #### 1. 生产环境配置
 
@@ -407,5 +407,5 @@ Apache Pulsar 在 Coze Studio 中的 EventBus 集成实现了以下目标：
 
 - [Apache Pulsar 官方文档](https://pulsar.apache.org/docs/)
 - [Pulsar Go Client 文档](https://pulsar.apache.org/docs/client-libraries-go/)
-- [ASP 社区版文档](https://ascentstream.com/docs/asp/asp-community/overview)
+- [ASP 社区版文档](https://ascentstream.com/products/asp)
 - [Coze Studio 项目地址](https://github.com/coze-dev/coze-studio)

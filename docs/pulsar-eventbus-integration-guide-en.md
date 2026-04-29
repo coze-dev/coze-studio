@@ -292,7 +292,7 @@ For detailed cluster deployment configuration, please refer to the [Apache Pulsa
 
 For users who need a graphical interface to manage Pulsar clusters, consider using ASP Community Edition. ASP Community Edition is a modern management platform designed specifically for Apache Pulsar, providing an intuitive web interface to manage clusters, tenants, namespaces, topics, and other resources. The platform supports real-time monitoring, performance metrics display, configuration management, and other features that greatly simplify the daily operations of Pulsar clusters.
 
-For more information, please refer to: [ASP Community Edition Documentation](https://ascentstream.com/docs/asp/asp-community/overview)
+For more information, please refer to: [ASP Community Edition Documentation](https://ascentstream.com/products/asp)
 
 ### C. Integration Features
 
@@ -348,7 +348,7 @@ safego.Go(context.Background(), func() {
 })
 ```
 
-### C. Troubleshooting
+### D. Troubleshooting
 
 #### 1. Common Issues
 
@@ -410,7 +410,7 @@ curl http://localhost:8080/admin/v2/persistent/public/default/your-topic/stats
 docker exec -it coze-pulsar bin/pulsar-admin topics subscriptions persistent://public/default/your-topic
 ```
 
-### D. Best Practices
+### E. Best Practices
 
 #### 1. Production Environment Configuration
 
@@ -466,5 +466,5 @@ Through this integration, Coze Studio provides users with a high-performance, hi
 
 - [Apache Pulsar Official Documentation](https://pulsar.apache.org/docs/)
 - [Pulsar Go Client Documentation](https://pulsar.apache.org/docs/client-libraries-go/)
-- [ASP Community Edition Documentation](https://ascentstream.com/docs/asp/asp-community/overview)
+- [ASP Community Edition Documentation](https://ascentstream.com/products/asp)
 - [Coze Studio Project Repository](https://github.com/coze-dev/coze-studio)
