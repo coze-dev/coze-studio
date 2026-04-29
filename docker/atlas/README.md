@@ -1,4 +1,4 @@
-## 0. setup environment
+## 1. setup environment
 
 On Mac :
 
@@ -38,22 +38,22 @@ On developer machine（I want add/update table for my business）
 	  --dir "file://migrations" \
 	  --to $ATLAS_URL \
 	  --dev-url "docker://mysql/8/"
-	# will autogenerate some xxxxx_update.sql in margrations
+	# will autogenerate some xxxxx_update.sql in migrations
 	
 	
 	# Third, Check whether the contents of the new xxxx_update.sql file are correct.
 	# If any changes are needed, please modify it manually.
-	# If you manually modified margrations file, you need to run the following command to update its hash value.
-	# If you did not manually modify margrations file, do not run the following command.
+	# If you manually modified migrations file, you need to run the following command to update its hash value.
+	# If you did not manually modify migrations file, do not run the following command.
 	atlas migrate hash  # step 2 if need
 	atlas migrate status --url $ATLAS_URL --dir "file://migrations" # check status 
 	
-	# Last, dump the latest database schema for other developer
+	# Last, dump the latest database schema for other developers
 	atlas schema inspect -u $ATLAS_URL --exclude "atlas_schema_revisions,table_*"  > opencoze_latest_schema.hcl # step 3 
 
 ## 4. apply migration
 
-On developer machine（I want to update my local database with the changes that others developer have made）
+On developer machine（I want to update my local database with the changes that other developers have made）
 
 	# cd ./docker/atlas
 	atlas schema apply -u $ATLAS_URL --to file://opencoze_latest_schema.hcl # step 1 for developer on mac, this command will execute in start_debug.sh
