@@ -378,7 +378,7 @@ func (a *OpenapiAgentRunApplication) pullStream(ctx context.Context, sseSender *
 			sseSender.Send(ctx, buildMessageChunkEvent(string(chunk.Event), buildARSM2ApiMessage(chunk)))
 
 		default:
-			logs.CtxErrorf(ctx, "unknow handler event:%v", chunk.Event)
+			logs.CtxErrorf(ctx, "unknown handler event:%v", chunk.Event)
 		}
 	}
 }

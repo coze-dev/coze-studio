@@ -818,7 +818,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 				if intermediateMessage != nil {
 					_, mErr := crossmessage.DefaultSVC().Create(ctx, intermediateMessage)
 					if mErr != nil {
-						logs.CtxWarnf(ctx, "create message faield, err: %v", err)
+						logs.CtxWarnf(ctx, "create message failed, err: %v", err)
 					}
 				}
 			}

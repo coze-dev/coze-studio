@@ -195,7 +195,7 @@ type Config struct {
 func (c *Config) Adapt(_ context.Context, n *vo.Node, opts ...nodes.AdaptOption) (*schema.NodeSchema, error) {
 	options := nodes.GetAdaptOptions(opts...)
 	if options.Canvas == nil {
-		return nil, fmt.Errorf("canvas is requried when adapting HTTPRequester node")
+		return nil, fmt.Errorf("canvas is required when adapting HTTPRequester node")
 	}
 
 	implicitDeps, err := extractImplicitDependency(n, options.Canvas)
@@ -329,7 +329,7 @@ func convertLocation(l string) (Location, error) {
 
 func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.BuildOption) (any, error) {
 	if len(c.Method) == 0 {
-		return nil, fmt.Errorf("method is requried")
+		return nil, fmt.Errorf("method is required")
 	}
 
 	hg := &HTTPRequester{

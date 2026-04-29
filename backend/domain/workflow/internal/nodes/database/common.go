@@ -213,7 +213,7 @@ func formatted(in any, ty *vo.TypeInfo) any {
 			for _, in := range arrayIn {
 				r, err := toInteger(in)
 				if err != nil {
-					logs.Warnf("formatted interger failed: %v", err)
+					logs.Warnf("formatted integer failed: %v", err)
 					continue
 				}
 				result = append(result, r)

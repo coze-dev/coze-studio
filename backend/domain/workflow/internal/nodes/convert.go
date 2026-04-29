@@ -443,7 +443,7 @@ func convertToArray(ctx context.Context, in any, path string, t *vo.TypeInfo, op
 		if err != nil {
 			return nil, nil, err
 		} else if ws != nil {
-			if elemType.Type == vo.DataTypeObject { // If the array type and the element is an object, the converted object will also need to be added to the array when waring occurs
+			if elemType.Type == vo.DataTypeObject { // If the array type and the element is an object, the converted object will also need to be added to the array when warning occurs
 				out = append(out, newV)
 			}
 			warnings = append(warnings, *ws...)
