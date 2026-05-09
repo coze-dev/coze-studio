@@ -23,6 +23,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
@@ -37,13 +38,17 @@ import (
 	"github.com/coze-dev/coze-studio/backend/pkg/kvstore"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/conv"
 	"github.com/coze-dev/coze-studio/backend/pkg/logs"
+	"github.com/coze-dev/coze-studio/backend/pkg/safego"
 	"github.com/coze-dev/coze-studio/backend/types/consts"
 
 	"google.golang.org/genai"
 	"gopkg.in/yaml.v3"
 )
 
-var oldModels []*Model
+var (
+	oldModels   []*Model
+	oldModelsMu sync.RWMutex
+)
 
 func initOldModelConf(ctx context.Context, oss storage.Storage, c *ModelConfig) error {
 	wd, err := os.Getwd()
@@ -65,17 +70,6 @@ func initOldModelConf(ctx context.Context, oss storage.Storage, c *ModelConfig) 
 
 	if envModel != nil {
 		oldModels = append(oldModels, envModel)
-	}
-
-	for _, q := range oldModels {
-		if q.Provider.IconURI != "" {
-			url, err := oss.GetObjectUrl(ctx, q.Provider.IconURI)
-			if err != nil {
-				logs.CtxWarnf(ctx, "get model icon url failed, err: %v", err)
-			} else {
-				q.Provider.IconURL = url
-			}
-		}
 	}
 
 	for _, old := range oldModels {
@@ -104,7 +98,116 @@ func initOldModelConf(ctx context.Context, oss storage.Storage, c *ModelConfig) 
 		return fmt.Errorf("get model by id failed, err: %w", err)
 	}
 
+	refreshOldModelIconURLCache(ctx, oss)
+	startOldModelIconURLCacheRefresh(ctx, oss)
+
 	return nil
+}
+
+func cloneOldModel(m *Model) *Model {
+	if m == nil || m.Model == nil {
+		return nil
+	}
+
+	clonedModel := *m.Model
+	if m.Model.Provider != nil {
+		clonedProvider := *m.Model.Provider
+		clonedModel.Provider = &clonedProvider
+	}
+
+	return &Model{Model: &clonedModel}
+}
+
+func getOldModelsForResponse() []*Model {
+	oldModelsMu.RLock()
+	defer oldModelsMu.RUnlock()
+
+	result := make([]*Model, 0, len(oldModels))
+	for _, old := range oldModels {
+		cloned := cloneOldModel(old)
+		if cloned == nil {
+			continue
+		}
+		result = append(result, cloned)
+	}
+
+	return result
+}
+
+func getOldModelsForResponseWithLimit(limit int) []*Model {
+	if limit <= 0 {
+		return []*Model{}
+	}
+
+	oldModelsMu.RLock()
+	defer oldModelsMu.RUnlock()
+
+	if limit > len(oldModels) {
+		limit = len(oldModels)
+	}
+
+	result := make([]*Model, 0, limit)
+	for idx := 0; idx < len(oldModels) && len(result) < limit; idx++ {
+		cloned := cloneOldModel(oldModels[idx])
+		if cloned == nil {
+			continue
+		}
+		result = append(result, cloned)
+	}
+
+	return result
+}
+
+func getOldModelByIDForResponse(id int64) (*Model, bool) {
+	oldModelsMu.RLock()
+	defer oldModelsMu.RUnlock()
+
+	for _, old := range oldModels {
+		if old == nil || old.Model == nil {
+			continue
+		}
+		if old.ID == id {
+			cloned := cloneOldModel(old)
+			if cloned == nil {
+				return nil, false
+			}
+			return cloned, true
+		}
+	}
+
+	return nil, false
+}
+
+func startOldModelIconURLCacheRefresh(ctx context.Context, oss storage.Storage) {
+	safego.Go(ctx, func() {
+		ticker := time.NewTicker(24 * time.Hour)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				refreshOldModelIconURLCache(context.Background(), oss)
+			}
+		}
+	})
+}
+
+func refreshOldModelIconURLCache(ctx context.Context, oss storage.Storage) {
+	oldModelsMu.Lock()
+	defer oldModelsMu.Unlock()
+
+	for _, q := range oldModels {
+		if q == nil || q.Provider == nil || q.Provider.IconURI == "" {
+			continue
+		}
+
+		url, err := oss.GetObjectUrl(ctx, q.Provider.IconURI)
+		if err != nil {
+			logs.CtxWarnf(ctx, "get model icon url failed, err: %v", err)
+			continue
+		}
+
+		q.Provider.IconURL = url
+	}
 }
 
 func initModelByEnv() (*Model, error) {

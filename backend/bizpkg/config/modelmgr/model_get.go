@@ -95,7 +95,7 @@ func (c *ModelConfig) getModelList(ctx context.Context, includeDeleteModel bool)
 	}
 
 	if useOldModel {
-		return oldModels, nil
+		return getOldModelsForResponse(), nil
 	}
 
 	var allModels []*model.ModelInstance
@@ -126,10 +126,7 @@ func (c *ModelConfig) GetOnlineModelListWithLimit(ctx context.Context, limit int
 	}
 
 	if useOldModel {
-		if limit > len(oldModels) {
-			limit = len(oldModels)
-		}
-		return oldModels[:limit], nil
+		return getOldModelsForResponseWithLimit(limit), nil
 	}
 
 	allModels, err := query.ModelInstance.WithContext(ctx).Limit(limit).Find()
@@ -155,11 +152,9 @@ func (c *ModelConfig) MGetModelByID(ctx context.Context, ids []int64) ([]*Model,
 	if useOldModel {
 		modelList := make([]*Model, 0, len(ids))
 		for _, id := range ids {
-			for _, old := range oldModels {
-				if old.ID == id {
-					modelList = append(modelList, old)
-					break
-				}
+			old, ok := getOldModelByIDForResponse(id)
+			if ok {
+				modelList = append(modelList, old)
 			}
 		}
 		return modelList, nil
@@ -188,10 +183,9 @@ func (c *ModelConfig) GetModelByID(ctx context.Context, modelID int64) (*Model, 
 	}
 
 	if useOldModel {
-		for _, old := range oldModels {
-			if old.ID == modelID {
-				return old, nil
-			}
+		old, ok := getOldModelByIDForResponse(modelID)
+		if ok {
+			return old, nil
 		}
 		return nil, fmt.Errorf("model %d not found", modelID)
 	}
