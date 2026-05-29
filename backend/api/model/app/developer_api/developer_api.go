@@ -935,7 +935,9 @@ const (
 	// name: Llama
 	ModelClass_Llama   ModelClass = 20
 	ModelClass_StepFun ModelClass = 23
-	ModelClass_Other   ModelClass = 999
+	// name: OrcaRouter (OpenAI-compatible meta-router)
+	ModelClass_OrcaRouter ModelClass = 24
+	ModelClass_Other      ModelClass = 999
 )
 
 func (p ModelClass) String() string {
@@ -980,6 +982,8 @@ func (p ModelClass) String() string {
 		return "Llama"
 	case ModelClass_StepFun:
 		return "StepFun"
+	case ModelClass_OrcaRouter:
+		return "OrcaRouter"
 	case ModelClass_Other:
 		return "Other"
 	}
@@ -1028,6 +1032,8 @@ func ModelClassFromString(s string) (ModelClass, error) {
 		return ModelClass_Llama, nil
 	case "StepFun":
 		return ModelClass_StepFun, nil
+	case "OrcaRouter":
+		return ModelClass_OrcaRouter, nil
 	case "Other":
 		return ModelClass_Other, nil
 	}

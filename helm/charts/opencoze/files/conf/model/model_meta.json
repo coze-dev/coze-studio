@@ -49,7 +49,7 @@
                         }
                     }
                 ]
-            }        
+            }
         },
         "GPT": {
             "default": {
@@ -718,6 +718,442 @@
                         "param_class": {
                             "class_id": 5,
                             "label": "模型默认指令"
+                        }
+                    }
+                ]
+            }
+        },
+        "OrcaRouter": {
+            "default": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 128000
+                },
+                "capability": {
+                    "cot_display": false,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false
+                },
+                "parameters": [
+                    {
+                        "name": "temperature",
+                        "label": "Temperature",
+                        "desc": "**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "1",
+                        "precision": 1,
+                        "default_val": {
+                            "default_val": "1",
+                            "creative": "1",
+                            "balance": "0.8",
+                            "precise": "0.3"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "orcarouter/auto": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 128000
+                },
+                "capability": {
+                    "cot_display": true,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": true
+                },
+                "parameters": [
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "openai/gpt-5": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 400000
+                },
+                "capability": {
+                    "cot_display": true,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": true
+                },
+                "parameters": [
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "google/gemini-3-flash-preview": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 1048576
+                },
+                "capability": {
+                    "cot_display": false,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": false
+                },
+                "parameters": [
+                    {
+                        "name": "temperature",
+                        "label": "Temperature",
+                        "desc": "**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "1",
+                        "precision": 1,
+                        "default_val": {
+                            "default_val": "1",
+                            "creative": "1",
+                            "balance": "0.8",
+                            "precise": "0.3"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "anthropic/claude-opus-4.7": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 200000
+                },
+                "capability": {
+                    "cot_display": true,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": true
+                },
+                "parameters": [
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "grok/grok-4.3": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 256000
+                },
+                "capability": {
+                    "cot_display": false,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": false
+                },
+                "parameters": [
+                    {
+                        "name": "temperature",
+                        "label": "Temperature",
+                        "desc": "**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "1",
+                        "precision": 1,
+                        "default_val": {
+                            "default_val": "1",
+                            "creative": "1",
+                            "balance": "0.8",
+                            "precise": "0.3"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "deepseek/deepseek-v4-pro": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 128000
+                },
+                "capability": {
+                    "cot_display": false,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": false
+                },
+                "parameters": [
+                    {
+                        "name": "temperature",
+                        "label": "Temperature",
+                        "desc": "**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "1",
+                        "precision": 1,
+                        "default_val": {
+                            "default_val": "1",
+                            "creative": "1",
+                            "balance": "0.8",
+                            "precise": "0.3"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "minimax/minimax-m2.7": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 1000000
+                },
+                "capability": {
+                    "cot_display": false,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": false
+                },
+                "parameters": [
+                    {
+                        "name": "temperature",
+                        "label": "Temperature",
+                        "desc": "**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "1",
+                        "precision": 1,
+                        "default_val": {
+                            "default_val": "1",
+                            "creative": "1",
+                            "balance": "0.8",
+                            "precise": "0.3"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
+                        }
+                    }
+                ]
+            },
+            "qwen/qwen3.6-flash": {
+                "display_info": {
+                    "output_tokens": 4096,
+                    "max_tokens": 1000000
+                },
+                "capability": {
+                    "cot_display": false,
+                    "function_call": true,
+                    "image_understanding": false,
+                    "video_understanding": false,
+                    "audio_understanding": false,
+                    "support_multi_modal": false,
+                    "prefill_resp": false,
+                    "reasoning": false
+                },
+                "parameters": [
+                    {
+                        "name": "temperature",
+                        "label": "Temperature",
+                        "desc": "**Temperature**:\n\n- When you increase this value, the model outputs more diverse and innovative content; when you decrease it, the model outputs less diverse content that strictly follows the given instructions.\n- It is recommended not to adjust this value with \"Top p\" at the same time.",
+                        "type": 1,
+                        "min": "0",
+                        "max": "1",
+                        "precision": 1,
+                        "default_val": {
+                            "default_val": "1",
+                            "creative": "1",
+                            "balance": "0.8",
+                            "precise": "0.3"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 1,
+                            "label": "Generation diversity"
+                        }
+                    },
+                    {
+                        "name": "max_tokens",
+                        "label": "Response max length",
+                        "desc": "You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.",
+                        "type": 2,
+                        "min": "1",
+                        "max": "4096",
+                        "precision": 0,
+                        "default_val": {
+                            "default_val": "4096"
+                        },
+                        "options": [],
+                        "param_class": {
+                            "class_id": 2,
+                            "label": "Input and output settings"
                         }
                     }
                 ]

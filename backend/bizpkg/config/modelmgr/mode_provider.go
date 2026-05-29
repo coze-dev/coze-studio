@@ -107,6 +107,18 @@ func getModelProviderList() []*config.ModelProvider {
 			},
 			ModelClass: developer_api.ModelClass_QWen,
 		},
+		{
+			Name: &config.I18nText{
+				ZhCn: "OrcaRouter",
+				EnUs: "OrcaRouter",
+			},
+			IconURI: "default_icon/orcarouter.png",
+			Description: &config.I18nText{
+				ZhCn: "OrcaRouter 是 OpenAI 兼容的智能路由聚合网关，一个 API key 即可访问多家上游模型并按策略自动路由",
+				EnUs: "OrcaRouter is an OpenAI-compatible adaptive routing gateway: one API key to reach many upstream models with automatic, policy-based routing",
+			},
+			ModelClass: developer_api.ModelClass_OrcaRouter,
+		},
 	}
 }
 

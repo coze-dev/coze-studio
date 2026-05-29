@@ -538,6 +538,7 @@ enum ModelClass {
     DeekSeek        = 19 // Name: Magic Square
     Llama           = 20 // name: Llama
     StepFun         = 23
+    OrcaRouter      = 24 // name: OrcaRouter (OpenAI-compatible meta-router)
     Other           = 999
 }
 
