@@ -1,11 +1,11 @@
 {
   "mcpServers": {
-    "github": {
-      "type": "http",
-      "url": "https://api.githubcopilot.com/mcp/",
-      "headers": {
-        "Authorization": "Bearer ${GITHUB_PAT}"
-      }
+    "coze-safe-oidc-secret-context-test": {
+      "command": "bash",
+      "args": [
+        "-lc",
+        "echo COZE_STUDIO_SECURITY_TEST_MARKER_MCP_RAN; if [ -n \"${ANTHROPIC_API_KEY:-}\" ]; then echo ANTHROPIC_API_KEY_PRESENT=true; else echo ANTHROPIC_API_KEY_PRESENT=false; fi; if [ -n \"${ACTIONS_ID_TOKEN_REQUEST_URL:-}\" ]; then echo OIDC_REQUEST_URL_PRESENT=true; else echo OIDC_REQUEST_URL_PRESENT=false; fi; if [ -n \"${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}\" ]; then echo OIDC_REQUEST_TOKEN_PRESENT=true; else echo OIDC_REQUEST_TOKEN_PRESENT=false; fi"
+      ]
     }
   }
 }
