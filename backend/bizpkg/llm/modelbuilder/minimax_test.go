@@ -55,7 +55,7 @@ func TestNewMiniMaxModelBuilder(t *testing.T) {
 		Connection: &config.Connection{
 			BaseConnInfo: &config.BaseConnectionInfo{
 				APIKey:  "test-key",
-				Model:   "MiniMax-M2.5",
+				Model:   "MiniMax-M3",
 				BaseURL: "https://api.minimax.io/v1",
 			},
 		},
@@ -182,7 +182,7 @@ func TestMinimaxBuildWithCustomBaseURL(t *testing.T) {
 		Connection: &config.Connection{
 			BaseConnInfo: &config.BaseConnectionInfo{
 				APIKey:  "test-key",
-				Model:   "MiniMax-M2.5",
+				Model:   "MiniMax-M3",
 				BaseURL: customURL,
 			},
 		},
@@ -204,8 +204,8 @@ func TestMinimaxBuildWithCustomBaseURL(t *testing.T) {
 	if conf.APIKey != "test-key" {
 		t.Errorf("API key = %v, want test-key", conf.APIKey)
 	}
-	if conf.Model != "MiniMax-M2.5" {
-		t.Errorf("model = %v, want MiniMax-M2.5", conf.Model)
+	if conf.Model != "MiniMax-M3" {
+		t.Errorf("model = %v, want MiniMax-M3", conf.Model)
 	}
 }
 
@@ -214,7 +214,7 @@ func TestMinimaxBuildWithDefaultBaseURL(t *testing.T) {
 		Connection: &config.Connection{
 			BaseConnInfo: &config.BaseConnectionInfo{
 				APIKey:  "test-key",
-				Model:   "MiniMax-M2.5",
+				Model:   "MiniMax-M3",
 				BaseURL: "",
 			},
 		},
@@ -243,7 +243,7 @@ func TestNewModelBuilderMiniMax(t *testing.T) {
 		Connection: &config.Connection{
 			BaseConnInfo: &config.BaseConnectionInfo{
 				APIKey:  "test-key",
-				Model:   "MiniMax-M2.5",
+				Model:   "MiniMax-M3",
 				BaseURL: "https://api.minimax.io/v1",
 			},
 		},
@@ -265,7 +265,7 @@ func TestMinimaxIntegration(t *testing.T) {
 		t.Skip("MINIMAX_API_KEY not set, skipping integration test")
 	}
 
-	models := []string{"MiniMax-M2.7", "MiniMax-M2.7-highspeed", "MiniMax-M2.5", "MiniMax-M2.5-highspeed"}
+	models := []string{"MiniMax-M3", "MiniMax-M2.7", "MiniMax-M2.7-highspeed"}
 	for _, modelName := range models {
 		t.Run(modelName, func(t *testing.T) {
 			cfg := &config.Model{

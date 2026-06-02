@@ -1,10 +1,10 @@
 id: 64010
-name: MiniMax-M2.7
+name: MiniMax-M3
 icon_uri: default_icon/minimax.png
 icon_url: ""
 description:
-    zh: MiniMax M2.7 模型，拥有 204K 上下文窗口，支持深度推理和多轮对话
-    en: MiniMax M2.7 model with 204K context window. Advanced reasoning with thinking capabilities.
+    zh: MiniMax M3 模型，拥有 512K 上下文窗口，128K 最大输出，支持图片输入
+    en: MiniMax M3 model with 512K context window, 128K max output, and image input support.
 default_parameters:
     - name: temperature
       label:
@@ -37,7 +37,7 @@ default_parameters:
         en: You can specify the maximum length of the tokens output through this value. Typically, 100 tokens are approximately equal to 150 Chinese characters.
       type: int
       min: "1"
-      max: "4096"
+      max: "128000"
       default_val:
         default_val: "4096"
       options: []
@@ -109,12 +109,13 @@ meta:
         function_call: true
         input_modal:
             - text
-        input_tokens: 204800
+            - image
+        input_tokens: 512000
         json_mode: false
-        max_tokens: 204800
+        max_tokens: 512000
         output_modal:
             - text
-        output_tokens: 192000
+        output_tokens: 128000
         prefix_caching: false
         reasoning: false
         prefill_response: false
@@ -122,7 +123,7 @@ meta:
         base_url: "https://api.minimax.io/v1"
         api_key: ""
         timeout: 0s
-        model: "MiniMax-M2.7"
+        model: "MiniMax-M3"
         temperature: 1.0
         frequency_penalty: 0
         presence_penalty: 0
