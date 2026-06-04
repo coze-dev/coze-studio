@@ -51,6 +51,18 @@ var (
 	fromImportRegex = regexp.MustCompile(`^\s*from\s+([a-zA-Z0-9_.]+)\s+import`)
 )
 
+// dangerousPatterns detects common import blacklist bypass techniques.
+// Defense-in-depth: the primary security control is the runtime restriction
+// injected in the direct runner. These patterns provide early rejection.
+var dangerousPatterns = []*regexp.Regexp{
+	regexp.MustCompile(`__import__\s*\(`),                         // __import__('os')
+	regexp.MustCompile(`(?i)importlib\s*\.\s*import_module\s*\(`), // importlib.import_module(...)
+	regexp.MustCompile(`globals\s*\(\s*\)\s*\[`),                  // globals()['__builtins__']
+	regexp.MustCompile(`getattr\s*\(\s*__builtins__`),             // getattr(__builtins__, ...)
+	regexp.MustCompile(`__subclasses__\s*\(\s*\)`),                // ().__class__.__bases__[0].__subclasses__()
+	regexp.MustCompile(`__builtins__\s*\[`),                       // __builtins__['__import__']
+}
+
 // pythonBuiltinModules is the list of python built-in modules,
 // see: https://docs.python.org/3.9/library/
 var pythonBuiltinModules = map[string]struct{}{
@@ -81,9 +93,13 @@ var pythonBuiltinModules = map[string]struct{}{
 	"zipapp": {}, "zipfile": {}, "zipimport": {}, "zoneinfo": {}, "winreg": {}, "syslog": {}, "winsound": {}, "unicodedata": {},
 }
 
-// pythonBuiltinBlacklist is the blacklist of python built-in modules,
-// see: https://www.coze.cn/open/docs/guides/code_node#7f41f073
+// pythonBuiltinBlacklist is the blacklist of python built-in modules.
+// SECURITY FIX: Added os, subprocess, sys, shutil, ctypes, importlib, signal,
+// ssl, ftplib, smtplib, http, xmlrpc, socketserver, select, selectors.
+// These modules provide direct OS command execution, file system access,
+// or network capabilities that should not be available in Code nodes.
 var pythonBuiltinBlacklist = map[string]struct{}{
+	// Original blacklist
 	"curses":          {},
 	"dbm":             {},
 	"ensurepip":       {},
@@ -107,6 +123,22 @@ var pythonBuiltinBlacklist = map[string]struct{}{
 	"socket":          {},
 	"pty":             {},
 	"tty":             {},
+	// SECURITY FIX: Added dangerous modules that enable RCE/file access
+	"os":           {},
+	"subprocess":   {},
+	"sys":          {},
+	"shutil":       {},
+	"ctypes":       {},
+	"importlib":    {},
+	"signal":       {},
+	"ssl":          {},
+	"ftplib":       {},
+	"smtplib":      {},
+	"http":         {},
+	"xmlrpc":       {},
+	"socketserver": {},
+	"select":       {},
+	"selectors":    {},
 }
 
 type Config struct {
@@ -184,6 +216,18 @@ type Runner struct {
 func validatePythonImports(code string) error {
 	imports := parsePythonImports(code)
 	importErrors := make([]string, 0)
+
+	// Defense-in-depth: detect common bypass patterns in source code.
+	// The runtime restriction in the direct runner is the primary control;
+	// this catches obvious bypass attempts early with a clear error message.
+	for _, pattern := range dangerousPatterns {
+		if pattern.MatchString(code) {
+			importErrors = append(importErrors, fmt.Sprintf(
+				"SecurityError: Use of restricted code pattern detected (%s). "+
+					"Dynamic imports and code execution builtins are not permitted.\n",
+				pattern.String()))
+		}
+	}
 
 	pythonThirdPartyWhitelist := slices.ToMap(wf.GetRepository().GetNodeOfCodeConfig().GetSupportThirdPartModules(), func(e string) (string, bool) {
 		return e, true
