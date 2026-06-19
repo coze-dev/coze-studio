@@ -1,0 +1,394 @@
+openapi: 3.0.1
+info:
+  title: DataForB2B
+  description: >-
+    Power your sales or recruiting AI agent with live B2B data. DataForB2B is a
+    people and company search & enrichment API with 70+ filters including job
+    title, skills, company size, LinkedIn URL, funding stage, investor, past
+    employers, certifications, years of experience, GitHub repositories,
+    languages and more. Find decision-makers, build prospect lists, and enrich
+    profiles or companies with verified professional email and phone.
+  version: v1.0.0
+servers:
+  - url: https://api.dataforb2b.ai
+components:
+  securitySchemes:
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: api_key
+  schemas:
+    FilterCondition:
+      type: object
+      required:
+        - column
+        - type
+        - value
+      properties:
+        column:
+          type: string
+          description: >-
+            Column to filter on. People columns include current_title,
+            current_company, current_company_industry, current_company_size,
+            current_company_funding_stage, current_company_investor,
+            current_job_location, past_company, past_title, skill, school,
+            degree, field_of_study, language, certification,
+            years_of_experience, is_currently_employed, first_name, last_name,
+            profile_location, profile_country, profile_industry, keyword.
+            Company columns include name, industry, category, size, location,
+            country, has_funding, funding_stage, investor, founded_year,
+            keyword.
+        type:
+          type: string
+          description: >-
+            Operator. One of "=", "like" (contains), "in" (any of a list), ">",
+            ">=", "<", "<=", "between".
+          enum: ["=", "like", "in", ">", ">=", "<", "<=", "between"]
+        value:
+          description: >-
+            Filter value. A single scalar for most operators; an array for
+            "in"; the lower bound for "between".
+        value2:
+          description: Upper bound, only used with the "between" operator.
+    FilterGroup:
+      type: object
+      properties:
+        op:
+          type: string
+          enum: [and, or]
+          default: and
+          description: How to combine the conditions in this group.
+        conditions:
+          type: array
+          description: >-
+            List of conditions or nested FilterGroups (for nested AND/OR logic).
+          items:
+            $ref: '#/components/schemas/FilterCondition'
+security:
+  - apiKeyAuth: []
+paths:
+  /search/people:
+    post:
+      operationId: search_people
+      summary: Search People
+      description: >-
+        Search professional profiles with structured filters. Combine
+        conditions on job title, current and past
+        company, industry, company size, funding stage, investor, location,
+        LinkedIn URL, skills, school, degree, certifications, languages, years
+        of experience and more. Returns matching people with company, role and
+        profile data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - filters
+              properties:
+                filters:
+                  $ref: '#/components/schemas/FilterGroup'
+                count:
+                  type: integer
+                  default: 25
+                  minimum: 1
+                  maximum: 1000
+                  description: Number of results to return (1-1000).
+                offset:
+                  type: integer
+                  default: 0
+                  minimum: 0
+                  description: Number of results to skip (pagination).
+                enrich_live:
+                  type: boolean
+                  default: false
+                  description: >-
+                    Fetch fresh live data instead of cached. Leave false unless
+                    live data is explicitly required.
+      responses:
+        '200':
+          description: Matching people.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: Total number of matching people.
+                  count:
+                    type: integer
+                    description: Number of results returned in this page.
+                  results:
+                    type: array
+                    items:
+                      type: object
+  /search/companies:
+    post:
+      operationId: search_companies
+      summary: Search Companies
+      description: >-
+        Search companies with structured filters: industry, category, employee
+        headcount / company size, location, country, funding stage, investor,
+        founded year, whether the company has raised funding, and free-text
+        keyword. Returns matching companies with firmographic data. Ideal for
+        building an ICP target account list before finding decision-makers.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - filters
+              properties:
+                filters:
+                  $ref: '#/components/schemas/FilterGroup'
+                count:
+                  type: integer
+                  default: 25
+                  minimum: 1
+                  maximum: 1000
+                  description: Number of results to return (1-1000).
+                offset:
+                  type: integer
+                  default: 0
+                  minimum: 0
+                  description: Number of results to skip (pagination).
+                enrich_live:
+                  type: boolean
+                  default: false
+                  description: Fetch fresh live data instead of cached.
+      responses:
+        '200':
+          description: Matching companies.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  count:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+  /search/reasoning:
+    post:
+      operationId: reasoning_search
+      summary: Reasoning Search
+      description: >-
+        Natural-language B2B search. Describe the people or companies you are
+        looking for in plain language and an AI agent builds and runs the
+        optimal filters for you. If the response status is "needs_input", answer
+        its questions by calling again with the returned session_id and an
+        answers object mapping each question id to your answer.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: >-
+                    Plain-language description of the target people or
+                    companies (max 3000 chars). Required on the first call.
+                category:
+                  type: string
+                  enum: [people, companies]
+                  default: people
+                  description: Whether to search people or companies.
+                max_results:
+                  type: integer
+                  default: 25
+                  minimum: 1
+                  maximum: 100
+                  description: Number of results for the final search (1-100).
+                session_id:
+                  type: string
+                  description: >-
+                    Session id returned on a previous "needs_input" turn; pass
+                    it together with answers to resolve clarifying questions.
+                answers:
+                  type: object
+                  description: >-
+                    Map of question_id to answer, used to resolve a previous
+                    "needs_input" turn.
+                enrich_live:
+                  type: boolean
+                  default: false
+                  description: Fetch fresh live data instead of cached.
+      responses:
+        '200':
+          description: Search results, or a needs_input clarification turn.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  session_id:
+                    type: string
+                  total:
+                    type: integer
+                  count:
+                    type: integer
+                  results:
+                    type: array
+                    items:
+                      type: object
+                  questions:
+                    type: array
+                    items:
+                      type: object
+  /typeahead:
+    get:
+      operationId: typeahead
+      summary: Typeahead
+      description: >-
+        Autocomplete the exact stored value for any search filter — companies,
+        industries, categories, locations, schools, job titles, skills,
+        investors. Use it to resolve a value before filtering so your Search
+        People / Search Companies query matches the database, especially when a
+        search returns few or no results.
+      parameters:
+        - name: type
+          in: query
+          required: true
+          description: >-
+            The category to autocomplete: company, people_industry,
+            company_industry, category, location, city, region, school, title,
+            skill, investor.
+          schema:
+            type: string
+            enum:
+              - company
+              - people_industry
+              - company_industry
+              - category
+              - location
+              - city
+              - region
+              - school
+              - title
+              - skill
+              - investor
+        - name: q
+          in: query
+          required: true
+          description: Partial text to autocomplete (1-100 characters), e.g. "pyth".
+          schema:
+            type: string
+        - name: limit
+          in: query
+          required: false
+          description: Maximum number of suggestions to return (1-20).
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 20
+      responses:
+        '200':
+          description: Ranked autocomplete suggestions.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  results:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        value:
+                          type: string
+                        label:
+                          type: string
+  /enrich/profile:
+    post:
+      operationId: enrich_linkedin_profile
+      summary: Enrich LinkedIn Profile
+      description: >-
+        Enrich a single person from a LinkedIn profile URL or id — full profile
+        data (experience, education, skills), plus verified professional email,
+        personal email, phone number and GitHub profile. Toggle which data
+        types to fetch; at least one enrich flag must be true.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - profile_identifier
+              properties:
+                profile_identifier:
+                  type: string
+                  description: >-
+                    The person to enrich. Accepts a full profile URL, short
+                    URL, public_id, member identity, URN, or encoded id
+                    (prof_xxx).
+                enrich_profile:
+                  type: boolean
+                  default: true
+                  description: Fetch full profile data (experience, education, skills).
+                enrich_work_email:
+                  type: boolean
+                  default: false
+                  description: Find the professional / work email.
+                enrich_personal_email:
+                  type: boolean
+                  default: false
+                  description: Find the personal email.
+                enrich_phone:
+                  type: boolean
+                  default: false
+                  description: Find the phone number.
+                enrich_github:
+                  type: boolean
+                  default: false
+                  description: Find the GitHub profile.
+      responses:
+        '200':
+          description: Enriched person data.
+          content:
+            application/json:
+              schema:
+                type: object
+  /enrich/company:
+    post:
+      operationId: enrich_company
+      summary: Enrich Company
+      description: >-
+        Enrich a single company from its name, domain, URL or id — full
+        firmographic data including employee headcount / size, locations,
+        funding rounds, investors and growth signals.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - company_identifier
+              properties:
+                company_identifier:
+                  type: string
+                  description: >-
+                    The company to enrich. Accepts a universal name/slug (e.g.
+                    "google"), a full company URL, a short URL, or an encoded id
+                    (org_xxx).
+      responses:
+        '200':
+          description: Enriched company data.
+          content:
+            application/json:
+              schema:
+                type: object
