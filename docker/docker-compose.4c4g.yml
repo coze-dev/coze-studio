@@ -1,0 +1,46 @@
+services:
+  mysql:
+    mem_limit: 640m
+    healthcheck:
+      start_period: 60s
+      retries: 20
+
+  redis:
+    mem_limit: 192m
+
+  elasticsearch:
+    mem_limit: 960m
+    environment:
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+    healthcheck:
+      start_period: 60s
+      retries: 30
+
+  minio:
+    mem_limit: 320m
+
+  etcd:
+    mem_limit: 256m
+
+  milvus:
+    mem_limit: 1280m
+    environment:
+      LOG_LEVEL: warn
+    healthcheck:
+      start_period: 60s
+      retries: 30
+
+  nsqlookupd:
+    mem_limit: 64m
+
+  nsqd:
+    mem_limit: 128m
+
+  nsqadmin:
+    mem_limit: 64m
+
+  coze-server:
+    mem_limit: 1024m
+
+  coze-web:
+    mem_limit: 128m
