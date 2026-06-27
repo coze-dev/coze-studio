@@ -30,6 +30,8 @@ BUILD_CONTEXT_DIR=""
 NO_CACHE=0
 FOLLOW_LOGS=0
 
+OFFICIAL_ALPINE_REPO_BASE="https://dl-cdn.alpinelinux.org/alpine"
+
 usage() {
     cat <<'EOF'
 Usage: bash scripts/setup/rebuild_coze_server.sh [--no-cache] [--logs]
@@ -102,6 +104,7 @@ set -a
 source "$ENV_FILE"
 set +a
 
+APK_REPO_BASE_VALUE="${APK_REPO_BASE:-$OFFICIAL_ALPINE_REPO_BASE}"
 GOPROXY_VALUE="${GOPROXY:-https://proxy.golang.org,direct}"
 GOSUMDB_VALUE="${GOSUMDB:-sum.golang.org}"
 PIP_INDEX_URL_VALUE="${PIP_INDEX_URL:-https://pypi.org/simple}"
@@ -121,12 +124,16 @@ cp -R "$BASE_DIR/backend/." "$BUILD_CONTEXT_DIR/backend/"
 cat > "$LOCAL_BUILD_DOCKERFILE" <<'EOF'
 FROM golang:1.24-alpine AS builder
 
+ARG APK_REPO_BASE=https://dl-cdn.alpinelinux.org/alpine
 ARG GOPROXY=https://proxy.golang.org,direct
 ARG GOSUMDB=sum.golang.org
 
 WORKDIR /app
 
-RUN apk add --no-cache git gcc libc-dev
+RUN if [ "${APK_REPO_BASE}" != "https://dl-cdn.alpinelinux.org/alpine" ]; then \
+        sed -i "s#https://dl-cdn.alpinelinux.org/alpine#${APK_REPO_BASE%/}#g" /etc/apk/repositories; \
+    fi && \
+    apk add --no-cache git gcc libc-dev
 
 COPY backend/go.mod backend/go.sum ./
 RUN go env -w GOPROXY="$GOPROXY" GOSUMDB="$GOSUMDB" && \
@@ -164,6 +171,7 @@ COMPOSE_ARGS+=(
 
 BUILD_ARGS=(
     --progress=plain
+    --build-arg "APK_REPO_BASE=$APK_REPO_BASE_VALUE"
     --build-arg "GOPROXY=$GOPROXY_VALUE"
     --build-arg "GOSUMDB=$GOSUMDB_VALUE"
     -f "$LOCAL_BUILD_DOCKERFILE"
@@ -179,6 +187,7 @@ echo "Repository: $BASE_DIR"
 echo "Branch: $BRANCH_NAME"
 echo "Commit: $COMMIT_SHA"
 echo "Image: $LOCAL_IMAGE_TAG"
+echo "APK_REPO_BASE: $APK_REPO_BASE_VALUE"
 echo "GOPROXY: $GOPROXY_VALUE"
 echo "GOSUMDB: $GOSUMDB_VALUE"
 echo "PIP_INDEX_URL: $PIP_INDEX_URL_VALUE (ignored by lightweight rebuild)"

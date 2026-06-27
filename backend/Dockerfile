@@ -1,13 +1,17 @@
 # Stage 1: Builder for Go application
 FROM golang:1.24-alpine AS builder
 
+ARG APK_REPO_BASE=https://dl-cdn.alpinelinux.org/alpine
 ARG GOPROXY=https://proxy.golang.org,direct
 ARG GOSUMDB=sum.golang.org
 
 WORKDIR /app
 
 # Install build dependencies for Go
-RUN apk add --no-cache git gcc libc-dev
+RUN if [ "${APK_REPO_BASE}" != "https://dl-cdn.alpinelinux.org/alpine" ]; then \
+        sed -i "s#https://dl-cdn.alpinelinux.org/alpine#${APK_REPO_BASE%/}#g" /etc/apk/repositories; \
+    fi && \
+    apk add --no-cache git gcc libc-dev
 
 # Copy go.mod and go.sum first to leverage Docker cache
 COPY backend/go.mod backend/go.sum ./
@@ -24,6 +28,7 @@ RUN go build -ldflags="-s -w" -o /app/opencoze main.go
 # Stage 2: Final image
 FROM alpine:3.22.0
 
+ARG APK_REPO_BASE=https://dl-cdn.alpinelinux.org/alpine
 ARG PIP_INDEX_URL=https://pypi.org/simple
 ARG DENO_PREWARM=true
 
@@ -32,7 +37,10 @@ WORKDIR /app
 # Install runtime dependencies for Go app and base for Python
 # pax-utils for scanelf, python3 for running Python, python3-dev for headers/shared libs
 # bind-tools for nslookup etc., file for debugging file types
-RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file deno curl
+RUN if [ "${APK_REPO_BASE}" != "https://dl-cdn.alpinelinux.org/alpine" ]; then \
+        sed -i "s#https://dl-cdn.alpinelinux.org/alpine#${APK_REPO_BASE%/}#g" /etc/apk/repositories; \
+    fi && \
+    apk add --no-cache pax-utils python3 python3-dev bind-tools file deno curl
 
 RUN if [ "${DENO_PREWARM}" = "true" ]; then \
         deno run -A jsr:@langchain/pyodide-sandbox -c "print('Hello, World')"; \

@@ -523,6 +523,7 @@ services:
       context: ../
       dockerfile: backend/Dockerfile
       args:
+        APK_REPO_BASE: ${APK_REPO_BASE:-https://dl-cdn.alpinelinux.org/alpine}
         GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
         GOSUMDB: ${GOSUMDB:-sum.golang.org}
         PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
