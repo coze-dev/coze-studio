@@ -572,6 +572,11 @@ services:
     build:
       context: ../
       dockerfile: backend/Dockerfile
+      args:
+        GOPROXY: ${GOPROXY:-https://proxy.golang.org,direct}
+        GOSUMDB: ${GOSUMDB:-sum.golang.org}
+        PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.org/simple}
+        DENO_PREWARM: ${DENO_PREWARM:-true}
     image: opencoze/opencoze:latest
     profiles: ['build-server']
 

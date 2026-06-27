@@ -1,6 +1,9 @@
 # Stage 1: Builder for Go application
 FROM golang:1.24-alpine AS builder
 
+ARG GOPROXY=https://proxy.golang.org,direct
+ARG GOSUMDB=sum.golang.org
+
 WORKDIR /app
 
 # Install build dependencies for Go
@@ -8,7 +11,8 @@ RUN apk add --no-cache git gcc libc-dev
 
 # Copy go.mod and go.sum first to leverage Docker cache
 COPY backend/go.mod backend/go.sum ./
-RUN go mod download
+RUN go env -w GOPROXY="${GOPROXY}" GOSUMDB="${GOSUMDB}" && \
+    go mod download
 
 # Copy the entire backend source code
 COPY backend/ ./
@@ -20,6 +24,9 @@ RUN go build -ldflags="-s -w" -o /app/opencoze main.go
 # Stage 2: Final image
 FROM alpine:3.22.0
 
+ARG PIP_INDEX_URL=https://pypi.org/simple
+ARG DENO_PREWARM=true
+
 WORKDIR /app
 
 # Install runtime dependencies for Go app and base for Python
@@ -27,16 +34,27 @@ WORKDIR /app
 # bind-tools for nslookup etc., file for debugging file types
 RUN apk add --no-cache pax-utils python3 python3-dev bind-tools file deno curl
 
-RUN deno run -A jsr:@langchain/pyodide-sandbox -c "print('Hello, World')"
+RUN if [ "${DENO_PREWARM}" = "true" ]; then \
+        deno run -A jsr:@langchain/pyodide-sandbox -c "print('Hello, World')"; \
+    else \
+        echo "Skipping Deno prewarm"; \
+    fi
 
 # Install Python build dependencies, create venv, install packages, then remove build deps
 RUN apk add --no-cache --virtual .python-build-deps build-base py3-pip git && \
+    export PIP_INDEX_URL="${PIP_INDEX_URL}" && \
     python3 -m venv --copies --upgrade-deps /app/.venv && \
     # Activate venv and install packages
     . /app/.venv/bin/activate && \
     # If you want to use other third-party libraries, you can install them here.
-    pip install urllib3==1.26.16 && \
-    pip install --no-cache-dir h11==0.16.0 httpx==0.28.1 pillow==11.2.1 pdfplumber==0.11.7 python-docx==1.2.0 numpy==2.3.1 && \
+    pip install --no-cache-dir \
+        urllib3==1.26.16 \
+        h11==0.16.0 \
+        httpx==0.28.1 \
+        pillow==11.2.1 \
+        pdfplumber==0.11.7 \
+        python-docx==1.2.0 \
+        numpy==2.3.1 && \
     # Deactivate (optional, as RUN is a new shell)
     # deactivate && \
     # Remove build dependencies
