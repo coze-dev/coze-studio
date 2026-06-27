@@ -1249,6 +1249,11 @@ func _workflowsMw() []app.HandlerFunc {
 	return nil
 }
 
+func _openapicreateworkflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _openapichatflowrunMw() []app.HandlerFunc {
 	// your code...
 	return nil

@@ -2016,6 +2016,34 @@ struct ValidateTreeResponse {
 
 // OpenAPI
 
+struct OpenAPICreateWorkflowRequest{
+    1  :          string       Name               (api.body = "name")               ,
+    2  : optional string       Description        (api.body = "description")        ,
+    3  : optional string       IconURI            (api.body = "icon_uri")           ,
+    4  :          string       SpaceID            (api.body = "space_id")           ,
+    5  : optional WorkflowMode FlowMode           (api.body = "flow_mode")          ,
+    6  : optional string       Schema             (api.body = "schema")             ,
+    7  : optional bool         Validate           (api.body = "validate")           ,
+    8  : optional string       ProjectID          (api.body = "project_id")         ,
+    9  : optional bool         CreateConversation (api.body = "create_conversation"),
+
+    255: optional base.Base    Base                                                 ,
+}
+
+struct OpenAPICreateWorkflowData {
+    1:          string                 WorkflowID        (go.tag="json:\"workflow_id\"")        ,
+    2: optional bool                   IsValid           (go.tag="json:\"is_valid\"")           ,
+    3: optional list<ValidateTreeInfo> ValidationResults (go.tag="json:\"validation_results\""),
+}
+
+struct OpenAPICreateWorkflowResponse {
+    1  : optional OpenAPICreateWorkflowData Data     (api.body = "data"),
+
+    253: optional i64                       Code     (api.body = "code"),
+    254: optional string                    Msg      (api.body = "msg") ,
+    255: required base.BaseResp             BaseResp                  ,
+}
+
 struct OpenAPIRunFlowRequest{
     1  :          string             WorkflowID (go.tag="json:\"workflow_id\"")                            ,
     2  : optional string             Parameters (go.tag="json:\"parameters\""),

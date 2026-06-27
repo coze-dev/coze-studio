@@ -69,6 +69,7 @@ service WorkflowService {
     workflow.ListPublishWorkflowResponse ListPublishWorkflow(1: workflow.ListPublishWorkflowRequest request) (api.post='/api/workflow_api/list_publish_workflow', api.category="workflow_api", api.gen_path="workflow_api", agw.preserve_base = "true")
 
     // Open API
+    workflow.OpenAPICreateWorkflowResponse OpenAPICreateWorkflow(1: workflow.OpenAPICreateWorkflowRequest request)(api.post = "/v1/workflows", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
     workflow.OpenAPIRunFlowResponse OpenAPIRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api" )
     workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamRunFlow(1: workflow.OpenAPIRunFlowRequest request)(api.post = "/v1/workflow/stream_run", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")
     workflow.OpenAPIStreamRunFlowResponse OpenAPIStreamResumeFlow(1: workflow.OpenAPIStreamResumeFlowRequest request)(api.post = "/v1/workflow/stream_resume", api.category="workflow_open_api", api.tag="openapi", api.gen_path="workflow_open_api")

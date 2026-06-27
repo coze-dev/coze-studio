@@ -146,6 +146,7 @@ type wfTestRunner struct {
 var req2URL = map[reflect.Type]string{
 	reflect.TypeOf(&workflow.NodeTemplateListRequest{}):             "/api/workflow_api/node_template_list",
 	reflect.TypeOf(&workflow.CreateWorkflowRequest{}):               "/api/workflow_api/create",
+	reflect.TypeOf(&workflow.OpenAPICreateWorkflowRequest{}):        "/v1/workflows",
 	reflect.TypeOf(&workflow.SaveWorkflowRequest{}):                 "/api/workflow_api/save",
 	reflect.TypeOf(&workflow.DeleteWorkflowRequest{}):               "/api/workflow_api/delete",
 	reflect.TypeOf(&workflow.GetCanvasInfoRequest{}):                "/api/workflow_api/canvas",
@@ -208,6 +209,7 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.POST("/api/workflow_api/workflow_detail_info", GetWorkflowDetailInfo)
 	h.POST("/api/workflow_api/llm_fc_setting_detail", GetLLMNodeFCSettingDetail)
 	h.POST("/api/workflow_api/llm_fc_setting_merged", GetLLMNodeFCSettingsMerged)
+	h.POST("/v1/workflows", OpenAPICreateWorkflow)
 	h.POST("/v1/workflow/run", OpenAPIRunFlow)
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
@@ -1302,6 +1304,52 @@ func TestValidateTree(t *testing.T) {
 		})
 
 	})
+}
+
+func TestOpenAPICreateWorkflow(t *testing.T) {
+	mockey.PatchConvey("test openapi create workflow", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		data, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/input_receiver.json")
+		require.NoError(t, err)
+
+		validate := true
+		req := &workflow.OpenAPICreateWorkflowRequest{
+			Name:        "openapi workflow",
+			Description: ptr.Of("created by api key"),
+			IconURI:     ptr.Of("icon/uri"),
+			SpaceID:     "123",
+			Schema:      ptr.Of(string(data)),
+			Validate:    &validate,
+		}
+
+		resp := post[workflow.OpenAPICreateWorkflowResponse](r, req)
+		require.NotNil(t, resp.Data)
+		assert.Equal(t, int64(0), *resp.Code)
+		assert.Equal(t, "success", *resp.Msg)
+		assert.NotEmpty(t, resp.Data.WorkflowID)
+		require.NotNil(t, resp.Data.IsValid)
+		assert.True(t, *resp.Data.IsValid)
+
+		wf, err := appworkflow.GetWorkflowDomainSVC().Get(context.Background(), &vo.GetPolicy{
+			ID:    mustParseInt64ForTest(t, resp.Data.WorkflowID),
+			QType: workflowModel.FromDraft,
+		})
+		require.NoError(t, err)
+		assert.Equal(t, "openapi workflow", wf.Name)
+		assert.Equal(t, "created by api key", wf.Desc)
+		assert.Equal(t, "icon/uri", wf.IconURI)
+		assert.JSONEq(t, string(data), wf.Canvas)
+	})
+}
+
+func mustParseInt64ForTest(t *testing.T, value string) int64 {
+	t.Helper()
+
+	id, err := strconv.ParseInt(value, 10, 64)
+	require.NoError(t, err)
+	return id
 }
 
 func TestQueryTypes(t *testing.T) {

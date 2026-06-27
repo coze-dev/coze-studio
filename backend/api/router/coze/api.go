@@ -538,6 +538,7 @@ func Register(r *server.Hertz) {
 				_conversation1.POST("/create", append(_openapicreateconversationMw(), coze.OpenAPICreateConversation)...)
 			}
 		}
+		_v1.POST("/workflows", append(_openapicreateworkflowMw(), coze.OpenAPICreateWorkflow)...)
 		{
 			_workflows := _v1.Group("/workflows", _workflowsMw()...)
 			_workflows.POST("/chat", append(_openapichatflowrunMw(), coze.OpenAPIChatFlowRun)...)

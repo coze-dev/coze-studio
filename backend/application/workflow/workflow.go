@@ -4268,6 +4268,136 @@ func (w *ApplicationService) convertChatFlowRole(ctx context.Context, role *enti
 	return res, nil
 }
 
+func (w *ApplicationService) OpenAPICreateWorkflow(ctx context.Context, req *workflow.OpenAPICreateWorkflowRequest) (
+	_ *workflow.OpenAPICreateWorkflowResponse, err error,
+) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	uID := ctxutil.MustGetUIDFromApiAuthCtx(ctx)
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid space_id: %w", err)
+	}
+	if err = checkUserSpace(ctx, uID, spaceID); err != nil {
+		return nil, err
+	}
+
+	var (
+		appID              *int64
+		createConversation bool
+	)
+	if req.IsSetProjectID() && req.GetProjectID() != "" {
+		projectID, parseErr := strconv.ParseInt(req.GetProjectID(), 10, 64)
+		if parseErr != nil {
+			return nil, fmt.Errorf("invalid project_id: %w", parseErr)
+		}
+		appID = ptr.Of(projectID)
+	}
+
+	if appID != nil && req.IsSetFlowMode() && req.GetFlowMode() == workflow.WorkflowMode_ChatFlow &&
+		req.IsSetCreateConversation() && req.GetCreateConversation() {
+		createConversation = true
+		_, err = GetWorkflowDomainSVC().CreateDraftConversationTemplate(ctx, &vo.CreateConversationTemplateMeta{
+			AppID:   *appID,
+			UserID:  uID,
+			SpaceID: spaceID,
+			Name:    req.Name,
+		})
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	meta := &vo.MetaCreate{
+		CreatorID:        uID,
+		SpaceID:          spaceID,
+		ContentType:      workflow.WorkFlowType_User,
+		Name:             req.Name,
+		Desc:             req.GetDescription(),
+		IconURI:          req.GetIconURI(),
+		AppID:            appID,
+		Mode:             ternary.IFElse(req.IsSetFlowMode(), req.GetFlowMode(), workflow.WorkflowMode_Workflow),
+		InitCanvasSchema: vo.GetDefaultInitCanvasJsonSchema(i18n.GetLocale(ctx)),
+	}
+	if meta.Mode == workflow.WorkflowMode_ChatFlow {
+		conversationName := req.Name
+		if appID == nil || *appID == 0 || !createConversation {
+			conversationName = "Default"
+		}
+		meta.InitCanvasSchema = vo.GetDefaultInitCanvasJsonSchemaChat(i18n.GetLocale(ctx), conversationName)
+	}
+
+	workflowID, err := GetWorkflowDomainSVC().Create(ctx, meta)
+	if err != nil {
+		return nil, err
+	}
+
+	err = PublishWorkflowResource(ctx, workflowID, ptr.Of(int32(meta.Mode)), search.Created, &search.ResourceDocument{
+		Name:          &meta.Name,
+		APPID:         meta.AppID,
+		SpaceID:       &meta.SpaceID,
+		OwnerID:       &meta.CreatorID,
+		PublishStatus: ptr.Of(resource.PublishStatus_UnPublished),
+		CreateTimeMS:  ptr.Of(time.Now().UnixMilli()),
+	})
+	if err != nil {
+		return nil, vo.WrapError(errno.ErrNotifyWorkflowResourceChangeErr, err)
+	}
+
+	canvasSchema := meta.InitCanvasSchema
+	if req.IsSetSchema() && req.GetSchema() != "" {
+		canvasSchema = req.GetSchema()
+		if err = GetWorkflowDomainSVC().Save(ctx, workflowID, canvasSchema); err != nil {
+			return nil, err
+		}
+	}
+
+	code := int64(0)
+	msg := "success"
+	resp := &workflow.OpenAPICreateWorkflowResponse{
+		Data: &workflow.OpenAPICreateWorkflowData{
+			WorkflowID: strconv.FormatInt(workflowID, 10),
+		},
+		Code: &code,
+		Msg:  &msg,
+	}
+
+	if req.IsSetValidate() && req.GetValidate() {
+		validateTreeCfg := vo.ValidateTreeConfig{
+			CanvasSchema: canvasSchema,
+		}
+		if appID != nil {
+			validateTreeCfg.AppID = appID
+		}
+
+		validateInfos, validateErr := GetWorkflowDomainSVC().ValidateTree(ctx, workflowID, validateTreeCfg)
+		if validateErr != nil {
+			return nil, validateErr
+		}
+
+		isValid := true
+		for _, info := range validateInfos {
+			if len(info.Errors) > 0 {
+				isValid = false
+				break
+			}
+		}
+		resp.Data.IsValid = ptr.Of(isValid)
+		resp.Data.ValidationResults = validateInfos
+	}
+
+	return resp, nil
+}
+
 func (w *ApplicationService) OpenAPIGetWorkflowInfo(ctx context.Context, req *workflow.OpenAPIGetWorkflowInfoRequest) (
 	_ *workflow.OpenAPIGetWorkflowInfoResponse, err error) {
 	defer func() {
