@@ -210,6 +210,10 @@ func newWfTestRunner(t *testing.T) *wfTestRunner {
 	h.POST("/api/workflow_api/llm_fc_setting_detail", GetLLMNodeFCSettingDetail)
 	h.POST("/api/workflow_api/llm_fc_setting_merged", GetLLMNodeFCSettingsMerged)
 	h.POST("/v1/workflows", OpenAPICreateWorkflow)
+	h.GET("/v1/workflows/:workflow_id/detail", OpenAPIGetWorkflowDetail)
+	h.PUT("/v1/workflows/:workflow_id", OpenAPIUpdateWorkflow)
+	h.POST("/v1/workflows/:workflow_id/publish", OpenAPIPublishWorkflow)
+	h.DELETE("/v1/workflows/:workflow_id", OpenAPIDeleteWorkflow)
 	h.POST("/v1/workflow/run", OpenAPIRunFlow)
 	h.POST("/v1/workflow/stream_run", OpenAPIStreamRunFlow)
 	h.POST("/v1/workflow/stream_resume", OpenAPIStreamResumeFlow)
@@ -446,6 +450,30 @@ func post[T any](r *wfTestRunner, req any, opts ...PostOptionFn) *T {
 	if err != nil {
 		r.t.Fatalf("failed to unmarshal response body: %v", err)
 	}
+	return &resp
+}
+
+func requestJSON[T any](r *wfTestRunner, method, url string, req any) *T {
+	var body *ut.Body
+	if req != nil {
+		m, err := sonic.Marshal(req)
+		assert.NoError(r.t, err)
+		body = &ut.Body{Body: bytes.NewBuffer(m), Len: len(m)}
+	}
+
+	w := ut.PerformRequest(r.h.Engine, method, url, body,
+		ut.Header{Key: "Content-Type", Value: "application/json"})
+	res := w.Result()
+	if res.StatusCode() != http.StatusOK {
+		r.t.Fatalf("unexpected status code: %d, body: %s", res.StatusCode(), string(res.Body()))
+	}
+
+	var resp T
+	err := sonic.Unmarshal(res.Body(), &resp)
+	if err != nil {
+		r.t.Fatalf("failed to unmarshal response body: %v", err)
+	}
+
 	return &resp
 }
 
@@ -1341,6 +1369,111 @@ func TestOpenAPICreateWorkflow(t *testing.T) {
 		assert.Equal(t, "created by api key", wf.Desc)
 		assert.Equal(t, "icon/uri", wf.IconURI)
 		assert.JSONEq(t, string(data), wf.Canvas)
+	})
+}
+
+func TestOpenAPIWorkflowLifecycle(t *testing.T) {
+	mockey.PatchConvey("test openapi workflow lifecycle", t, func() {
+		r := newWfTestRunner(t)
+		defer r.closeFn()
+
+		createSchema, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/input_receiver.json")
+		require.NoError(t, err)
+
+		validate := true
+		createReq := &workflow.OpenAPICreateWorkflowRequest{
+			Name:        "openapi workflow",
+			Description: ptr.Of("created by api key"),
+			IconURI:     ptr.Of("icon/uri"),
+			SpaceID:     "123",
+			Schema:      ptr.Of(string(createSchema)),
+			Validate:    &validate,
+		}
+
+		createResp := post[workflow.OpenAPICreateWorkflowResponse](r, createReq)
+		require.NotNil(t, createResp.Data)
+		workflowID := createResp.Data.WorkflowID
+
+		detailResp := requestJSON[workflow.OpenAPIGetWorkflowDetailResponse](
+			r,
+			"GET",
+			fmt.Sprintf("/v1/workflows/%s/detail?space_id=123", workflowID),
+			nil,
+		)
+		require.NotNil(t, detailResp.Data)
+		assert.Equal(t, "openapi workflow", detailResp.Data.Name)
+		assert.Equal(t, "created by api key", detailResp.Data.Description)
+		assert.Equal(t, "icon/uri", detailResp.Data.IconURI)
+		assert.JSONEq(t, string(createSchema), detailResp.Data.Schema)
+
+		updateSchema, err := os.ReadFile("../../../domain/workflow/internal/canvas/examples/get_canvas/get_canvas.json")
+		require.NoError(t, err)
+
+		updateReq := &workflow.OpenAPIUpdateWorkflowRequest{
+			SpaceID:     "123",
+			Name:        ptr.Of("openapi workflow updated"),
+			Description: ptr.Of("updated by api key"),
+			IconURI:     ptr.Of("updated/icon"),
+			Schema:      ptr.Of(string(updateSchema)),
+			Validate:    ptr.Of(true),
+		}
+
+		updateResp := requestJSON[workflow.OpenAPIUpdateWorkflowResponse](
+			r,
+			"PUT",
+			fmt.Sprintf("/v1/workflows/%s", workflowID),
+			updateReq,
+		)
+		require.NotNil(t, updateResp.Data)
+		assert.Equal(t, workflowID, updateResp.Data.WorkflowID)
+		assert.NotEmpty(t, updateResp.Data.CommitID)
+		require.NotNil(t, updateResp.Data.IsValid)
+		assert.True(t, *updateResp.Data.IsValid)
+
+		detailResp = requestJSON[workflow.OpenAPIGetWorkflowDetailResponse](
+			r,
+			"GET",
+			fmt.Sprintf("/v1/workflows/%s/detail?space_id=123", workflowID),
+			nil,
+		)
+		require.NotNil(t, detailResp.Data)
+		assert.Equal(t, "openapi workflow updated", detailResp.Data.Name)
+		assert.Equal(t, "updated by api key", detailResp.Data.Description)
+		assert.Equal(t, "updated/icon", detailResp.Data.IconURI)
+		assert.JSONEq(t, string(updateSchema), detailResp.Data.Schema)
+
+		publishResp := requestJSON[workflow.OpenAPIPublishWorkflowResponse](
+			r,
+			"POST",
+			fmt.Sprintf("/v1/workflows/%s/publish", workflowID),
+			&workflow.OpenAPIPublishWorkflowRequest{
+				SpaceID:            "123",
+				WorkflowVersion:    ptr.Of("v0.0.1"),
+				VersionDescription: ptr.Of("first publish"),
+				Force:              ptr.Of(true),
+			},
+		)
+		require.NotNil(t, publishResp.Data)
+		assert.True(t, publishResp.Data.Success)
+		assert.Equal(t, "v0.0.1", publishResp.Data.WorkflowVersion)
+
+		detailResp = requestJSON[workflow.OpenAPIGetWorkflowDetailResponse](
+			r,
+			"GET",
+			fmt.Sprintf("/v1/workflows/%s/detail?space_id=123", workflowID),
+			nil,
+		)
+		require.NotNil(t, detailResp.Data)
+		assert.Equal(t, "v0.0.1", detailResp.Data.LatestPublishedVersion)
+
+		deleteResp := requestJSON[workflow.OpenAPIDeleteWorkflowResponse](
+			r,
+			"DELETE",
+			fmt.Sprintf("/v1/workflows/%s?space_id=123", workflowID),
+			nil,
+		)
+		require.NotNil(t, deleteResp.Data)
+		assert.Equal(t, workflow.DeleteStatus_SUCCESS, deleteResp.Data.Status)
 	})
 }
 

@@ -4398,6 +4398,380 @@ func (w *ApplicationService) OpenAPICreateWorkflow(ctx context.Context, req *wor
 	return resp, nil
 }
 
+func (w *ApplicationService) OpenAPIGetWorkflowDetail(ctx context.Context, req *workflow.OpenAPIGetWorkflowDetailRequest) (
+	_ *workflow.OpenAPIGetWorkflowDetailResponse, err error,
+) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid space_id: %w", err)
+	}
+
+	wf, err := w.openAPIGetAuthorizedWorkflow(ctx, mustParseInt64(req.GetWorkflowID()), spaceID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := w.openAPIBuildWorkflowDetailData(wf)
+	if err != nil {
+		return nil, err
+	}
+
+	code := int64(0)
+	msg := "success"
+	return &workflow.OpenAPIGetWorkflowDetailResponse{
+		Data: data,
+		Code: &code,
+		Msg:  &msg,
+	}, nil
+}
+
+func (w *ApplicationService) OpenAPIUpdateWorkflow(ctx context.Context, req *workflow.OpenAPIUpdateWorkflowRequest) (
+	_ *workflow.OpenAPIUpdateWorkflowResponse, err error,
+) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid space_id: %w", err)
+	}
+
+	workflowID := mustParseInt64(req.GetWorkflowID())
+	if _, err = w.openAPIGetAuthorizedWorkflow(ctx, workflowID, spaceID, true); err != nil {
+		return nil, err
+	}
+
+	if req.IsSetName() || req.IsSetDescription() || req.IsSetIconURI() || req.IsSetFlowMode() {
+		if err = GetWorkflowDomainSVC().UpdateMeta(ctx, workflowID, &vo.MetaUpdate{
+			Name:         req.Name,
+			Desc:         req.Description,
+			IconURI:      req.IconURI,
+			WorkflowMode: req.FlowMode,
+		}); err != nil {
+			return nil, err
+		}
+
+		safego.Go(ctx, func() {
+			publishErr := PublishWorkflowResource(ctx, workflowID, nil, search.Updated, &search.ResourceDocument{
+				Name:         req.Name,
+				UpdateTimeMS: ptr.Of(time.Now().UnixMilli()),
+			})
+			if publishErr != nil {
+				logs.CtxErrorf(ctx, "publish update workflow resource failed, workflowID: %d, err: %v", workflowID, publishErr)
+			}
+		})
+	}
+
+	if req.IsSetSchema() {
+		if err = GetWorkflowDomainSVC().Save(ctx, workflowID, req.GetSchema()); err != nil {
+			return nil, err
+		}
+	}
+
+	wf, err := w.openAPIGetAuthorizedWorkflow(ctx, workflowID, spaceID, false)
+	if err != nil {
+		return nil, err
+	}
+
+	code := int64(0)
+	msg := "success"
+	resp := &workflow.OpenAPIUpdateWorkflowResponse{
+		Data: &workflow.OpenAPIUpdateWorkflowData{
+			WorkflowID: req.GetWorkflowID(),
+			CommitID:   wf.CommitID,
+		},
+		Code: &code,
+		Msg:  &msg,
+	}
+
+	if req.IsSetValidate() && req.GetValidate() {
+		validateInfos, validateErr := w.openAPIValidateWorkflow(ctx, workflowID, wf)
+		if validateErr != nil {
+			return nil, validateErr
+		}
+
+		isValid := true
+		for _, info := range validateInfos {
+			if len(info.Errors) > 0 {
+				isValid = false
+				break
+			}
+		}
+
+		resp.Data.IsValid = ptr.Of(isValid)
+		resp.Data.ValidationResults = validateInfos
+	}
+
+	return resp, nil
+}
+
+func (w *ApplicationService) OpenAPIPublishWorkflow(ctx context.Context, req *workflow.OpenAPIPublishWorkflowRequest) (
+	_ *workflow.OpenAPIPublishWorkflowResponse, err error,
+) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid space_id: %w", err)
+	}
+
+	workflowID := mustParseInt64(req.GetWorkflowID())
+	if _, err = w.openAPIGetAuthorizedWorkflow(ctx, workflowID, spaceID, true); err != nil {
+		return nil, err
+	}
+
+	info := &vo.PublishPolicy{
+		ID:                 workflowID,
+		Version:            req.GetWorkflowVersion(),
+		VersionDescription: req.GetVersionDescription(),
+		CreatorID:          ctxutil.MustGetUIDFromApiAuthCtx(ctx),
+		CommitID:           req.GetCommitID(),
+		Force:              req.GetForce(),
+	}
+
+	if err = w.publishWorkflowResource(ctx, info); err != nil {
+		return nil, err
+	}
+
+	code := int64(0)
+	msg := "success"
+	return &workflow.OpenAPIPublishWorkflowResponse{
+		Data: &workflow.OpenAPIPublishWorkflowData{
+			WorkflowID:      req.GetWorkflowID(),
+			WorkflowVersion: req.GetWorkflowVersion(),
+			Success:         true,
+		},
+		Code: &code,
+		Msg:  &msg,
+	}, nil
+}
+
+func (w *ApplicationService) OpenAPIDeleteWorkflow(ctx context.Context, req *workflow.OpenAPIDeleteWorkflowRequest) (
+	_ *workflow.OpenAPIDeleteWorkflowResponse, err error,
+) {
+	defer func() {
+		if panicErr := recover(); panicErr != nil {
+			err = safego.NewPanicErr(panicErr, debug.Stack())
+		}
+
+		if err != nil {
+			err = vo.WrapIfNeeded(errno.ErrWorkflowOperationFail, err, errorx.KV("cause", vo.UnwrapRootErr(err).Error()))
+		}
+	}()
+
+	spaceID, err := strconv.ParseInt(req.GetSpaceID(), 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("invalid space_id: %w", err)
+	}
+
+	workflowID := mustParseInt64(req.GetWorkflowID())
+	if _, err = w.openAPIGetAuthorizedWorkflow(ctx, workflowID, spaceID, true); err != nil {
+		return nil, err
+	}
+
+	if err = w.deleteWorkflowResource(ctx, &vo.DeletePolicy{
+		IDs: []int64{workflowID},
+	}); err != nil {
+		return nil, err
+	}
+
+	code := int64(0)
+	msg := "success"
+	return &workflow.OpenAPIDeleteWorkflowResponse{
+		Data: &workflow.OpenAPIDeleteWorkflowData{
+			WorkflowID: req.GetWorkflowID(),
+			Status:     workflow.DeleteStatus_SUCCESS,
+		},
+		Code: &code,
+		Msg:  &msg,
+	}, nil
+}
+
+func (w *ApplicationService) openAPIGetAuthorizedWorkflow(ctx context.Context, workflowID int64, spaceID int64, metaOnly bool) (
+	_ *entity.Workflow, err error,
+) {
+	if err = checkUserSpace(ctx, ctxutil.MustGetUIDFromApiAuthCtx(ctx), spaceID); err != nil {
+		return nil, err
+	}
+
+	wf, err := GetWorkflowDomainSVC().Get(ctx, &vo.GetPolicy{
+		ID:       workflowID,
+		QType:    workflowModel.FromDraft,
+		MetaOnly: metaOnly,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if wf.SpaceID != spaceID {
+		return nil, fmt.Errorf("workflow %d does not belong to space %d", workflowID, spaceID)
+	}
+
+	return wf, nil
+}
+
+func (w *ApplicationService) openAPIBuildWorkflowDetailData(wf *entity.Workflow) (
+	_ *workflow.OpenAPIGetWorkflowDetailData, err error,
+) {
+	devStatus := workflow.WorkFlowDevStatus_CanNotSubmit
+	if wf.TestRunSuccess {
+		devStatus = workflow.WorkFlowDevStatus_CanSubmit
+	}
+
+	vcsType := workflow.VCSCanvasType_Draft
+	if !wf.Modified {
+		vcsType = workflow.VCSCanvasType_Publish
+		devStatus = workflow.WorkFlowDevStatus_HadSubmit
+	}
+
+	updateTime := time.Time{}
+	if wf.UpdatedAt != nil {
+		updateTime = *wf.UpdatedAt
+	}
+	if wf.DraftMeta != nil && wf.DraftMeta.Timestamp.After(updateTime) {
+		updateTime = wf.DraftMeta.Timestamp
+	}
+	if wf.VersionMeta != nil && wf.VersionMeta.VersionCreatedAt.After(updateTime) {
+		updateTime = wf.VersionMeta.VersionCreatedAt
+	}
+
+	cv := &vo.Canvas{}
+	if err = sonic.UnmarshalString(wf.Canvas, cv); err != nil {
+		return nil, err
+	}
+
+	endType, err := parseWorkflowTerminatePlanType(cv)
+	if err != nil {
+		return nil, err
+	}
+
+	inputVariables, err := toVariables(wf.InputParams)
+	if err != nil {
+		return nil, err
+	}
+
+	var outputVariables []*vo.Variable
+	if endType == 1 {
+		outputVariables = []*vo.Variable{
+			{
+				Name: "output",
+				Type: vo.VariableTypeString,
+			},
+		}
+	} else {
+		outputVariables, err = toVariables(wf.OutputParams)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	data := &workflow.OpenAPIGetWorkflowDetailData{
+		WorkflowID:             strconv.FormatInt(wf.ID, 10),
+		SpaceID:                strconv.FormatInt(wf.SpaceID, 10),
+		Name:                   wf.Name,
+		Description:            wf.Desc,
+		IconURI:                wf.IconURI,
+		IconURL:                wf.IconURL,
+		FlowMode:               wf.Mode,
+		CreatedAt:              wf.CreatedAt.Unix(),
+		UpdatedAt:              updateTime.Unix(),
+		Status:                 devStatus,
+		Schema:                 wf.Canvas,
+		CommitID:               wf.CommitID,
+		DraftCommitID:          wf.CommitID,
+		VCSType:                vcsType,
+		LatestPublishedVersion: wf.GetLatestVersion(),
+		Inputs:                 toOpenAPIWorkflowVariables(inputVariables),
+		Outputs:                toOpenAPIWorkflowVariables(outputVariables),
+		EndType:                endType,
+	}
+
+	if wf.AppID != nil {
+		data.ProjectID = ptr.Of(strconv.FormatInt(*wf.AppID, 10))
+	}
+
+	return data, nil
+}
+
+func toOpenAPIWorkflowVariables(variables []*vo.Variable) []*workflow.OpenAPIWorkflowVariable {
+	if len(variables) == 0 {
+		return nil
+	}
+
+	resp := make([]*workflow.OpenAPIWorkflowVariable, 0, len(variables))
+	for _, variable := range variables {
+		resp = append(resp, toOpenAPIWorkflowVariable(variable))
+	}
+
+	return resp
+}
+
+func toOpenAPIWorkflowVariable(variable *vo.Variable) *workflow.OpenAPIWorkflowVariable {
+	if variable == nil {
+		return nil
+	}
+
+	return &workflow.OpenAPIWorkflowVariable{
+		Name:         variable.Name,
+		Type:         string(variable.Type),
+		Required:     variable.Required,
+		AssistType:   variable.AssistType,
+		Schema:       toOpenAPIWorkflowVariableSchema(variable.Schema),
+		Description:  variable.Description,
+		ReadOnly:     variable.ReadOnly,
+		DefaultValue: variable.DefaultValue,
+	}
+}
+
+func toOpenAPIWorkflowVariableSchema(schema any) any {
+	switch value := schema.(type) {
+	case *vo.Variable:
+		return toOpenAPIWorkflowVariable(value)
+	case []*vo.Variable:
+		return toOpenAPIWorkflowVariables(value)
+	default:
+		return schema
+	}
+}
+
+func (w *ApplicationService) openAPIValidateWorkflow(ctx context.Context, workflowID int64, wf *entity.Workflow) (
+	_ []*workflow.ValidateTreeInfo, err error,
+) {
+	validateTreeCfg := vo.ValidateTreeConfig{
+		CanvasSchema: wf.Canvas,
+	}
+	if wf.AppID != nil {
+		validateTreeCfg.AppID = wf.AppID
+	}
+
+	return GetWorkflowDomainSVC().ValidateTree(ctx, workflowID, validateTreeCfg)
+}
+
 func (w *ApplicationService) OpenAPIGetWorkflowInfo(ctx context.Context, req *workflow.OpenAPIGetWorkflowInfoRequest) (
 	_ *workflow.OpenAPIGetWorkflowInfoResponse, err error) {
 	defer func() {

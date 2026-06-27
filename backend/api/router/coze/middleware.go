@@ -1249,7 +1249,27 @@ func _workflowsMw() []app.HandlerFunc {
 	return nil
 }
 
+func _openapigetworkflowdetailMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _openapicreateworkflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapiupdateworkflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapipublishworkflowMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
+func _openapideleteworkflowMw() []app.HandlerFunc {
 	// your code...
 	return nil
 }

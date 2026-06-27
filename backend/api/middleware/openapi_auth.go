@@ -67,8 +67,10 @@ var needAuthFunc = map[string]bool{
 	"^/v1/bots/[0-9]+$":                true,
 	"^/v1/conversations/[0-9]+$":       true,
 
-	"^/v1/workflows/[0-9]+$": true,
-	"^/v1/apps/[0-9]+$":      true,
+	"^/v1/workflows/[0-9]+$":         true,
+	"^/v1/workflows/[0-9]+/detail$":  true,
+	"^/v1/workflows/[0-9]+/publish$": true,
+	"^/v1/apps/[0-9]+$":              true,
 
 	"^/v1/datasets/[0-9]+$":         true, // v1/datasets/:dataset_id
 	"^/v1/datasets/[0-9]+/images$":  true, // v1/datasets/:dataset_id/images
