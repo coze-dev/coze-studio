@@ -1249,6 +1249,11 @@ func _workflowsMw() []app.HandlerFunc {
 	return nil
 }
 
+func _openapigetmodellistMw() []app.HandlerFunc {
+	// your code...
+	return nil
+}
+
 func _openapigetworkflowdetailMw() []app.HandlerFunc {
 	// your code...
 	return nil
