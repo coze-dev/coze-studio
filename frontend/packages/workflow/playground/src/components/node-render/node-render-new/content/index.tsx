@@ -27,6 +27,7 @@ import { PluginContent } from '@/node-registries/plugin';
 import { OutputContent } from '@/node-registries/output';
 import { LtmContent } from '@/node-registries/ltm';
 import { LoopContent } from '@/node-registries/loop';
+import { JsonParserContent } from '@/node-registries/json-parser';
 import { JsonStringifyContent } from '@/node-registries/json-stringify';
 import { IntentContent } from '@/node-registries/intent';
 import { InputContent } from '@/node-registries/input';
@@ -89,6 +90,7 @@ const ContentMap = {
   [StandardNodeType.TriggerRead]: TriggerReadContent,
   [StandardNodeType.Api]: PluginContent,
   [StandardNodeType.Variable]: VariableContent,
+  [StandardNodeType.JsonParser]: JsonParserContent,
   [StandardNodeType.JsonStringify]: JsonStringifyContent,
 };
 
