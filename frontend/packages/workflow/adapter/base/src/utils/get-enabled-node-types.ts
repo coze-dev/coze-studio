@@ -55,7 +55,7 @@ export const getEnabledNodeTypes = (_params: {
     [StandardNodeType.DatabaseQuery]: true,
     [StandardNodeType.DatabaseDelete]: true,
     [StandardNodeType.DatabaseCreate]: true,
-    // [StandardNodeType.JsonParser]: true,
+    [StandardNodeType.JsonParser]: true,
     [StandardNodeType.JsonStringify]: true,
     [StandardNodeType.UpdateConversation]: true,
     [StandardNodeType.DeleteConversation]: true,
