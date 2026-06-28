@@ -33,6 +33,26 @@ import {
 } from '../types';
 import { type VariableGroup, type Variable } from '../store';
 
+type CompatibleVariableTypeDTO = VariableTypeDTO | number;
+
+const LEGACY_INPUT_TYPE_TO_VARIABLE_TYPE_MAP: Partial<
+  Record<number, VariableTypeDTO>
+> = {
+  1: VariableTypeDTO.String,
+  2: VariableTypeDTO.Integer,
+  3: VariableTypeDTO.Boolean,
+  4: VariableTypeDTO.Float,
+  5: VariableTypeDTO.List,
+  6: VariableTypeDTO.Object,
+};
+
+const normalizeVariableDTOType = (
+  type?: CompatibleVariableTypeDTO,
+): VariableTypeDTO | undefined =>
+  typeof type === 'number'
+    ? LEGACY_INPUT_TYPE_TO_VARIABLE_TYPE_MAP[type]
+    : type;
+
 export const getGroupListByDto = (
   dtoGroups: ProjectMemory.GroupVariableInfo[],
 ): VariableGroup[] => {
@@ -124,7 +144,8 @@ export function getViewVariableByDto(
     dtoVariable.Schema || '{}',
   ) as VariableSchemaDTO;
 
-  const { type } = variableSchema;
+  const rawType = variableSchema.type as CompatibleVariableTypeDTO;
+  const type = normalizeVariableDTOType(rawType);
 
   const baseVariable = createBaseVariable({
     dtoVariable,
@@ -141,20 +162,23 @@ export function getViewVariableByDto(
 
   return {
     ...baseVariable,
-    type: dTOTypeToViewType(variableSchema.type),
+    type: dTOTypeToViewType(type ?? rawType),
     children: [],
   };
 }
 
 export function dTOTypeToViewType(
-  type: VariableTypeDTO,
+  type: CompatibleVariableTypeDTO,
   {
     arrayItemType,
   }: {
-    arrayItemType?: VariableTypeDTO;
+    arrayItemType?: CompatibleVariableTypeDTO;
   } = {},
 ): ViewVariableType {
-  switch (type) {
+  const normalizedType = normalizeVariableDTOType(type);
+  const normalizedArrayItemType = normalizeVariableDTOType(arrayItemType);
+
+  switch (normalizedType) {
     case VariableTypeDTO.Boolean:
       return ViewVariableType.Boolean;
     case VariableTypeDTO.Integer:
@@ -166,13 +190,13 @@ export function dTOTypeToViewType(
     case VariableTypeDTO.Object:
       return ViewVariableType.Object;
     case VariableTypeDTO.List:
-      if (!arrayItemType) {
+      if (!normalizedArrayItemType) {
         throw new Error(
           `Unkown variable DTO list need sub type but get ${arrayItemType}`,
         );
       }
 
-      switch (arrayItemType) {
+      switch (normalizedArrayItemType) {
         case VariableTypeDTO.Boolean:
           return ViewVariableType.ArrayBoolean;
         case VariableTypeDTO.Integer:
@@ -231,7 +255,9 @@ function convertListVariable(
 ): Variable {
   const subVariableSchema = variableSchema.schema as VariableSchemaDTO;
 
-  const { type: subVariableType } = subVariableSchema;
+  const subVariableType = normalizeVariableDTOType(
+    subVariableSchema.type as CompatibleVariableTypeDTO,
+  );
 
   if (subVariableType === VariableTypeDTO.Object) {
     return convertListObjectVariable(baseVariable, variableSchema);
@@ -239,8 +265,10 @@ function convertListVariable(
 
   return {
     ...baseVariable,
-    type: dTOTypeToViewType(variableSchema.type, {
-      arrayItemType: subVariableType,
+    type: dTOTypeToViewType(variableSchema.type as CompatibleVariableTypeDTO, {
+      arrayItemType:
+        subVariableType ??
+        (subVariableSchema.type as CompatibleVariableTypeDTO),
     }),
     children: [],
   } as unknown as Variable;
@@ -275,12 +303,16 @@ function convertListObjectVariable(
     throw new Error('List object variable schema is invalid');
   }
 
-  const { type: subVariableType } = subVariableSchema;
+  const subVariableType = normalizeVariableDTOType(
+    subVariableSchema.type as CompatibleVariableTypeDTO,
+  );
 
   return {
     ...baseVariable,
     type: dTOTypeToViewType(VariableTypeDTO.List, {
-      arrayItemType: subVariableType,
+      arrayItemType:
+        subVariableType ??
+        (subVariableSchema.type as CompatibleVariableTypeDTO),
     }),
     children: Array.isArray(subVariableSchema.schema)
       ? subVariableSchema.schema.map(schema =>
@@ -319,7 +351,7 @@ function convertObjectVariable(
 
   return {
     ...baseVariable,
-    type: dTOTypeToViewType(variableSchema.type),
+    type: dTOTypeToViewType(variableSchema.type as CompatibleVariableTypeDTO),
     children: Array.isArray(schema)
       ? schema.map(subMeta =>
           createVariableBySchema(subMeta, {

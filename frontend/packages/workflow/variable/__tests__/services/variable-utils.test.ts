@@ -19,7 +19,11 @@ import { loopJSON } from '__tests__/workflow.mock';
 import { allConstantInputs, allEndRefInputs } from '__tests__/variable.mock';
 import { createContainer } from '__tests__/create-container';
 import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';
-import { ValueExpression } from '@coze-workflow/base';
+import {
+  ValueExpression,
+  type VariableMetaDTO,
+  ViewVariableType,
+} from '@coze-workflow/base';
 
 import { mockFullOutputs } from './../variable.mock';
 
@@ -77,5 +81,40 @@ describe('test variable utils', () => {
       expect(_vo.type).toBe(mockFullOutputs[idx].type);
       expect(_vo.name).toBe(mockFullOutputs[idx].name);
     });
+  });
+
+  test('Variable DTO convert supports numeric InputType values', () => {
+    const objectDto = {
+      type: 6,
+      name: 'output',
+      schema: [
+        {
+          type: 1,
+          name: 'title',
+        },
+      ],
+    } as unknown as VariableMetaDTO;
+
+    const listDto = {
+      type: 5,
+      name: 'items',
+      schema: {
+        type: 6,
+        schema: [
+          {
+            type: 2,
+            name: 'count',
+          },
+        ],
+      },
+    } as unknown as VariableMetaDTO;
+
+    const objectVo = variableUtils.dtoMetaToViewMeta(objectDto);
+    const listVo = variableUtils.dtoMetaToViewMeta(listDto);
+
+    expect(objectVo.type).toBe(ViewVariableType.Object);
+    expect(objectVo.children?.[0]?.type).toBe(ViewVariableType.String);
+    expect(listVo.type).toBe(ViewVariableType.ArrayObject);
+    expect(listVo.children?.[0]?.type).toBe(ViewVariableType.Integer);
   });
 });

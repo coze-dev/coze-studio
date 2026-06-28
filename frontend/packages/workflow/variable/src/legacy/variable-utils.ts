@@ -46,6 +46,26 @@ import { type WorkflowVariableService } from './workflow-variable-service';
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace variableUtils {
+  type CompatibleVariableTypeDTO = VariableTypeDTO | number;
+
+  const LEGACY_INPUT_TYPE_TO_VARIABLE_TYPE_MAP: Partial<
+    Record<number, VariableTypeDTO>
+  > = {
+    1: VariableTypeDTO.string,
+    2: VariableTypeDTO.integer,
+    3: VariableTypeDTO.boolean,
+    4: VariableTypeDTO.float,
+    5: VariableTypeDTO.list,
+    6: VariableTypeDTO.object,
+  };
+
+  const normalizeVariableDTOType = (
+    type?: CompatibleVariableTypeDTO,
+  ): VariableTypeDTO | undefined =>
+    typeof type === 'number'
+      ? LEGACY_INPUT_TYPE_TO_VARIABLE_TYPE_MAP[type]
+      : type;
+
   export const ASSIST_TYPE_TO_VIEW_TYPE: Record<
     AssistTypeDTO,
     ViewVariableType
@@ -79,16 +99,19 @@ export namespace variableUtils {
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
   export function DTOTypeToViewType(
-    type: VariableTypeDTO,
+    type: CompatibleVariableTypeDTO,
     {
       arrayItemType,
       assistType,
     }: {
-      arrayItemType?: VariableTypeDTO;
+      arrayItemType?: CompatibleVariableTypeDTO;
       assistType?: AssistTypeDTO;
     } = {},
   ): ViewVariableType {
-    switch (type) {
+    const normalizedType = normalizeVariableDTOType(type);
+    const normalizedArrayItemType = normalizeVariableDTOType(arrayItemType);
+
+    switch (normalizedType) {
       case VariableTypeDTO.boolean:
         return ViewVariableType.Boolean;
       case VariableTypeDTO.float:
@@ -110,13 +133,13 @@ export namespace variableUtils {
       case VariableTypeDTO.image:
         return ViewVariableType.Image;
       case VariableTypeDTO.list:
-        if (!arrayItemType) {
+        if (!normalizedArrayItemType) {
           throw new Error(
             `Unkown variable DTO list need sub type but get ${arrayItemType}`,
           );
         }
 
-        switch (arrayItemType) {
+        switch (normalizedArrayItemType) {
           case VariableTypeDTO.boolean:
             return ViewVariableType.ArrayBoolean;
           case VariableTypeDTO.float:
@@ -205,13 +228,19 @@ export namespace variableUtils {
    * @param meta
    */
   function checkDtoMetaValid(meta: VariableMetaDTO) {
-    if (!meta?.type) {
+    const normalizedType = normalizeVariableDTOType(
+      meta?.type as CompatibleVariableTypeDTO,
+    );
+
+    if (!normalizedType) {
       return;
     }
 
     // Non-object and list types, schema scenarios with values are reported, such as {type: 'string', schema: []}
     if (
-      ![VariableTypeDTO.list, VariableTypeDTO.object].includes(meta.type) &&
+      ![VariableTypeDTO.list, VariableTypeDTO.object].includes(
+        normalizedType,
+      ) &&
       meta.schema
     ) {
       reporter.event({
@@ -229,12 +258,16 @@ export namespace variableUtils {
    */
   export function dtoMetaToViewMeta(meta: VariableMetaDTO): ViewVariableMeta {
     checkDtoMetaValid(meta);
-    switch (meta.type) {
+    const normalizedType = normalizeVariableDTOType(
+      meta.type as CompatibleVariableTypeDTO,
+    );
+
+    switch (normalizedType) {
       case VariableTypeDTO.list:
         return {
           key: nanoid(),
-          type: DTOTypeToViewType(meta.type, {
-            arrayItemType: meta.schema?.type,
+          type: DTOTypeToViewType(normalizedType, {
+            arrayItemType: meta.schema?.type as CompatibleVariableTypeDTO,
             assistType: meta.schema?.assistType,
           }),
           name: meta.name,
@@ -250,9 +283,12 @@ export namespace variableUtils {
       default:
         return {
           key: nanoid(),
-          type: DTOTypeToViewType(meta.type, {
-            assistType: meta.assistType,
-          }),
+          type: DTOTypeToViewType(
+            normalizedType ?? (meta.type as CompatibleVariableTypeDTO),
+            {
+              assistType: meta.assistType,
+            },
+          ),
           name: meta.name,
           children: meta.schema?.map(subMeta => dtoMetaToViewMeta(subMeta)),
           required: meta.required,
