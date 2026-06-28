@@ -4355,7 +4355,10 @@ func (w *ApplicationService) OpenAPICreateWorkflow(ctx context.Context, req *wor
 
 	canvasSchema := meta.InitCanvasSchema
 	if req.IsSetSchema() && req.GetSchema() != "" {
-		canvasSchema = req.GetSchema()
+		canvasSchema, err = w.openAPINormalizeWorkflowSchemaModels(ctx, req.GetSchema())
+		if err != nil {
+			return nil, err
+		}
 		if err = GetWorkflowDomainSVC().Save(ctx, workflowID, canvasSchema); err != nil {
 			return nil, err
 		}
@@ -4480,7 +4483,11 @@ func (w *ApplicationService) OpenAPIUpdateWorkflow(ctx context.Context, req *wor
 	}
 
 	if req.IsSetSchema() {
-		if err = GetWorkflowDomainSVC().Save(ctx, workflowID, req.GetSchema()); err != nil {
+		normalizedSchema, normalizeErr := w.openAPINormalizeWorkflowSchemaModels(ctx, req.GetSchema())
+		if normalizeErr != nil {
+			return nil, normalizeErr
+		}
+		if err = GetWorkflowDomainSVC().Save(ctx, workflowID, normalizedSchema); err != nil {
 			return nil, err
 		}
 	}
