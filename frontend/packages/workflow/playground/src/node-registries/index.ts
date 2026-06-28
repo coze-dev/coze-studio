@@ -46,4 +46,5 @@ export { IF_NODE_REGISTRY } from './if';
 export { PLUGIN_NODE_REGISTRY } from './plugin';
 export { SUB_WORKFLOW_NODE_REGISTRY } from './sub-workflow';
 export { VARIABLE_NODE_REGISTRY } from './variable';
+export { JSON_PARSER_NODE_REGISTRY } from './json-parser';
 export { JSON_STRINGIFY_NODE_REGISTRY } from './json-stringify';
