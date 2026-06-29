@@ -21,7 +21,9 @@ import { createContainer } from '__tests__/create-container';
 import { WorkflowDocument } from '@flowgram-adapter/free-layout-editor';
 import {
   ValueExpression,
+  VariableTypeDTO,
   type VariableMetaDTO,
+  type ViewVariableMeta,
   ViewVariableType,
 } from '@coze-workflow/base';
 
@@ -116,5 +118,51 @@ describe('test variable utils', () => {
     expect(objectVo.children?.[0]?.type).toBe(ViewVariableType.String);
     expect(listVo.type).toBe(ViewVariableType.ArrayObject);
     expect(listVo.children?.[0]?.type).toBe(ViewVariableType.Integer);
+  });
+
+  test('Variable VO convert supports DTO-style string view types', () => {
+    const objectViewMeta = {
+      key: 'output',
+      name: 'output',
+      type: 'object',
+      children: [
+        {
+          key: 'title',
+          name: 'title',
+          type: 'string',
+        },
+        {
+          key: 'score',
+          name: 'score',
+          type: 'number',
+        },
+      ],
+    } as unknown as ViewVariableMeta;
+
+    const dto = variableUtils.viewMetaToDTOMeta(objectViewMeta);
+
+    expect(dto.type).toBe(VariableTypeDTO.object);
+    expect(dto.schema).toEqual([
+      {
+        name: 'title',
+        type: VariableTypeDTO.string,
+        assistType: undefined,
+        schema: undefined,
+        readonly: undefined,
+        required: undefined,
+        description: undefined,
+        defaultValue: undefined,
+      },
+      {
+        name: 'score',
+        type: VariableTypeDTO.float,
+        assistType: undefined,
+        schema: undefined,
+        readonly: undefined,
+        required: undefined,
+        description: undefined,
+        defaultValue: undefined,
+      },
+    ]);
   });
 });

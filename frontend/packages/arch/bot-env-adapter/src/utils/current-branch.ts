@@ -27,6 +27,7 @@ export function getCurrentBranch(): string | undefined {
     // HEAD represents the current location
     const branch = execSync('git rev-parse --abbrev-ref HEAD', {
       encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
 
     // If in the detached HEAD state, return undefined
@@ -37,6 +38,6 @@ export function getCurrentBranch(): string | undefined {
     return branch;
   } catch (error) {
     // If there is an execution error (e.g. not in the git repository), return undefined.
-    return '';
+    return undefined;
   }
 }

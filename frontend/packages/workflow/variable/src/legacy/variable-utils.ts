@@ -47,6 +47,7 @@ import { type WorkflowVariableService } from './workflow-variable-service';
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace variableUtils {
   type CompatibleVariableTypeDTO = VariableTypeDTO | number;
+  type CompatibleViewVariableType = ViewVariableType | VariableTypeDTO | string;
 
   const LEGACY_INPUT_TYPE_TO_VARIABLE_TYPE_MAP: Partial<
     Record<number, VariableTypeDTO>
@@ -65,6 +66,82 @@ export namespace variableUtils {
     typeof type === 'number'
       ? LEGACY_INPUT_TYPE_TO_VARIABLE_TYPE_MAP[type]
       : type;
+
+  const LEGACY_VIEW_TYPE_KEY_TO_VIEW_TYPE_MAP: Partial<
+    Record<string, ViewVariableType>
+  > = {
+    string: ViewVariableType.String,
+    integer: ViewVariableType.Integer,
+    number: ViewVariableType.Number,
+    float: ViewVariableType.Number,
+    boolean: ViewVariableType.Boolean,
+    object: ViewVariableType.Object,
+    image: ViewVariableType.Image,
+    file: ViewVariableType.File,
+    doc: ViewVariableType.Doc,
+    code: ViewVariableType.Code,
+    ppt: ViewVariableType.Ppt,
+    txt: ViewVariableType.Txt,
+    excel: ViewVariableType.Excel,
+    audio: ViewVariableType.Audio,
+    zip: ViewVariableType.Zip,
+    video: ViewVariableType.Video,
+    svg: ViewVariableType.Svg,
+    voice: ViewVariableType.Voice,
+    time: ViewVariableType.Time,
+    'array<string>': ViewVariableType.ArrayString,
+    arraystring: ViewVariableType.ArrayString,
+    'array<integer>': ViewVariableType.ArrayInteger,
+    arrayinteger: ViewVariableType.ArrayInteger,
+    'array<boolean>': ViewVariableType.ArrayBoolean,
+    arrayboolean: ViewVariableType.ArrayBoolean,
+    'array<number>': ViewVariableType.ArrayNumber,
+    arraynumber: ViewVariableType.ArrayNumber,
+    'array<object>': ViewVariableType.ArrayObject,
+    arrayobject: ViewVariableType.ArrayObject,
+    'array<image>': ViewVariableType.ArrayImage,
+    arrayimage: ViewVariableType.ArrayImage,
+    'array<file>': ViewVariableType.ArrayFile,
+    arrayfile: ViewVariableType.ArrayFile,
+    'array<doc>': ViewVariableType.ArrayDoc,
+    arraydoc: ViewVariableType.ArrayDoc,
+    'array<code>': ViewVariableType.ArrayCode,
+    arraycode: ViewVariableType.ArrayCode,
+    'array<ppt>': ViewVariableType.ArrayPpt,
+    arrayppt: ViewVariableType.ArrayPpt,
+    'array<txt>': ViewVariableType.ArrayTxt,
+    arraytxt: ViewVariableType.ArrayTxt,
+    'array<excel>': ViewVariableType.ArrayExcel,
+    arrayexcel: ViewVariableType.ArrayExcel,
+    'array<audio>': ViewVariableType.ArrayAudio,
+    arrayaudio: ViewVariableType.ArrayAudio,
+    'array<zip>': ViewVariableType.ArrayZip,
+    arrayzip: ViewVariableType.ArrayZip,
+    'array<video>': ViewVariableType.ArrayVideo,
+    arrayvideo: ViewVariableType.ArrayVideo,
+    'array<svg>': ViewVariableType.ArraySvg,
+    arraysvg: ViewVariableType.ArraySvg,
+    'array<voice>': ViewVariableType.ArrayVoice,
+    arrayvoice: ViewVariableType.ArrayVoice,
+    'array<time>': ViewVariableType.ArrayTime,
+    arraytime: ViewVariableType.ArrayTime,
+  };
+
+  const normalizeViewVariableType = (
+    type?: CompatibleViewVariableType,
+  ): ViewVariableType | undefined => {
+    if (typeof type === 'number') {
+      return type as ViewVariableType;
+    }
+
+    if (!type) {
+      return undefined;
+    }
+
+    return LEGACY_VIEW_TYPE_KEY_TO_VIEW_TYPE_MAP[
+      type.toString().replace(/\s+/g, '').toLowerCase()
+    ];
+  };
 
   export const ASSIST_TYPE_TO_VIEW_TYPE: Record<
     AssistTypeDTO,
@@ -168,15 +245,21 @@ export namespace variableUtils {
         throw new Error(`Unknown variable DTO Type: ${type}:${arrayItemType}`);
     }
   }
-  export function viewTypeToDTOType(type: ViewVariableType): {
+  export function viewTypeToDTOType(type: CompatibleViewVariableType): {
     type: VariableTypeDTO;
     subType?: VariableTypeDTO;
     assistType?: AssistTypeDTO;
     subAssistType?: AssistTypeDTO;
   } {
+    const normalizedType = normalizeViewVariableType(type);
+
+    if (isNil(normalizedType)) {
+      throw new Error(`Unkonwn variable view type: ${type}`);
+    }
+
     // If it is a variable of array type
-    if (ViewVariableType.isArrayType(type)) {
-      const subViewType = ViewVariableType.getArraySubType(type);
+    if (ViewVariableType.isArrayType(normalizedType)) {
+      const subViewType = ViewVariableType.getArraySubType(normalizedType);
       const { type: subType, assistType: subAssistType } =
         viewTypeToDTOType(subViewType);
 
@@ -188,7 +271,7 @@ export namespace variableUtils {
     }
 
     // AssistType Mapping
-    const assistType = VIEW_TYPE_TO_ASSIST_TYPE[type];
+    const assistType = VIEW_TYPE_TO_ASSIST_TYPE[normalizedType];
     if (assistType) {
       return {
         type: VariableTypeDTO.string,
@@ -197,7 +280,7 @@ export namespace variableUtils {
     }
 
     // Normal type mapping
-    switch (type) {
+    switch (normalizedType) {
       case ViewVariableType.String:
         return { type: VariableTypeDTO.string };
       case ViewVariableType.Integer:
