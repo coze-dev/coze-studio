@@ -122,6 +122,7 @@ COMPOSE_ARGS+=(
 
 BUILD_ARGS=(
     --progress=plain
+    --build-arg "BUILD_BRANCH=$BRANCH_NAME"
     -f "$FRONTEND_DOCKERFILE"
     -t "$LOCAL_IMAGE_TAG"
     "$BASE_DIR"

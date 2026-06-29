@@ -3,6 +3,9 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+ARG BUILD_BRANCH=opencoze-local
+ENV BUILD_BRANCH=${BUILD_BRANCH}
+
 # if you located in China, you can use aliyun mirror to speed up
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 
