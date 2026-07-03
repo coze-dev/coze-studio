@@ -270,7 +270,7 @@ func (k *knowledgeSVC) copyKnowledgeDocuments(ctx context.Context, copyCtx *know
 				mu.Lock()
 				failList = append(failList, doc.ID)
 				mu.Unlock()
-				logs.CtxErrorf(ctx, "copy document failed, src document id: %d, new id: %d, err: %v", doc.ID, newID, err)
+				logs.CtxErrorf(ctx, "copy document failed, src document id: %d, new id: %d, err: %v", doc.ID, newID, cpErr)
 				return cpErr
 			}
 			return nil

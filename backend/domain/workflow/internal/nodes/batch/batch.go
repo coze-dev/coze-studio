@@ -348,7 +348,6 @@ func (b *Batch) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Nod
 			stateModifier, ok := options.GetResumeIndexes()[i]
 			mu.Unlock()
 			if ok {
-				fmt.Println("has state modifier for ith run: ", i, ", checkpointID: ", subCheckpointID)
 				ithOpts = append(ithOpts, compose.WithStateModifier(stateModifier))
 			}
 		} else {
@@ -456,7 +455,6 @@ func (b *Batch) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Nod
 			return nil, err
 		}
 
-		fmt.Println("save composite info in state within batch: ", compState)
 	}
 
 	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
