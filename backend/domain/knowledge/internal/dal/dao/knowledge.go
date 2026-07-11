@@ -85,7 +85,7 @@ func (dao *KnowledgeDAO) FilterEnableKnowledge(ctx context.Context, knowledgeIDs
 func (dao *KnowledgeDAO) InitTx() (tx *gorm.DB, err error) {
 	tx = dao.DB.Begin()
 	if tx.Error != nil {
-		return nil, err
+		return nil, tx.Error
 	}
 	return
 }
