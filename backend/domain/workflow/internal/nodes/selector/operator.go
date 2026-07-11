@@ -57,7 +57,7 @@ func (o *Operator) WillAccept(leftT, rightT reflect.Type) error {
 			return fmt.Errorf("operator %v only accepts int64, float64, bool or string, not %v", *o, leftT)
 		}
 
-		if leftT.Kind() == reflect.Bool || leftT.Kind() != reflect.String {
+		if leftT.Kind() == reflect.Bool {
 			if leftT != rightT {
 				return fmt.Errorf("operator %v left operant and right operant must be same type: %v, %v", *o, leftT, rightT)
 			}
