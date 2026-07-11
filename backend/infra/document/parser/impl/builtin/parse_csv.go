@@ -46,7 +46,7 @@ func (c *csvIterator) NextRow() (row []string, end bool, err error) {
 		if errors.Is(e, io.EOF) {
 			return nil, true, nil
 		}
-		return nil, false, err
+		return nil, false, e
 	}
 
 	return row, false, nil
