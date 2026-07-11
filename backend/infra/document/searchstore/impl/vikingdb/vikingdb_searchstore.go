@@ -320,7 +320,7 @@ func (v *vkSearchStore) genFilter(ctx context.Context, co *retriever.Options, ro
 
 		op := map[string]any{"op": "must", "field": key, "conds": conds}
 
-		if filter != nil {
+		if filter == nil {
 			filter = op
 		} else {
 			filter = map[string]any{
