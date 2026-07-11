@@ -29,6 +29,7 @@ import (
 	messagemock "github.com/coze-dev/coze-studio/backend/crossdomain/message/messagemock"
 	workflowModel "github.com/coze-dev/coze-studio/backend/crossdomain/workflow/model"
 	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity"
+	"github.com/coze-dev/coze-studio/backend/domain/workflow/entity/vo"
 	mock_workflow "github.com/coze-dev/coze-studio/backend/internal/mock/domain/workflow"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
 )
@@ -280,6 +281,150 @@ func TestImpl_prefetchChatHistory(t *testing.T) {
 				assert.Error(t, err)
 			} else {
 				assert.NoError(t, err)
+			}
+		})
+	}
+}
+
+func TestImpl_GetNodeExecution(t *testing.T) {
+	ctx := context.Background()
+
+	const (
+		exeID  = int64(1001)
+		nodeID = "n1"
+	)
+
+	tests := []struct {
+		name        string
+		setupMock   func(repo *mock_workflow.MockRepository)
+		expectErr   bool
+		expectNode  bool
+		expectInner bool
+		innerNodeID string
+	}{
+		{
+			name: "node execution not found returns error",
+			setupMock: func(repo *mock_workflow.MockRepository) {
+				repo.EXPECT().GetNodeExecution(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(nil, false, nil).AnyTimes()
+			},
+			expectErr: true,
+		},
+		{
+			name: "non batch node returns node execution directly",
+			setupMock: func(repo *mock_workflow.MockRepository) {
+				repo.EXPECT().GetNodeExecution(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&entity.NodeExecution{NodeID: nodeID, NodeType: entity.NodeTypeLLM}, true, nil).AnyTimes()
+			},
+			expectNode:  true,
+			expectInner: false,
+		},
+		{
+			name: "batch node not in node debug mode returns node execution directly",
+			setupMock: func(repo *mock_workflow.MockRepository) {
+				repo.EXPECT().GetNodeExecution(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&entity.NodeExecution{NodeID: nodeID, NodeType: entity.NodeTypeBatch}, true, nil).AnyTimes()
+				repo.EXPECT().GetWorkflowExecution(gomock.Any(), gomock.Any()).
+					Return(&entity.WorkflowExecution{
+						ExecuteConfig: workflowModel.ExecuteConfig{Mode: workflowModel.ExecuteModeDebug},
+					}, true, nil).AnyTimes()
+			},
+			expectNode:  true,
+			expectInner: false,
+		},
+		{
+			// Regression test: a batch mode node debugged with no persisted inner
+			// executions used to build an empty index2Exe map and pass it to
+			// mergeCompositeInnerNodes, causing a nil pointer dereference panic.
+			name: "batch node in node debug mode with no inner executions does not panic",
+			setupMock: func(repo *mock_workflow.MockRepository) {
+				repo.EXPECT().GetNodeExecution(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&entity.NodeExecution{NodeID: nodeID, NodeType: entity.NodeTypeBatch}, true, nil).AnyTimes()
+				repo.EXPECT().GetWorkflowExecution(gomock.Any(), gomock.Any()).
+					Return(&entity.WorkflowExecution{
+						ExecuteConfig: workflowModel.ExecuteConfig{Mode: workflowModel.ExecuteModeNodeDebug},
+					}, true, nil).AnyTimes()
+				repo.EXPECT().GetNodeExecutionByParent(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]*entity.NodeExecution{}, nil).AnyTimes()
+			},
+			expectNode:  true,
+			expectInner: false,
+		},
+		{
+			name: "batch mode node merges generated inner executions",
+			setupMock: func(repo *mock_workflow.MockRepository) {
+				repo.EXPECT().GetNodeExecution(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&entity.NodeExecution{NodeID: nodeID, NodeType: entity.NodeTypeBatch}, true, nil).AnyTimes()
+				repo.EXPECT().GetWorkflowExecution(gomock.Any(), gomock.Any()).
+					Return(&entity.WorkflowExecution{
+						ExecuteConfig: workflowModel.ExecuteConfig{Mode: workflowModel.ExecuteModeNodeDebug},
+					}, true, nil).AnyTimes()
+				repo.EXPECT().GetNodeExecutionByParent(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]*entity.NodeExecution{
+						{
+							ExecuteID: exeID,
+							NodeID:    vo.GenerateNodeIDForBatchMode(nodeID),
+							NodeType:  entity.NodeTypeLLM,
+							Index:     0,
+							Status:    entity.NodeSuccess,
+						},
+					}, nil).AnyTimes()
+			},
+			expectNode:  true,
+			expectInner: true,
+			innerNodeID: vo.GenerateNodeIDForBatchMode(nodeID),
+		},
+		{
+			name: "normal batch node with non generated inner nodes returns node execution directly",
+			setupMock: func(repo *mock_workflow.MockRepository) {
+				repo.EXPECT().GetNodeExecution(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return(&entity.NodeExecution{NodeID: nodeID, NodeType: entity.NodeTypeBatch}, true, nil).AnyTimes()
+				repo.EXPECT().GetWorkflowExecution(gomock.Any(), gomock.Any()).
+					Return(&entity.WorkflowExecution{
+						ExecuteConfig: workflowModel.ExecuteConfig{Mode: workflowModel.ExecuteModeNodeDebug},
+					}, true, nil).AnyTimes()
+				repo.EXPECT().GetNodeExecutionByParent(gomock.Any(), gomock.Any(), gomock.Any()).
+					Return([]*entity.NodeExecution{
+						{
+							ExecuteID: exeID,
+							NodeID:    "child_node",
+							NodeType:  entity.NodeTypeLLM,
+							Index:     0,
+							Status:    entity.NodeSuccess,
+						},
+					}, nil).AnyTimes()
+			},
+			expectNode:  true,
+			expectInner: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			mockRepo := mock_workflow.NewMockRepository(ctrl)
+			tt.setupMock(mockRepo)
+
+			testImpl := &impl{repo: mockRepo}
+
+			nodeExe, innerExe, err := testImpl.GetNodeExecution(ctx, exeID, nodeID)
+
+			if tt.expectErr {
+				assert.Error(t, err)
+				return
+			}
+
+			assert.NoError(t, err)
+			if tt.expectNode {
+				assert.NotNil(t, nodeExe)
+			}
+			if tt.expectInner {
+				assert.NotNil(t, innerExe)
+				assert.Equal(t, tt.innerNodeID, innerExe.NodeID)
+			} else {
+				assert.Nil(t, innerExe)
 			}
 		})
 	}
