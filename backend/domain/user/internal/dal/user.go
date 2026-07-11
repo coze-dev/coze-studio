@@ -123,12 +123,12 @@ func (dao *UserDAO) UpdateProfile(ctx context.Context, userID int64, updates map
 
 func (dao *UserDAO) CheckEmailExist(ctx context.Context, email string) (bool, error) {
 	_, exist, err := dao.GetUsersByEmail(ctx, email)
-	if !exist {
-		return false, nil
-	}
-
 	if err != nil {
 		return false, err
+	}
+
+	if !exist {
+		return false, nil
 	}
 
 	return true, nil
