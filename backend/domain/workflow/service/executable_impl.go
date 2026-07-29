@@ -737,6 +737,13 @@ func (i *impl) GetLatestNodeDebugInput(ctx context.Context, wfID int64, nodeID s
 }
 
 func mergeCompositeInnerNodes(nodeExes map[int]*entity.NodeExecution, maxIndex int) *entity.NodeExecution {
+	if len(nodeExes) == 0 {
+		// no inner node executions to merge, e.g. node debugging a batch mode node
+		// whose input list is empty or whose inner executions are not persisted yet.
+		// returning early avoids a nil pointer dereference below.
+		return nil
+	}
+
 	var groupNodeExe *entity.NodeExecution
 	for _, v := range nodeExes {
 		groupNodeExe = &entity.NodeExecution{
