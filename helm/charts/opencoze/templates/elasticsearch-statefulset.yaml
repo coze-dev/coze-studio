@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "opencoze.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ .Release.Name }}-elasticsearch
+  serviceName: {{ include "opencoze.fullname" . }}-elasticsearch
   replicas: 1
   selector:
     matchLabels:

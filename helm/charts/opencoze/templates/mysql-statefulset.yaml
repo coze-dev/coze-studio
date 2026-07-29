@@ -5,7 +5,7 @@ metadata:
   labels:
     {{- include "opencoze.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ .Release.Name }}-mysql
+  serviceName: {{ include "opencoze.fullname" . }}-mysql
   replicas: 1
   selector:
     matchLabels:

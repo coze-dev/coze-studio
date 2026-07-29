@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "opencoze.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ .Release.Name }}-redis
+  serviceName: {{ include "opencoze.fullname" . }}-redis
   replicas: 1
   selector:
     matchLabels:

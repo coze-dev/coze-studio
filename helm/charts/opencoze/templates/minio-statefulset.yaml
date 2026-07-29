@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "opencoze.labels" . | nindent 4 }}
 spec:
-  serviceName: {{ .Release.Name }}-minio
+  serviceName: {{ include "opencoze.fullname" . }}-minio
   replicas: 1
   selector:
     matchLabels:
