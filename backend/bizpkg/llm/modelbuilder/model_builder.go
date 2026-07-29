@@ -40,13 +40,14 @@ type Service interface {
 }
 
 var modelClass2NewModelBuilder = map[developer_api.ModelClass]func(*config.Model) Service{
-	developer_api.ModelClass_SEED:     newArkModelBuilder,
-	developer_api.ModelClass_GPT:      newOpenaiModelBuilder,
-	developer_api.ModelClass_Claude:   newClaudeModelBuilder,
-	developer_api.ModelClass_DeekSeek: newDeepseekModelBuilder,
-	developer_api.ModelClass_Gemini:   newGeminiModelBuilder,
-	developer_api.ModelClass_Llama:    newOllamaModelBuilder,
-	developer_api.ModelClass_QWen:     newQwenModelBuilder,
+	developer_api.ModelClass_SEED:       newArkModelBuilder,
+	developer_api.ModelClass_GPT:        newOpenaiModelBuilder,
+	developer_api.ModelClass_Claude:     newClaudeModelBuilder,
+	developer_api.ModelClass_DeekSeek:   newDeepseekModelBuilder,
+	developer_api.ModelClass_Gemini:     newGeminiModelBuilder,
+	developer_api.ModelClass_Llama:      newOllamaModelBuilder,
+	developer_api.ModelClass_QWen:       newQwenModelBuilder,
+	developer_api.ModelClass_OrcaRouter: newOrcaRouterModelBuilder,
 }
 
 func NewModelBuilder(modelClass developer_api.ModelClass, cfg *config.Model) (Service, error) {

@@ -204,6 +204,8 @@ func strProtocolToModelClass(protocol Protocol) developer_api.ModelClass {
 		modelClass = developer_api.ModelClass_Llama
 	case ProtocolQwen:
 		modelClass = developer_api.ModelClass_QWen
+	case ProtocolOrcaRouter:
+		modelClass = developer_api.ModelClass_OrcaRouter
 	default:
 		modelClass = developer_api.ModelClass_SEED
 	}
@@ -348,6 +350,9 @@ const (
 	ProtocolArk      Protocol = "ark"
 	ProtocolOllama   Protocol = "ollama"
 	ProtocolQwen     Protocol = "qwen"
+	// ProtocolOrcaRouter is an OpenAI-compatible meta-router; it reuses the
+	// OpenAI wire protocol with a dedicated builder that injects attribution headers.
+	ProtocolOrcaRouter Protocol = "orcarouter"
 )
 
 type MultilingualText struct {

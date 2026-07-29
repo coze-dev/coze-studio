@@ -686,6 +686,8 @@ export enum ModelClass {
   /** name: Llama */
   Llama = 20,
   StepFun = 23,
+  /** name: OrcaRouter (OpenAI-compatible meta-router) */
+  OrcaRouter = 24,
   Other = 999,
 }
 
