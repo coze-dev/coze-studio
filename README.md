@@ -82,6 +82,49 @@ Deployment steps:
    * [Code Development and Testing](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#code-development-and-testing): Learn how to perform secondary development and testing based on the open-source version of Coze Studio.
    * [Troubleshooting](https://github.com/coze-dev/coze-studio/wiki/7.-Development-Standards#troubleshooting): Learn how to view container states and system logs.
 
+### Local Debugging with Delve
+
+This project supports remote debugging of the `coze-server` service using [Delve](https://github.com/go-delve/delve). This is achieved through a specific Dockerfile and a `docker-compose` configuration.
+
+#### Relevant Files
+
+- **`backend/DockerFile-local-debug`**:
+  This Dockerfile builds the Go application with debug symbols. It installs the `delve` debugger and ensures the application starts with `delve` attached.
+
+- **`docker/docker-compose-local-debug.yml`**:
+  This `docker-compose` file starts the local debugging environment for the entire application. It uses `backend/DockerFile-local-debug` to build the `coze-server` service and exposes the debugger port `40000`.
+
+#### Running the Debug Environment
+
+1.  **Navigate to the `docker` directory**:
+    ```bash
+    cd docker
+    ```
+
+2.  **Start the services**:
+    Use the `docker-compose-local-debug.yml` file to build and start all services.
+    ```bash
+    docker-compose -f docker-compose-local-debug.yml up --build
+    ```
+    The `coze-server` service will start inside the container, listening on port `40000` for a debugger to connect.
+
+#### Connecting the Debugger
+
+You can connect using any IDE that supports Delve remote debugging. Here are example for GoLand.
+
+1.  Go to `Run -> Edit Configurations...`.
+2.  Click the `+` button to add a new configuration and select `Go Remote`.
+3.  Configure the settings:
+    *   **Name**: `Connect to Delve (Docker)` (or any descriptive name)
+    *   **Host**: `127.0.0.1`
+    *   **Port**: `40000`
+    *   **Go version**: Select your Go SDK.
+4.  Apply and Save the configuration.
+5.  With the `coze-server` running in debug mode (as described in "Running the Debug Environment"), select the newly created run configuration and click the debug icon (🐞).
+
+You should now be able to set breakpoints, inspect variables, and step through code in the `coze-server` service as if you were debugging a local application.
+
+
 ## Using the open-source version of Coze Studio
 > Regarding how to use Coze Studio, refer to the [Coze Development Platform Official Documentation Center](https://www.coze.cn/open/docs) for more information. Please note that certain features, such as tone customization, are limited to the commercial version. Differences between the open-source and commercial versions can be found in the **Feature List**.
 

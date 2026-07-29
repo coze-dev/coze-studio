@@ -84,6 +84,49 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
    * [代码开发与测试](https://github.com/coze-dev/coze-studio/wiki/7.-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83#%E4%BB%A3%E7%A0%81%E5%BC%80%E5%8F%91%E4%B8%8E%E6%B5%8B%E8%AF%95)：了解如何基于 Coze Studio 开源版进行二次开发与测试。
    * [故障排查](https://github.com/coze-dev/coze-studio/wiki/7.-%E5%BC%80%E5%8F%91%E8%A7%84%E8%8C%83#%E6%95%85%E9%9A%9C%E6%8E%92%E6%9F%A5)：了解如何查看容器状态、系统日志。
 
+### 本地调试 (Local Debugging with Delve)
+
+本项目支持使用 [Delve](https://github.com/go-delve/delve) 对 `coze-server` 服务进行远程调试。
+
+#### 相关文件
+
+- **`backend/DockerFile-local-debug`**:
+  这个 Dockerfile 用于构建一个包含调试信息的 Go 应用。它会安装 `delve` 调试器，并确保应用在启动时附加了 `delve`。
+
+- **`docker/docker-compose-local-debug.yml`**:
+  这个 `docker-compose` 文件用于启动整个应用的本地调试环境。它会使用 `backend/DockerFile-local-debug` 来构建 `coze-server` 服务，并暴露调试器端口 `40000`。
+
+#### 运行调试环境
+
+1.  **切换到 `docker` 目录**:
+    ```bash
+    cd docker
+    ```
+
+2.  **启动服务**:
+    使用 `docker-compose-local-debug.yml` 文件来构建并启动所有服务。
+    ```bash
+    docker-compose -f docker-compose-local-debug.yml up --build
+    ```
+    `coze-server` 服务将在容器内启动，并监听 `40000` 端口等待调试器连接。
+
+#### 连接调试器
+
+你可以使用任何支持 Delve 远程调试的 IDE 进行连接。以下为 GoLand 的配置示例。
+
+1.  进入 `Run -> Edit Configurations...`。
+2.  点击 `+` 按钮添加新配置，选择 `Go Remote`。
+3.  配置以下设置：
+    *   **Name**: `Connect to Delve (Docker)` (或任何有描述性的名称)
+    *   **Host**: `127.0.0.1`
+    *   **Port**: `40000`
+    *   **Go version**: 选择你的 Go SDK。
+4.  应用并保存配置。
+5.  在 `coze-server` 以调试模式运行后（如“运行调试环境”所述），选择新创建的运行配置并点击调试图标 (🐞)。
+
+现在你应该可以像调试本地应用一样，在 `coze-server` 的代码中设置断点、检查变量和执行代码了。
+
+
 ## 使用 Coze Studio 开源版
 > 关于如何使用 Coze Studio，可参考[扣子开发平台官方文档中心](https://www.coze.cn/open/docs)获取更多资料。需要注意的是，音色等部分功能限商业版本使用，开源版与商业版的功能差异可参考**功能清单**。
 
