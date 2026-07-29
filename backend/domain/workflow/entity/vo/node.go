@@ -96,6 +96,12 @@ type wfErr struct {
 	spaceID    int64
 	workflowID int64
 	cause      error
+	// level holds the error level for this specific error instance. It is kept
+	// separate from the shared StatusError.Extra() map so that mutating the
+	// level (see ChangeErrLevel) never writes to a map that may be shared
+	// across goroutines, e.g. the package-level singletons CancelErr,
+	// NodeTimeoutErr and WorkflowTimeoutErr.
+	level ErrorLevel
 }
 
 func (w *wfErr) DebugURL() string {
@@ -112,6 +118,10 @@ func (w *wfErr) DebugURL() string {
 }
 
 func (w *wfErr) Level() ErrorLevel {
+	if w.level != "" {
+		return w.level
+	}
+
 	if w.StatusError.Extra() == nil {
 		return LevelError
 	}
@@ -147,9 +157,16 @@ func (w *wfErr) Unwrap() error {
 	return w.cause
 }
 
+// ChangeErrLevel returns a copy of the error with its level set to newLevel.
+// It deliberately does not mutate the receiver: package-level singletons such
+// as CancelErr, NodeTimeoutErr and WorkflowTimeoutErr are shared across
+// goroutines, and mutating their underlying StatusError.Extra() map in place
+// previously triggered "fatal error: concurrent map writes" when multiple
+// nodes handled errors (e.g. timeouts) concurrently.
 func (w *wfErr) ChangeErrLevel(newLevel ErrorLevel) WorkflowError {
-	w.StatusError.Extra()["level"] = string(newLevel)
-	return w
+	newErr := *w
+	newErr.level = newLevel
+	return &newErr
 }
 
 func NewError(code int, opts ...errorx.Option) WorkflowError {
@@ -159,6 +176,7 @@ func NewError(code int, opts ...errorx.Option) WorkflowError {
 	_ = errors.As(e, &sErr)
 	wfe := &wfErr{
 		StatusError: sErr,
+		level:       LevelError,
 	}
 
 	return wfe
@@ -172,6 +190,7 @@ func WrapError(code int, err error, opts ...errorx.Option) WorkflowError {
 	wfe := &wfErr{
 		StatusError: sErr,
 		cause:       err,
+		level:       LevelError,
 	}
 	return wfe
 }
@@ -189,6 +208,7 @@ func NewWarn(code int, opts ...errorx.Option) WorkflowError {
 	_ = errors.As(e, &sErr)
 	wfe := &wfErr{
 		StatusError: sErr,
+		level:       LevelWarn,
 	}
 
 	return wfe
@@ -202,6 +222,7 @@ func WrapWarn(code int, err error, opts ...errorx.Option) WorkflowError {
 	wfe := &wfErr{
 		StatusError: sErr,
 		cause:       err,
+		level:       LevelWarn,
 	}
 	return wfe
 }
@@ -222,6 +243,7 @@ func newCancel() WorkflowError {
 	_ = errors.As(e, &sErr)
 	wfe := &wfErr{
 		StatusError: sErr,
+		level:       LevelCancel,
 	}
 	return wfe
 }
@@ -234,6 +256,7 @@ func newNodeTimeout() WorkflowError {
 	_ = errors.As(e, &sErr)
 	wfe := &wfErr{
 		StatusError: sErr,
+		level:       LevelError,
 	}
 	return wfe
 }
@@ -246,6 +269,7 @@ func newWorkflowTimeout() WorkflowError {
 	_ = errors.As(e, &sErr)
 	wfe := &wfErr{
 		StatusError: sErr,
+		level:       LevelError,
 	}
 	return wfe
 }
