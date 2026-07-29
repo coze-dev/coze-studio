@@ -117,6 +117,10 @@ func (mf *PluginManifest) Validate(skipAuthPayload bool) (err error) {
 		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KVf(errno.PluginMsgKey,
 			"invalid api type '%s'", mf.API.Type))
 	}
+	if mf.Auth == nil {
+		return errorx.New(errno.ErrPluginInvalidManifest, errorx.KV(errno.PluginMsgKey,
+			"auth is required"))
+	}
 	// auth.type=none,return nil
 	if mf.Auth.Type == consts.AuthzTypeOfNone {
 		return nil
