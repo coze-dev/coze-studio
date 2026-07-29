@@ -18,6 +18,7 @@ package convert
 
 import (
 	"fmt"
+	"sort"
 
 	"strconv"
 	"strings"
@@ -63,7 +64,11 @@ func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
 		tInfo.Type = vo.DataTypeObject
 		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		if v.Schema != nil {
-			for _, subVAny := range v.Schema.([]any) {
+			subVariables, err := normalizeObjectSchemaItems(v.Schema)
+			if err != nil {
+				return nil, err
+			}
+			for _, subVAny := range subVariables {
 				subV, err := vo.ParseVariable(subVAny)
 				if err != nil {
 					return nil, err
@@ -134,7 +139,14 @@ func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (tInfo *vo.TypeInfo, err error
 		tInfo.Type = vo.DataTypeObject
 		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		if b.Schema != nil {
-			for _, subVAny := range b.Schema.([]any) {
+			subItems, err := normalizeObjectSchemaItems(b.Schema)
+			if err != nil {
+				return nil, err
+			}
+			if b.Value == nil {
+				break
+			}
+			for _, subVAny := range subItems {
 				if b.Value.Type == vo.BlockInputValueTypeRef {
 					subV, err := vo.ParseVariable(subVAny)
 					if err != nil {
@@ -193,9 +205,9 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 			return nil, fmt.Errorf("input %v has no schema, type= %s", path, b.Type)
 		}
 
-		paramList, ok := sc.([]any)
-		if !ok {
-			return nil, fmt.Errorf("input %v schema not []any, type= %T", path, sc)
+		paramList, err := normalizeObjectSchemaItems(sc)
+		if err != nil {
+			return nil, fmt.Errorf("input %v schema invalid, err=%w", path, err)
 		}
 
 		for i := range paramList {
@@ -259,7 +271,11 @@ func CanvasBlockInputToFieldInfo(b *vo.BlockInput, path einoCompose.FieldPath, p
 						FileNames: make([]string, 0, len(filenames)),
 					}
 					for _, filename := range filenames {
-						fileExtra.FileNames = append(fileExtra.FileNames, filename.(string))
+						filenameStr, ok := filename.(string)
+						if !ok {
+							return nil, fmt.Errorf("invalid filename type: %T", filename)
+						}
+						fileExtra.FileNames = append(fileExtra.FileNames, filenameStr)
 					}
 				}
 
@@ -414,6 +430,90 @@ func ParseParam(v any) (*vo.Param, error) {
 	}
 
 	return p, nil
+}
+
+func normalizeObjectSchemaItems(sc any) ([]any, error) {
+	switch v := sc.(type) {
+	case nil:
+		return nil, nil
+	case []any:
+		return v, nil
+	case []*vo.Variable:
+		items := make([]any, 0, len(v))
+		for _, item := range v {
+			items = append(items, item)
+		}
+		return items, nil
+	case []*vo.Param:
+		items := make([]any, 0, len(v))
+		for _, item := range v {
+			items = append(items, item)
+		}
+		return items, nil
+	case map[string]any:
+		if nested, ok := v["schema"]; ok {
+			if typeStr, ok := asVariableTypeString(v["type"]); ok && typeStr == string(vo.VariableTypeObject) {
+				return normalizeObjectSchemaItems(nested)
+			}
+		}
+
+		keys := make([]string, 0, len(v))
+		for k := range v {
+			keys = append(keys, k)
+		}
+		sort.Strings(keys)
+
+		items := make([]any, 0, len(keys))
+		for _, key := range keys {
+			items = append(items, withSchemaItemName(v[key], key))
+		}
+		return items, nil
+	default:
+		return nil, fmt.Errorf("unsupported object schema type: %T", sc)
+	}
+}
+
+func withSchemaItemName(v any, name string) any {
+	switch item := v.(type) {
+	case map[string]any:
+		if _, ok := item["name"]; ok {
+			return item
+		}
+
+		copied := make(map[string]any, len(item)+1)
+		for k, val := range item {
+			copied[k] = val
+		}
+		copied["name"] = name
+		return copied
+	case *vo.Variable:
+		if item == nil || len(item.Name) > 0 {
+			return item
+		}
+		cloned := *item
+		cloned.Name = name
+		return &cloned
+	case *vo.Param:
+		if item == nil || len(item.Name) > 0 {
+			return item
+		}
+		cloned := *item
+		cloned.Name = name
+		return &cloned
+	default:
+		return v
+	}
+}
+
+func asVariableTypeString(v any) (string, bool) {
+	switch t := v.(type) {
+	case string:
+		return t, true
+	case vo.VariableType:
+		return string(t), true
+	default:
+		return "", false
+	}
 }
 
 func CanvasBlockInputRefToFieldSource(r *vo.BlockInputReference) (*vo.FieldSource, error) {
@@ -602,8 +702,15 @@ func BlockInputToNamedTypeInfo(name string, b *vo.BlockInput) (*vo.NamedTypeInfo
 	case vo.VariableTypeObject:
 		tInfo.Type = vo.DataTypeObject
 		if b.Schema != nil {
-			tInfo.Properties = make([]*vo.NamedTypeInfo, 0, len(b.Schema.([]any)))
-			for _, subVAny := range b.Schema.([]any) {
+			subItems, err := normalizeObjectSchemaItems(b.Schema)
+			if err != nil {
+				return nil, err
+			}
+			tInfo.Properties = make([]*vo.NamedTypeInfo, 0, len(subItems))
+			if b.Value == nil {
+				break
+			}
+			for _, subVAny := range subItems {
 				if b.Value.Type == vo.BlockInputValueTypeRef {
 					subV, err := vo.ParseVariable(subVAny)
 					if err != nil {
@@ -678,8 +785,12 @@ func VariableToNamedTypeInfo(v *vo.Variable) (*vo.NamedTypeInfo, error) {
 	case vo.VariableTypeObject:
 		nInfo.Type = vo.DataTypeObject
 		if v.Schema != nil {
+			subVariables, err := normalizeObjectSchemaItems(v.Schema)
+			if err != nil {
+				return nil, err
+			}
 			nInfo.Properties = make([]*vo.NamedTypeInfo, 0)
-			for _, subVAny := range v.Schema.([]any) {
+			for _, subVAny := range subVariables {
 				subV, err := vo.ParseVariable(subVAny)
 				if err != nil {
 					return nil, err
