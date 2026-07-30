@@ -113,9 +113,9 @@ func PassportWebEmailLoginPost(ctx context.Context, c *app.RequestContext) {
 	c.JSON(http.StatusOK, resp)
 }
 
-// PassportWebEmailPasswordResetGet .
-// @router /passport/web/email/password/reset/ [GET]
-func PassportWebEmailPasswordResetGet(ctx context.Context, c *app.RequestContext) {
+// PassportWebEmailPasswordResetPost .
+// @router /passport/web/email/password/reset/ [POST]
+func PassportWebEmailPasswordResetPost(ctx context.Context, c *app.RequestContext) {
 	var err error
 	var req passport.PassportWebEmailPasswordResetGetRequest
 	err = c.BindAndValidate(&req)
