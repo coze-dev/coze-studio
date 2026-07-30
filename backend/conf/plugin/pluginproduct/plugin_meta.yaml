@@ -906,3 +906,63 @@
       deprecated: false
       method: get
       sub_url: /v5/place/around
+- plugin_id: 23
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: dataforb2b.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: DataForB2B
+    name_for_human: DataForB2B
+    description_for_model: >-
+      B2B people and company search & enrichment. Search professional profiles
+      and companies with 70+ filters (job title, skills, company size, funding
+      stage, investor, location, school, certifications, years of experience),
+      run natural-language reasoning searches, autocomplete exact filter values
+      with typeahead, and enrich a person (profile, work/personal email, phone,
+      GitHub) or a company (size, funding, investors).
+    description_for_human: >-
+      Power your sales or recruiting AI agent with live B2B data: search people
+      and companies with 70+ filters (job title, skills, company size, LinkedIn
+      URL, funding stage, investor) and enrich profiles or companies with
+      verified email and phone.
+    auth:
+      type: service_http
+      key: api_key
+      sub_type: token/api_key
+      # Put the DataForB2B API key (from app.dataforb2b.ai) into "service_token".
+      payload: '{"key": "api_key", "service_token": "", "location": "Header"}'
+    logo_url: official_plugin_icon/plugin_dataforb2b.png
+    api:
+      type: openapi
+    common_params:
+      body: []
+      header: []
+      path: []
+      query: []
+  tools:
+    - tool_id: 230001
+      deprecated: false
+      method: post
+      sub_url: /search/people
+    - tool_id: 230002
+      deprecated: false
+      method: post
+      sub_url: /search/companies
+    - tool_id: 230003
+      deprecated: false
+      method: post
+      sub_url: /search/reasoning
+    - tool_id: 230004
+      deprecated: false
+      method: get
+      sub_url: /typeahead
+    - tool_id: 230005
+      deprecated: false
+      method: post
+      sub_url: /enrich/profile
+    - tool_id: 230006
+      deprecated: false
+      method: post
+      sub_url: /enrich/company
