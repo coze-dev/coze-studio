@@ -165,6 +165,9 @@ prefix = """\
 import json
 import sys
 import asyncio
+null = None
+true = True
+false = False
 class Args:
     def __init__(self, params):
         self.params = params
