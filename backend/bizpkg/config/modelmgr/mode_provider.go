@@ -107,6 +107,18 @@ func getModelProviderList() []*config.ModelProvider {
 			},
 			ModelClass: developer_api.ModelClass_QWen,
 		},
+		{
+			Name: &config.I18nText{
+				ZhCn: "N1N 模型",
+				EnUs: "N1N Model",
+			},
+			IconURI: "default_icon/n1n.png",
+			Description: &config.I18nText{
+				ZhCn: "N1N 模型家族",
+				EnUs: "n1n model family",
+			},
+			ModelClass: developer_api.ModelClass_N1N,
+		},
 	}
 }
 
