@@ -336,8 +336,15 @@ func (p *pluginInvokeTool) Info(ctx context.Context) (_ *schema.ToolInfo, err er
 }
 
 func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON string, cfg workflowModel.ExecuteConfig) (string, error) {
+	var uID string
+	if cfg.AgentID != nil {
+		uID = cfg.ConnectorUID
+	} else {
+		uID = conv.Int64ToStr(cfg.Operator)
+	}
+
 	req := &model.ExecuteToolRequest{
-		UserID:          conv.Int64ToStr(cfg.Operator),
+		UserID:          uID,
 		PluginID:        p.pluginEntity.PluginID,
 		ToolID:          p.toolInfo.ID,
 		ExecScene:       consts.ExecSceneOfWorkflow,
@@ -348,7 +355,14 @@ func (p *pluginInvokeTool) PluginInvoke(ctx context.Context, argumentsInJSON str
 	execOpts := []model.ExecuteToolOpt{
 		model.WithInvalidRespProcessStrategy(consts.InvalidResponseProcessStrategyOfReturnDefault),
 	}
-
+	if cfg.ConversationID != nil {
+		execOpts = append(execOpts, model.WithConversationID(*cfg.ConversationID))
+	}
+	if cfg.AgentID != nil {
+		execOpts = append(execOpts, model.WithProjectInfo(&model.ProjectInfo{
+			ProjectID: *cfg.AgentID,
+		}))
+	}
 	if p.pluginEntity.PluginVersion != nil {
 		execOpts = append(execOpts, model.WithToolVersion(*p.pluginEntity.PluginVersion))
 	}
