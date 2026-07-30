@@ -752,6 +752,15 @@ func packInsertData(slices []*entity.Slice) (data []map[string]interface{}, err 
 	}()
 
 	for i := range slices {
+		if len(slices[i].RawContent) == 0 {
+			return nil, errorx.New(errno.ErrKnowledgeParseResultEmptyCode,
+				errorx.KV("msg", fmt.Sprintf("slice %d raw content is empty", slices[i].ID)))
+		}
+		if slices[i].RawContent[0] == nil || slices[i].RawContent[0].Type != knowledge.SliceContentTypeTable || slices[i].RawContent[0].Table == nil {
+			return nil, errorx.New(errno.ErrKnowledgeInvalidParamCode,
+				errorx.KV("msg", fmt.Sprintf("slice %d table raw content is invalid", slices[i].ID)))
+		}
+
 		dataMap := map[string]any{
 			consts.RDBFieldID: slices[i].ID,
 		}
