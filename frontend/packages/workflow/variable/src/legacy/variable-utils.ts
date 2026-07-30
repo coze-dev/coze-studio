@@ -92,6 +92,7 @@ export namespace variableUtils {
       case VariableTypeDTO.boolean:
         return ViewVariableType.Boolean;
       case VariableTypeDTO.float:
+      case VariableTypeDTO.number:
         return ViewVariableType.Number;
       case VariableTypeDTO.integer:
         return ViewVariableType.Integer;
@@ -120,6 +121,7 @@ export namespace variableUtils {
           case VariableTypeDTO.boolean:
             return ViewVariableType.ArrayBoolean;
           case VariableTypeDTO.float:
+          case VariableTypeDTO.number:
             return ViewVariableType.ArrayNumber;
           case VariableTypeDTO.integer:
             return ViewVariableType.ArrayInteger;
