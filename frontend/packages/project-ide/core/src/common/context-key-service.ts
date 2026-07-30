@@ -52,10 +52,64 @@ export class ContextKeyService implements ContextMatcher {
   }
 
   public match(expression: string): boolean {
-    const keys = Array.from(this._contextKeys.keys());
-    const func = new Function(...keys, `return ${expression};`);
-    const res = func(...keys.map(k => this._contextKeys.get(k)));
+    try {
+      return this.evaluateExpression(expression);
+    } catch (error) {
+      console.warn('Invalid context expression:', expression, error);
+      return false;
+    }
+  }
 
-    return res;
+  private evaluateExpression(expression: string): boolean {
+    const sanitizedExpression = expression.trim();
+
+    // Allow only safe boolean expressions with context keys
+    const safeExpressionPattern =
+      /^!?[a-zA-Z_$][a-zA-Z0-9_$]*(\s*(&&|\|\||==|!=|===|!==)\s*!?[a-zA-Z_$][a-zA-Z0-9_$]*)*$/;
+
+    if (!safeExpressionPattern.test(sanitizedExpression)) {
+      throw new Error('Unsafe expression detected');
+    }
+
+    // Parse and evaluate the expression safely
+    return this.safeEvaluate(sanitizedExpression);
+  }
+
+  private safeEvaluate(expression: string): boolean {
+    // Replace context keys with their actual values
+    let executableExpression = expression;
+
+    // Track which keys have been replaced to avoid replacing them again
+    const replacedKeys = new Set<string>();
+
+    for (const [key, value] of this._contextKeys) {
+      const regex = new RegExp(`\\b${key}\\b`, 'g');
+      // Convert all values to boolean string representation
+      const boolValue = Boolean(value);
+      if (executableExpression.includes(key)) {
+        executableExpression = executableExpression.replace(
+          regex,
+          String(boolValue),
+        );
+        replacedKeys.add(key);
+      }
+    }
+
+    // Now evaluate the boolean expression safely
+    // Only allow basic boolean operations
+    try {
+      // Remove any remaining unrecognized identifiers (replace with false)
+      // But don't replace 'true' or 'false' literals
+      executableExpression = executableExpression.replace(
+        /\b(?!true|false)[a-zA-Z_$][a-zA-Z0-9_$]*\b/g,
+        'false',
+      );
+
+      // eslint-disable-next-line no-eval -- Safe after sanitization
+      return Boolean(eval(executableExpression));
+    } catch (error) {
+      console.warn('Expression evaluation failed:', error);
+      return false;
+    }
   }
 }
