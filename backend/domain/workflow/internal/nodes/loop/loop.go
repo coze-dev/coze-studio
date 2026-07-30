@@ -379,7 +379,6 @@ func (l *Loop) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Node
 		if len(options.GetResumeIndexes()) > 0 {
 			stateModifier, ok := options.GetResumeIndexes()[i]
 			if ok {
-				fmt.Println("has state modifier for ith run: ", i, ", checkpointID: ", checkpointID)
 				ithOpts = append(ithOpts, compose.WithStateModifier(stateModifier))
 			}
 		}
@@ -451,7 +450,6 @@ func (l *Loop) Invoke(ctx context.Context, in map[string]any, opts ...nodes.Node
 			return nil, err
 		}
 
-		fmt.Println("save composite info in state within loop: ", compState)
 	}
 
 	if existingCState != nil && len(existingCState.Index2InterruptInfo) > 0 {
