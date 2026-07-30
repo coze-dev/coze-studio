@@ -93,6 +93,8 @@ func getKnowledgeBuiltinModelClass() developer_api.ModelClass {
 		return developer_api.ModelClass_QWen
 	case "gemini":
 		return developer_api.ModelClass_Gemini
+	case "avian":
+		return developer_api.ModelClass_Avian
 	default:
 		return developer_api.ModelClass_SEED
 	}

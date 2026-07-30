@@ -686,6 +686,8 @@ export enum ModelClass {
   /** name: Llama */
   Llama = 20,
   StepFun = 23,
+  /** name: Avian */
+  Avian = 24,
   Other = 999,
 }
 

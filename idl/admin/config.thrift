@@ -85,6 +85,7 @@ struct Connection {
     6: optional QwenConnInfo qwen
     7: optional OllamaConnInfo ollama
     8: optional ClaudeConnInfo claude
+    9: optional AvianConnInfo avian
 }
 
 struct BaseConnectionInfo {
@@ -123,6 +124,8 @@ struct QwenConnInfo {}
 struct OllamaConnInfo {}
 
 struct ClaudeConnInfo {}
+
+struct AvianConnInfo {}
 
 struct CreateModelReq {
     1: developer_api.ModelClass model_class

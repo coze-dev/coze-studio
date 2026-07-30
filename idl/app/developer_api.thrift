@@ -538,6 +538,7 @@ enum ModelClass {
     DeekSeek        = 19 // Name: Magic Square
     Llama           = 20 // name: Llama
     StepFun         = 23
+    Avian           = 24 // Name: Avian
     Other           = 999
 }
 

@@ -2457,6 +2457,7 @@ type Connection struct {
 	Qwen         *QwenConnInfo       `thrift:"qwen,6,optional" form:"qwen" json:"qwen,omitempty" query:"qwen"`
 	Ollama       *OllamaConnInfo     `thrift:"ollama,7,optional" form:"ollama" json:"ollama,omitempty" query:"ollama"`
 	Claude       *ClaudeConnInfo     `thrift:"claude,8,optional" form:"claude" json:"claude,omitempty" query:"claude"`
+	Avian        *AvianConnInfo      `thrift:"avian,9,optional" form:"avian" json:"avian,omitempty" query:"avian"`
 }
 
 func NewConnection() *Connection {
@@ -2538,6 +2539,15 @@ func (p *Connection) GetClaude() (v *ClaudeConnInfo) {
 	return p.Claude
 }
 
+var Connection_Avian_DEFAULT *AvianConnInfo
+
+func (p *Connection) GetAvian() (v *AvianConnInfo) {
+	if !p.IsSetAvian() {
+		return Connection_Avian_DEFAULT
+	}
+	return p.Avian
+}
+
 var fieldIDToName_Connection = map[int16]string{
 	1: "base_conn_info",
 	2: "ark",
@@ -2579,6 +2589,10 @@ func (p *Connection) IsSetOllama() bool {
 
 func (p *Connection) IsSetClaude() bool {
 	return p.Claude != nil
+}
+
+func (p *Connection) IsSetAvian() bool {
+	return p.Avian != nil
 }
 
 func (p *Connection) Read(iprot thrift.TProtocol) (err error) {
@@ -4300,6 +4314,88 @@ func (p *ClaudeConnInfo) String() string {
 		return "<nil>"
 	}
 	return fmt.Sprintf("ClaudeConnInfo(%+v)", *p)
+
+}
+
+type AvianConnInfo struct {
+}
+
+func NewAvianConnInfo() *AvianConnInfo {
+	return &AvianConnInfo{}
+}
+
+func (p *AvianConnInfo) InitDefault() {
+}
+
+var fieldIDToName_AvianConnInfo = map[int16]string{}
+
+func (p *AvianConnInfo) Read(iprot thrift.TProtocol) (err error) {
+	var fieldTypeId thrift.TType
+	var fieldId int16
+
+	if _, err = iprot.ReadStructBegin(); err != nil {
+		goto ReadStructBeginError
+	}
+
+	for {
+		_, fieldTypeId, fieldId, err = iprot.ReadFieldBegin()
+		if err != nil {
+			goto ReadFieldBeginError
+		}
+		if fieldTypeId == thrift.STOP {
+			break
+		}
+		if err = iprot.Skip(fieldTypeId); err != nil {
+			goto SkipFieldTypeError
+		}
+		if err = iprot.ReadFieldEnd(); err != nil {
+			goto ReadFieldEndError
+		}
+	}
+	if err = iprot.ReadStructEnd(); err != nil {
+		goto ReadStructEndError
+	}
+
+	return nil
+ReadStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct begin error: ", p), err)
+ReadFieldBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T read field %d begin error: ", p, fieldId), err)
+SkipFieldTypeError:
+	return thrift.PrependError(fmt.Sprintf("%T skip field type %d error", p, fieldTypeId), err)
+
+ReadFieldEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read field end error", p), err)
+ReadStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T read struct end error: ", p), err)
+}
+
+func (p *AvianConnInfo) Write(oprot thrift.TProtocol) (err error) {
+	if err = oprot.WriteStructBegin("AvianConnInfo"); err != nil {
+		goto WriteStructBeginError
+	}
+	if p != nil {
+	}
+	if err = oprot.WriteFieldStop(); err != nil {
+		goto WriteFieldStopError
+	}
+	if err = oprot.WriteStructEnd(); err != nil {
+		goto WriteStructEndError
+	}
+	return nil
+WriteStructBeginError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct begin error: ", p), err)
+WriteFieldStopError:
+	return thrift.PrependError(fmt.Sprintf("%T write field stop error: ", p), err)
+WriteStructEndError:
+	return thrift.PrependError(fmt.Sprintf("%T write struct end error: ", p), err)
+}
+
+func (p *AvianConnInfo) String() string {
+	if p == nil {
+		return "<nil>"
+	}
+	return fmt.Sprintf("AvianConnInfo(%+v)", *p)
 
 }
 
