@@ -47,10 +47,6 @@ func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 		return nil, nil
 	}
 
-	if len(outputs) == 1 {
-		return outputs[0], nil
-	}
-
 	var (
 		fullOutput    map[string]any
 		fullRawOutput *string
@@ -109,25 +105,19 @@ func ConcatStructuredCallbackOutputs(outputs []*StructuredCallbackOutput) (
 	}
 
 	if len(inputList) > 0 {
-		if len(inputList) == 1 {
-			input = inputList[0]
-		} else {
-			if m, err = ConcatMaps(reflect.ValueOf(inputList)); err != nil {
-				return nil, err
-			}
-			input = m.Interface().(map[string]any)
+		// Use ConcatMaps to create a deep copy, preventing concurrent access issues
+		if m, err = ConcatMaps(reflect.ValueOf(inputList)); err != nil {
+			return nil, err
 		}
+		input = m.Interface().(map[string]any)
 	}
 
 	if len(extraList) > 0 {
-		if len(extraList) == 1 {
-			extra = extraList[0]
-		} else {
-			if m, err = ConcatMaps(reflect.ValueOf(extraList)); err != nil {
-				return nil, err
-			}
-			extra = m.Interface().(map[string]any)
+		// Use ConcatMaps to create a deep copy, preventing concurrent access issues
+		if m, err = ConcatMaps(reflect.ValueOf(extraList)); err != nil {
+			return nil, err
 		}
+		extra = m.Interface().(map[string]any)
 	}
 
 	if len(answerList) > 0 {
@@ -163,10 +153,6 @@ func ConcatStructuredCallbackInputs(inputs []*StructuredCallbackInput) (
 		return nil, nil
 	}
 
-	if len(inputs) == 1 {
-		return inputs[0], nil
-	}
-
 	var (
 		extra map[string]any
 		input map[string]any
@@ -181,20 +167,19 @@ func ConcatStructuredCallbackInputs(inputs []*StructuredCallbackInput) (
 		}
 	}
 
+	// Use ConcatMaps to create a deep copy, preventing concurrent access issues
 	m, err := ConcatMaps(reflect.ValueOf(inputLists))
 	if err != nil {
 		return nil, err
 	}
+	input = m.Interface().(map[string]any)
 
 	if len(extraList) > 0 {
-		if len(extraList) == 1 {
-			extra = extraList[0]
-		} else {
-			if m, err = ConcatMaps(reflect.ValueOf(extraList)); err != nil {
-				return nil, err
-			}
-			extra = m.Interface().(map[string]any)
+		// Use ConcatMaps to create a deep copy, preventing concurrent access issues
+		if m, err = ConcatMaps(reflect.ValueOf(extraList)); err != nil {
+			return nil, err
 		}
+		extra = m.Interface().(map[string]any)
 	}
 
 	return &StructuredCallbackInput{

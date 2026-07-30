@@ -952,16 +952,14 @@ func buildStreamEndEvent(c *Context, mapChunks []map[string]any,
 	}
 
 	if len(mapChunks) > 0 {
-		var outputMap map[string]any
-		if len(mapChunks) == 1 {
-			outputMap = mapChunks[0]
-		} else {
-			m, err := nodes.ConcatMaps(reflect.ValueOf(mapChunks))
-			if err != nil {
-				return nil, err
-			}
-			outputMap = m.Interface().(map[string]any)
+		// Use ConcatMaps to create a deep copy of the map chunks.
+		// This prevents concurrent map read/write issues when the original map
+		// is still being modified by other goroutines.
+		m, err := nodes.ConcatMaps(reflect.ValueOf(mapChunks))
+		if err != nil {
+			return nil, err
 		}
+		outputMap := m.Interface().(map[string]any)
 
 		e := &Event{
 			Type:     NodeEndStreaming,
@@ -975,14 +973,12 @@ func buildStreamEndEvent(c *Context, mapChunks []map[string]any,
 		return e, nil
 	}
 
-	var fullStructuredOutput *nodes.StructuredCallbackOutput
-	if len(structuredChunks) == 1 {
-		fullStructuredOutput = structuredChunks[0]
-	} else {
-		fullStructuredOutput, err = nodes.ConcatStructuredCallbackOutputs(structuredChunks)
-		if err != nil {
-			return nil, err
-		}
+	// Use ConcatStructuredCallbackOutputs to create a deep copy of the structured chunks.
+	// This prevents concurrent map read/write issues when the original output map
+	// is still being modified by other goroutines.
+	fullStructuredOutput, err := nodes.ConcatStructuredCallbackOutputs(structuredChunks)
+	if err != nil {
+		return nil, err
 	}
 
 	e := &Event{
