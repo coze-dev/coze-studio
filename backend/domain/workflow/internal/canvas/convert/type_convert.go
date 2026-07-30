@@ -63,7 +63,11 @@ func CanvasVariableToTypeInfo(v *vo.Variable) (*vo.TypeInfo, error) {
 		tInfo.Type = vo.DataTypeObject
 		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		if v.Schema != nil {
-			for _, subVAny := range v.Schema.([]any) {
+			schemaList, ok := v.Schema.([]any)
+			if !ok {
+				return nil, fmt.Errorf("object schema must be []any, got %T", v.Schema)
+			}
+			for _, subVAny := range schemaList {
 				subV, err := vo.ParseVariable(subVAny)
 				if err != nil {
 					return nil, err
@@ -134,7 +138,11 @@ func CanvasBlockInputToTypeInfo(b *vo.BlockInput) (tInfo *vo.TypeInfo, err error
 		tInfo.Type = vo.DataTypeObject
 		tInfo.Properties = make(map[string]*vo.TypeInfo)
 		if b.Schema != nil {
-			for _, subVAny := range b.Schema.([]any) {
+			schemaList, ok := b.Schema.([]any)
+			if !ok {
+				return nil, fmt.Errorf("object schema must be []any, got %T", b.Schema)
+			}
+			for _, subVAny := range schemaList {
 				if b.Value.Type == vo.BlockInputValueTypeRef {
 					subV, err := vo.ParseVariable(subVAny)
 					if err != nil {
@@ -602,8 +610,12 @@ func BlockInputToNamedTypeInfo(name string, b *vo.BlockInput) (*vo.NamedTypeInfo
 	case vo.VariableTypeObject:
 		tInfo.Type = vo.DataTypeObject
 		if b.Schema != nil {
-			tInfo.Properties = make([]*vo.NamedTypeInfo, 0, len(b.Schema.([]any)))
-			for _, subVAny := range b.Schema.([]any) {
+			schemaList, ok := b.Schema.([]any)
+			if !ok {
+				return nil, fmt.Errorf("object schema must be []any, got %T", b.Schema)
+			}
+			tInfo.Properties = make([]*vo.NamedTypeInfo, 0, len(schemaList))
+			for _, subVAny := range schemaList {
 				if b.Value.Type == vo.BlockInputValueTypeRef {
 					subV, err := vo.ParseVariable(subVAny)
 					if err != nil {
@@ -678,8 +690,12 @@ func VariableToNamedTypeInfo(v *vo.Variable) (*vo.NamedTypeInfo, error) {
 	case vo.VariableTypeObject:
 		nInfo.Type = vo.DataTypeObject
 		if v.Schema != nil {
+			schemaList, ok := v.Schema.([]any)
+			if !ok {
+				return nil, fmt.Errorf("object schema must be []any, got %T", v.Schema)
+			}
 			nInfo.Properties = make([]*vo.NamedTypeInfo, 0)
-			for _, subVAny := range v.Schema.([]any) {
+			for _, subVAny := range schemaList {
 				subV, err := vo.ParseVariable(subVAny)
 				if err != nil {
 					return nil, err
