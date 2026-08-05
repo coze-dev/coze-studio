@@ -33,12 +33,129 @@ import {
   FinishReasonType,
 } from './types';
 
+/**
+ * Think-tag state machine states.
+ *
+ * Reasoning models (DeepSeek-R1, Qwen3, etc.) may emit `<think>` / `</think>`
+ * tags directly inside the `content` text field instead of using the dedicated
+ * `reasoning_content` field. This parser extracts the thinking portion into
+ * `reasoning_content` and strips the raw tags from the visible `content`.
+ */
+enum ThinkTagState {
+  /** Normal content - outside any `<think>` block. */
+  NORMAL = 'normal',
+  /** Inside a `<think>` block - content is buffered as reasoning. */
+  THINKING = 'thinking',
+}
+
+/**
+ * Parses `<think>` / `</think>` tags from streaming text content.
+ *
+ * The parser is designed to handle incremental input where tags and content
+ * may arrive split across multiple chunks. It maintains internal state so that
+ * partial tags (e.g. `"<thi"` followed by `"nk>..."`) are correctly handled.
+ */
+export class ThinkTagParser {
+  private state: ThinkTagState = ThinkTagState.NORMAL;
+
+  /**
+   * Buffer used to accumulate partial tag sequences that may span chunk
+   * boundaries. For example, one chunk may end with `"<thi"` and the next
+   * may start with `"nk>"`.
+   */
+  private pendingBuffer = '';
+
+  /**
+   * Process an incremental text chunk and return the separated result.
+   *
+   * @param newContent - The new text fragment appended in this chunk.
+   * @returns An object with `content` (visible text) and `reasoningContent`
+   *          (text extracted from inside `<think>` blocks).
+   */
+  process(newContent: string): { content: string; reasoningContent: string } {
+    // Prepend any leftover partial tag buffer from the previous chunk.
+    const text = this.pendingBuffer + newContent;
+    this.pendingBuffer = '';
+
+    let content = '';
+    let reasoningContent = '';
+
+    // The longest tag we need to look ahead for is `</think>` (8 chars).
+    // If the text ends with a *prefix* of either tag, we stash it into
+    // `pendingBuffer` and process only the safe portion.
+    const safeText = this.extractPendingSafePrefix(text);
+
+    let i = 0;
+    while (i < safeText.length) {
+      if (this.state === ThinkTagState.NORMAL) {
+        const openIdx = safeText.indexOf('<think>', i);
+        if (openIdx === -1) {
+          // No more `<think>` tags - rest is normal content.
+          content += safeText.slice(i);
+          break;
+        }
+        // Append everything before the tag as normal content.
+        content += safeText.slice(i, openIdx);
+        i = openIdx + '<think>'.length;
+        this.state = ThinkTagState.THINKING;
+      } else {
+        // THINKING state - look for `</think>`.
+        const closeIdx = safeText.indexOf('</think>', i);
+        if (closeIdx === -1) {
+          // No closing tag yet - rest is reasoning content.
+          reasoningContent += safeText.slice(i);
+          break;
+        }
+        // Append everything before the closing tag as reasoning.
+        reasoningContent += safeText.slice(i, closeIdx);
+        i = closeIdx + '</think>'.length;
+        this.state = ThinkTagState.NORMAL;
+      }
+    }
+
+    return { content, reasoningContent };
+  }
+
+  /**
+   * Reset the parser to its initial state.
+   */
+  reset(): void {
+    this.state = ThinkTagState.NORMAL;
+    this.pendingBuffer = '';
+  }
+
+  /**
+   * If the text ends with a prefix of `<think>` or `</think>`, move that
+   * prefix into `pendingBuffer` and return only the safe (fully parseable)
+   * portion.
+   */
+  private extractPendingSafePrefix(text: string): string {
+    const TAGS = ['<think>', '</think>'];
+    for (const tag of TAGS) {
+      for (let prefixLen = 1; prefixLen < tag.length; prefixLen++) {
+        const prefix = tag.slice(0, prefixLen);
+        if (text.endsWith(prefix)) {
+          this.pendingBuffer = prefix;
+          return text.slice(0, text.length - prefixLen);
+        }
+      }
+    }
+    return text;
+  }
+}
+
 export class StreamBufferHelper {
   // One-time streaming pull message message cache
   streamMessageBuffer: Message<ContentType>[] = [];
 
   // Chunk message cache for one-time streaming pull
   streamChunkBuffer: ChunkRaw[] = [];
+
+  /**
+   * Per-message think-tag parsers, keyed by `message_id`.
+   * Lazily created when the first chunk for a message is processed.
+   */
+  private thinkTagParsers: Map<string, ThinkTagParser> = new Map();
 
   /**
    * Added Chunk message cache
@@ -53,15 +170,41 @@ export class StreamBufferHelper {
     );
     // new
     if (previousIndex === -1) {
+      // For text messages, run think-tag extraction on the initial content.
+      if (
+        message.content_type === ContentType.Text &&
+        message.content
+      ) {
+        const parser = this.getOrCreateParser(message.message_id);
+        const { content, reasoningContent } = parser.process(message.content);
+        message.content = content;
+        message.reasoning_content =
+          (message.reasoning_content ?? '') + reasoningContent;
+      }
       this.streamMessageBuffer.push(message);
       return;
     }
     // update
     const previousMessage = this.streamMessageBuffer.at(previousIndex);
-    message.content = (previousMessage?.content || '') + message.content;
-    message.reasoning_content =
-      (previousMessage?.reasoning_content ?? '') +
-      (message.reasoning_content ?? '');
+    const rawNewContent = message.content;
+
+    // For text messages, parse think-tags from the incremental content.
+    if (
+      message.content_type === ContentType.Text &&
+      rawNewContent
+    ) {
+      const parser = this.getOrCreateParser(message.message_id);
+      const { content, reasoningContent } = parser.process(rawNewContent);
+
+      message.content = (previousMessage?.content || '') + content;
+      message.reasoning_content =
+        (previousMessage?.reasoning_content ?? '') + reasoningContent;
+    } else {
+      message.content = (previousMessage?.content || '') + message.content;
+      message.reasoning_content =
+        (previousMessage?.reasoning_content ?? '') +
+        (message.reasoning_content ?? '');
+    }
 
     message.content_obj = message.content;
     this.streamMessageBuffer.splice(previousIndex, 1, message);
@@ -73,6 +216,7 @@ export class StreamBufferHelper {
   clearMessageBuffer() {
     this.streamMessageBuffer = [];
     this.streamChunkBuffer = [];
+    this.thinkTagParsers.clear();
   }
 
   /**
@@ -81,6 +225,12 @@ export class StreamBufferHelper {
    * 2, reply_id message_id problem
    */
   clearMessageBufferByReplyId(reply_id: string) {
+    const removedMessageIds = new Set<string>();
+    this.streamMessageBuffer.forEach(msg => {
+      if (msg.reply_id === reply_id || msg.message_id === reply_id) {
+        removedMessageIds.add(msg.message_id);
+      }
+    });
     this.streamMessageBuffer = this.streamMessageBuffer.filter(
       message =>
         message.reply_id !== reply_id && message.message_id !== reply_id,
@@ -90,6 +240,8 @@ export class StreamBufferHelper {
         chunk.message.reply_id !== reply_id &&
         chunk.message.message_id !== reply_id,
     );
+    // Clean up think-tag parsers for removed messages.
+    removedMessageIds.forEach(id => this.thinkTagParsers.delete(id));
   }
 
   /**
@@ -99,6 +251,18 @@ export class StreamBufferHelper {
     return this.streamChunkBuffer.filter(
       chunk => chunk.message.message_id === message_id,
     );
+  }
+
+  /**
+   * Lazily create or retrieve a ThinkTagParser for a given message.
+   */
+  private getOrCreateParser(messageId: string): ThinkTagParser {
+    let parser = this.thinkTagParsers.get(messageId);
+    if (!parser) {
+      parser = new ThinkTagParser();
+      this.thinkTagParsers.set(messageId, parser);
+    }
+    return parser;
   }
 }
 
