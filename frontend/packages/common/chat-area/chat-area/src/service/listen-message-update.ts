@@ -118,8 +118,8 @@ export const listenMessageUpdate = (param: {
           handleNormalMessage(processedMessage, useMessagesStore, reporter);
         }
         /**
-         * The order is reversed with handleXXXMessage here, in order to ensure that the waiting time obtained by the outside is accurate.
-         * There shouldn't be any big problems here. You need to pay attention when you have strong dependence here in the future.
+         * The order is reversed with handleXXXMessage here, in order to guarantee that the waiting time obtained by the outside is accurate.
+         * There should not be any big problems here. You need to pay attention when you have strong dependence here in the future.
          */
         updateWaiting(processedMessage);
 
@@ -186,7 +186,21 @@ export const listenMessageUpdate = (param: {
         localMessageId: data.local_message_id,
         replyId: data.reply_id,
       };
-      onMessageSuccess?.(ctx);
+      try {
+        onMessageSuccess?.(ctx);
+      } catch (successCallbackError) {
+        // Guard against errors thrown in the onMessageSuccess callback
+        // (e.g. suggested-questions generation failures) so that the
+        // stream-end cleanup logic below still executes.
+        reporter.error({
+          message: 'onMessageSuccess callback error',
+          meta: {
+            error: successCallbackError,
+            replyId: data.reply_id,
+            localMessageId: data.local_message_id,
+          },
+        });
+      }
       lifeCycleService.message.onMessagePullingSuccess({
         ctx,
       });
@@ -264,8 +278,23 @@ const handleSuggestionMessage = (
   message: Message,
   useSuggestionsStore: SuggestionsStore,
 ) => {
-  const { updateSuggestion } = useSuggestionsStore.getState();
-  updateSuggestion(message.reply_id, message.content);
+  try {
+    const { updateSuggestion } = useSuggestionsStore.getState();
+    if (!message.reply_id) {
+      return;
+    }
+    updateSuggestion(message.reply_id, message.content);
+  } catch (suggestionError) {
+    // Gracefully handle suggestion processing errors (e.g. malformed
+    // follow_up messages or missing reply_id) so that they do not
+    // propagate and break the streaming pipeline.
+    localLog({
+      message: 'handleSuggestionMessage error',
+      error: suggestionError,
+      messageId: message.message_id,
+      replyId: message.reply_id,
+    });
+  }
 };
 
 const handleNormalMessage = (
