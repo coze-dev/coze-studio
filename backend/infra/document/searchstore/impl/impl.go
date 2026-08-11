@@ -18,16 +18,20 @@ package impl
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/milvus-io/milvus/client/v2/milvusclient"
+	qdrantapi "github.com/qdrant/go-client/qdrant"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/elasticsearch"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/milvus"
 	searchstoreOceanbase "github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/oceanbase"
+	searchstoreQdrant "github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/qdrant"
 	"github.com/coze-dev/coze-studio/backend/infra/document/searchstore/impl/vikingdb"
 	"github.com/coze-dev/coze-studio/backend/infra/embedding"
 	"github.com/coze-dev/coze-studio/backend/infra/embedding/impl"
@@ -200,6 +204,45 @@ func getVectorStore(ctx context.Context, conf *config.KnowledgeConfig) (searchst
 		mgr, err := searchstoreOceanbase.NewManager(managerConfig)
 		if err != nil {
 			return nil, fmt.Errorf("init oceanbase vector store failed, err=%w", err)
+		}
+		return mgr, nil
+
+	case "qdrant":
+		addr := envkey.GetStringD("QDRANT_ADDR", "localhost:6334")
+		host, portString, err := net.SplitHostPort(addr)
+		if err != nil {
+			return nil, fmt.Errorf("invalid qdrant address %q, expected host:port: %w", addr, err)
+		}
+		if host == "" {
+			return nil, fmt.Errorf("invalid qdrant address %q, host is empty", addr)
+		}
+		port, err := strconv.Atoi(portString)
+		if err != nil || port <= 0 || port > 65535 {
+			return nil, fmt.Errorf("invalid qdrant port %q", portString)
+		}
+
+		qdrantClient, err := qdrantapi.NewClient(&qdrantapi.Config{
+			Host:   host,
+			Port:   port,
+			APIKey: os.Getenv("QDRANT_API_KEY"),
+			UseTLS: envkey.GetBoolD("QDRANT_USE_TLS", false),
+		})
+		if err != nil {
+			return nil, fmt.Errorf("init qdrant client failed, err=%w", err)
+		}
+		emb, err := impl.GetEmbedding(ctx, conf.EmbeddingConfig)
+		if err != nil {
+			_ = qdrantClient.Close()
+			return nil, fmt.Errorf("init qdrant embedding failed, err=%w", err)
+		}
+		mgr, err := searchstoreQdrant.NewManager(&searchstoreQdrant.ManagerConfig{
+			Client:    qdrantClient,
+			Embedding: emb,
+			BatchSize: envkey.GetIntD("QDRANT_BATCH_SIZE", 64),
+		})
+		if err != nil {
+			_ = qdrantClient.Close()
+			return nil, fmt.Errorf("init qdrant vector store failed, err=%w", err)
 		}
 		return mgr, nil
 

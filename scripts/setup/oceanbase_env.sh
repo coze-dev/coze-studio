@@ -69,13 +69,11 @@ else
     # Use sed to replace VECTOR_STORE_TYPE
     if [[ "$OSTYPE" == "darwin"* ]]; then
         # macOS requires special handling - use temporary file to avoid .bak creation
-        sed "s/export VECTOR_STORE_TYPE=\"milvus\"/export VECTOR_STORE_TYPE=\"oceanbase\"/g" "$TARGET_ENV_FILE" > "$TARGET_ENV_FILE.tmp"
-        sed "s/export VECTOR_STORE_TYPE=\"vikingdb\"/export VECTOR_STORE_TYPE=\"oceanbase\"/g" "$TARGET_ENV_FILE.tmp" > "$TARGET_ENV_FILE"
-        rm -f "$TARGET_ENV_FILE.tmp"
+        sed -E 's/export VECTOR_STORE_TYPE="(milvus|vikingdb|qdrant)"/export VECTOR_STORE_TYPE="oceanbase"/g' "$TARGET_ENV_FILE" > "$TARGET_ENV_FILE.tmp"
+        mv "$TARGET_ENV_FILE.tmp" "$TARGET_ENV_FILE"
     else
         # Linux systems
-        sed -i "s/export VECTOR_STORE_TYPE=\"milvus\"/export VECTOR_STORE_TYPE=\"oceanbase\"/g" "$TARGET_ENV_FILE"
-        sed -i "s/export VECTOR_STORE_TYPE=\"vikingdb\"/export VECTOR_STORE_TYPE=\"oceanbase\"/g" "$TARGET_ENV_FILE"
+        sed -i -E 's/export VECTOR_STORE_TYPE="(milvus|vikingdb|qdrant)"/export VECTOR_STORE_TYPE="oceanbase"/g' "$TARGET_ENV_FILE"
     fi
 fi
 
