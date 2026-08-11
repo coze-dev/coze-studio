@@ -105,7 +105,7 @@ cd backend && go test ./...
 - **Database**: MySQL 8.4.5
 - **Cache**: Redis 8.0
 - **Search**: Elasticsearch 8.18.0 with SmartCN analyzer
-- **Vector DB**: Milvus v2.5.10 for embeddings
+- **Vector DB**: Milvus v2.5.10 is bundled. Qdrant is supported as an external vector store
 - **Storage**: MinIO for object storage
 - **Message Queue**: NSQ (nsqlookupd, nsqd, nsqadmin)
 - **Configuration**: etcd 3.5

@@ -390,6 +390,8 @@ services:
     restart: always
     container_name: coze-server
     env_file: *env_file
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     # environment:
     #   LISTEN_ADDR: 0.0.0.0:8888
     networks:

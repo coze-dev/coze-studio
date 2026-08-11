@@ -105,6 +105,12 @@ cozeServer:
     COZE_MQ_TYPE: rmq
     ES_VERSION: "v8"
     VECTOR_STORE_TYPE: "milvus"
+    # Override this address when VECTOR_STORE_TYPE is "qdrant"
+    # and using an external gRPC endpoint.
+    QDRANT_ADDR: "qdrant:6334"
+    QDRANT_API_KEY: ""
+    QDRANT_USE_TLS: "false"
+    QDRANT_BATCH_SIZE: "64"
     EMBEDDING_TYPE: "ark"
     ARK_EMBEDDING_MODEL: ""
     ARK_EMBEDDING_DIMS: "1024"
