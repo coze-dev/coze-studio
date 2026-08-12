@@ -5501,12 +5501,13 @@
       "default": {
         "display_info": {
           "output_tokens": 128000,
-          "max_tokens": 512000
+          "max_tokens": 1000000
         },
         "capability": {
+          "cot_display": true,
           "function_call": true,
           "image_understanding": true,
-          "video_understanding": false,
+          "video_understanding": true,
           "audio_understanding": false,
           "support_multi_modal": true
         },
@@ -5553,12 +5554,13 @@
       "MiniMax-M3": {
         "display_info": {
           "output_tokens": 128000,
-          "max_tokens": 512000
+          "max_tokens": 1000000
         },
         "capability": {
+          "cot_display": true,
           "function_call": true,
           "image_understanding": true,
-          "video_understanding": false,
+          "video_understanding": true,
           "audio_understanding": false,
           "support_multi_modal": true
         },
@@ -5608,6 +5610,7 @@
           "max_tokens": 204800
         },
         "capability": {
+          "cot_display": true,
           "function_call": true,
           "image_understanding": false,
           "video_understanding": false,

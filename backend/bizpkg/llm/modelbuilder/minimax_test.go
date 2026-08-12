@@ -176,6 +176,63 @@ func TestMinimaxApplyParams(t *testing.T) {
 	})
 }
 
+func TestMinimaxThinkingModes(t *testing.T) {
+	tests := []struct {
+		name         string
+		model        string
+		thinkingType config.ThinkingType
+		expected     string
+	}{
+		{
+			name:         "M3 uses adaptive thinking by default",
+			model:        miniMaxM3,
+			thinkingType: config.ThinkingType_Default,
+			expected:     "adaptive",
+		},
+		{
+			name:         "M3 thinking can be disabled",
+			model:        miniMaxM3,
+			thinkingType: config.ThinkingType_Disable,
+			expected:     "disabled",
+		},
+		{
+			name:         "M2.7 keeps its always-on thinking behavior",
+			model:        miniMaxM2_7,
+			thinkingType: config.ThinkingType_Disable,
+			expected:     "",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			builder := &minimaxModelBuilder{
+				cfg: &config.Model{
+					Connection: &config.Connection{
+						BaseConnInfo: &config.BaseConnectionInfo{Model: tt.model},
+					},
+				},
+			}
+			conf := builder.getDefaultConfig()
+
+			builder.applyThinkingToConfig(conf, tt.thinkingType)
+
+			thinking, ok := conf.ExtraFields["thinking"].(map[string]any)
+			if tt.expected == "" {
+				if ok {
+					t.Fatal("thinking configuration should be omitted")
+				}
+				return
+			}
+			if !ok {
+				t.Fatal("thinking configuration is missing")
+			}
+			if thinking["type"] != tt.expected {
+				t.Errorf("thinking type = %v, want %v", thinking["type"], tt.expected)
+			}
+		})
+	}
+}
+
 func TestMinimaxBuildWithCustomBaseURL(t *testing.T) {
 	customURL := "https://api.minimaxi.com/v1"
 	cfg := &config.Model{

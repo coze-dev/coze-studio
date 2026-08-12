@@ -27,6 +27,11 @@ import (
 
 const defaultMiniMaxBaseURL = "https://api.minimax.io/v1"
 
+const (
+	miniMaxM3   = "MiniMax-M3"
+	miniMaxM2_7 = "MiniMax-M2.7"
+)
+
 type minimaxModelBuilder struct {
 	cfg *config.Model
 }
@@ -88,6 +93,24 @@ func (m *minimaxModelBuilder) applyParamsToConfig(conf *openai.ChatModelConfig, 
 	}
 }
 
+func (m *minimaxModelBuilder) applyThinkingToConfig(conf *openai.ChatModelConfig, thinkingType config.ThinkingType) {
+	model := m.cfg.Connection.BaseConnInfo.Model
+	if model != miniMaxM3 {
+		return
+	}
+
+	mode := "adaptive"
+	if thinkingType == config.ThinkingType_Disable {
+		mode = "disabled"
+	}
+
+	conf.ExtraFields = map[string]any{
+		"thinking": map[string]any{
+			"type": mode,
+		},
+	}
+}
+
 func (m *minimaxModelBuilder) Build(ctx context.Context, params *LLMParams) (ToolCallingChatModel, error) {
 	base := m.cfg.Connection.BaseConnInfo
 
@@ -99,6 +122,7 @@ func (m *minimaxModelBuilder) Build(ctx context.Context, params *LLMParams) (Too
 		conf.BaseURL = base.BaseURL
 	}
 
+	m.applyThinkingToConfig(conf, base.ThinkingType)
 	m.applyParamsToConfig(conf, params)
 
 	return openai.NewChatModel(ctx, conf)
