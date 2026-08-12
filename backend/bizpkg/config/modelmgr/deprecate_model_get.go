@@ -204,6 +204,8 @@ func strProtocolToModelClass(protocol Protocol) developer_api.ModelClass {
 		modelClass = developer_api.ModelClass_Llama
 	case ProtocolQwen:
 		modelClass = developer_api.ModelClass_QWen
+	case ProtocolMiniMax:
+		modelClass = developer_api.ModelClass_MiniMax
 	default:
 		modelClass = developer_api.ModelClass_SEED
 	}
@@ -348,6 +350,7 @@ const (
 	ProtocolArk      Protocol = "ark"
 	ProtocolOllama   Protocol = "ollama"
 	ProtocolQwen     Protocol = "qwen"
+	ProtocolMiniMax  Protocol = "minimax"
 )
 
 type MultilingualText struct {
