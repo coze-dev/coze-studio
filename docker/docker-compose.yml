@@ -187,9 +187,12 @@ services:
 
           # Run ES initialization script
           echo 'Running Elasticsearch initialization...'
-          sed 's/\r$$//' /setup_es.sh > /setup_es_fixed.sh
+          tr -d '\r' < /setup_es.sh > /setup_es_fixed.sh
           chmod +x /setup_es_fixed.sh
-          /setup_es_fixed.sh --index-dir /es_index_schema
+          if ! /setup_es_fixed.sh --index-dir /es_index_schema; then
+            echo 'Elasticsearch initialization FAILED' >&2
+            exit 1
+          fi
           # Create marker file indicating initialization completion
           touch /tmp/es_init_complete
           echo 'Elasticsearch initialization completed successfully!'
