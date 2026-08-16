@@ -14,3 +14,7 @@ yarn.lock merge=binary
 # For more information, see this issue: https://github.com/microsoft/rushstack/issues/1088
 #
 *.json linguist-language=JSON-with-Comments
+
+# Force LF for shell scripts so Windows checkouts still run in Linux containers
+*.sh text eol=lf
+*.bash text eol=lf
