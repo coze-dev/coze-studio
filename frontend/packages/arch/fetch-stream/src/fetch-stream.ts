@@ -224,9 +224,41 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
         },
       });
 
+      // Batch onMessage dispatch across animation frames so a burst of streamed
+      // chunks doesn't monopolize the main thread (fixes INP jank during
+      // streaming, see #2449). Order is preserved; messages already queued are
+      // flushed when the stream closes so none are dropped.
+      const flushScheduler = (() => {
+        const g = globalThis as unknown as {
+          requestAnimationFrame?: (cb: (t: number) => void) => number;
+          queueMicrotask?: (cb: () => void) => void;
+        };
+        if (typeof g.requestAnimationFrame === 'function') {
+          return (cb: () => void) => void g.requestAnimationFrame!(() => cb());
+        }
+        if (typeof g.queueMicrotask === 'function') {
+          return (cb: () => void) => g.queueMicrotask!(cb);
+        }
+        return (cb: () => void) => void setTimeout(cb, 0);
+      })();
+
+      let pendingMessages: Array<{ message: Message; dataClump: DataClump }> = [];
+      let frameScheduled = false;
+      const flushPending = () => {
+        frameScheduled = false;
+        if (!pendingMessages.length) {
+          return;
+        }
+        const batch = pendingMessages;
+        pendingMessages = [];
+        for (const p of batch) {
+          onMessage?.(p);
+        }
+      };
+
       const streamWriter = new WritableStream<Message>({
-        async write(chunk, controller) {
-          // Write messages asynchronously to avoid false panic pipeline flow in callbacks
+        async write(chunk, _controller) {
+          // Yield a microtask to avoid false panic pipeline flow in callbacks.
           await Promise.resolve();
           const param = { message: chunk, dataClump };
           const validateResult = validateMessage?.(param);
@@ -238,7 +270,21 @@ export async function fetchStream<Message = ParseEvent, DataClump = unknown>(
             throw validateResult.error;
           }
 
-          onMessage?.(param);
+          // Defer onMessage to the next frame so a burst of chunks doesn't run
+          // heavy per-message work back-to-back on the main thread.
+          pendingMessages.push(param);
+          if (!frameScheduled) {
+            frameScheduled = true;
+            flushScheduler(flushPending);
+          }
+        },
+        close() {
+          // Deliver any remaining messages before the stream closes.
+          flushPending();
+        },
+        abort() {
+          // Best-effort: still deliver queued messages on abort/cancel.
+          flushPending();
         },
       });
 
