@@ -44,10 +44,10 @@ interface PatFormProps {
   afterSubmit?: (params: Record<string, unknown>) => void;
 }
 
-const getDurationData = (durationDay: ExpirationDate, expireAt: Date) => ({
+const getDurationData = (durationDay: ExpirationDate, expireAt?: Date) => ({
   duration_day: durationDay,
-  ...(durationDay === ExpirationDate.CUSTOMIZE
-    ? { expire_at: getExpireAt(expireAt as Date) }
+  ...(durationDay === ExpirationDate.CUSTOMIZE && expireAt
+    ? { expire_at: getExpireAt(expireAt) }
     : {}),
 });
 
@@ -114,14 +114,30 @@ export const usePatForm = ({
       expire_at,
     } = formApi.current?.getValues() || {};
 
+    const nameValid = validateName(name);
+    const isCustomParamsValid = validateCustomParams?.() !== false;
+    const durationValid = isCreate
+      ? validateDuration(duration_day, expire_at)
+      : true;
+    if (!(nameValid && isCustomParamsValid && durationValid)) {
+      setIsFailToValid(true);
+      return;
+    }
+
     const params = {
       name,
       ...(getCustomParams?.() || {}),
     };
+    // getCustomParams may override name; re-validate the final payload so a
+    // missing/empty name can never reach the backend (which rejects it with 400).
+    if (!Boolean(params.name)) {
+      setIsFailToValid(true);
+      return;
+    }
     if (isCreate) {
       runCreate({
         ...params,
-        ...getDurationData(duration_day as ExpirationDate, expire_at as Date),
+        ...getDurationData(duration_day as ExpirationDate, expire_at),
       });
     } else {
       runUpdate({ ...params, id: editInfo?.id ?? '' });
@@ -149,15 +165,20 @@ export const usePatForm = ({
   };
 
   useEffect(() => {
+    const values = formApi.current?.getValues();
     if (isCreate) {
-      formApi.current?.setValue('name', 'Secret token');
+      // ensure a sensible default name so the create request never carries an
+      // empty/absent name (backend rejects missing required name with 400)
+      if (!values?.name) {
+        formApi.current?.setValue('name', 'Secret token');
+      }
     } else if (patPermission && patPermission?.personal_access_token?.name) {
       formApi.current?.setValue(
         'name',
         patPermission?.personal_access_token?.name,
       );
     }
-  }, [patPermission]);
+  }, [isCreate, patPermission]);
 
   const ready = isCreate ? true : !!patPermission;
 
