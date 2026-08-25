@@ -55,12 +55,24 @@ func (sc *StreamContainer) PipeAll() {
 				msg, err := sr.Recv()
 				if err != nil {
 					if errors.Is(err, io.EOF) {
+						// io.EOF is the normal end of a sub-stream; do not forward
+						// it here. Done() closes sc.sw, which lets the downstream
+						// reader observe EOF only after every sub-stream finished,
+						// so no sibling sub-stream gets stuck writing.
 						sc.wg.Done()
 						return
 					}
+					// A real (non-EOF) error terminates this sub-stream: forward it
+					// and stop, so wg.Done() always runs and Done() never waits
+					// forever on a stuck sub-stream.
+					sc.sw.Send(msg, err)
+					sc.wg.Done()
+					return
 				}
-
-				sc.sw.Send(msg, err)
+				if closed := sc.sw.Send(msg, err); closed {
+					sc.wg.Done()
+					return
+				}
 			}
 		}()
 	}
