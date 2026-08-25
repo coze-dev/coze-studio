@@ -879,7 +879,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 					chatDoneEvent.Usage = &vo.Usage{
 						InputTokens:  &msg.StateMessage.Usage.InputTokens,
 						OutputTokens: &msg.StateMessage.Usage.OutputTokens,
-						TokenCount:   ptr.Of(msg.StateMessage.Usage.OutputTokens + msg.StateMessage.Usage.OutputTokens),
+						TokenCount:   ptr.Of(msg.StateMessage.Usage.InputTokens + msg.StateMessage.Usage.OutputTokens),
 					}
 				}
 
