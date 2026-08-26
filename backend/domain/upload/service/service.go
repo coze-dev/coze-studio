@@ -89,9 +89,10 @@ func (u *uploadSVC) GetFile(ctx context.Context, req *GetFileRequest) (resp *Get
 	}
 	if resp.File != nil {
 		url, err := u.oss.GetObjectUrl(ctx, resp.File.TosURI)
-		if err == nil {
-			resp.File.Url = url
+		if err != nil {
+			return nil, errorx.WrapByCode(err, errno.ErrUploadSystemErrorCode)
 		}
+		resp.File.Url = url
 	}
 	return
 }
