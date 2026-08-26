@@ -832,7 +832,7 @@ func (w *ApplicationService) convertToChatFlowRunResponseList(ctx context.Contex
 			switch msg.StateMessage.Status {
 			case entity.WorkflowSuccess:
 				suggestWorkflowResponse := make([]*workflow.ChatFlowRunResponse, 0, 3)
-				if info.suggestReplyInfo != nil && info.suggestReplyInfo.IsSetSuggestReplyMode() && info.suggestReplyInfo.GetSuggestReplyMode() != workflow.SuggestReplyInfoMode_Disable {
+				if info.suggestReplyInfo != nil && info.suggestReplyInfo.IsSetSuggestReplyMode() && info.suggestReplyInfo.GetSuggestReplyMode() != workflow.SuggestReplyInfoMode_Disable && intermediateMessage != nil {
 					sInfo := &vo.SuggestInfo{
 						UserInput:    userMessage,
 						AnswerInput:  schema.AssistantMessage(intermediateMessage.Content, nil),
