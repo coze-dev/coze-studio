@@ -140,9 +140,14 @@ func CreatePersonalAccessTokenAndPermission(ctx context.Context, c *app.RequestC
 
 // checkCPATParams Check parameters for creating personal access tokens
 func checkCPATParams(ctx context.Context, req *openapiauth.CreatePersonalAccessTokenAndPermissionRequest) error {
-
 	if req.Name == "" {
 		return errorx.New(errno.ErrPermissionInvalidParamCode, errorx.KV("msg", "name is required"))
+	}
+	if req.DurationDay == "" {
+		return errorx.New(errno.ErrPermissionInvalidParamCode, errorx.KV("msg", "duration_day is required"))
+	}
+	if req.DurationDay == "customize" && req.ExpireAt <= 0 {
+		return errorx.New(errno.ErrPermissionInvalidParamCode, errorx.KV("msg", "expire_at is required when duration_day is customize"))
 	}
 	return nil
 }
