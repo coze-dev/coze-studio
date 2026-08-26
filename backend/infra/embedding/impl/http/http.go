@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
+	"sync"
 	"time"
 
 	opt "github.com/cloudwego/eino/components/embedding"
@@ -107,6 +108,7 @@ func NewEmbedding(addr string, dims int64, batchSize int) (embedding.Embedder, e
 }
 
 type embedder struct {
+	mu        sync.Mutex
 	cli       *http.Client
 	addr      string
 	dim       int64
@@ -195,6 +197,8 @@ func (e *embedder) do(req *http.Request) (*embedResp, error) {
 }
 
 func (e *embedder) Dimensions() int64 {
+	e.mu.Lock()
+	defer e.mu.Unlock()
 	if e.dim <= 0 {
 		embeddings, err := e.EmbedStrings(context.Background(), []string{"test"})
 		if err != nil {
