@@ -247,6 +247,9 @@ func (c *ModelConfig) SetDoNotUseOldModelConf(ctx context.Context) error {
 
 func toNewModel(old *OldModel) (*Model, error) {
 	// to new model, old: {"ID":68010,"Name":"Test_Ollama_Qwen2.5vl-7b","Description":{"zh":"ollama 模型简介","en":"ollama model description"},"Meta":{"Protocol":"ollama","ConnConfig":null}}
+	if old.Meta.ConnConfig == nil {
+		return nil, fmt.Errorf("old model %s has no conn_config, unable to convert to new model config", old.Name)
+	}
 	modelClass := strProtocolToModelClass(old.Meta.Protocol)
 	provider, _ := GetModelProvider(modelClass)
 
