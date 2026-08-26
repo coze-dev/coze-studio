@@ -77,6 +77,7 @@ Coze Studio 的后端采用 Golang 开发，前端使用 React + TypeScript，�
 * **项目配置**：
    * [模型配置](https://github.com/coze-dev/coze-studio/wiki/3.-模型配置)：部署 Coze Studio 开源版之前，必须配置模型服务，否则无法在搭建智能体、工作流和应用时选择模型。
    * [插件配置](https://github.com/coze-dev/coze-studio/wiki/4.-插件配置)：如需使用插件商店中的官方插件，必须先配置插件，添加第三方服务的鉴权秘钥。
+      * [Xquik 插件配置](docs/xquik-plugin-configuration-guide.md)：配置公开 X 搜索和用户资料的只读工具。
    * [基础组件配置](https://github.com/coze-dev/coze-studio/wiki/5.-基础组件配置)：了解如何配置图片上传等组件，以便在 Coze Studio 中使用上传图片等功能。
 * [API 参考](https://github.com/coze-dev/coze-studio/wiki/6.-API-参考)：Coze Studio 社区版 API 和 Chat SDK 通过个人访问令牌鉴权，提供对话和工作流相关 API。
 * [开发规范](https://github.com/coze-dev/coze-studio/wiki/7.-开发规范)：

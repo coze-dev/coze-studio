@@ -906,3 +906,42 @@
       deprecated: false
       method: get
       sub_url: /v5/place/around
+- plugin_id: 24
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: xquik.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: xquik
+    name_for_human: Xquik
+    description_for_model: Search current public X posts and retrieve public post or profile details. Read-only.
+    description_for_human: 搜索公开 X 帖子，并获取公开帖子或用户资料。仅支持读取。
+    auth:
+      type: service_http
+      key: x-api-key
+      sub_type: token/api_key
+      payload: '{"key": "x-api-key", "service_token": "", "location": "Header"}'
+    logo_url: official_plugin_icon/plugin_xquik.png
+    api:
+      type: openapi
+    common_params:
+      path: [ ]
+      query: [ ]
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+  tools:
+    - tool_id: 240001
+      deprecated: false
+      method: get
+      sub_url: /x/tweets/search
+    - tool_id: 240002
+      deprecated: false
+      method: get
+      sub_url: /x/tweets/{id}
+    - tool_id: 240003
+      deprecated: false
+      method: get
+      sub_url: /x/users/{id}
