@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -394,4 +395,32 @@ func TestInvoke(t *testing.T) {
 		assert.Equal(t, `{"message":"success"}`, result["body"])
 		assert.Equal(t, int64(200), result["statusCode"])
 	})
+}
+
+func TestBuildDoesNotMutateDefaultClient(t *testing.T) {
+	originalTimeout := http.DefaultClient.Timeout
+	defer func() { http.DefaultClient.Timeout = originalTimeout }()
+
+	cfg := &Config{
+		Method:     "GET",
+		Timeout:    time.Second * 7,
+		RetryTimes: 0,
+	}
+
+	const goroutines = 20
+	var wg sync.WaitGroup
+	wg.Add(goroutines)
+	for i := 0; i < goroutines; i++ {
+		go func() {
+			defer wg.Done()
+			_, err := cfg.Build(context.Background(), &schema.NodeSchema{})
+			assert.NoError(t, err)
+		}()
+	}
+	wg.Wait()
+
+	// Building HTTPRequester nodes must never change the process-wide default
+	// client; otherwise concurrent workflows race on http.DefaultClient.Timeout.
+	assert.Equal(t, originalTimeout, http.DefaultClient.Timeout,
+		"http.DefaultClient.Timeout was mutated by Config.Build")
 }

@@ -340,12 +340,15 @@ func (c *Config) Build(_ context.Context, _ *schema.NodeSchema, _ ...schema.Buil
 		bodyConfig:      c.BodyConfig,
 		md5FieldMapping: c.MD5FieldMapping,
 	}
-	client := http.DefaultClient
+	// Copy the shared http.DefaultClient instead of mutating it. http.DefaultClient
+	// is a process-wide singleton; writing its Timeout here would race with and
+	// clobber other concurrent workflows (and httpGet below) that rely on it.
+	client := *http.DefaultClient
 	if c.Timeout > 0 {
 		client.Timeout = c.Timeout
 	}
 
-	hg.client = client
+	hg.client = &client
 
 	return hg, nil
 }
@@ -623,8 +626,11 @@ func httpGet(ctx context.Context, url string) (*http.Response, error) {
 		return nil, err
 	}
 
-	http.DefaultClient.Timeout = time.Second * defaultGetFileTimeout
-	return http.DefaultClient.Do(request)
+	// Copy the shared http.DefaultClient so the file-download timeout does not
+	// mutate the process-wide client used by concurrent requests.
+	client := *http.DefaultClient
+	client.Timeout = time.Second * defaultGetFileTimeout
+	return client.Do(request)
 }
 
 func (hg *HTTPRequester) ToCallbackInput(_ context.Context, input map[string]any) (
