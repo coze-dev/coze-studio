@@ -19,6 +19,7 @@ package wrap
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"github.com/cloudwego/eino/components/embedding"
 
@@ -27,6 +28,7 @@ import (
 )
 
 type denseOnlyWrap struct {
+	mu        sync.Mutex
 	dims      int64
 	batchSize int
 	embedding.Embedder
@@ -49,6 +51,8 @@ func (d *denseOnlyWrap) EmbedStringsHybrid(ctx context.Context, texts []string, 
 }
 
 func (d *denseOnlyWrap) Dimensions() int64 {
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	if d.dims <= 0 {
 		embeddings, err := d.Embedder.EmbedStrings(context.Background(), []string{"test"})
 		if err != nil {
