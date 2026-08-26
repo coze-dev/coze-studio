@@ -259,7 +259,13 @@ func (e *esSearchStore) parseSearchResult(resp *es.Response) (docs []*schema.Doc
 		if i == 0 {
 			firstScore = score
 		}
-		doc.WithScore(score / firstScore)
+		if firstScore != 0 {
+			doc.WithScore(score / firstScore)
+		} else {
+			// firstScore == 0 means the query produced no ranking scores (e.g.
+			// constant-score/filter context); normalizing by it would yield NaN.
+			doc.WithScore(score)
+		}
 
 		docs = append(docs, doc)
 	}
