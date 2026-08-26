@@ -321,12 +321,13 @@ func (v *vkSearchStore) genFilter(ctx context.Context, co *retriever.Options, ro
 		op := map[string]any{"op": "must", "field": key, "conds": conds}
 
 		if filter != nil {
-			filter = op
-		} else {
+			// Merge the partition condition with the existing DSL filter.
 			filter = map[string]any{
 				"op":    "and",
-				"conds": []map[string]any{op, filter},
+				"conds": []map[string]any{filter, op},
 			}
+		} else {
+			filter = op
 		}
 	}
 
