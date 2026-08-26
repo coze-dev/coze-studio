@@ -111,7 +111,7 @@ func parseByRowIterator(iter rowIterator, config *contract.Config, opts ...parse
 		}
 
 		i++
-		if ps.RowsCount != 0 && len(docs) == ps.RowsCount {
+		if ps.RowsCount != 0 && len(expData) >= ps.RowsCount {
 			break
 		}
 	}
