@@ -409,7 +409,7 @@ func resolveRightValue(operator model.Operation, right any) (string, []*model.SQ
 	if isLikeOrNotLike(operator) {
 		var (
 			value = "?"
-			v     = "%s" + rightValue + "%s"
+			v     = "%" + rightValue + "%"
 		)
 		return value, []*model.SQLParamVal{{ValueType: table.FieldItemType_Text, Value: &v}}, nil
 	}
