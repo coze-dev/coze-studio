@@ -1,0 +1,331 @@
+openapi: 3.0.1
+info:
+  title: Xquik public X data
+  description: Search public X posts and retrieve public post or profile details.
+  version: v1
+servers:
+  - url: https://xquik.com/api/v1
+paths:
+  /x/tweets/search:
+    get:
+      operationId: search_x_posts
+      summary: Search public X posts
+      description: Search public X posts by text and optional X-native filters.
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Query text, post ID, or public X status URL.
+          schema:
+            type: string
+            minLength: 1
+        - name: queryType
+          in: query
+          description: Sort results by recency or engagement.
+          schema:
+            type: string
+            enum: [Latest, Top]
+        - name: limit
+          in: query
+          description: Maximum number of posts to return.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 10000
+        - name: cursor
+          in: query
+          description: Cursor from a previous response.
+          schema:
+            type: string
+        - name: fromUser
+          in: query
+          description: Filter by author username without the at sign.
+          schema:
+            type: string
+        - name: toUser
+          in: query
+          description: Filter replies sent to this username.
+          schema:
+            type: string
+        - name: hashtags
+          in: query
+          description: Hashtags separated by spaces, commas, or lines.
+          schema:
+            type: string
+        - name: language
+          in: query
+          description: Language code, such as en or tr.
+          schema:
+            type: string
+        - name: sinceDate
+          in: query
+          description: Earliest date to include.
+          schema:
+            type: string
+            format: date
+        - name: untilDate
+          in: query
+          description: Latest date to include.
+          schema:
+            type: string
+            format: date
+        - name: mediaType
+          in: query
+          description: Filter posts by attached media.
+          schema:
+            type: string
+            enum: [images, videos, gifs, media, links, none]
+        - name: replies
+          in: query
+          description: Include, exclude, or return only replies.
+          schema:
+            type: string
+            enum: [include, exclude, only]
+        - name: retweets
+          in: query
+          description: Include, exclude, or return only reposts.
+          schema:
+            type: string
+            enum: [include, exclude, only]
+        - name: verifiedOnly
+          in: query
+          description: Return posts only from verified authors.
+          schema:
+            type: boolean
+        - name: minFaves
+          in: query
+          description: Minimum like count.
+          schema:
+            type: integer
+            minimum: 0
+        - name: minRetweets
+          in: query
+          description: Minimum repost count.
+          schema:
+            type: integer
+            minimum: 0
+        - name: minReplies
+          in: query
+          description: Minimum reply count.
+          schema:
+            type: integer
+            minimum: 0
+        - name: minViews
+          in: query
+          description: Minimum view count.
+          schema:
+            type: integer
+            minimum: 0
+        - name: safe
+          in: query
+          description: Enable X safe-search filtering.
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Matching public posts and pagination state.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginatedPosts"
+        default:
+          description: Xquik rejected or could not complete the request.
+  /x/tweets/{id}:
+    get:
+      operationId: get_x_post
+      summary: Retrieve one public X post
+      description: Retrieve a public X post with its author, metrics, and media.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: X post ID.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Public post details.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [tweet]
+                properties:
+                  tweet:
+                    $ref: "#/components/schemas/Post"
+                  author:
+                    $ref: "#/components/schemas/UserProfile"
+        default:
+          description: Xquik rejected or could not complete the request.
+  /x/users/{id}:
+    get:
+      operationId: get_x_user
+      summary: Retrieve one public X profile
+      description: Retrieve a public X profile with audience and verification fields.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: X user identifier.
+          schema:
+            type: string
+            minLength: 1
+      responses:
+        "200":
+          description: Public profile details.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        default:
+          description: Xquik rejected or could not complete the request.
+components:
+  schemas:
+    PaginatedPosts:
+      type: object
+      required: [tweets]
+      properties:
+        tweets:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
+        has_next_page:
+          type: boolean
+          description: Whether another result page is available.
+        next_cursor:
+          type: string
+          description: Cursor for the next search request.
+        diagnostic:
+          type: object
+          description: Coverage details returned by coverage searches.
+          additionalProperties: true
+    Post:
+      type: object
+      required:
+        - id
+        - text
+        - bookmarkCount
+        - likeCount
+        - quoteCount
+        - replyCount
+        - retweetCount
+        - viewCount
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        text:
+          type: string
+        url:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+        lang:
+          type: string
+        source:
+          type: string
+        conversationId:
+          type: string
+        inReplyToId:
+          type: string
+        inReplyToUserId:
+          type: string
+        inReplyToUsername:
+          type: string
+        isReply:
+          type: boolean
+        isQuoteStatus:
+          type: boolean
+        possiblySensitive:
+          type: boolean
+        bookmarkCount:
+          type: integer
+        likeCount:
+          type: integer
+        quoteCount:
+          type: integer
+        replyCount:
+          type: integer
+        retweetCount:
+          type: integer
+        viewCount:
+          type: integer
+        author:
+          $ref: "#/components/schemas/UserProfile"
+        media:
+          type: array
+          items:
+            $ref: "#/components/schemas/Media"
+        entities:
+          type: object
+          additionalProperties: true
+    UserProfile:
+      type: object
+      required: [id, name, username]
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        username:
+          type: string
+        description:
+          type: string
+        location:
+          type: string
+        url:
+          type: string
+        profilePicture:
+          type: string
+          format: uri
+        coverPicture:
+          type: string
+          format: uri
+        createdAt:
+          type: string
+        followers:
+          type: integer
+        following:
+          type: integer
+        statusesCount:
+          type: integer
+        favouritesCount:
+          type: integer
+        mediaCount:
+          type: integer
+        protected:
+          type: boolean
+        verified:
+          type: boolean
+        isVerified:
+          type: boolean
+        isBlueVerified:
+          type: boolean
+        verifiedType:
+          type: string
+    Media:
+      type: object
+      required: [mediaUrl, type, url]
+      additionalProperties: true
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+          enum: [photo, video, animated_gif]
+        url:
+          type: string
+        mediaUrl:
+          type: string
+          format: uri
+        altText:
+          type: string
+        width:
+          type: integer
+        height:
+          type: integer
+        durationMillis:
+          type: integer
