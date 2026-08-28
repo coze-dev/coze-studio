@@ -176,10 +176,10 @@ func (c *Config) Build(_ context.Context, ns *schema.NodeSchema, opts ...schema.
 		}
 
 		k := info.Path[0]
-		fromPath := info.Source.Ref.FromPath
 
 		if info.Source.Ref != nil && info.Source.Ref.VariableType != nil &&
 			*info.Source.Ref.VariableType == vo.ParentIntermediate {
+			fromPath := info.Source.Ref.FromPath
 			if len(fromPath) > 1 {
 				return nil, fmt.Errorf("loop output refers to intermediate variable, but path length > 1: %v", fromPath)
 			}
