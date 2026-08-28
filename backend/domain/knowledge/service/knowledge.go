@@ -372,6 +372,9 @@ func (k *knowledgeSVC) UpdateDocument(ctx context.Context, request *UpdateDocume
 	if err != nil {
 		return errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
 	}
+	if doc == nil || doc.ID == 0 {
+		return errorx.New(errno.ErrKnowledgeNotExistCode, errorx.KVf("msg", "document not found, doc_id: %d", request.DocumentID))
+	}
 	if request.DocumentName != nil {
 		doc.Name = *request.DocumentName
 	}
@@ -862,6 +865,9 @@ func (k *knowledgeSVC) ListSlice(ctx context.Context, request *ListSliceRequest)
 	if err != nil {
 		logs.CtxErrorf(ctx, "get document failed, err: %v", err)
 		return nil, errorx.New(errno.ErrKnowledgeDBCode, errorx.KV("msg", err.Error()))
+	}
+	if doc == nil {
+		return nil, errorx.New(errno.ErrKnowledgeNotExistCode, errorx.KVf("msg", "document not found, doc_id: %d", ptr.From(request.DocumentID)))
 	}
 	resp := ListSliceResponse{}
 	if doc.Status == int32(entity.DocumentStatusDeleted) {
