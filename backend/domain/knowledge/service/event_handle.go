@@ -219,11 +219,12 @@ func (k *knowledgeSVC) validateDocumentStatus(ctx context.Context, doc *entity.D
 // handleIndexingErrors manages errors and recovery during indexing
 func (k *knowledgeSVC) handleIndexingErrors(ctx context.Context, event *entity.Event, err *error) {
 	if e := recover(); e != nil {
-		err = ptr.Of(errorx.New(errno.ErrKnowledgeSystemCode,
-			errorx.KV("msg", fmt.Sprintf("panic: %v", e))))
-		logs.CtxErrorf(ctx, "[indexDocument] panic, err: %v", err)
+		idxErr := errorx.New(errno.ErrKnowledgeSystemCode,
+			errorx.KV("msg", fmt.Sprintf("panic: %v", e)))
+		*err = idxErr
+		logs.CtxErrorf(ctx, "[indexDocument] panic, err: %v", idxErr)
 		k.setDocumentStatus(ctx, event.Document.ID,
-			int32(entity.DocumentStatusFailed), ptr.From(err).Error())
+			int32(entity.DocumentStatusFailed), idxErr.Error())
 		return
 	}
 
