@@ -120,8 +120,7 @@ func (k *knowledgeSVC) CopyKnowledge(ctx context.Context, request *CopyKnowledge
 	return copyResp, nil
 }
 
-func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*CopyKnowledgeResponse, error) {
-	var err error
+func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (copyResp *CopyKnowledgeResponse, err error) {
 	defer func() {
 		if e := recover(); e != nil {
 			logs.CtxErrorf(ctx, "copy knowledge failed, err: %v", e)
@@ -144,9 +143,8 @@ func (k *knowledgeSVC) copyDo(ctx context.Context, copyCtx *knowledgeCopyCtx) (*
 				}
 			}
 			copyCtx.CopyTask.Status = copyEntity.DataCopyTaskStatusFail
-			err = crossdatacopy.DefaultSVC().UpdateCopyTask(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask})
-			if err != nil {
-				logs.CtxErrorf(ctx, "update copy task failed, err: %v", err)
+			if upErr := crossdatacopy.DefaultSVC().UpdateCopyTask(ctx, &datacopy.UpdateCopyTaskReq{Task: copyCtx.CopyTask}); upErr != nil {
+				logs.CtxErrorf(ctx, "update copy task failed, err: %v", upErr)
 			}
 		}
 	}()
