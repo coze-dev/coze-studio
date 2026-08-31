@@ -19,11 +19,14 @@ package tool
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/bytedance/sonic"
 	"github.com/cloudwego/eino/compose"
@@ -48,7 +51,23 @@ type httpCallImpl struct {
 	ConversationID int64
 }
 
-var defaultHttpCli *resty.Client = resty.New()
+var defaultHttpCli *resty.Client = newToolHTTPClient()
+
+var (
+	errToolRequestHostNotAllowed = errors.New("request host is not allowed")
+	errToolRequestUnsupportedURL = errors.New("unsupported url scheme")
+	errToolRequestEmptyHost      = errors.New("request host is empty")
+
+	toolRequestDialer = &net.Dialer{
+		Timeout:   30 * time.Second,
+		KeepAlive: 30 * time.Second,
+	}
+
+	cgnatCIDR = net.IPNet{
+		IP:   net.IPv4(100, 64, 0, 0),
+		Mask: net.CIDRMask(10, 32),
+	}
+)
 
 func NewHttpCallImpl(ConversationID int64) Invocation {
 	return &httpCallImpl{
@@ -251,6 +270,10 @@ func (h *httpCallImpl) buildHTTPRequestURL(ctx context.Context, rawURL string, a
 		reqURL.RawQuery = encodeQuery
 	}
 
+	if err = validateToolRequestURL(reqURL); err != nil {
+		return nil, errorx.New(errno.ErrPluginExecuteToolFailed, errorx.KV(errno.PluginMsgKey, err.Error()))
+	}
+
 	return reqURL, nil
 }
 
@@ -383,4 +406,129 @@ func (h *httpCallImpl) buildHTTPRequestHeader(ctx context.Context, args *Invocat
 	}
 
 	return header, nil
+}
+
+func newToolHTTPClient() *resty.Client {
+	transport := &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           dialToolRequest,
+		ForceAttemptHTTP2:     true,
+		MaxIdleConns:          100,
+		IdleConnTimeout:       90 * time.Second,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ExpectContinueTimeout: 1 * time.Second,
+	}
+	cli := resty.New()
+	cli.SetTransport(transport)
+	cli.GetClient().CheckRedirect = checkToolRequestRedirect
+	return cli
+}
+
+func checkToolRequestRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) >= 10 {
+		return errors.New("stopped after 10 redirects")
+	}
+	return validateToolRequestURL(req.URL)
+}
+
+func validateToolRequestURL(u *url.URL) error {
+	if u == nil {
+		return errToolRequestEmptyHost
+	}
+
+	scheme := strings.ToLower(u.Scheme)
+	if scheme != "http" && scheme != "https" {
+		return errToolRequestUnsupportedURL
+	}
+
+	host := u.Hostname()
+	if host == "" {
+		return errToolRequestEmptyHost
+	}
+
+	ips, err := resolveToolRequestHost(host)
+	if err != nil {
+		return fmt.Errorf("resolve request host failed, err=%s", err)
+	}
+	for _, ip := range ips {
+		if isForbiddenToolRequestIP(ip) {
+			return errToolRequestHostNotAllowed
+		}
+	}
+
+	return nil
+}
+
+func resolveToolRequestHost(host string) ([]net.IP, error) {
+	if ip := net.ParseIP(host); ip != nil {
+		return []net.IP{ip}, nil
+	}
+
+	ips, err := net.LookupIP(host)
+	if err != nil {
+		return nil, err
+	}
+	if len(ips) == 0 {
+		return nil, fmt.Errorf("no addresses for host")
+	}
+	return ips, nil
+}
+
+func isForbiddenToolRequestIP(ip net.IP) bool {
+	if ip == nil {
+		return true
+	}
+	if ip4 := ip.To4(); ip4 != nil {
+		ip = ip4
+	}
+
+	if ip.IsLoopback() || ip.IsPrivate() || ip.IsLinkLocalUnicast() ||
+		ip.IsLinkLocalMulticast() || ip.IsMulticast() || ip.IsUnspecified() {
+		return true
+	}
+
+	if ip4 := ip.To4(); ip4 != nil {
+		if ip4[0] == 0 {
+			return true
+		}
+		if cgnatCIDR.Contains(ip4) {
+			return true
+		}
+		if ip4.Equal(net.IPv4bcast) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func dialToolRequest(ctx context.Context, network, addr string) (net.Conn, error) {
+	host, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return nil, err
+	}
+
+	ips, err := resolveToolRequestHost(host)
+	if err != nil {
+		return nil, err
+	}
+
+	var lastErr error
+	tried := false
+	for _, ip := range ips {
+		if isForbiddenToolRequestIP(ip) {
+			lastErr = errToolRequestHostNotAllowed
+			continue
+		}
+		tried = true
+		conn, dialErr := toolRequestDialer.DialContext(ctx, network, net.JoinHostPort(ip.String(), port))
+		if dialErr == nil {
+			return conn, nil
+		}
+		lastErr = dialErr
+	}
+	if !tried && lastErr == nil {
+		lastErr = errToolRequestHostNotAllowed
+	}
+	return nil, lastErr
 }
