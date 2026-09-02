@@ -29,7 +29,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Version:**
 
-Please provide the version of {project_name} you are using.
+Please provide the version of coze-studio you are using.
 
 **Environment:**
 
