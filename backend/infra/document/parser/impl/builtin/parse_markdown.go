@@ -48,8 +48,23 @@ func ParseMarkdown(config *contract.Config, storage storage.Storage, ocr ocr.OCR
 		}
 
 		node := mdParser.Parse(text.NewReader(b))
+		if config == nil {
+			return nil, fmt.Errorf("[ParseMarkdown] config is nil")
+		}
 		cs := config.ChunkingStrategy
 		ps := config.ParsingStrategy
+		if cs == nil {
+			// 防御性兜底：与 convert.ToParseConfig 的默认值保持一致，避免 nil 解引用 panic。
+			cs = &contract.ChunkingStrategy{
+				ChunkType: contract.ChunkTypeDefault,
+				ChunkSize: 800,
+				Separator: "\n",
+				Overlap:   10,
+			}
+		}
+		if ps == nil {
+			ps = &contract.ParsingStrategy{}
+		}
 
 		if cs.ChunkType != contract.ChunkTypeCustom && cs.ChunkType != contract.ChunkTypeDefault {
 			return nil, fmt.Errorf("[ParseMarkdown] chunk type not support, chunk type=%d", cs.ChunkType)
