@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/cloudwego/eino/components/document/parser"
@@ -72,4 +73,23 @@ func assertDoc(t *testing.T, doc *schema.Document) {
 	assert.NotNil(t, doc.MetaData)
 	assert.Equal(t, int64(123), doc.MetaData["document_id"].(int64))
 	assert.Equal(t, int64(456), doc.MetaData["knowledge_id"].(int64))
+}
+
+func TestParseMarkdown_NilConfig(t *testing.T) {
+	ctx := context.Background()
+	pfn := ParseMarkdown(nil, nil, nil)
+	_, err := pfn(ctx, strings.NewReader("hello"))
+	assert.Error(t, err)
+}
+
+func TestParseMarkdown_NilStrategies(t *testing.T) {
+	ctx := context.Background()
+	// 防御性兜底：ChunkingStrategy/ParsingStrategy 为 nil 时不应 panic，应正常产出切片。
+	pfn := ParseMarkdown(&contract.Config{
+		FileExtension: contract.FileExtensionMarkdown,
+	}, nil, nil)
+	docs, err := pfn(ctx, strings.NewReader("hello world\nsecond line 星璇大桥"))
+	assert.NoError(t, err)
+	assert.NotEmpty(t, docs)
+	assert.NotZero(t, docs[0].Content)
 }

@@ -62,6 +62,15 @@ func ToParseConfig(fileExtension parser.FileExtension, ps *entity.ParsingStrateg
 			MaxDepth:        cs.MaxDepth,
 			SaveTitle:       cs.SaveTitle,
 		}
+	} else {
+		c = &parser.ChunkingStrategy{
+			ChunkType:       parser.ChunkTypeDefault,
+			ChunkSize:       consts.DefaultChunkSize,
+			Separator:       consts.DefaultSeparator,
+			Overlap:         consts.DefaultOverlap,
+			TrimSpace:       consts.DefaultTrimSpace,
+			TrimURLAndEmail: consts.DefaultTrimURLAndEmail,
+		}
 	}
 
 	return &parser.Config{
