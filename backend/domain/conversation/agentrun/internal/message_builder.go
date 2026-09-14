@@ -437,6 +437,7 @@ func handlerWfInterruptEvent(_ context.Context, interruptEventData *crossworkflo
 func historyPairs(historyMsg []*message.Message) []*message.Message {
 
 	fcMsgPairs := make(map[int64][]*message.Message)
+	toolResponseIDs := make(map[int64]map[string]struct{})
 	for _, one := range historyMsg {
 		if one.MessageType != message.MessageTypeFunctionCall && one.MessageType != message.MessageTypeToolResponse {
 			continue
@@ -446,12 +447,42 @@ func historyPairs(historyMsg []*message.Message) []*message.Message {
 		} else {
 			fcMsgPairs[one.RunID] = append(fcMsgPairs[one.RunID], one)
 		}
+
+		if one.MessageType == message.MessageTypeToolResponse && one.ModelContent != "" {
+			var toolResponse schema.Message
+			if err := json.Unmarshal([]byte(one.ModelContent), &toolResponse); err == nil && toolResponse.ToolCallID != "" {
+				if _, ok := toolResponseIDs[one.RunID]; !ok {
+					toolResponseIDs[one.RunID] = make(map[string]struct{})
+				}
+				toolResponseIDs[one.RunID][toolResponse.ToolCallID] = struct{}{}
+			}
+		}
 	}
 
 	var historyAfterPairs []*message.Message
 	for _, value := range historyMsg {
 		if value.MessageType == message.MessageTypeFunctionCall {
-			if len(fcMsgPairs[value.RunID])%2 == 0 {
+			var functionCall schema.Message
+			err := json.Unmarshal([]byte(value.ModelContent), &functionCall)
+			if err != nil || len(functionCall.ToolCalls) == 0 {
+				if len(fcMsgPairs[value.RunID])%2 == 0 {
+					historyAfterPairs = append(historyAfterPairs, value)
+				}
+				continue
+			}
+
+			isComplete := true
+			for _, toolCall := range functionCall.ToolCalls {
+				if toolCall.ID == "" {
+					isComplete = len(fcMsgPairs[value.RunID])%2 == 0
+					break
+				}
+				if _, ok := toolResponseIDs[value.RunID][toolCall.ID]; !ok {
+					isComplete = false
+					break
+				}
+			}
+			if isComplete {
 				historyAfterPairs = append(historyAfterPairs, value)
 			}
 		} else {
