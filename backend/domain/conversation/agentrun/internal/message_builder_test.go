@@ -18,6 +18,7 @@ package internal
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -28,6 +29,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 
+	message "github.com/coze-dev/coze-studio/backend/crossdomain/message/model"
 	"github.com/coze-dev/coze-studio/backend/infra/imagex"
 	mockImagex "github.com/coze-dev/coze-studio/backend/internal/mock/infra/imagex"
 )
@@ -514,4 +516,81 @@ func TestParseMessageURI(t *testing.T) {
 			assert.Equal(t, tt.expectedResult, result)
 		})
 	}
+}
+
+func TestHistoryPairs(t *testing.T) {
+	modelContent := func(msg *schema.Message) string {
+		content, err := json.Marshal(msg)
+		assert.NoError(t, err)
+		return string(content)
+	}
+
+	functionCall := func(runID int64, callIDs ...string) *message.Message {
+		toolCalls := make([]schema.ToolCall, 0, len(callIDs))
+		for _, callID := range callIDs {
+			toolCalls = append(toolCalls, schema.ToolCall{
+				ID:       callID,
+				Function: schema.FunctionCall{Name: "test_tool"},
+			})
+		}
+		return &message.Message{
+			RunID:       runID,
+			MessageType: message.MessageTypeFunctionCall,
+			ModelContent: modelContent(&schema.Message{
+				Role:      schema.Assistant,
+				ToolCalls: toolCalls,
+			}),
+		}
+	}
+
+	toolResponse := func(runID int64, callID string) *message.Message {
+		return &message.Message{
+			RunID:       runID,
+			MessageType: message.MessageTypeToolResponse,
+			ModelContent: modelContent(&schema.Message{
+				Role:       schema.Tool,
+				ToolCallID: callID,
+			}),
+		}
+	}
+
+	t.Run("keeps a multi-tool call when all responses exist", func(t *testing.T) {
+		fc := functionCall(1, "call_1", "call_2")
+		tr1 := toolResponse(1, "call_1")
+		tr2 := toolResponse(1, "call_2")
+
+		assert.Equal(t, []*message.Message{fc, tr1, tr2}, historyPairs([]*message.Message{fc, tr1, tr2}))
+	})
+
+	t.Run("drops a multi-tool call when a response is missing", func(t *testing.T) {
+		fc := functionCall(2, "call_1", "call_2")
+		tr := toolResponse(2, "call_1")
+
+		assert.Equal(t, []*message.Message{tr}, historyPairs([]*message.Message{fc, tr}))
+	})
+
+	t.Run("keeps single-tool behavior", func(t *testing.T) {
+		fc := functionCall(3, "call_1")
+		tr := toolResponse(3, "call_1")
+
+		assert.Equal(t, []*message.Message{fc, tr}, historyPairs([]*message.Message{fc, tr}))
+	})
+
+	t.Run("matches multiple tool rounds in the same run", func(t *testing.T) {
+		fc1 := functionCall(4, "call_1", "call_2")
+		tr1 := toolResponse(4, "call_1")
+		tr2 := toolResponse(4, "call_2")
+		fc2 := functionCall(4, "call_3")
+		tr3 := toolResponse(4, "call_3")
+		history := []*message.Message{fc1, tr1, tr2, fc2, tr3}
+
+		assert.Equal(t, history, historyPairs(history))
+	})
+
+	t.Run("falls back to legacy pairing when model content is invalid", func(t *testing.T) {
+		fc := &message.Message{RunID: 5, MessageType: message.MessageTypeFunctionCall, ModelContent: "invalid"}
+		tr := &message.Message{RunID: 5, MessageType: message.MessageTypeToolResponse, ModelContent: "invalid"}
+
+		assert.Equal(t, []*message.Message{fc, tr}, historyPairs([]*message.Message{fc, tr}))
+	})
 }

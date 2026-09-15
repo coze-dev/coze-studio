@@ -157,29 +157,38 @@ func (mh *MessageEventHandler) handlerFunctionCall(ctx context.Context, chunk *e
 }
 
 func (mh *MessageEventHandler) handlerTooResponse(ctx context.Context, chunk *entity.AgentRespEvent, rtDependence *AgentRuntime, preToolResponseMsg *msgEntity.Message, toolResponseMsgContent string) error {
+	if chunk == nil {
+		return nil
+	}
 
-	cm := buildAgentMessage2Create(ctx, chunk, message.MessageTypeToolResponse, rtDependence)
-
-	var cmData *message.Message
-	var err error
-
-	if preToolResponseMsg != nil {
-		cm.ID = preToolResponseMsg.ID
-		cm.CreatedAt = preToolResponseMsg.CreatedAt
-		cm.UpdatedAt = preToolResponseMsg.UpdatedAt
-		if len(toolResponseMsgContent) > 0 {
-			cm.Content = toolResponseMsgContent + "\n" + cm.Content
+	usePreToolResponseMsg := preToolResponseMsg != nil
+	for _, toolMsg := range chunk.ToolsMessage {
+		if toolMsg == nil {
+			continue
 		}
+
+		toolChunk := *chunk
+		toolChunk.ToolsMessage = []*schema.Message{toolMsg}
+		cm := buildAgentMessage2Create(ctx, &toolChunk, message.MessageTypeToolResponse, rtDependence)
+
+		if usePreToolResponseMsg {
+			cm.ID = preToolResponseMsg.ID
+			cm.CreatedAt = preToolResponseMsg.CreatedAt
+			cm.UpdatedAt = preToolResponseMsg.UpdatedAt
+			if len(toolResponseMsgContent) > 0 {
+				cm.Content = toolResponseMsgContent + "\n" + cm.Content
+			}
+			usePreToolResponseMsg = false
+		}
+
+		cmData, err := crossmessage.DefaultSVC().Create(ctx, cm)
+		if err != nil {
+			return err
+		}
+
+		sendMsg := buildSendMsg(ctx, cmData, true, rtDependence)
+		mh.messageEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, mh.sw)
 	}
-
-	cmData, err = crossmessage.DefaultSVC().Create(ctx, cm)
-	if err != nil {
-		return err
-	}
-
-	sendMsg := buildSendMsg(ctx, cmData, true, rtDependence)
-
-	mh.messageEvent.SendMsgEvent(entity.RunEventMessageCompleted, sendMsg, mh.sw)
 
 	return nil
 }
