@@ -314,7 +314,7 @@ services:
       "
 
   minio:
-    image: minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1
+    image: quay.io/minio/minio:RELEASE.2025-06-13T11-33-47Z
     container_name: coze-minio
     user: root
     privileged: true
@@ -473,7 +473,7 @@ services:
       - coze-network
 
   minio-setup:
-    image: minio/mc:RELEASE.2025-05-21T01-59-54Z-cpuv1
+    image: quay.io/minio/mc:RELEASE.2025-05-21T01-59-54Z
     container_name: coze-minio-setup
     profiles: ['middleware']
     env_file: *env_file
