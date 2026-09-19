@@ -69,7 +69,7 @@ This excellent scaling capability makes Pulsar particularly suitable for scenari
 
 #### 1. Pulsar Producer
 
-**File Location**: `backend/infra/impl/eventbus/pulsar/producer.go`
+**File Location**: `backend/infra/eventbus/impl/pulsar/producer.go`
 
 **Core Functions**:
 
@@ -94,7 +94,7 @@ type producerImpl struct {
 
 #### 2. Pulsar Consumer
 
-**File Location**: `backend/infra/impl/eventbus/pulsar/consumer.go`
+**File Location**: `backend/infra/eventbus/impl/pulsar/consumer.go`
 
 **Core Functions**:
 
@@ -112,7 +112,7 @@ func RegisterConsumer(serviceURL, topic, group string,
 
 #### 3. EventBus Factory 
 
-**File Location**: `backend/infra/impl/eventbus/eventbus.go`
+**File Location**: `backend/infra/eventbus/impl/eventbus.go`
 
 **Integration Point**:
 

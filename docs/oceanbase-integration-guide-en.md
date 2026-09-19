@@ -44,7 +44,7 @@ This document provides a comprehensive guide to the integration of OceanBase vec
 
 ### Core Components
 
-#### 1. OceanBase Client (`backend/infra/impl/oceanbase/`)
+#### 1. OceanBase Client (`backend/infra/oceanbase/`)
 
 **Main Files**:
 
@@ -65,7 +65,7 @@ type OceanBaseClient interface {
 }
 ```
 
-#### 2. Search Store Manager (`backend/infra/impl/document/searchstore/oceanbase/`)
+#### 2. Search Store Manager (`backend/infra/document/searchstore/impl/oceanbase/`)
 
 **Main Files**:
 
