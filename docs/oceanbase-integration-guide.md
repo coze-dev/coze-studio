@@ -44,7 +44,7 @@
 
 ### 核心组件
 
-#### 1. OceanBase Client (`backend/infra/impl/oceanbase/`)
+#### 1. OceanBase Client (`backend/infra/oceanbase/`)
 
 **主要文件**:
 
@@ -65,7 +65,7 @@ type OceanBaseClient interface {
 }
 ```
 
-#### 2. Search Store Manager (`backend/infra/impl/document/searchstore/oceanbase/`)
+#### 2. Search Store Manager (`backend/infra/document/searchstore/impl/oceanbase/`)
 
 **主要文件**:
 

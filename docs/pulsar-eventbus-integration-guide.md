@@ -69,7 +69,7 @@ Pulsar 作为新一代的分布式消息系统，为 Coze Studio 带来了以下
 
 #### 1. Pulsar Producer
 
-**文件位置**: `backend/infra/impl/eventbus/pulsar/producer.go`
+**文件位置**: `backend/infra/eventbus/impl/pulsar/producer.go`
 
 **核心功能**:
 
@@ -94,7 +94,7 @@ type producerImpl struct {
 
 #### 2. Pulsar Consumer
 
-**文件位置**: `backend/infra/impl/eventbus/pulsar/consumer.go`
+**文件位置**: `backend/infra/eventbus/impl/pulsar/consumer.go`
 
 **核心功能**:
 
@@ -112,7 +112,7 @@ func RegisterConsumer(serviceURL, topic, group string,
 
 #### 3. EventBus 工厂
 
-**文件位置**: `backend/infra/impl/eventbus/eventbus.go`
+**文件位置**: `backend/infra/eventbus/impl/eventbus.go`
 
 **集成点**:
 

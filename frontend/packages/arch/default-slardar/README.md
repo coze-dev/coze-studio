@@ -1,6 +1,6 @@
 # @coze-studio/default-slardar
 
-default slardar implet
+default slardar implementation
 
 ## Overview
 
