@@ -76,7 +76,7 @@ func getBasicConfigurationFromOldConfig() *config.BasicConfiguration {
 	return &config.BasicConfiguration{
 		AdminEmails:             "",
 		DisableUserRegistration: disableUserRegistration,
-		AllowRegistrationEmail:  os.Getenv(consts.DisableUserRegistration),
+		AllowRegistrationEmail:  os.Getenv(consts.AllowRegistrationEmail),
 		PluginConfiguration: &config.PluginConfiguration{
 			CozeSaasPluginEnabled: envkey.GetBoolD("COZE_SAAS_PLUGIN_ENABLED", false),
 			CozeAPIToken:          envkey.GetString("COZE_SAAS_API_KEY"),
