@@ -566,28 +566,35 @@ func TestAppendSQLFilter(t *testing.T) {
 			sql:       "SELECT * FROM users WHERE age > 18",
 			condition: "status = 'active'",
 			connector: "AND",
-			want:      " select * from `users` where `age`>18 and `status`='active'",
+			want:      "select * from `users` where ((`age`>18) and (`status`='active'))",
 		},
 		{
 			name:      "SELECT - add OR to existing WHERE",
 			sql:       "SELECT * FROM products WHERE price < 100",
 			condition: "category = 'electronics'",
 			connector: "OR",
-			want:      "select * from `products` where `price`<100 or `category`='electronics'",
+			want:      "select * from `products` where ((`price`<100) or (`category`='electronics'))",
 		},
 		{
 			name:      "SELECT - add AND to multiple conditions",
 			sql:       "SELECT * FROM orders WHERE total > 50 AND status = 'completed'",
 			condition: "customer_id = 123",
 			connector: "AND",
-			want:      "select * from `orders` where `total`>50 and `status`='completed' and `customer_id`=123",
+			want:      "select * from `orders` where (((`total`>50) and (`status`='completed')) and (`customer_id`=123))",
+		},
+		{
+			name:      "AND filter keeps an existing OR group scoped",
+			sql:       "SELECT * FROM records WHERE tenant_id = 1 OR is_public = 1",
+			condition: "connector_uid = 'owner-123'",
+			connector: "AND",
+			want:      "select * from `records` where (((`tenant_id`=1) or (`is_public`=1)) and (`connector_uid`='owner-123'))",
 		},
 		{
 			name:      "SELECT - add condition without WHERE",
 			sql:       "SELECT id, name FROM customers",
 			condition: "is_verified = 1",
 			connector: "AND",
-			want:      "select `id`,`name` from `customers` where `is_verified`=1",
+			want:      "select `id`,`name` from `customers` where (`is_verified`=1)",
 		},
 
 		// tset - UPDATE
@@ -596,14 +603,14 @@ func TestAppendSQLFilter(t *testing.T) {
 			sql:       "UPDATE users SET last_login = NOW() WHERE id = 42",
 			condition: "is_active = true",
 			connector: "AND",
-			want:      "update `users` set `last_login`=now() where `id`=42 and `is_active`=true",
+			want:      "update `users` set `last_login`=now() where ((`id`=42) and (`is_active`=true))",
 		},
 		{
 			name:      "UPDATE - add OR condition without WHERE",
 			sql:       "UPDATE products SET discount = 0.1",
 			condition: "inventory > 100",
 			connector: "OR",
-			want:      "update `products` set `discount`=0.1 where `inventory`>100",
+			want:      "update `products` set `discount`=0.1 where (`inventory`>100)",
 		},
 
 		// tset - DELETE
@@ -612,14 +619,14 @@ func TestAppendSQLFilter(t *testing.T) {
 			sql:       "DELETE FROM logs WHERE created_at < '2023-01-01'",
 			condition: "severity = 'DEBUG'",
 			connector: "AND",
-			want:      "delete from `logs` where `created_at`<'2023-01-01' and `severity`='debug'",
+			want:      "delete from `logs` where ((`created_at`<'2023-01-01') and (`severity`='debug'))",
 		},
 		{
 			name:      "DELETE - add OR condition",
 			sql:       "DELETE FROM sessions WHERE expires_at < NOW()",
 			condition: "invalid = true",
 			connector: "OR",
-			want:      "delete from `sessions` where `expires_at`<now() or `invalid`=true",
+			want:      "delete from `sessions` where ((`expires_at`<now()) or (`invalid`=true))",
 		},
 
 		// tset - complex expr
@@ -628,14 +635,14 @@ func TestAppendSQLFilter(t *testing.T) {
 			sql:       "SELECT * FROM orders WHERE `status` = 'shipped'",
 			condition: "(total > 100 OR priority = 1)",
 			connector: "AND",
-			want:      "select * from `orders` where `status`='shipped' and (`total`>100 or `priority`=1)",
+			want:      "select * from `orders` where ((`status`='shipped') and (((`total`>100) or (`priority`=1))))",
 		},
 		{
 			name:      "Add condition to existing parentheses",
 			sql:       "SELECT * FROM users WHERE (age > 18 OR parent_consent = true) AND country = 'US'",
 			condition: "is_verified = 1",
 			connector: "AND",
-			want:      "select * from `users` where (`age`>18 or `parent_consent`=true) and `country`='us' and `is_verified`=1",
+			want:      "select * from `users` where (((((`age`>18) or (`parent_consent`=true))) and (`country`='us')) and (`is_verified`=1))",
 		},
 
 		// tset - JOIN
@@ -644,14 +651,14 @@ func TestAppendSQLFilter(t *testing.T) {
 			sql:       "SELECT u.name, o.total FROM users u JOIN orders o ON u.id = o.user_id WHERE u.country = 'US'",
 			condition: "o.status = 'completed'",
 			connector: "AND",
-			want:      "select `u`.`name`,`o`.`total` from `users` as `u` join `orders` as `o` on `u`.`id`=`o`.`user_id` where `u`.`country`='us' and `o`.`status`='completed'",
+			want:      "select `u`.`name`,`o`.`total` from `users` as `u` join `orders` as `o` on (`u`.`id`=`o`.`user_id`) where ((`u`.`country`='us') and (`o`.`status`='completed'))",
 		},
 		{
 			name:      "SELECT with multiple joins",
 			sql:       "SELECT p.name, c.category_name FROM products p JOIN categories c ON p.category_id = c.id WHERE p.price < 50",
 			condition: "c.parent_id = 1",
 			connector: "AND",
-			want:      "select `p`.`name`,`c`.`category_name` from `products` as `p` join `categories` as `c` on `p`.`category_id`=`c`.`id` where `p`.`price`<50 and `c`.`parent_id`=1",
+			want:      "select `p`.`name`,`c`.`category_name` from `products` as `p` join `categories` as `c` on (`p`.`category_id`=`c`.`id`) where ((`p`.`price`<50) and (`c`.`parent_id`=1))",
 		},
 
 		// test - case sensitive
@@ -669,7 +676,7 @@ func TestAppendSQLFilter(t *testing.T) {
 			sql:       "SELECT * FROM products",
 			condition: "CaTegorY = 'ELECTRONICS'",
 			connector: "AND",
-			want:      "select * from `products` where `category`='electronics'",
+			want:      "select * from `products` where (`category`='electronics')",
 		},
 
 		// test - error case

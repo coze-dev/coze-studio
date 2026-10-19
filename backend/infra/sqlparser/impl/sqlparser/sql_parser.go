@@ -457,7 +457,8 @@ func (p *Impl) AppendSQLFilter(sql string, op sqlparser.SQLFilterOp, filter stri
 
 	// regenerate SQL
 	var sb strings.Builder
-	flags := format.RestoreStringSingleQuotes | format.RestoreStringWithoutCharset | format.RestoreNameBackQuotes
+	flags := format.RestoreStringSingleQuotes | format.RestoreStringWithoutCharset | format.RestoreNameBackQuotes |
+		format.RestoreBracketAroundBinaryOperation // keep the original WHERE and the merged filter in separate brackets
 	restoreCtx := format.NewRestoreCtx(flags, &sb)
 	if err := stmtNode.Restore(restoreCtx); err != nil {
 		return "", fmt.Errorf("gen SQL failed: %v", err)
