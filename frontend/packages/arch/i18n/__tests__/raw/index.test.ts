@@ -16,14 +16,18 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { I18n, initI18nInstance } from '../../src/raw';
+import { I18n, initI18nInstance, loadI18nResources } from '../../src/raw';
 
 // Simulate localized resources
 vi.mock('../../src/resource.ts', () => ({
   default: {
-    en: { i18n: { test: 'Test' } },
+    en: { i18n: { test: 'Test', only_en: 'Only in English' } },
     'zh-CN': { i18n: { test: '测试' } },
   },
+}));
+// ru is not bundled, it is loaded on demand
+vi.mock('@coze-studio/studio-i18n-resource-adapter', () => ({
+  loadLocaleRu: () => Promise.resolve({ test: 'Тест' }),
 }));
 
 describe('raw/index', () => {
@@ -44,7 +48,7 @@ describe('raw/index', () => {
     );
     expect(I18n.i18nInstance.config).toEqual(
       expect.objectContaining({
-        fallbackLng: 'en',
+        fallbackLng: { ru: ['en'], default: ['en'] },
         lng: 'en',
         ns: 'i18n',
         defaultNS: 'i18n',
@@ -69,7 +73,7 @@ describe('raw/index', () => {
     );
     expect(I18n.i18nInstance.config).toEqual(
       expect.objectContaining({
-        fallbackLng: 'zh-CN',
+        fallbackLng: { ru: ['en'], default: ['zh-CN'] },
         lng: 'zh-CN',
         ns: 'custom',
         defaultNS: 'custom',
@@ -105,5 +109,46 @@ describe('raw/index', () => {
     });
     expect(I18n.dir('en', { ns: 'i18n' })).toEqual('ltr');
     expect(I18n.language).toEqual('zh-CN');
+  });
+
+  it.each(['ru', 'ru-RU'] as const)(
+    'should load ru for %s and fall back to en',
+    async lng => {
+      expect(await loadI18nResources(lng)).toBe(true);
+      await initI18nInstance({ lng });
+
+      expect(I18n.i18nInstance.config).toEqual(
+        expect.objectContaining({
+          fallbackLng: { ru: ['en'], default: ['en'] },
+          lng,
+        }),
+      );
+      expect(I18n.language).toEqual(lng);
+      expect(I18n.t('test')).toEqual('Тест');
+      expect(I18n.t('only_en')).toEqual('Only in English');
+    },
+  );
+
+  it('should fall back to en after switching from zh-CN to ru-RU', async () => {
+    await initI18nInstance({ lng: 'zh-CN' });
+    // zh-CN keeps its own fallback chain, without en
+    expect(I18n.t('only_en')).toEqual('only_en');
+
+    expect(await loadI18nResources('ru-RU')).toBe(true);
+    await I18n.setLangWithPromise('ru-RU');
+
+    expect(I18n.language).toEqual('ru-RU');
+    expect(I18n.t('test')).toEqual('Тест');
+    expect(I18n.t('only_en')).toEqual('Only in English');
+  });
+
+  it('should fall back to en after switching from ru-RU to zh-CN', async () => {
+    expect(await loadI18nResources('ru-RU')).toBe(true);
+    await initI18nInstance({ lng: 'ru-RU' });
+    await I18n.setLangWithPromise('zh-CN');
+
+    expect(I18n.language).toEqual('zh-CN');
+    expect(I18n.t('test')).toEqual('测试');
+    expect(I18n.t('only_en')).toEqual('Only in English');
   });
 });

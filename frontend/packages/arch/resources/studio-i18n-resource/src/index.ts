@@ -24,7 +24,12 @@ const defaultConfig = {
   'zh-CN': { i18n: localeZhCN },
 } as { en: { i18n: typeof localeEn }; 'zh-CN': { i18n: typeof localeZhCN } };
 
-export { localeEn, localeZhCN, defaultConfig };
+// Not generated: Russian stays out of defaultConfig and is loaded on demand
+// (a separate chunk), so that en and zh-CN users do not download ru.json.
+const loadLocaleRu = (): Promise<Record<string, string>> =>
+  import('./locales/ru.json').then(m => m.default);
+
+export { localeEn, localeZhCN, defaultConfig, loadLocaleRu };
 export type {
   I18nOptionsMap,
   I18nKeysHasOptionsType,

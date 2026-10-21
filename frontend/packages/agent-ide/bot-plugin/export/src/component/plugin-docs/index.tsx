@@ -21,16 +21,17 @@ import { Typography } from '@coze-arch/coze-design';
 
 export const PluginDocs = () => {
   const docsHref = useMemo(() => {
-    const DRAFT_CN = {
+    const DRAFT_CN: Record<string, string> = {
       'zh-CN': '/docs/guides/plugin',
       en: '/docs/en_guides/en_plugin',
     };
-    const DRAFT_OVERSEA = {
+    const DRAFT_OVERSEA: Record<string, string> = {
       'zh-CN': '',
       en: '',
     };
-    // @ts-expect-error -- linter-disable-autofix
-    return IS_OVERSEA ? DRAFT_OVERSEA[I18n.language] : DRAFT_CN[I18n.language];
+    const drafts = IS_OVERSEA ? DRAFT_OVERSEA : DRAFT_CN;
+    // Languages without their own docs page (e.g. ru) use the English one
+    return drafts[I18n.language] ?? drafts.en;
   }, []);
 
   return !IS_OVERSEA ? (

@@ -134,9 +134,14 @@ export const getNoRecallReplyOptions = (): RadioItem[] => [
   },
 ];
 
+const EN_KNOWLEDGE_GUIDE_LINK = '/docs/guides/knowledge_overview?_lang=en';
+
 export const localeMapLink: Record<string, string> = {
   'zh-CN': '/docs/guides/knowledge',
-  en: '/docs/guides/knowledge_overview?_lang=en',
+  en: EN_KNOWLEDGE_GUIDE_LINK,
+  // There is no Russian guide, so the Russian UI opens the English one
+  ru: EN_KNOWLEDGE_GUIDE_LINK,
+  'ru-RU': EN_KNOWLEDGE_GUIDE_LINK,
 };
 
 export const getShowSourceModeOptions = (): RadioItem[] => {

@@ -14,5 +14,30 @@
  * limitations under the License.
  */
 
+import ruRUBase from '@douyinfe/semi-ui/lib/es/locale/source/ru_RU';
+
 export { default as zhCN } from '@douyinfe/semi-ui/lib/es/locale/source/zh_CN';
 export { default as enUS } from '@douyinfe/semi-ui/lib/es/locale/source/en_US';
+
+const confirmButtons = { confirm: 'Подтвердить', cancel: 'Отмена' };
+
+/**
+ * Semi's ru_RU with its most visible mistakes fixed: lower-case dialog
+ * buttons, literal translations in Pagination, Tabs, Table and Upload, and
+ * «утро» / «после» used for AM / PM.
+ */
+export const ruRU: typeof ruRUBase = {
+  ...ruRUBase,
+  Pagination: { ...ruRUBase.Pagination, jumpTo: 'Перейти к', page: ' стр.' },
+  Modal: { ...confirmButtons },
+  Popconfirm: { ...confirmButtons },
+  DatePicker: { ...ruRUBase.DatePicker, footer: { ...confirmButtons } },
+  Tabs: { more: 'Ещё' },
+  Table: {
+    ...ruRUBase.Table,
+    emptyText: 'Нет данных',
+    pageText: '${currentStart}–${currentEnd} из ${total}',
+  },
+  Upload: { ...ruRUBase.Upload, legalTips: 'Отпустите, чтобы начать загрузку' },
+  TimePicker: { ...ruRUBase.TimePicker, AM: 'AM', PM: 'PM' },
+};

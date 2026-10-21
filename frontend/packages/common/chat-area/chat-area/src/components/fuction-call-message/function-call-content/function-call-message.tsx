@@ -56,29 +56,37 @@ const specialPluginNameMap = {
   'ts-bot_creator-bot_creator': {
     en: 'Creating your bot',
     'zh-CN': '正在创建 Bot',
+    ru: 'Создание агента',
   },
   'ts-Bot_Creator-updateBot': {
     en: 'Updating your bot',
     'zh-CN': '正在更新 Bot',
+    ru: 'Обновление агента',
   },
   'ts-BotCreator-updateBot': {
     en: 'Updating your bot',
     'zh-CN': '正在更新 Bot',
+    ru: 'Обновление агента',
   },
   'ts-generateAndUpdateBotIcon-generateAndUpdateBotIcon': {
     en: "Updating bot's profile picture",
     'zh-CN': '正在更新 Bot 图标',
+    ru: 'Обновление аватара агента',
   },
 };
 
 const getIsMapKey = (name: string): name is keyof typeof specialPluginNameMap =>
   name in specialPluginNameMap;
 
+// Russian is stored as ru-RU (profile) or ru; both use the ru labels
+const getPluginNameLanguage = (): string =>
+  I18n.language?.startsWith('ru') ? 'ru' : I18n.language;
+
 export const getPluginNameText = (name: string): string | null => {
   if (!getIsMapKey(name)) {
     return null;
   }
-  const res = specialPluginNameMap[name][I18n.language as 'en'];
+  const res = specialPluginNameMap[name][getPluginNameLanguage() as 'en'];
   if (!res) {
     return null;
   }

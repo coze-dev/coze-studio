@@ -97,6 +97,10 @@ const getLanguageOptions = () => [
     label: I18n.t('settings_language_en'),
     value: 'en-US',
   },
+  {
+    label: I18n.t('settings_language_ru'),
+    value: 'ru-RU',
+  },
 ];
 
 const WrappedSelectInput: React.FC<
@@ -426,7 +430,7 @@ export const UserInfoPanel = () => {
             }
             customComponent={WrappedSelectInput}
             onChange={langValue =>
-              setLang((langValue as 'zh-CN' | 'en-US') ?? 'zh-CN')
+              setLang((langValue as 'zh-CN' | 'en-US' | 'ru-RU') ?? 'zh-CN')
             }
             onSave={onLanguageChange}
           />

@@ -13737,6 +13737,7 @@ export type I18nKeysNoOptionsType =
   | 'settings_coze_assistant'
   | 'settings_general_settings'
   | 'settings_language_en'
+  | 'settings_language_ru'
   | 'settings_language_zh'
   | 'settings_show_coze_assistant_icon'
   | 'seven_day_new_user_retention'

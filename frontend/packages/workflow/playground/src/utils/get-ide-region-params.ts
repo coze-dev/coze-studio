@@ -17,9 +17,15 @@
 import { I18n } from '@coze-arch/i18n';
 import { type EditorProps } from '@coze-workflow/code-editor-adapter';
 
+// The IDE locale is either zh or en. Chinese UI languages get zh, every other
+// language (en, ru, ...) gets en. Before i18n is initialised the language is
+// unset, which keeps the previous zh default.
+const getIDELocale = (): EditorProps['locale'] =>
+  (I18n.language ?? 'zh-CN').startsWith('zh') ? 'zh' : 'en';
+
 export const getIDERegionParams = () => ({
   region: IS_BOE
     ? ('boe' as EditorProps['region'])
     : (REGION as EditorProps['region']),
-  locale: (I18n.language === 'en' ? 'en' : 'zh') as EditorProps['locale'],
+  locale: getIDELocale(),
 });
