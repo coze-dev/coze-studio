@@ -5551,6 +5551,39 @@
           }
         ]
       },
+      "MiniMax-M3.1-Flash": {
+        "display_info": {
+          "output_tokens": 128000,
+          "max_tokens": 1000000
+        },
+        "capability": {
+          "cot_display": true,
+          "function_call": true,
+          "image_understanding": true,
+          "video_understanding": true,
+          "audio_understanding": false,
+          "support_multi_modal": true
+        },
+        "parameters": [
+          {
+            "name": "max_tokens",
+            "label": "Response max length",
+            "desc": "Maximum generated tokens, including thinking tokens.",
+            "type": 2,
+            "min": "5",
+            "max": "128000",
+            "precision": 0,
+            "default_val": {
+              "default_val": "4096"
+            },
+            "options": [],
+            "param_class": {
+              "class_id": 2,
+              "label": "Input and output settings"
+            }
+          }
+        ]
+      },
       "MiniMax-M3": {
         "display_info": {
           "output_tokens": 128000,

@@ -18,8 +18,11 @@ package modelbuilder
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/cloudwego/eino-ext/components/model/openai"
+	"github.com/cloudwego/eino/components/model"
+	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/pkg/lang/ptr"
@@ -28,8 +31,9 @@ import (
 const defaultMiniMaxBaseURL = "https://api.minimax.io/v1"
 
 const (
-	miniMaxM3   = "MiniMax-M3"
-	miniMaxM2_7 = "MiniMax-M2.7"
+	miniMaxM31Flash = "MiniMax-M3.1-Flash"
+	miniMaxM3       = "MiniMax-M3"
+	miniMaxM2_7     = "MiniMax-M2.7"
 )
 
 type minimaxModelBuilder struct {
@@ -45,6 +49,7 @@ func newMiniMaxModelBuilder(cfg *config.Model) Service {
 func (m *minimaxModelBuilder) getDefaultConfig() *openai.ChatModelConfig {
 	return &openai.ChatModelConfig{
 		BaseURL: defaultMiniMaxBaseURL,
+		Model:   miniMaxM31Flash,
 		ResponseFormat: &openai.ChatCompletionResponseFormat{
 			Type: openai.ChatCompletionResponseFormatTypeText,
 		},
@@ -94,13 +99,14 @@ func (m *minimaxModelBuilder) applyParamsToConfig(conf *openai.ChatModelConfig, 
 }
 
 func (m *minimaxModelBuilder) applyThinkingToConfig(conf *openai.ChatModelConfig, thinkingType config.ThinkingType) {
-	model := m.cfg.Connection.BaseConnInfo.Model
-	if model != miniMaxM3 {
+	model := conf.Model
+	if model != miniMaxM31Flash && model != miniMaxM3 {
 		return
 	}
 
 	mode := "adaptive"
-	if thinkingType == config.ThinkingType_Disable {
+	// Flash always thinks; only M3 supports disabling thinking.
+	if model == miniMaxM3 && thinkingType == config.ThinkingType_Disable {
 		mode = "disabled"
 	}
 
@@ -116,7 +122,10 @@ func (m *minimaxModelBuilder) Build(ctx context.Context, params *LLMParams) (Too
 
 	conf := m.getDefaultConfig()
 	conf.APIKey = base.APIKey
-	conf.Model = base.Model
+	// Saved and custom model IDs remain authoritative.
+	if base.Model != "" {
+		conf.Model = base.Model
+	}
 
 	if base.BaseURL != "" {
 		conf.BaseURL = base.BaseURL
@@ -125,5 +134,47 @@ func (m *minimaxModelBuilder) Build(ctx context.Context, params *LLMParams) (Too
 	m.applyThinkingToConfig(conf, base.ThinkingType)
 	m.applyParamsToConfig(conf, params)
 
-	return openai.NewChatModel(ctx, conf)
+	conf.HTTPClient = &http.Client{Transport: miniMaxTransport{base: http.DefaultTransport}}
+	chatModel, err := openai.NewChatModel(ctx, conf)
+	if err != nil {
+		return nil, err
+	}
+	return &miniMaxChatModel{ToolCallingChatModel: chatModel}, nil
+}
+
+// Keep the SDK's message conversion and response handling, restoring only the
+// reasoning field it omits from outgoing assistant history.
+type miniMaxChatModel struct {
+	ToolCallingChatModel
+}
+
+func miniMaxHistoryContext(ctx context.Context, messages []*schema.Message) context.Context {
+	history := make([]string, len(messages))
+	hasReasoning := false
+	for i, message := range messages {
+		if message != nil && message.Role == schema.Assistant && message.ReasoningContent != "" {
+			history[i] = message.ReasoningContent
+			hasReasoning = true
+		}
+	}
+	if !hasReasoning {
+		return ctx
+	}
+	return context.WithValue(ctx, miniMaxReasoningKey{}, history)
+}
+
+func (m *miniMaxChatModel) Generate(ctx context.Context, messages []*schema.Message, opts ...model.Option) (*schema.Message, error) {
+	return m.ToolCallingChatModel.Generate(miniMaxHistoryContext(ctx, messages), messages, opts...)
+}
+
+func (m *miniMaxChatModel) Stream(ctx context.Context, messages []*schema.Message, opts ...model.Option) (*schema.StreamReader[*schema.Message], error) {
+	return m.ToolCallingChatModel.Stream(miniMaxHistoryContext(ctx, messages), messages, opts...)
+}
+
+func (m *miniMaxChatModel) WithTools(tools []*schema.ToolInfo) (model.ToolCallingChatModel, error) {
+	bound, err := m.ToolCallingChatModel.WithTools(tools)
+	if err != nil {
+		return nil, err
+	}
+	return &miniMaxChatModel{ToolCallingChatModel: bound}, nil
 }

@@ -18,8 +18,14 @@ package modelbuilder
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"testing"
+
+	"github.com/cloudwego/eino/schema"
 
 	"github.com/coze-dev/coze-studio/backend/api/model/admin/config"
 	"github.com/coze-dev/coze-studio/backend/api/model/app/developer_api"
@@ -184,6 +190,18 @@ func TestMinimaxThinkingModes(t *testing.T) {
 		expected     string
 	}{
 		{
+			name:         "Flash uses adaptive thinking by default",
+			model:        miniMaxM31Flash,
+			thinkingType: config.ThinkingType_Default,
+			expected:     "adaptive",
+		},
+		{
+			name:         "Flash cannot disable thinking",
+			model:        miniMaxM31Flash,
+			thinkingType: config.ThinkingType_Disable,
+			expected:     "adaptive",
+		},
+		{
 			name:         "M3 uses adaptive thinking by default",
 			model:        miniMaxM3,
 			thinkingType: config.ThinkingType_Default,
@@ -213,6 +231,7 @@ func TestMinimaxThinkingModes(t *testing.T) {
 				},
 			}
 			conf := builder.getDefaultConfig()
+			conf.Model = tt.model
 
 			builder.applyThinkingToConfig(conf, tt.thinkingType)
 
@@ -313,6 +332,61 @@ func TestNewModelBuilderMiniMax(t *testing.T) {
 
 	if builder == nil {
 		t.Fatal("NewModelBuilder returned nil for MiniMax")
+	}
+}
+
+func TestMinimaxHTTPBoundary(t *testing.T) {
+	for _, name := range []string{"", miniMaxM31Flash, miniMaxM3, miniMaxM2_7, "MiniMax-M2.7-highspeed", "saved-custom-model"} {
+		t.Run(name, func(t *testing.T) {
+			wantModel := name
+			if wantModel == "" {
+				wantModel = miniMaxM31Flash
+			}
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				var body struct {
+					Model    string            `json:"model"`
+					Messages []map[string]any  `json:"messages"`
+					Thinking map[string]string `json:"thinking"`
+				}
+				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+					t.Error(err)
+				}
+				if r.URL.Path != "/v1/chat/completions" || body.Model != wantModel {
+					t.Errorf("unexpected request path/model: %s %s", r.URL.Path, body.Model)
+				}
+				if len(body.Messages) != 2 || body.Messages[0]["reasoning_content"] != "saved reasoning" {
+					t.Errorf("reasoning history lost: %#v", body.Messages)
+				}
+				if wantModel == miniMaxM31Flash && body.Thinking["type"] != "adaptive" {
+					t.Error("Flash must use adaptive thinking")
+				}
+				w.Header().Set("Content-Type", "application/json")
+				fmt.Fprint(w, `{"choices":[{"index":0,"message":{"role":"assistant","content":"ok","reasoning_content":"next reasoning"},"finish_reason":"stop"}]}`)
+			}))
+			defer server.Close()
+			builder, err := NewModelBuilder(developer_api.ModelClass_MiniMax, &config.Model{
+				Connection: &config.Connection{BaseConnInfo: &config.BaseConnectionInfo{
+					Model: name, BaseURL: server.URL + "/v1", APIKey: "mock-only", ThinkingType: config.ThinkingType_Disable,
+				}},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			chat, err := builder.Build(context.Background(), nil)
+			if err != nil {
+				t.Fatal(err)
+			}
+			response, err := chat.Generate(context.Background(), []*schema.Message{
+				{Role: schema.Assistant, Content: "previous answer", ReasoningContent: "saved reasoning"},
+				{Role: schema.User, Content: "continue"},
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if response.Content != "ok" || response.ReasoningContent != "next reasoning" {
+				t.Errorf("response lost content or reasoning: %#v", response)
+			}
+		})
 	}
 }
 
