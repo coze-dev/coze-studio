@@ -28,7 +28,7 @@ The backend of Coze Studio is developed using Golang, the frontend uses React + 
 ## Feature list
 | **Module** | **Feature** |
 | --- | --- |
-| Model service | Manage the model list, integrate services such as OpenAI and Volcengine |
+| Model service | Manage the model list, integrate services such as OpenAI, Volcengine, Claude, DeepSeek, Gemini, Qwen, MiniMax, and Ollama |
 | Build agent | * Build, publish, and manage agent <br> * Support configuring workflows, knowledge bases, and other resources |
 | Build apps | * Create and publish apps <br> * Build business logic through workflows |
 | Build a workflow | Create, modify, publish, and delete workflows |

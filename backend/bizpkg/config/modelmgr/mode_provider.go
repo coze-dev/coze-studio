@@ -107,6 +107,18 @@ func getModelProviderList() []*config.ModelProvider {
 			},
 			ModelClass: developer_api.ModelClass_QWen,
 		},
+		{
+			Name: &config.I18nText{
+				ZhCn: "MiniMax 模型",
+				EnUs: "MiniMax Model",
+			},
+			IconURI: "default_icon/minimax.png",
+			Description: &config.I18nText{
+				ZhCn: "MiniMax 模型家族",
+				EnUs: "MiniMax model family",
+			},
+			ModelClass: developer_api.ModelClass_MiniMax,
+		},
 	}
 }
 

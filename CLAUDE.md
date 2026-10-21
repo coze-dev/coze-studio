@@ -143,7 +143,7 @@ make atlas-hash
 Before deployment, configure AI models in `backend/conf/model/`:
 1. Copy template from `backend/conf/model/template/`
 2. Set `id`, `meta.conn_config.api_key`, and `meta.conn_config.model`
-3. Supported providers: OpenAI, Volcengine Ark, Claude, Gemini, Qwen, DeepSeek, Ollama
+3. Supported providers: OpenAI, Volcengine Ark, Claude, Gemini, Qwen, DeepSeek, MiniMax, Ollama
 
 ## Testing Strategy
 

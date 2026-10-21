@@ -1,0 +1,53 @@
+# Recommended MiniMax model for new configurations. The M3 template remains available.
+# Use a unique ID when importing; existing model IDs must not be reassigned.
+id: 64011
+name: MiniMax-M3.1-Flash
+icon_uri: default_icon/minimax.png
+icon_url: ""
+description:
+    zh: MiniMax M3.1 Flash with a 1M context window, image and video input, and always-on adaptive thinking.
+    en: MiniMax M3.1 Flash with a 1M context window, image and video input, and always-on adaptive thinking.
+default_parameters:
+    - name: max_tokens
+      label:
+        zh: Response max length
+        en: Response max length
+      desc:
+        zh: Maximum generated tokens, including thinking tokens.
+        en: Maximum generated tokens, including thinking tokens.
+      type: int
+      min: "1"
+      max: "128000"
+      default_val:
+        default_val: "4096"
+      options: []
+      style:
+        widget: slider
+        label:
+            zh: Input and output settings
+            en: Input and output settings
+meta:
+    protocol: minimax
+    capability:
+        function_call: true
+        input_modal:
+            - text
+            - image
+            - video
+        input_tokens: 1000000
+        json_mode: false
+        max_tokens: 1000000
+        output_modal:
+            - text
+        output_tokens: 128000
+        prefix_caching: false
+        reasoning: true
+        prefill_response: false
+    conn_config:
+        base_url: "https://api.minimax.io/v1"
+        api_key: ""
+        timeout: 0s
+        model: "MiniMax-M3.1-Flash"
+        max_tokens: 4096
+        custom: {}
+    status: 0
