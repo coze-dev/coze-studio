@@ -116,7 +116,7 @@ export interface UserInfo {
     last_update_time: number;
     unpass_reason: string;
   };
-  locale?: 'zh-CN' | 'en-US';
+  locale?: 'zh-CN' | 'en-US' | 'ru-RU';
 }
 
 export type LoginStatus = 'settling' | 'not_login' | 'logined';

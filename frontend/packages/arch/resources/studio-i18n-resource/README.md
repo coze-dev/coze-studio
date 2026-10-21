@@ -6,7 +6,7 @@ This package provides a centralized internationalization resource adapter contai
 
 ## Features
 
-- 🌍 **Multi-language Support**: Currently supports English (`en`) and Simplified Chinese (`zh-CN`)
+- 🌍 **Multi-language Support**: Currently supports English (`en`), Simplified Chinese (`zh-CN`) and Russian (`ru`, loaded on demand)
 - 🔒 **Type Safety**: Comprehensive TypeScript definitions for all translation keys and parameters
 - 📦 **Auto-generated**: Resources are automatically generated using the `dl-i18n` command
 - ⚡ **React Integration**: Built-in support for React components with `ReactNode` parameter types
@@ -93,6 +93,16 @@ import { localeZhCN } from '@coze-studio/studio-i18n-resource-adapter';
 const message = localeZhCN.account_login_success;
 ```
 
+#### `loadLocaleRu`
+Loads the Russian locale data object on demand. `ru.json` is a separate chunk and is not part of `defaultConfig`, so English and Chinese users do not download it. It may contain fewer keys than `localeEn`; `@coze-arch/i18n` falls back to English for the missing ones. Applications normally call `loadI18nResources` from `@coze-arch/i18n/raw`, which registers the result.
+
+```typescript
+import { loadLocaleRu } from '@coze-studio/studio-i18n-resource-adapter';
+
+const localeRu = await loadLocaleRu();
+const label = localeRu.settings_language_ru;
+```
+
 #### `defaultConfig`
 Pre-configured object structure ready for use with i18n libraries.
 
@@ -103,6 +113,7 @@ import { defaultConfig } from '@coze-studio/studio-i18n-resource-adapter';
 const config = defaultConfig;
 // config.en.i18n contains English translations
 // config['zh-CN'].i18n contains Chinese translations
+// Russian is not included, see loadLocaleRu
 ```
 
 ### Type Definitions
@@ -195,6 +206,8 @@ This will:
 - Regenerate the `locale-data.d.ts` type definitions
 - Update the main `index.ts` export file
 
+`ru.json` is maintained in this repository. If a regeneration rewrites `index.ts` without the `loadLocaleRu` export, add it back.
+
 ### Adding New Languages
 
 To add support for additional languages:
@@ -212,6 +225,7 @@ src/
 ├── locale-data.d.ts      # Auto-generated TypeScript definitions
 └── locales/
     ├── en.json          # English translations (~13K+ strings)
+    ├── ru.json          # Russian translations (loaded on demand, missing keys fall back to en)
     └── zh-CN.json       # Chinese translations (~14K+ strings)
 ```
 

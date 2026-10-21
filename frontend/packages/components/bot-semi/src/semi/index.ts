@@ -117,4 +117,4 @@ export {
   ArrayField,
 } from '@douyinfe/semi-ui/lib/es/form';
 
-export { zhCN, enUS } from './locale';
+export { zhCN, enUS, ruRU } from './locale';

@@ -11737,6 +11737,7 @@
   "settings_general_settings": "General Settings",
   "settings_language_en": "English",
   "settings_language_zh": "Chinese",
+  "settings_language_ru": "Russian",
   "settings_show_coze_assistant_icon": "Show Coze Assistant",
   "seven_day_new_user_retention": "7-day new user retention",
   "seven_day_new_user_retention_tooltip": "The percentage of new users who revisit the Bot on the seventh day after their initial visit",

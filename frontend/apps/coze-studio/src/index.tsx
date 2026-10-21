@@ -15,7 +15,7 @@
  */
 
 import { createRoot } from 'react-dom/client';
-import { initI18nInstance } from '@coze-arch/i18n/raw';
+import { initI18nInstance, loadI18nResources } from '@coze-arch/i18n/raw';
 import { dynamicImportMdBoxStyle } from '@coze-arch/bot-md-box-adapter/style';
 import { pullFeatureFlags, type FEATURE_FLAGS } from '@coze-arch/bot-flags';
 
@@ -30,15 +30,15 @@ const initFlags = () => {
   });
 };
 
-const main = () => {
+const main = async () => {
   // Initialize the value of the function switch
   initFlags();
   // Initialize i18n
-  initI18nInstance({
-    lng: (localStorage.getItem('i18next') ?? (IS_OVERSEA ? 'en' : 'zh-CN')) as
-      | 'en'
-      | 'zh-CN',
-  });
+  const lng = (localStorage.getItem('i18next') ??
+    (IS_OVERSEA ? 'en' : 'zh-CN')) as 'en' | 'zh-CN' | 'ru' | 'ru-RU';
+  // Russian texts are downloaded on demand; start in English without them
+  const isLoaded = await loadI18nResources(lng);
+  initI18nInstance({ lng: isLoaded ? lng : 'en' });
   // Import mdbox styles dynamically
   dynamicImportMdBoxStyle();
 

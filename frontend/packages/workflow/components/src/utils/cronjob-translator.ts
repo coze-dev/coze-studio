@@ -44,6 +44,9 @@ const langMap = {
   // Spanish
   'es-ES': 'es',
   es: 'es',
+  // Russian
+  'ru-RU': 'ru',
+  ru: 'ru',
 };
 
 // Verify translation results using cronjob

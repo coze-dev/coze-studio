@@ -4,7 +4,7 @@ A comprehensive internationalization (i18n) solution for the Coze platform, prov
 
 ## Features
 
-- **🌍 Multi-language Support**: Built-in support for English and Chinese (Simplified) with easy extensibility
+- **🌍 Multi-language Support**: Built-in support for English, Chinese (Simplified) and Russian with easy extensibility
 - **🎯 Type-safe Translations**: Full TypeScript support with auto-generated types for translation keys
 - **⚡ Multiple Integration Modes**: Support for both Eden.js projects and standalone applications
 - **🔌 Plugin Architecture**: Extensible plugin system with language detection and ICU formatting
@@ -155,7 +155,7 @@ await I18n.setLangWithPromise('en');
 Get the current language.
 
 ```typescript
-const currentLang = I18n.language; // 'en' | 'zh-CN'
+const currentLang = I18n.language; // 'en' | 'zh-CN' | 'ru' | 'ru-RU'
 ```
 
 #### `I18n.getLanguages()`
@@ -182,7 +182,7 @@ Initialize i18n for standalone applications.
 
 ```typescript
 interface I18nConfig {
-  lng: 'en' | 'zh-CN';
+  lng: 'en' | 'zh-CN' | 'ru' | 'ru-RU';
   ns?: string;
   // Additional i18next options
 }
@@ -191,6 +191,20 @@ await initI18nInstance({
   lng: 'en',
   ns: 'i18n'
 });
+```
+
+Keys missing in the current language fall back to the init language (English when the init language is Russian). Russian (`ru`, or `ru-RU`, which resolves to the `ru` resource) always falls back to English, also after a runtime `I18n.setLang('ru-RU')`.
+
+#### `loadI18nResources(lng)`
+
+Russian is not bundled with English and Chinese: its dictionary is a separate chunk that only Russian users download. Wait for `loadI18nResources` before calling `initI18nInstance` or `I18n.setLang` with `ru` or `ru-RU`. It resolves to `true` once the resources are registered (at once for the bundled languages) and to `false` when the download fails; use `en` in that case. Repeated calls share one download.
+
+```typescript
+import { initI18nInstance, loadI18nResources } from '@coze-arch/i18n/raw';
+
+const lng = 'ru-RU';
+const isLoaded = await loadI18nResources(lng);
+await initI18nInstance({ lng: isLoaded ? lng : 'en' });
 ```
 
 ### React Components
