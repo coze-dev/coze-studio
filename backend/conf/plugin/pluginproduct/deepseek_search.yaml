@@ -1,0 +1,114 @@
+info:
+  description: AI-native web search with ranked, scored results (rerank_score / authority), and clean Markdown extraction of any web page, powered by the DeepSeek Tools API. Uses the same API key as the
+    DeepSeek model platform.
+  title: DeepSeek Search
+  version: v1
+openapi: 3.0.1
+paths:
+  /v1/tools/search:
+    post:
+      operationId: deepseek_web_search
+      summary: Search the web
+      description: 'Perform an AI-native web search. Returns ranked results with title, url, snippet, summary, site_name, date, rerank_score (0-3, >=1.5 is high quality) and authority (0-4, >=3 is highly
+        authoritative). Supports operators passed through as-is: site:, -site:, -"excluded phrase", "exact phrase", lang:, after:, before:.'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                query:
+                  description: 'The search query (1-128 characters). Operators such as site:, -site:, "exact phrase", -exclusion, lang:, after:, before: are supported and passed through.'
+                  type: string
+                count:
+                  default: 10
+                  description: Maximum number of results to return (1-50). The server may return fewer.
+                  maximum: 50
+                  minimum: 1
+                  type: integer
+                ori_question:
+                  description: The user's original question (1-128 characters) that triggered the search. Helps DeepSeek localize and rank results.
+                  type: string
+                need_content:
+                  default: false
+                  description: Whether to include the full extracted page content per result. Increases payload size and latency; enable only when page bodies are needed.
+                  type: boolean
+              required:
+              - query
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  results:
+                    description: Ranked list of search results
+                    items:
+                      properties:
+                        authority:
+                          description: Authority rating of the source site (0-4, -1 unknown; >=3 is highly authoritative)
+                          type: number
+                        content:
+                          description: Full page content, only present when need_content is true
+                          type: string
+                        date:
+                          description: Publication or update date of the result, may be null
+                          type: string
+                        rerank_score:
+                          description: Overall relevance/authority/freshness score (0-3; >=1.5 is a quality result)
+                          type: number
+                        site_icon:
+                          description: URL of the site favicon, may be null
+                          type: string
+                        site_name:
+                          description: Name of the source site, may be null
+                          type: string
+                        snippet:
+                          description: Short summary (about 100-200 characters), suitable for display
+                          type: string
+                        summary:
+                          description: Long summary (about 600-800 characters), suitable for model reading
+                          type: string
+                        title:
+                          description: Title of the result page
+                          type: string
+                        url:
+                          description: URL of the result page
+                          type: string
+                      type: object
+                    type: array
+                type: object
+          description: Successful response
+  /v1/tools/fetch:
+    post:
+      operationId: deepseek_web_fetch
+      summary: Fetch a web page
+      description: Fetch a single web page and return its title and body as clean Markdown. Retrieval and extraction are performed by DeepSeek's infrastructure.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              properties:
+                url:
+                  description: The HTTP/HTTPS URL to fetch (max 8192 characters, must include a host, no username/password).
+                  maxLength: 8192
+                  type: string
+              required:
+              - url
+              type: object
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  content:
+                    description: Body of the page as clean Markdown
+                    type: string
+                  title:
+                    description: Title of the page (empty string when missing)
+                    type: string
+                type: object
+          description: Successful response
+servers:
+- url: https://api.deepseek.com

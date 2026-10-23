@@ -1,0 +1,138 @@
+info:
+  description: Live and historical foreign exchange reference rates for 30+ world currencies (USD, CNY, EUR, JPY, GBP, etc.), published daily by the European Central Bank. No API key required. Convert between
+    currencies, check the latest rates, or look up historical rates for any business day.
+  title: Exchange Rates
+  version: v1
+openapi: 3.0.1
+paths:
+  /latest:
+    get:
+      operationId: get_latest_rates
+      summary: Get the latest exchange rates
+      description: Returns the most recent published exchange rates for a base currency. Rates are published every business day around 16:00 CET.
+      parameters:
+      - description: Base currency for the rates. Defaults to EUR. Example- USD
+        in: query
+        name: base
+        required: false
+        schema:
+          example: USD
+          type: string
+      - description: Comma-separated list of target currencies to limit the result. Example- CNY,EUR,JPY
+        in: query
+        name: symbols
+        required: false
+        schema:
+          example: CNY,EUR,JPY
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  amount:
+                    description: The amount of the base currency (always 1)
+                    type: number
+                  base:
+                    description: The base currency code
+                    type: string
+                  date:
+                    description: The date the rates were published (YYYY-MM-DD)
+                    type: string
+                  rates:
+                    description: Mapping of target currency code to its exchange rate
+                    properties:
+                      CNY:
+                        description: Exchange rate for one unit of the base currency
+                        type: number
+                      EUR:
+                        description: Exchange rate for one unit of the base currency
+                        type: number
+                      JPY:
+                        description: Exchange rate for one unit of the base currency
+                        type: number
+                      USD:
+                        description: Exchange rate for one unit of the base currency
+                        type: number
+                    type: object
+                type: object
+          description: Successful response
+  /{date}:
+    get:
+      operationId: get_historical_rates
+      summary: Get historical exchange rates
+      description: Returns the exchange rates published on a specific date (or the closest preceding business day). Use YYYY-MM-DD format. Optionally add an end date with the format YYYY-MM-DD..YYYY-MM-DD
+        to get a date range.
+      parameters:
+      - description: The date to look up, in YYYY-MM-DD format. May also be a range like 2026-01-01..2026-01-31
+        in: path
+        name: date
+        required: true
+        schema:
+          example: '2026-01-15'
+          type: string
+      - description: Base currency for the rates. Defaults to EUR
+        in: query
+        name: base
+        required: false
+        schema:
+          example: USD
+          type: string
+      - description: Comma-separated list of target currencies to limit the result
+        in: query
+        name: symbols
+        required: false
+        schema:
+          example: CNY,EUR,JPY
+          type: string
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  amount:
+                    description: The amount of the base currency (always 1)
+                    type: number
+                  base:
+                    description: The base currency code
+                    type: string
+                  date:
+                    description: The date the rates were published (YYYY-MM-DD)
+                    type: string
+                  rates:
+                    description: Mapping of target currency code to its exchange rate
+                    type: object
+                type: object
+          description: Successful response
+  /currencies:
+    get:
+      operationId: list_currencies
+      summary: List supported currencies
+      description: Returns the list of all currency codes supported by the API, as a mapping of currency code to its English name.
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                properties:
+                  AUD:
+                    description: Australian Dollar
+                    type: string
+                  CNY:
+                    description: Chinese Renminbi Yuan
+                    type: string
+                  EUR:
+                    description: Euro
+                    type: string
+                  JPY:
+                    description: Japanese Yen
+                    type: string
+                  USD:
+                    description: United States Dollar
+                    type: string
+                type: object
+          description: Successful response
+servers:
+- url: https://api.frankfurter.app
