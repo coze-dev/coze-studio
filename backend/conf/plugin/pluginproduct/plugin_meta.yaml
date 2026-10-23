@@ -906,3 +906,77 @@
       deprecated: false
       method: get
       sub_url: /v5/place/around
+- plugin_id: 23
+  product_id: 7618395024716289034
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: deepseek_search.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: deepseeksousuo
+    name_for_human: DeepSeek Search
+    description_for_model: AI-native web search with ranked, scored results, and clean Markdown extraction of any web page, powered by the DeepSeek Tools API. Uses the same API key as the DeepSeek model platform.
+    description_for_human: AI 原生网页搜索（带相关性评分）与任意网页的 Markdown 正文提取，由 DeepSeek Tools API 提供。使用与 DeepSeek 模型平台相同的 API Key。
+    auth:
+      type: service_http
+      key: Authorization
+      sub_type: token/api_key
+      # service token apply to https://platform.deepseek.com/
+      payload: '{"key": "Authorization", "service_token": "", "location": "Header"}'
+    logo_url: official_plugin_icon/plugin_deepseek_search.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 230001
+      deprecated: false
+      method: post
+      sub_url: /v1/tools/search
+    - tool_id: 230002
+      deprecated: false
+      method: post
+      sub_url: /v1/tools/fetch
+- plugin_id: 24
+  product_id: 7618395024716289035
+  deprecated: false
+  version: v1.0.0
+  openapi_doc_file: exchange_rates.yaml
+  plugin_type: 1
+  manifest:
+    schema_version: v1
+    name_for_model: huilvchaxun
+    name_for_human: Exchange Rates
+    description_for_model: Live and historical foreign exchange reference rates for 30+ world currencies (USD, CNY, EUR, JPY, GBP, etc.), published daily by the European Central Bank. Convert between currencies, check the latest rates, or look up historical rates. No API key required.
+    description_for_human: 30+ 种世界货币（美元、人民币、欧元、日元、英镑等）的实时与历史汇率，数据每日由欧洲央行发布。支持汇率换算、最新汇率与历史汇率查询，无需 API Key。
+    auth:
+      type: none
+    logo_url: official_plugin_icon/plugin_exchange_rates.png
+    api:
+      type: openapi
+    common_params:
+      body: [ ]
+      header:
+        - name: User-Agent
+          value: Coze/1.0
+      path: [ ]
+      query: [ ]
+  tools:
+    - tool_id: 240001
+      deprecated: false
+      method: get
+      sub_url: /latest
+    - tool_id: 240002
+      deprecated: false
+      method: get
+      sub_url: /{date}
+    - tool_id: 240003
+      deprecated: false
+      method: get
+      sub_url: /currencies
