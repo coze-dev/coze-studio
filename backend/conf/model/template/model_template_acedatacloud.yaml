@@ -1,0 +1,11 @@
+# To activate this example, copy it into backend/conf/model/ in your deployment.
+id: 72010
+name: GPT-5.1 (Ace Data Cloud)
+meta:
+    protocol: openai
+    conn_config:
+        base_url: "https://api.acedata.cloud/v1"
+        model: "gpt-5.1"
+        api_key: "" # Set your Ace Data Cloud API key in the deployment copy.
+        openai:
+            by_azure: false
