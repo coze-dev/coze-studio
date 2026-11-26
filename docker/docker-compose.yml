@@ -201,7 +201,7 @@ services:
       "
 
   minio:
-    image: minio/minio:RELEASE.2025-06-13T11-33-47Z-cpuv1
+    image: bitnamilegacy/minio:latest
     container_name: coze-minio
     user: root
     privileged: true
@@ -225,15 +225,15 @@ services:
         # Run initialization in background
         (
           # Wait for MinIO to be ready
-          until (/usr/bin/mc alias set localminio http://localhost:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}) do
+          until (/opt/bitnami/minio-client/bin/mc alias set localminio http://localhost:9000 $${MINIO_ROOT_USER} $${MINIO_ROOT_PASSWORD}) do
             echo "Waiting for MinIO to be ready..."
             sleep 1
           done
 
           # Create bucket and copy files
-          /usr/bin/mc mb --ignore-existing localminio/$${STORAGE_BUCKET}
-          /usr/bin/mc cp --recursive /default_icon/ localminio/$${STORAGE_BUCKET}/default_icon/
-          /usr/bin/mc cp --recursive /official_plugin_icon/ localminio/$${STORAGE_BUCKET}/official_plugin_icon/
+          /opt/bitnami/minio-client/bin/mc mb --ignore-existing localminio/$${STORAGE_BUCKET}
+          /opt/bitnami/minio-client/bin/mc cp --recursive /default_icon/ localminio/$${STORAGE_BUCKET}/default_icon/
+          /opt/bitnami/minio-client/bin/mc cp --recursive /official_plugin_icon/ localminio/$${STORAGE_BUCKET}/official_plugin_icon/
 
           echo "MinIO initialization complete."
         ) &
@@ -244,7 +244,7 @@ services:
       test:
         [
           'CMD-SHELL',
-          '/usr/bin/mc alias set health_check http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && /usr/bin/mc ready health_check',
+          '/opt/bitnami/minio-client/bin/mc alias set health_check http://localhost:9000 ${MINIO_ROOT_USER} ${MINIO_ROOT_PASSWORD} && /opt/bitnami/minio-client/bin/mc ready health_check',
         ]
       interval: 30s
       timeout: 10s
